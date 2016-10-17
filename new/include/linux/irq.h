@@ -140,17 +140,12 @@ struct irq_domain;
  * @ipi_offset:		Offset of first IPI target cpu in @affinity. Optional.
  */
 struct irq_common_data {
-	//状态
 	unsigned int		__private state_use_accessors;
 #ifdef CONFIG_NUMA
-	//用于负载平衡
 	unsigned int		node;
 #endif
-	//中断私有数据
 	void			*handler_data;
-	//msi描述符
 	struct msi_desc		*msi_desc;
-	//中断亲和性
 	cpumask_var_t		affinity;
 #ifdef CONFIG_GENERIC_IRQ_IPI
 	unsigned int		ipi_offset;
@@ -172,23 +167,15 @@ struct irq_common_data {
  *			methods, to allow shared chip implementations
  */
 struct irq_data {
-	//预先计算好的，访问寄存器的位图。
 	u32			mask;
-	//中断编号
 	unsigned int		irq;
-	//硬件中断编号
 	unsigned long		hwirq;
-	//指向所有中断芯片共享数据的指针
 	struct irq_common_data	*common;
-	//中断控制芯片
 	struct irq_chip		*chip;
-	//将硬件中断编号转换为中断编号的域
 	struct irq_domain	*domain;
 #ifdef	CONFIG_IRQ_DOMAIN_HIERARCHY
-	//在支持多级控制域的时候，指向上级结构
 	struct irq_data		*parent_data;
 #endif
-	//平台特定的中断控制器数据
 	void			*chip_data;
 };
 
@@ -929,12 +916,20 @@ void irq_remove_generic_chip(struct irq_chip_generic *gc, u32 msk,
 			     unsigned int clr, unsigned int set);
 
 struct irq_chip_generic *irq_get_domain_generic_chip(struct irq_domain *d, unsigned int hw_irq);
-int irq_alloc_domain_generic_chips(struct irq_domain *d, int irqs_per_chip,
-				   int num_ct, const char *name,
-				   irq_flow_handler_t handler,
-				   unsigned int clr, unsigned int set,
-				   enum irq_gc_flags flags);
 
+int __irq_alloc_domain_generic_chips(struct irq_domain *d, int irqs_per_chip,
+				     int num_ct, const char *name,
+				     irq_flow_handler_t handler,
+				     unsigned int clr, unsigned int set,
+				     enum irq_gc_flags flags);
+
+#define irq_alloc_domain_generic_chips(d, irqs_per_chip, num_ct, name,	\
+				       handler,	clr, set, flags)	\
+({									\
+	MAYBE_BUILD_BUG_ON(irqs_per_chip > 32);				\
+	__irq_alloc_domain_generic_chips(d, irqs_per_chip, num_ct, name,\
+					 handler, clr, set, flags);	\
+})
 
 static inline struct irq_chip_type *irq_data_get_chip_type(struct irq_data *d)
 {

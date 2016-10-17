@@ -278,7 +278,8 @@ extern int irq_set_affinity_hint(unsigned int irq, const struct cpumask *m);
 extern int
 irq_set_affinity_notifier(unsigned int irq, struct irq_affinity_notify *notify);
 
-struct cpumask *irq_create_affinity_mask(unsigned int *nr_vecs);
+struct cpumask *irq_create_affinity_masks(const struct cpumask *affinity, int nvec);
+int irq_calc_affinity_vectors(const struct cpumask *affinity, int maxvec);
 
 #else /* CONFIG_SMP */
 
@@ -311,11 +312,18 @@ irq_set_affinity_notifier(unsigned int irq, struct irq_affinity_notify *notify)
 	return 0;
 }
 
-static inline struct cpumask *irq_create_affinity_mask(unsigned int *nr_vecs)
+static inline struct cpumask *
+irq_create_affinity_masks(const struct cpumask *affinity, int nvec)
 {
-	*nr_vecs = 1;
 	return NULL;
 }
+
+static inline int
+irq_calc_affinity_vectors(const struct cpumask *affinity, int maxvec)
+{
+	return maxvec;
+}
+
 #endif /* CONFIG_SMP */
 
 /*
@@ -426,18 +434,16 @@ extern bool force_irqthreads;
 
 enum
 {
-	HI_SOFTIRQ=0,//高优先级软中断
-	TIMER_SOFTIRQ,//定时器软中断
-	NET_TX_SOFTIRQ, //网络发送软中断，回收发送内存
-	NET_RX_SOFTIRQ, //接收软中断
-	BLOCK_SOFTIRQ,  //块设备软中断
-	IRQ_POLL_SOFTIRQ, //块设备poll软中断
-	TASKLET_SOFTIRQ, //tasklet软中断
-	SCHED_SOFTIRQ, //调度软中断
-	//高精度时钟软中断，未用
+	HI_SOFTIRQ=0,
+	TIMER_SOFTIRQ,
+	NET_TX_SOFTIRQ,
+	NET_RX_SOFTIRQ,
+	BLOCK_SOFTIRQ,
+	IRQ_POLL_SOFTIRQ,
+	TASKLET_SOFTIRQ,
+	SCHED_SOFTIRQ,
 	HRTIMER_SOFTIRQ, /* Unused, but kept as tools rely on the
 			    numbering. Sigh! */
-	//RCU软中断
 	RCU_SOFTIRQ,    /* Preferable RCU should always be the last softirq */
 
 	NR_SOFTIRQS

@@ -3044,6 +3044,11 @@ void kernel_sigaction(int sig, __sighandler_t action)
 }
 EXPORT_SYMBOL(kernel_sigaction);
 
+void __weak sigaction_compat_abi(struct k_sigaction *act,
+		struct k_sigaction *oact)
+{
+}
+
 int do_sigaction(int sig, struct k_sigaction *act, struct k_sigaction *oact)
 {
 	struct task_struct *p = current, *t;
@@ -3058,6 +3063,8 @@ int do_sigaction(int sig, struct k_sigaction *act, struct k_sigaction *oact)
 	spin_lock_irq(&p->sighand->siglock);
 	if (oact)
 		*oact = *k;
+
+	sigaction_compat_abi(act, oact);
 
 	if (act) {
 		sigdelsetmask(&act->sa.sa_mask,
@@ -3587,7 +3594,7 @@ void __init signals_init(void)
 	/* If this check fails, the __ARCH_SI_PREAMBLE_SIZE value is wrong! */
 	BUILD_BUG_ON(__ARCH_SI_PREAMBLE_SIZE
 		!= offsetof(struct siginfo, _sifields._pad));
-	//´´½¨slab¿ØÖÆÆ÷
+
 	sigqueue_cachep = KMEM_CACHE(sigqueue, SLAB_PANIC);
 }
 

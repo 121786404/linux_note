@@ -403,8 +403,11 @@ static __always_inline u64 __ktime_get_fast_ns(struct tk_fast *tkf)
 		tkr = tkf->base + (seq & 0x01);
 		now = ktime_to_ns(tkr->base);
 
-		now += clocksource_delta(tkr->read(tkr->clock),
-					 tkr->cycle_last, tkr->mask);
+		now += timekeeping_delta_to_ns(tkr,
+				clocksource_delta(
+					tkr->read(tkr->clock),
+					tkr->cycle_last,
+					tkr->mask));
 	} while (read_seqcount_retry(&tkf->seq, seq));
 
 	return now;
@@ -1457,14 +1460,10 @@ void __weak read_boot_clock64(struct timespec64 *ts)
 static bool sleeptime_injected;
 
 /* Flag for if there is a persistent clock on this platform */
-//是否有持久的时钟源
 static bool persistent_clock_exists;
 
 /*
- * timekeeping_init - Initializes the clocksource and common  values
- */
-/**
- * 初始化时钟源及timekeeping相关的变量
+ * timekeeping_init - Initializes the clocksource and common timekeeping values
  */
 void __init timekeeping_init(void)
 {
@@ -1473,17 +1472,15 @@ void __init timekeeping_init(void)
 	unsigned long flags;
 	struct timespec64 now, boot, tmp;
 
-	//读入时钟值，当前只有omap架构实现了。
 	read_persistent_clock64(&now);
-	if (!timespec64_valid_strict(&now)) {//没有实现持久的时钟
+	if (!timespec64_valid_strict(&now)) {
 		pr_warn("WARNING: Persistent clock returned invalid value!\n"
 			"         Check your CMOS/BIOS settings.\n");
 		now.tv_sec = 0;
 		now.tv_nsec = 0;
-	} else if (now.tv_sec || now.tv_nsec)//实现了，记录下来
+	} else if (now.tv_sec || now.tv_nsec)
 		persistent_clock_exists = true;
 
-	//同样只有omap实现了。
 	read_boot_clock64(&boot);
 	if (!timespec64_valid_strict(&boot)) {
 		pr_warn("WARNING: Boot clock returned invalid value!\n"
@@ -1492,10 +1489,8 @@ void __init timekeeping_init(void)
 		boot.tv_nsec = 0;
 	}
 
-	//获得顺序锁及自旋锁
 	raw_spin_lock_irqsave(&timekeeper_lock, flags);
 	write_seqcount_begin(&tk_core.seq);
-	//ntp初始化
 	ntp_init();
 
 	clock = clocksource_default_clock();

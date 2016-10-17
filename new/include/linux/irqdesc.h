@@ -2,6 +2,7 @@
 #define _LINUX_IRQDESC_H
 
 #include <linux/rcupdate.h>
+#include <linux/kobject.h>
 
 /*
  * Core internal functions to deal with irq descriptors
@@ -43,43 +44,28 @@ struct pt_regs;
  * @force_resume_depth:	number of irqactions on a irq descriptor with
  *			IRQF_FORCE_RESUME set
  * @rcu:		rcu head for delayed free
+ * @kobj:		kobject used to represent this struct in sysfs
  * @dir:		/proc/irq/ procfs entry
  * @name:		flow handler name for /proc/interrupts output
  */
-/**
- * 中断描述符
- */
 struct irq_desc {
 	struct irq_common_data	irq_common_data;
-	//中断控制器相关的数据
 	struct irq_data		irq_data;
-	//中断在每个CPU上的执行状态
 	unsigned int __percpu	*kstat_irqs;
-	//高级irq事件事件??
 	irq_flow_handler_t	handle_irq;
 #ifdef CONFIG_IRQ_PREFLOW_FASTEOI
-	//arm上未用
 	irq_preflow_handler_t	preflow_handler;
 #endif
-	//注册的irq回调链表
 	struct irqaction	*action;	/* IRQ action list */
-	//和irq_common_data中的状态有什么区别?
 	unsigned int		status_use_accessors;
 	unsigned int		core_internal_state__do_not_mess_with_it;
-	//禁止该中断的次数
 	unsigned int		depth;		/* nested irq disables */
-	//打开该中断的次数
 	unsigned int		wake_depth;	/* nested wake enables */
-	//发生的中断次数，用于检测硬件故障。
 	unsigned int		irq_count;	/* For detecting broken IRQs */
-	//上次未处理该中断的时间。
 	unsigned long		last_unhandled;	/* Aging timer for unhandled count */
-	//未处理的中断次数
 	unsigned int		irqs_unhandled;
-	//???
 	atomic_t		threads_handled;
 	int			threads_handled_last;
-	//保护该数据结构的自旋锁
 	raw_spinlock_t		lock;
 	struct cpumask		*percpu_enabled;
 	const struct cpumask	*percpu_affinity;
@@ -91,9 +77,7 @@ struct irq_desc {
 #endif
 #endif
 	unsigned long		threads_oneshot;
-	//正在运行该中断irqaction的线程数量。
 	atomic_t		threads_active;
-	//该中断sync等待队列
 	wait_queue_head_t       wait_for_threads;
 #ifdef CONFIG_PM_SLEEP
 	unsigned int		nr_actions;
@@ -106,10 +90,10 @@ struct irq_desc {
 #endif
 #ifdef CONFIG_SPARSE_IRQ
 	struct rcu_head		rcu;
+	struct kobject		kobj;
 #endif
 	int			parent_irq;
 	struct module		*owner;
-	//proc中的名称
 	const char		*name;
 } ____cacheline_internodealigned_in_smp;
 
@@ -163,10 +147,6 @@ static inline struct msi_desc *irq_desc_get_msi_desc(struct irq_desc *desc)
  */
 static inline void generic_handle_irq_desc(struct irq_desc *desc)
 {
-	/**
-	 * 调用描述符中的回调，例如handle_level_irq.
-	 * 通过__irq_set_handler设置回调函数。
-	 */
 	desc->handle_irq(desc);
 }
 

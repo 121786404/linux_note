@@ -560,7 +560,7 @@ asmlinkage __visible void __init start_kernel(void)
 	setup_nr_cpu_ids();
 	//初始化每cpu数据
 	setup_per_cpu_areas();
-	//体系结构相关的SMP初始化，还是设置每cpu数据相关的东西
+	boot_cpu_state_init();
 	smp_prepare_boot_cpu();	/* arch-specific boot-cpu hooks */
 
 	//继续初始化伙伴系统中的pglist_data，重点是初始化它的node_zonelist成员
@@ -647,7 +647,7 @@ asmlinkage __visible void __init start_kernel(void)
 	time_init();
 	//调度器使用的时间系统初始化。
 	sched_clock_postinit();
-	//剖析相关的初始化。
+	printk_nmi_init();
 	perf_event_init();
 	profile_init();
 	//smp中，为管理核间回调函数的初始化。
@@ -900,6 +900,7 @@ int __init_or_module do_one_initcall(initcall_t fn)
 	}
 	WARN(msgbuf[0], "initcall %pF returned with %s\n", fn, msgbuf);
 
+	add_latent_entropy();
 	return ret;
 }
 

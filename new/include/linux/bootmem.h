@@ -7,6 +7,7 @@
 #include <linux/mmzone.h>
 #include <linux/mm_types.h>
 #include <asm/dma.h>
+#include <asm/processor.h>
 
 /*
  *  simple boot-time physical memory area allocator.
@@ -30,11 +31,8 @@ extern unsigned long long max_possible_pfn;
  * memory pages (including holes) on the node.
  */
 typedef struct bootmem_data {
-	//内存块的最小页帧号
 	unsigned long node_min_pfn;
-	//内存块的低端页帧号，高于此页帧的都被分配了。
 	unsigned long node_low_pfn;
-	//内存块的页面映射位图
 	void *node_bootmem_map;
 	unsigned long last_end_off;
 	unsigned long hint_idx;
@@ -122,6 +120,10 @@ extern void *__alloc_bootmem_low_node(pg_data_t *pgdat,
 #define BOOTMEM_LOW_LIMIT __pa(MAX_DMA_ADDRESS)
 #endif
 
+#ifndef ARCH_LOW_ADDRESS_LIMIT
+#define ARCH_LOW_ADDRESS_LIMIT  0xffffffffUL
+#endif
+
 #define alloc_bootmem(x) \
 	__alloc_bootmem(x, SMP_CACHE_BYTES, BOOTMEM_LOW_LIMIT)
 #define alloc_bootmem_align(x, align) \
@@ -182,10 +184,6 @@ static inline void * __init memblock_virt_alloc_nopanic(
 						    BOOTMEM_ALLOC_ACCESSIBLE,
 						    NUMA_NO_NODE);
 }
-
-#ifndef ARCH_LOW_ADDRESS_LIMIT
-#define ARCH_LOW_ADDRESS_LIMIT  0xffffffffUL
-#endif
 
 static inline void * __init memblock_virt_alloc_low(
 					phys_addr_t size, phys_addr_t align)
@@ -251,9 +249,6 @@ static inline void __init memblock_free_late(
 
 
 /* Fall back to all the existing bootmem APIs */
-/**
- * 在bootmem中分配内存
- */
 static inline void * __init memblock_virt_alloc(
 					phys_addr_t size,  phys_addr_t align)
 {
