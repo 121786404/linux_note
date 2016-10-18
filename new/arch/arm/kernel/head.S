@@ -35,7 +35,7 @@
  * the least significant 16 bits to be 0x8000, but we could probably
  * relax this restriction to KERNEL_RAM_VADDR >= PAGE_OFFSET + 0x4000.
  */
-#define KERNEL_RAM_VADDR	(PAGE_OFFSET + TEXT_OFFSET)
+#define KERNEL_RAM_VADDR	(PAGE_OFFSET + TEXT_OFFSET)  @ CONFIG_PAGE_OFFSET 0xC0000000  TEXT_OFFSET  0x8000
 #if (KERNEL_RAM_VADDR & 0xffff) != 0x8000
 #error KERNEL_RAM_VADDR must start at 0xXXXX8000
 #endif
@@ -74,6 +74,8 @@
  * We're trying to keep crap to a minimum; DO NOT add any machine specific
  * crap here - that's what the boot loader (or in extreme, well justified
  * circumstances, zImage) is for.
+ *   
+ * stext的功能是获取处理器类型和机器类型信息，并创建临时的页表，然后开启MMU功能，并跳进第一个C语言函数start_kernel
  */
 	.arm
 
@@ -90,25 +92,13 @@ ENTRY(stext)
 	bl	__hyp_stub_install
 #endif
 	@ ensure svc mode and all interrupts masked
-/**
- * 进入SVC状态，并屏蔽所有中断
- */
 	safe_svcmode_maskall r9
 
-/**
- * 获得处理器ID
- */
-	mrc	p15, 0, r9, c0, c0		@ get processor id
-/**
- * 在procinfo中，根据CPUID查找对应的proc
- */
-	bl	__lookup_processor_type		@ r5=procinfo r9=cpuid
+	mrc	p15, 0, r9, c0, c0		@ 从arm协处理器里面读到CPU ID存储到r9，这里的CPU主要是指arm架构相关的CPU型号，比如ARM9，ARM11等等
+	bl	__lookup_processor_type		@ OUT r5=procinfo IN r9=cpuid  在procinfo中，根据CPUID查找对应的proc
 	movs	r10, r5				@ invalid processor (r5=0)?
  THUMB( it	eq )		@ force fixup-able long branch encoding
- /**
-  * CPUID与proc不匹配，只好打印错误信息并停止了
-  */
-	beq	__error_p			@ yes, error 'p'
+	beq	__error_p			@ yes, error 'p'  CPUID与proc不匹配，只好打印错误信息并停止了
 
 #ifdef CONFIG_ARM_LPAE
 	mrc	p15, 0, r3, c0, c1, 4		@ read ID_MMFR0
@@ -131,14 +121,14 @@ ENTRY(stext)
 	 * r1 = machine no, r2 = atags or dtb,
 	 * r8 = phys_offset, r9 = cpuid, r10 = procinfo
 	 */
-	bl	__vet_atags
+	bl	__vet_atags   @ 检查atags parameter的有效性
 #ifdef CONFIG_SMP_ON_UP
 	bl	__fixup_smp
 #endif
 #ifdef CONFIG_ARM_PATCH_PHYS_VIRT
 	bl	__fixup_pv_table
 #endif
-	bl	__create_page_tables
+	bl	__create_page_tables  @ 创建临时页表，它所要做的工作就是将RAM基地址开始的4M空间的物理地址映射到0xC0000000开始的虚拟地址处
 
 	/*
 	 * The following calls CPU specific code in a position independent
@@ -203,27 +193,18 @@ ENDPROC(stext)
  *  r0, r3, r5-r7 corrupted
  *  r4 = physical page table address
  */
-/**
- * 设置内核初始页表项
- */
 __create_page_tables:
-/**
- * 设置r4为内核页表起始地址，物理地址:内核代码段起始位置前移0x4000
- */
-	pgtbl	r4, r8				@ page table address
+	pgtbl	r4, r8		@ add r4,r8,#TEXT_OFFSET;sub r4,r4,#PG_DIR_SIZE
+                                @ 设置r4为内核页表起始地址，物理地址:内核代码段起始位置TEXT_OFFSET(0x8000)前移PG_DIR_SIZE(0x4000)
+	                        @ arch/arm/Makefile   textofs-y:= 0x00008000  TEXT_OFFSET := $(textofs-y)
 
 	/*
 	 * Clear the swapper page table
 	 */
 	mov	r0, r4
 	mov	r3, #0
-/**
- * 页表项长度
- */
 	add	r6, r0, #PG_DIR_SIZE
-/**
- * 遍历请空页表项
- */
+
 1:	str	r3, [r0], #4
 	str	r3, [r0], #4
 	str	r3, [r0], #4
@@ -259,10 +240,7 @@ __create_page_tables:
 #endif
 #endif
 
-/**
- * 从procinfo中读取mmuflags
- */
-	ldr	r7, [r10, #PROCINFO_MM_MMUFLAGS] @ mm_mmuflags
+	ldr	r7, [r10, #PROCINFO_MM_MMUFLAGS] @ mm_mmuflags  获得proc_info_list的__cpu_mm_mmu_flags的值，并存储到r7中
 
 	/*
 	 * Create identity mapping to cater for __enable_mmu.
@@ -808,6 +786,8 @@ __pv_phys_pfn_offset:
 __pv_offset:
 	.quad	0
 	.size	__pv_offset, . -__pv_offset
+EXPORT_SYMBOL(__pv_phys_pfn_offset)
+EXPORT_SYMBOL(__pv_offset)
 #endif
 
 #include "head-common.S"

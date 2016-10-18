@@ -234,7 +234,7 @@ __irq_svc:
 /**
  * 从r9中取当前线程的threadinfo
  */
-	get_thread_info tsk
+
 /**
  * 读抢占计数
  */
