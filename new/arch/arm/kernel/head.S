@@ -35,7 +35,7 @@
  * the least significant 16 bits to be 0x8000, but we could probably
  * relax this restriction to KERNEL_RAM_VADDR >= PAGE_OFFSET + 0x4000.
  */
-#define KERNEL_RAM_VADDR	(PAGE_OFFSET + TEXT_OFFSET)  @ CONFIG_PAGE_OFFSET 0xC0000000  TEXT_OFFSET  0x8000
+#define KERNEL_RAM_VADDR	(PAGE_OFFSET + TEXT_OFFSET)  /* CONFIG_PAGE_OFFSET 0xC0000000  TEXT_OFFSET  0x8000 */
 #if (KERNEL_RAM_VADDR & 0xffff) != 0x8000
 #error KERNEL_RAM_VADDR must start at 0xXXXX8000
 #endif
