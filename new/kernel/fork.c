@@ -103,9 +103,9 @@
  * Protected counters by write_lock_irq(&tasklist_lock)
  */
 unsigned long total_forks;	/* Handle normal Linux uptimes. */
-int nr_threads;			/* The idle threads do not count.. */
+int nr_threads;			/* 系统当前的线程数目 The idle threads do not count.. */
 
-int max_threads;		/* tunable limit on nr_threads */
+int max_threads;		/* 系统允许容纳的最大的线程数 tunable limit on nr_threads */
 
 DEFINE_PER_CPU(unsigned long, process_counts) = 0;
 
@@ -472,6 +472,24 @@ void set_task_stack_end_magic(struct task_struct *tsk)
 	*stackend = STACK_END_MAGIC;	/* for overflow detection */
 }
 
+/*
+每一个用户空间进程都有一个内核栈和一个用户空间的栈
+（对于多线程的进程，应该有多个用户空间栈和内核栈）。
+内核栈和thread_info数据结构共同占用了THREAD_SIZE（一般是2个page）的memory。
+thread_info数据结构和CPU architecture相关，
+thread_info数据结构的task 成员指向进程描述符（也就是task struct数据结构）。
+进程描述符的stack成员指向对应的thread_info数据结构
+*/
+/*
+dup_task_struct这段代码主要动作序列包括：
+1、分配内核栈和thread_info数据结构所需要的memory（统一分配），
+       分配task sturct需要的memory。
+2、设定内核栈和thread_info以及task sturct之间的联系
+3、将父进程的thread_info和task_struct数据结构的内容完全copy到子进程的thread_info和task_struct数据结构
+4、将task_struct数据结构的usage成员设定为2。
+        usage成员其实就是一个reference count。之所以被设定为2，
+        因为fork之后已经存在两个reference了，一个是自己，另外一个是其父进程。
+*/
 static struct task_struct *dup_task_struct(struct task_struct *orig, int node)
 {
 	struct task_struct *tsk;
@@ -481,6 +499,8 @@ static struct task_struct *dup_task_struct(struct task_struct *orig, int node)
 
 	if (node == NUMA_NO_NODE)
 		node = tsk_fork_get_node(orig);
+
+    /* 在当前线程的node 上分配和复制该task信息 */
 	tsk = alloc_task_struct_node(node);
 	if (!tsk)
 		return NULL;
@@ -490,7 +510,7 @@ static struct task_struct *dup_task_struct(struct task_struct *orig, int node)
 		goto free_tsk;
 
 	stack_vm_area = task_stack_vm_area(tsk);
-
+    /*  复制父进程的task_struct信息到新的task_struct里 */
 	err = arch_dup_task_struct(tsk, orig);
 
 	/*
@@ -518,10 +538,11 @@ static struct task_struct *dup_task_struct(struct task_struct *orig, int node)
 	 */
 	tsk->seccomp.filter = NULL;
 #endif
-
+    /* 设置线程栈 */
 	setup_thread_stack(tsk, orig);
 	clear_user_return_notifier(tsk);
 	clear_tsk_need_resched(tsk);
+	/* 设置栈底魔数*/
 	set_task_stack_end_magic(tsk);
 
 #ifdef CONFIG_CC_STACKPROTECTOR
@@ -532,6 +553,7 @@ static struct task_struct *dup_task_struct(struct task_struct *orig, int node)
 	 * One for us, one for whoever does the "release_task()" (usually
 	 * parent)
 	 */
+	 /* 将进程描述符的使用计数器置为2 */
 	atomic_set(&tsk->usage, 2);
 #ifdef CONFIG_BLK_DEV_IO_TRACE
 	tsk->btrace_seq = 0;
@@ -1462,9 +1484,27 @@ static __latent_entropy struct task_struct *copy_process(
 	int retval;
 	struct task_struct *p;
 
+    /*
+    创建一个新的命名空间，同时又要与父进程公用文件系统信息，
+    这显然是不成立的，
+    不同的命名空间就是用来分隔系统资源的，
+    这样资源跨命名空间的情况是不允许的
+
+    在内核中，CLONE_NEWNS和CLONE_FS是排他的。
+    一个进程的文件系统信息在内核中是用struct fs_struct来抽象，
+    这个结构中就有mount namespace的信息，
+    因此如果想共享文件系统信息，
+    其前提条件就是要处于同一个mount namespace中。
+    */
 	if ((clone_flags & (CLONE_NEWNS|CLONE_FS)) == (CLONE_NEWNS|CLONE_FS))
 		return ERR_PTR(-EINVAL);
 
+    /*
+    CLONE_NEWUSER|CLONE_FS的组合会导致一个系统漏洞，
+    可以让一个普通用户窃取到root的权限，
+    具体可以参考下面的连接： 
+    http://www.openwall.com/lists/oss-security/2013/03/13/10
+    */
 	if ((clone_flags & (CLONE_NEWUSER|CLONE_FS)) == (CLONE_NEWUSER|CLONE_FS))
 		return ERR_PTR(-EINVAL);
 
@@ -1472,6 +1512,10 @@ static __latent_entropy struct task_struct *copy_process(
 	 * Thread groups must share signals as well, and detached threads
 	 * can only be started up within the thread group.
 	 */
+    /*
+        线程组应该共享signal handler（POSIX规定），
+        因此，当设定了CLONE_THREAD后必须同时设定CLONE_SIGHAND
+     */
 	if ((clone_flags & CLONE_THREAD) && !(clone_flags & CLONE_SIGHAND))
 		return ERR_PTR(-EINVAL);
 
@@ -1479,6 +1523,13 @@ static __latent_entropy struct task_struct *copy_process(
 	 * Shared signal handlers imply shared VM. By way of the above,
 	 * thread groups also imply shared VM. Blocking this case allows
 	 * for various simplifications in other code.
+	 */
+	 /*
+        设定了CLONE_SIGHAND表示共享signal handler，
+        前提条件就是要共享地址空间（也就是说必须设定CLONE_VM），
+        否则，无法共享signal handler。
+        因为如果不共享地址空间，即便是同样地址的handler，
+        其物理地址都是不一样的。
 	 */
 	if ((clone_flags & CLONE_SIGHAND) && !(clone_flags & CLONE_VM))
 		return ERR_PTR(-EINVAL);
@@ -1489,6 +1540,21 @@ static __latent_entropy struct task_struct *copy_process(
 	 * multi-rooted process trees, prevent global and container-inits
 	 * from creating siblings.
 	 */
+	 /*
+        SIGNAL_UNKILLABLE这个flag是for init进程的，其他进程不会设定这个flag。
+        Linux kernel会静态定义一个init task，该task的pid是0，
+        被称作swapper（其实就是idle进程，
+        在系统没有任何进程可调度的时候会执行该进程）。
+        系统中的所有进程（包括内核线程）由此开始。
+        对于用户空间进程，内核会首先创建init进程，
+        所有其他用户空间的进程都是由init进程派生出来的。
+        因此init进程要负责为所有用户空间的进程处理后事
+        （否则会变成僵 尸进程）。
+        但是如果init进程想要创建兄弟进程（其父亲是swapper），
+        那么该进程无法由init进程回收，
+        其父亲swapper进程也不会收养用户空间创建的init的兄弟进程，
+        这种情况下，这类进程退出都会变成zombie，因此要杜绝。
+	 */
 	if ((clone_flags & CLONE_PARENT) &&
 				current->signal->flags & SIGNAL_UNKILLABLE)
 		return ERR_PTR(-EINVAL);
@@ -1497,6 +1563,18 @@ static __latent_entropy struct task_struct *copy_process(
 	 * If the new process will be in a different pid or user namespace
 	 * do not allow it to share a thread group with the forking task.
 	 */
+	/*
+      当CLONE_SIGHAND被设定的时候，父子进程应该共享signal disposition table。
+      也就是说，一个进程修改了某一个signal的handler，
+      另外一个进程也可以感知的到。
+      
+      CLONE_NEWUSER设定的时候，就会为fork的进程创建一个新的user namespace，以便隔离USER ID。
+      linux 系统内的一个进程和某个user namespace内的uid和gid相关。
+      user namespace被实现成树状结构，
+      新的user namespace中第一个进程的uid就是0，也就是root用户。
+      这个进程在这个新的user namespace中有超级权限，
+      但是，在其父user namespace中只是一个普通用户
+	*/
 	if (clone_flags & CLONE_THREAD) {
 		if ((clone_flags & (CLONE_NEWUSER | CLONE_NEWPID)) ||
 		    (task_active_pid_ns(current) !=
@@ -1504,11 +1582,19 @@ static __latent_entropy struct task_struct *copy_process(
 			return ERR_PTR(-EINVAL);
 	}
 
+    /*
+    这一段代码是和LinuxSecurity Modules相关的。
+    LinuxSecurity Modules是一个安全框架，允许各种安全模型插入到内核。
+    大家熟知的一个计算机安全模型就是selinux。
+    具体这里就不再描述。如果本次操作通过了 安全校验，
+    那么后续的操作可以顺利进行
+    */
 	retval = security_task_create(clone_flags);
 	if (retval)
 		goto fork_out;
 
 	retval = -ENOMEM;
+	/* 分配一个新的未初始化的 task_struct，此时的p与当前进程的task，仅仅是stack地址不同 */
 	p = dup_task_struct(current, node);
 	if (!p)
 		goto fork_out;
@@ -1522,8 +1608,11 @@ static __latent_entropy struct task_struct *copy_process(
 	DEBUG_LOCKS_WARN_ON(!p->softirqs_enabled);
 #endif
 	retval = -EAGAIN;
+	/* 检查资源限制 */
 	if (atomic_read(&p->real_cred->user->processes) >=
+	        /* 该用户是否已经创建了太多的进程*/
 			task_rlimit(p, RLIMIT_NPROC)) {
+		/*如果不是root，但是有CAP_SYS_RESOURCE或者CAP_SYS_ADMIN的capbility，也OK，否则的话fork失败*/
 		if (p->real_cred->user != INIT_USER &&
 		    !capable(CAP_SYS_RESOURCE) && !capable(CAP_SYS_ADMIN))
 			goto bad_fork_free;
@@ -1540,20 +1629,31 @@ static __latent_entropy struct task_struct *copy_process(
 	 * to stop root fork bombs.
 	 */
 	retval = -EAGAIN;
+	/* 进程创建总数限制*/
 	if (nr_threads >= max_threads)
 		goto bad_fork_cleanup_count;
 
+    /*
+      delayacct是一个缩写，是指per-task delay accounting。
+        统计每一个task的等待系统资源的时间
+    */
 	delayacct_tsk_init(p);	/* Must remain after dup_task_struct() */
-	p->flags &= ~(PF_SUPERPRIV | PF_WQ_WORKER);
+
+	/* 
+	复制进程描述符的flag 
+	大部分的flag都是直接copy，但是下面的几个是例外
+      对于新创建的进程，当然不会用到super-user privileges，因此要清掉 
+	*/
+	p->flags &= ~(PF_SUPERPRIV | PF_WQ_WORKER); 
 	p->flags |= PF_FORKNOEXEC;
 	INIT_LIST_HEAD(&p->children);
 	INIT_LIST_HEAD(&p->sibling);
 	rcu_copy_process(p);
 	p->vfork_done = NULL;
 	spin_lock_init(&p->alloc_lock);
-
+    /*  初始化挂起信号 */
 	init_sigpending(&p->pending);
-
+    /* 初始化定时器 */
 	p->utime = p->stime = p->gtime = 0;
 	p->utimescaled = p->stimescaled = 0;
 	prev_cputime_init(&p->prev_cputime);
@@ -1626,6 +1726,9 @@ static __latent_entropy struct task_struct *copy_process(
 #endif
 
 	/* Perform scheduler related setup. Assign this task to a CPU. */
+	/* 完成调度相关的设置，将这个task分配给CPU */
+	/* 完成对新进程调度程序数据结构的初始化，并把新进程的状态设置为TASK_RUNNING
+          同时将thread_info中得preempt_count置为1，禁止内核抢占*/
 	retval = sched_fork(clone_flags, p);
 	if (retval)
 		goto bad_fork_cleanup_policy;
@@ -1637,6 +1740,7 @@ static __latent_entropy struct task_struct *copy_process(
 	if (retval)
 		goto bad_fork_cleanup_perf;
 	/* copy all the process information */
+	/* 复制所有的进程信息 */
 	shm_init_task(p);
 	retval = copy_semundo(clone_flags, p);
 	if (retval)
@@ -1662,11 +1766,13 @@ static __latent_entropy struct task_struct *copy_process(
 	retval = copy_io(clone_flags, p);
 	if (retval)
 		goto bad_fork_cleanup_namespaces;
+	/* 初始化子进程的内核栈*/
 	retval = copy_thread_tls(clone_flags, stack_start, stack_size, p, tls);
 	if (retval)
 		goto bad_fork_cleanup_io;
 
 	if (pid != &init_struct_pid) {
+	    /* 这里为子进程分配了新的pid号 */
 		pid = alloc_pid(p->nsproxy->pid_ns_for_children);
 		if (IS_ERR(pid)) {
 			retval = PTR_ERR(pid);
@@ -1701,6 +1807,8 @@ static __latent_entropy struct task_struct *copy_process(
 	 * child regardless of CLONE_PTRACE.
 	 */
 	user_disable_single_step(p);
+	/* 清除子进程thread_info结构的 TIF_SYSCALL_TRACE，
+	    防止 ret_from_fork将系统调用消息通知给调试进程 */
 	clear_tsk_thread_flag(p, TIF_SYSCALL_TRACE);
 #ifdef TIF_SYSCALL_EMU
 	clear_tsk_thread_flag(p, TIF_SYSCALL_EMU);
@@ -1708,18 +1816,19 @@ static __latent_entropy struct task_struct *copy_process(
 	clear_all_latency_tracing(p);
 
 	/* ok, now we should be set up.. */
+	/* 设置子进程的pid */
 	p->pid = pid_nr(pid);
-	if (clone_flags & CLONE_THREAD) {
+	if (clone_flags & CLONE_THREAD) { // 如果是创建线程
 		p->exit_signal = -1;
-		p->group_leader = current->group_leader;
-		p->tgid = current->tgid;
+		p->group_leader = current->group_leader; // 线程组的leader设置为当前线程的leader
+		p->tgid = current->tgid; // tgid是当前线程组的id，也就是main进程的pid
 	} else {
 		if (clone_flags & CLONE_PARENT)
 			p->exit_signal = current->group_leader->exit_signal;
 		else
 			p->exit_signal = (clone_flags & CSIGNAL);
-		p->group_leader = p;
-		p->tgid = p->pid;
+		p->group_leader = p; // 创建的是进程，自己是一个单独的线程组
+		p->tgid = p->pid; // tgid和pid相同
 	}
 
 	p->nr_dirtied = 0;
@@ -1797,6 +1906,7 @@ static __latent_entropy struct task_struct *copy_process(
 			p->signal->tty = tty_kref_get(current->signal->tty);
 			list_add_tail(&p->sibling, &p->real_parent->children);
 			list_add_tail_rcu(&p->tasks, &init_task.tasks);
+			/* 将pid加入散列表 */
 			attach_pid(p, PIDTYPE_PGID);
 			attach_pid(p, PIDTYPE_SID);
 			__this_cpu_inc(process_counts);
@@ -1809,7 +1919,9 @@ static __latent_entropy struct task_struct *copy_process(
 			list_add_tail_rcu(&p->thread_node,
 					  &p->signal->thread_head);
 		}
+		/* 将pid加入PIDTYPE_PID这个散列表 */
 		attach_pid(p, PIDTYPE_PID);
+		/* 递增 nr_threads的值 */
 		nr_threads++;
 	}
 
@@ -1825,7 +1937,7 @@ static __latent_entropy struct task_struct *copy_process(
 
 	trace_task_newtask(p, clone_flags);
 	uprobe_copy_process(p, clone_flags);
-
+    /* 返回被创建的task结构体指针 */
 	return p;
 
 bad_fork_cancel_cgroup:
@@ -1921,6 +2033,31 @@ long _do_fork(unsigned long clone_flags,
 	 * requested, no event is reported; otherwise, report if the event
 	 * for the type of forking is enabled.
 	 */
+	 /*
+        Linux的内核提供了ptrace这样的系统调用，
+        通过它，一个进程（我们称之 tracer，例如strace、gdb）
+        可以观测和控制另外一个进程（被trace的进程，我们称之tracee）的执行。
+        一旦Tracer和 tracee建立了跟踪关系，那么所有发送给tracee的信号(除SIGKILL)都会汇报给Tracer，
+        以便Tracer可以控制或者观测 tracee的执行。例如断点的操作。
+        Tracer程序一般会提供界面，以便用户可以设定一个断点（当tracee运行到断点时，会停下来）。
+        当用户设定 了断点后，tracer就会保存该位置的指令，
+        然后向该位置写入SWI __ARM_NR_breakpoint（这种断点是soft break point，可以设定无限多个，
+        对于hard break point是和CPU体系结构相关，一般支持2个）。
+        当执行到断点位置的时候，发生软中断，内核会给tracee进程发出SIGTRAP信号，
+        当然这个信号也会被tracer捕获。
+        对于tracee，当收到信号的时候，无论是什么信号，甚至是ignor的信号，
+        tracee进程都会停止运行。Tracer进程可以对tracee进行各种操作，
+        例如观察tracer的寄存器，观察变量等等
+	 */
+	 /*
+        控制创建进程是否向tracer上报信号，
+        如果需要上报，那么要上报哪些信号。
+        如果用户进程 在创建的时候有携带CLONE_UNTRACED的flag，
+        那么该进程则不能被trace。
+        对于内核线程，在创建的时候都会携带该flag，
+        这也就意味着，内核线程是无法被traced，
+        也就不需要上报event给tracer。
+	 */
 	if (!(clone_flags & CLONE_UNTRACED)) {
 		if (clone_flags & CLONE_VFORK)
 			trace = PTRACE_EVENT_VFORK;
@@ -1932,9 +2069,10 @@ long _do_fork(unsigned long clone_flags,
 		if (likely(!ptrace_event_enabled(current, trace)))
 			trace = 0;
 	}
-
+	
+    /* 复制进程描述符，返回创建的task_struct的指针*/
 	p = copy_process(clone_flags, stack_start, stack_size,
-			 child_tidptr, NULL, trace, tls, NUMA_NO_NODE);
+			 child_tidptr, NULL, trace, tls, NUMA_NO_NODE); /* pid参数为NULL */
 	add_latent_entropy();
 	/*
 	 * Do this prior waking up the new thread - the thread pointer
@@ -1946,18 +2084,23 @@ long _do_fork(unsigned long clone_flags,
 
 		trace_sched_process_fork(current, p);
 
+        // 取出task结构体内的pid
 		pid = get_task_pid(p, PIDTYPE_PID);
-		nr = pid_vnr(pid);
+		nr = pid_vnr(pid);  //总的pid数量
 
 		if (clone_flags & CLONE_PARENT_SETTID)
 			put_user(nr, parent_tidptr);
 
+        /* 如果使用的是vfork，那么必须采用某种完成机制，确保父进程后运行 */
+        /* 这样可以极大的减少复制内存页的工作量*/
+        /* copy_on_write技术（写时拷贝技术），该技术的作用是创建新进程时可以减少系统开销 */
 		if (clone_flags & CLONE_VFORK) {
 			p->vfork_done = &vfork;
+			/*初始化vfork的完成处理程序(即是vfork调用时设置的CLONE_VFORK标志)和ptrace标志*/
 			init_completion(&vfork);
 			get_task_struct(p);
 		}
-
+        /* 将子进程添加到调度器的队列，使得子进程有机会获得CPU */
 		wake_up_new_task(p);
 
 		/* forking complete and child started to run, tell ptracer */
@@ -1965,6 +2108,11 @@ long _do_fork(unsigned long clone_flags,
 			ptrace_event_pid(trace, pid);
 
 		if (clone_flags & CLONE_VFORK) {
+		    /*
+                跟上面的init_completion对应，让父进程在该task_struct的vfork_done成员上进入睡眠状态，
+                直到子进程退出或者执行exec调用时，内核才会调用complete(vfork_done)，
+                这样就会唤醒父进程（也包含其他因该变量睡眠的进程)
+		    */
 			if (!wait_for_vfork_done(p, &vfork))
 				ptrace_event_pid(PTRACE_EVENT_VFORK_DONE, pid);
 		}
@@ -2006,8 +2154,12 @@ pid_t kernel_thread(int (*fn)(void *), void *arg, unsigned long flags)
 SYSCALL_DEFINE0(fork)
 {
 #ifdef CONFIG_MMU
+    /* 对于fork的实现，在kernel中会使用COW技术，
+          如果没有MMU的话，也就没有虚拟地址、页表这些概念，
+          也就无法实现COW版本的fork */
 	return _do_fork(SIGCHLD, 0, 0, NULL, NULL, 0);
 #else
+    /* 禁止fork，用vfork＋exec来实现fork */
 	/* can not support in nommu mode */
 	return -EINVAL;
 #endif

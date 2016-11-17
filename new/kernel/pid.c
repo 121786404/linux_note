@@ -496,7 +496,7 @@ struct pid *find_get_pid(pid_t nr)
 	return pid;
 }
 EXPORT_SYMBOL_GPL(find_get_pid);
-
+/* pid在指定命名空间ns下的pid */
 pid_t pid_nr_ns(struct pid *pid, struct pid_namespace *ns)
 {
 	struct upid *upid;

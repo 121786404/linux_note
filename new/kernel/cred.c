@@ -328,23 +328,23 @@ int copy_creds(struct task_struct *p, unsigned long clone_flags)
 #ifdef CONFIG_KEYS
 		!p->cred->thread_keyring &&
 #endif
-		clone_flags & CLONE_THREAD
+		clone_flags & CLONE_THREAD //创建线程相关的代码
 	    ) {
 		p->real_cred = get_cred(p->cred);
-		get_cred(p->cred);
+		get_cred(p->cred);  //对credential描述符增加两个计数，因为新创建线程的cred和real_cred都指向父进程的credential描述符
 		alter_cred_subscribers(p->cred, 2);
 		kdebug("share_creds(%p{%d,%d})",
 		       p->cred, atomic_read(&p->cred->usage),
 		       read_cred_subscribers(p->cred));
-		atomic_inc(&p->cred->user->processes);
+		atomic_inc(&p->cred->user->processes); //属于该user的进程/线程数目增加1 
 		return 0;
 	}
 
-	new = prepare_creds();
+	new = prepare_creds(); //后段的代码是和fork进程相关。prepare_creds是创建一个当前task的subjective context（task->cred）的副本
 	if (!new)
 		return -ENOMEM;
 
-	if (clone_flags & CLONE_NEWUSER) {
+	if (clone_flags & CLONE_NEWUSER) { //如果父子进程不共享user namespace，那么还需要创建一个新的user namespace 
 		ret = create_user_ns(new);
 		if (ret < 0)
 			goto error_put;
@@ -370,7 +370,7 @@ int copy_creds(struct task_struct *p, unsigned long clone_flags)
 #endif
 
 	atomic_inc(&new->user->processes);
-	p->cred = p->real_cred = get_cred(new);
+	p->cred = p->real_cred = get_cred(new); //和线程的处理类似，只不过进程需要创建一个credential的副本 
 	alter_cred_subscribers(new, 2);
 	validate_creds(new);
 	return 0;
