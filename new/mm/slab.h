@@ -441,7 +441,7 @@ struct kmem_cache_node {
 	struct list_head slabs_full;
 	//空闲链表，可回收
 	struct list_head slabs_free;
-	//可分配的对象数
+	unsigned long num_slabs;
 	unsigned long free_objects;
 	unsigned int free_limit;
 	//当前节点的可用着色值

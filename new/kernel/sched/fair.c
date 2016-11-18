@@ -690,6 +690,7 @@ void init_entity_runnable_average(struct sched_entity *se)
 	 * will definitely be update (after enqueue).
 	 */
 	sa->period_contrib = 1023;
+	if (entity_is_task(se))
 	sa->load_avg = scale_load_down(se->load.weight);
 	sa->load_sum = sa->load_avg * LOAD_AVG_MAX;
 	/*
@@ -5471,12 +5472,17 @@ static inline int select_idle_smt(struct task_struct *p, struct sched_domain *sd
  */
 static int select_idle_cpu(struct task_struct *p, struct sched_domain *sd, int target)
 {
-	struct sched_domain *this_sd = rcu_dereference(*this_cpu_ptr(&sd_llc));
-	u64 avg_idle = this_rq()->avg_idle;
-	u64 avg_cost = this_sd->avg_scan_cost;
+	struct sched_domain *this_sd;
+	u64 avg_cost, avg_idle = this_rq()->avg_idle;
 	u64 time, cost;
 	s64 delta;
 	int cpu, wrap;
+
+	this_sd = rcu_dereference(*this_cpu_ptr(&sd_llc));
+	if (!this_sd)
+		return -1;
+
+	avg_cost = this_sd->avg_scan_cost;
 
 	/*
 	 * Due to large variance we need a large fuzz factor; hackbench in
@@ -8827,7 +8833,6 @@ int alloc_fair_sched_group(struct task_group *tg, struct task_group *parent)
 {
 	struct sched_entity *se;
 	struct cfs_rq *cfs_rq;
-	struct rq *rq;
 	int i;
 
 	tg->cfs_rq = kzalloc(sizeof(cfs_rq) * nr_cpu_ids, GFP_KERNEL);
@@ -8842,7 +8847,6 @@ int alloc_fair_sched_group(struct task_group *tg, struct task_group *parent)
 	init_cfs_bandwidth(tg_cfs_bandwidth(tg));
 
 	for_each_possible_cpu(i) {
-		rq = cpu_rq(i);
 
 		cfs_rq = kzalloc_node(sizeof(struct cfs_rq),
 				      GFP_KERNEL, cpu_to_node(i));
