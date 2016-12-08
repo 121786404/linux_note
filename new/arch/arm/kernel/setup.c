@@ -689,6 +689,12 @@ static void __init smp_build_mpidr_hash(void)
 }
 #endif
 
+/*
+调用lookup_processor_type，跟head.S中__lookup_processor_type一样，
+获取存储在.proc.info.init段中与cpu id一致的proc_info_list结构体，
+该结构体中存储着处理器的一些特性。
+打印出cpu的一些相关信息（如版本号 cache属性等）
+*/
 static void __init setup_processor(void)
 {
 	struct proc_info_list *list;
@@ -1149,10 +1155,13 @@ void __init setup_arch(char **cmdline_p)
 	 * 对meminfo中的各个内存条信息进行合理性检查
 	 */
 	sanity_check_meminfo();
+/*
+    初始化引导阶段的内存分配器memblock
+*/
 	arm_memblock_init(mdesc);
 
 	early_ioremap_reset();
-	//分页初始化。
+	//分页初始化。 初始化了分页机制和页表的信息
 	paging_init(mdesc);
 	//将初始化阶段发现的内存、端口等地址空间资源添加到资源树中。
 	request_standard_resources(mdesc);

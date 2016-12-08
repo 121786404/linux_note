@@ -44,7 +44,7 @@ static struct memblock_region memblock_physmem_init_regions[INIT_PHYSMEM_REGIONS
 struct memblock memblock __initdata_memblock = {
 	.memory.regions		= memblock_memory_init_regions,
 	.memory.cnt		= 1,	/* empty dummy entry */
-	.memory.max		= INIT_MEMBLOCK_REGIONS,
+	.memory.max		= INIT_MEMBLOCK_REGIONS, // 当前集合中最大区域个数
 
 	.reserved.regions	= memblock_reserved_init_regions,
 	.reserved.cnt		= 1,	/* empty dummy entry */
@@ -230,6 +230,16 @@ __memblock_find_range_top_down(phys_addr_t start, phys_addr_t end,
  * RETURNS:
  * Found address on success, 0 on failure.
  */
+/*
+如果从memblock_alloc过来, end就是MEMBLOCK_ALLOC_ACCESSIBLE,这个时候会设置为current_limit.
+
+如果不通过memblock_alloc分配, 内存范围就是指定的范围. 
+紧接着对start做调整，为的是避免申请到第一个页面
+
+memblock_bottom_up返回的是memblock.bottom_up，
+前面初始化的时候也知道这个值是false（在numa初始化时会设置为true），
+所以初始化前期应该调用的是__memblock_find_range_top_down函数去查找内存:
+*/
 phys_addr_t __init_memblock memblock_find_in_range_node(phys_addr_t size,
 					phys_addr_t align, phys_addr_t start,
 					phys_addr_t end, int nid, ulong flags)
@@ -290,6 +300,9 @@ phys_addr_t __init_memblock memblock_find_in_range_node(phys_addr_t size,
  * RETURNS:
  * Found address on success, 0 on failure.
  */
+/*
+ 在给定的范围内找到未使用的内存
+*/
 phys_addr_t __init_memblock memblock_find_in_range(phys_addr_t start,
 					phys_addr_t end, phys_addr_t size,
 					phys_addr_t align)
@@ -342,7 +355,7 @@ phys_addr_t __init_memblock get_allocated_memblock_reserved_regions_info(
 	return PAGE_ALIGN(sizeof(struct memblock_region) *
 			  memblock.reserved.max);
 }
-
+//  获取内存区域信息
 phys_addr_t __init_memblock get_allocated_memblock_memory_regions_info(
 					phys_addr_t *addr)
 {
@@ -555,6 +568,12 @@ static void __init_memblock memblock_insert_region(struct memblock_type *type,
  *（memblock.reserved或者是memblock.memory）中。新加入的
  * memory region需要经过检查，如果与原先的memory region有重叠，
  * 则需要合并在原先的memory region中，否则的话就新建一个memory region.
+
+如果memblock算法管理内存为空的时候，则将当前空间添加进去
+不为空的情况下，则先检查是否存在内存重叠的情况，
+如果有的话，则剔除重叠部分，然后将其余非重叠的部分添加进去
+如果出现region[]数组空间不够的情况，则通过memblock_double_array()添加新的region[]空间
+最后通过memblock_merge_regions()把紧挨着的内存合并了
  */
 int __init_memblock memblock_add_range(struct memblock_type *type,
 				phys_addr_t base, phys_addr_t size,
@@ -562,6 +581,10 @@ int __init_memblock memblock_add_range(struct memblock_type *type,
 {
 	bool insert = false;
 	phys_addr_t obase = base;
+/*
+ 获取内存区域的结束位置,
+ memblock_cap_size函数会设置size大小确保base + size不会溢出  
+*/
 	phys_addr_t end = base + memblock_cap_size(base, &size);
 	int idx, nr_new;
 	struct memblock_region *rgn;
@@ -617,9 +640,30 @@ repeat:
 						       flags);
 		}
 		/* area below @rend is dealt with, forget about it */
+/*
+        如果新内存区域没有和已经存储在memblock的内存区域重叠, 
+        把该新内存区域插入到memblock中. 
+        如果有重叠通通过一个小巧的来完成冲突处理
+*/
 		base = min(rend, end);
 	}
+/*
+重叠检查完毕后, 新的内存区域已经是一块干净的不包含重叠区域的内存,
+把新的内存区域插入到memblock中包含两步：
 
+    把新的内存区域中非重叠的部分作为独立的区域加入到memblock
+    合并所有相邻的内存区域
+
+这个过程分为两次循环来完成, 由一个标识变量insert和report代码跳转标签控制
+
+    第一次循环的时候, 检查新内存区域是否可以放入内存块中并调用memblock_double_array， 
+    而由于insert = false, 则执行!insert条件语句标记的代码块, 并设置insert = true, 
+    然后goto 跳转到report标签继续开始第二次循环
+
+    第二次循环中, insert = true, 则执行相应的insert == true的代码块, 
+    并且执行memblock_insert_region将新内存区域插入,
+    最后执行memblock_merge_regions(type)合并内存区域
+*/
 	/* insert the remaining portion */
 	if (base < end) {
 		nr_new++;
@@ -635,10 +679,13 @@ repeat:
 	 * If this was the first round, resize array and repeat for actual
 	 * insertions; otherwise, merge and return.
 	 */
-	if (!insert) {
+/*
+这是第一次循环, 我们需要检查新内存区域是否可以放入内存块中并调用memblock_double_array:
+*/
+	if (!insert) {/*  第一次执行的的时候insert == false  */
 		/* 如果出现region[]数组空间不够的情况，则添加新region[]空间 */
 		while (type->cnt + nr_new > type->max)
-			if (memblock_double_array(type, obase, size) < 0)
+			if (memblock_double_array(type, obase, size) < 0) // memblock_double_array函数加倍给定的内存区域大小，然后把insert设为true再转到repeat标签.
 				return -ENOMEM;
 		insert = true;
 		goto repeat;
@@ -654,7 +701,7 @@ int __init_memblock memblock_add_node(phys_addr_t base, phys_addr_t size,
 {
 	return memblock_add_range(&memblock.memory, base, size, nid, 0);
 }
-
+// 向memory区中添加内存区域
 int __init_memblock memblock_add(phys_addr_t base, phys_addr_t size)
 {
 	memblock_dbg("memblock_add: [%#016llx-%#016llx] flags %#02lx %pF\n",
@@ -760,7 +807,7 @@ static int __init_memblock memblock_remove_range(struct memblock_type *type,
 		memblock_remove_region(type, i);
 	return 0;
 }
-
+//  向memory区中删除区域
 int __init_memblock memblock_remove(phys_addr_t base, phys_addr_t size)
 {
 	return memblock_remove_range(&memblock.memory, base, size);
@@ -781,7 +828,16 @@ int __init_memblock memblock_free(phys_addr_t base, phys_addr_t size)
 	kmemleak_free_part_phys(base, size);
 	return memblock_remove_range(&memblock.reserved, base, size);
 }
+/*
+我们会发现首先memblock_reserve函数也是通过memblock_add_range来实现的,
+我们把memblock_add的实现贴出来进行对比, 
+我们会发现他们就第一个参数不一样
 
+memblock_reserve使用全局变量memblock的reserved域, 
+最终将分配到的内存块信息添加到reserved区域中
+
+memblock_add则使用了全局变量的memory域, 最终将内存块添加到了memory区域
+*/
 int __init_memblock memblock_reserve(phys_addr_t base, phys_addr_t size)
 {
 	memblock_dbg("memblock_reserve: [%#016llx-%#016llx] flags %#02lx %pF\n",
@@ -1200,6 +1256,7 @@ static phys_addr_t __init memblock_alloc_range_nid(phys_addr_t size,
 	if (!align)
 		align = SMP_CACHE_BYTES;
 
+    // 指定内存区域和大小查找内存区域
 	found = memblock_find_in_range_node(size, align, start, end, nid,
 					    flags);
 	/* 如果分配成功, 将对应内存块置为已分配: 即添加到memblock.reserved中 */

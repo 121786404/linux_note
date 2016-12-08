@@ -254,7 +254,7 @@ copy_thread(unsigned long clone_flags, unsigned long stack_start,
 		thread->cpu_context.r5 = stack_start;
 		childregs->ARM_cpsr = SVC_MODE;
 	}
-	thread->cpu_context.pc = (unsigned long)ret_from_fork; // 子进程从ret_from_fork开始执行
+	thread->cpu_context.pc = (unsigned long)ret_from_fork; // 将子进程的 ip 设置为 ret_form_fork 的首地址，因此子进程是从 ret_from_fork 开始执行的
 	thread->cpu_context.sp = (unsigned long)childregs; // 栈顶 空栈
 
 	clear_ptrace_hw_breakpoint(p);

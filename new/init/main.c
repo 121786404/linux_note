@@ -393,6 +393,7 @@ static noinline void __ref rest_init(void)
 	 * we schedule it before we create kthreadd, will OOPS.
 	 */
 	//生成init进程，kernel_init进程执行了很多初始化工作。
+    // 创建1号内核线程, 该线程随后转向用户空间, 演变为init进程
 	kernel_thread(kernel_init, NULL, CLONE_FS);
 	//初始化当前进程的内存策略。
 	numa_default_policy();
@@ -401,21 +402,42 @@ static noinline void __ref rest_init(void)
 	//在查找任务前，获得rcu读锁
 	rcu_read_lock();
 	//通过pid查找kthreadd线程结构。
+    /* 传入参数kthreadd的PID 2与PID NameSpace (struct pid_namespace init_pid_ns)取回PID 2的Task Struct.*/
 	kthreadd_task = find_task_by_pid_ns(pid, &init_pid_ns);
 	rcu_read_unlock();
 	//唤醒等待kthreadd线程创建消息的进程。
+    /* 会发送kthreadd_done Signal,让 kernel_init(也就是 init task)可以往后继续执行 */
 	complete(&kthreadd_done);
 
 	/*
 	 * The boot idle thread must execute schedule()
 	 * at least once to get things moving:
 	 */
-	//设置当前线程的idle类线程
+	/*
+     设置当前线程的idle类线程
+     当前0号进程init_task最终会退化成idle进程，
+     所以这里调用init_idle_bootup_task()函数，让init_task进程隶属到idle调度类中。
+     即选择idle的调度相关函数。
+     每个处理器都会有这洋的IDLE Task,用来在没有行程排成时,
+     让处理器掉入执行的.而最基础的省电机制,
+     也可透过IDLE Task来进行. (包括让系统可以关闭必要的周边电源与Clock Gating).
+    */
 	init_idle_bootup_task(current);
-	//调一下schedule函数
+
+
+	/* 
+      调用schedule()函数切换当前进程，在调用该函数之前，
+      Linux系统中只有两个进程，即0号进程init_task和1号进程kernel_init，
+      其中kernel_init进程也是刚刚被创建的。调用该函数后，
+      1号进程kernel_init将会运行！
+      启动一次Linux Kernel Process的排成Context-Switch调度机制, 
+      从而使得kernel_init即1号进程获得处理机
+     */
 	schedule_preempt_disabled();
 	/* Call into cpu_idle with preempt disabled */
 	//进入idle循环。
+    /* 调用cpu_idle()，0号线程进入idle函数的循环，
+        在该循环中会周期性地检查。*/
 	cpu_startup_entry(CPUHP_ONLINE);
 }
 
@@ -452,6 +474,7 @@ void __init parse_early_options(char *cmdline)
 /* Arch code calls this early on, or if not, just before other parsing. */
 /**
  * 用未修正的原始参数进行解析
+ * 对boot_command_line进行早期的解析
  */
 void __init parse_early_param(void)
 {
@@ -481,6 +504,11 @@ void __init __weak thread_stack_cache_init(void)
 /*
  * Set up kernel memory allocators
  */
+/*
+建立了内核的内存分配器, 
+其中通过mem_init停用bootmem分配器并迁移到实际的内存管理器(比如伙伴系统)
+然后调用kmem_cache_init函数初始化内核内部用于小块内存区的分配器
+*/
 static void __init mm_init(void)
 {
 	/*
@@ -554,11 +582,17 @@ asmlinkage __visible void __init start_kernel(void)
 	pr_notice("%s", linux_banner);
 	//处理CPU体系架构相关的事务。
 	setup_arch(&command_line);
+/*
+init=/linuxrc earlyprintk console=ttyAMA0,115200 root=/dev/mmcblk0 rw rootwait
+*/
+/*
+    初始化CPU屏蔽字
+*/
 	mm_init_cpumask(&init_mm);
 	//保存命令行参数
 	setup_command_line(command_line);
 	setup_nr_cpu_ids();
-	//初始化每cpu数据
+
 	setup_per_cpu_areas();
 	boot_cpu_state_init();
 	smp_prepare_boot_cpu();	/* arch-specific boot-cpu hooks */
@@ -958,7 +992,7 @@ static void __init do_initcall_level(int level)
 static void __init do_initcalls(void)
 {
 	int level;
-
+    /* 执行介於Symbol early_initcall_end与initcall_end之间的函式呼叫 */
 	for (level = 0; level < ARRAY_SIZE(initcall_levels) - 1; level++)
 		do_initcall_level(level);
 }
@@ -977,16 +1011,17 @@ static void __init do_basic_setup(void)
 	shmem_init();
 	//初始化linux设备驱动模型。
 	driver_init();
-	//proc/irq/*
+	//初始化 “/proc/irq”与其下的File Nodes. 
 	init_irq_proc();
+    /* 执行位於Symbol ctors_start 到 ctors_end间属於Section “.ctors” 的Constructor函式 */
 	do_ctors();
-	//允许khelper工作队列生效，这个队列允许用户态为内核态执行一些辅助工作。
+	//允许khelper workqueue生效，这个队列允许用户态为内核态执行一些辅助工作。
 	usermodehelper_enable();
 	//调用各子系统的初始化函数。
 	do_initcalls();
 	random_int_secret_init();
 }
-
+/* 执行Symbol中 initcall_start与early_initcall_end之间的函数 */
 static void __init do_pre_smp_initcalls(void)
 {
 	initcall_t *fn;
@@ -1054,17 +1089,31 @@ static inline void mark_readonly(void)
 
 /**
  * 内核初始化，运行在线程上下文
- */
+ 1号kernel_init进程完成linux的各项配置(包括启动AP)后，
+就会在/sbin,/etc,/bin寻找init程序来运行。
+该init程序会替换kernel_init进程（注意：并不是创建一个新的进程来运行init程序，
+而是一次变身，使用sys_execve函数改变核心进程的正文段，
+将核心进程kernel_init转换成用户进程init），
+此时处于内核态的1号kernel_init进程将会转换为用户空间内的1号进程init。
+户进程init将根据/etc/inittab中提供的信息完成应用程序的初始化调用。
+然后init进程会执行/bin/sh产生shell界面提供给用户来与Linux系统进行交互
+调用init_post()创建用户模式1号进程
+*/
 static int __ref kernel_init(void *unused)
 {
 	int ret;
 
-	//内核初始化，不必在主核上运行。
+	//内核初始化准备文件系统，准备模块信息，不必在主核上运行。
 	kernel_init_freeable();
 	/* need to finish all async __init code before freeing the memory */
+    /* 用以同步所有非同步函式呼叫的执行,在这函数中会等待
+          List async_running与async_pending都清空后,才会返回. 
+          Asynchronously called functions主要设计用来加速Linux Kernel开机的效率,
+          避免在开机流程中等待硬体反应延迟,影响到开机完成的时间 */
 	async_synchronize_full();
 	free_initmem();
 	mark_readonly();
+    /* 设置运行状态SYSTEM_RUNNING */
 	system_state = SYSTEM_RUNNING;
 	numa_default_policy();
 
@@ -1109,27 +1158,37 @@ static noinline void __init kernel_init_freeable(void)
 	/*
 	 * Wait until kthreadd is all set-up.
 	 */
-	//等待kthreadd线程初始化完毕。
+	//等待Kernel Thread kthreadd (PID=2)创建完毕kthreadd_done Signal。
 	wait_for_completion(&kthreadd_done);
 
 	/* Now the scheduler is fully set up and can do blocking allocations */
+    /* __GFP_BITS_MASK;设置bitmask, 使得init进程可以使用PM并且允许I/O阻塞操作 */
 	gfp_allowed_mask = __GFP_BITS_MASK;
 
 	/*
 	 * init can allocate pages on any node
 	 */
 	//允许当前进程在任何节点分配内存
+    // init进程可以分配物理页面
 	set_mems_allowed(node_states[N_MEMORY]);
 	/*
 	 * init can run on any cpu.
 	 */
 	//允许进程运行在任何cpu中。
+    /* 通过设置cpu_bit_mask, 可以限定task只能在特定的处理器上运行, 
+          而initcurrent进程此时必然是init进程，
+          设置其cpu_all_mask即使得init进程可以在任意的cpu上运行 */
 	set_cpus_allowed_ptr(current, cpu_all_mask);
 
 	//保存能执行cad的进程id,安全方面的考虑。
+    /* 设置到目前运行进程init的pid号给cad_pid
+        (cad_pid是用来接收ctrl-alt-del reboot signal的进程, 
+        如果设置C_A_D=1就表示可以处理来自ctl-alt-del的动作)， 
+        最后会调用 ctrl_alt_del(void)并确认C_A_D是否为1,
+        确认完成后将执行cad_work=deferred_cad,执行kernel_restart */
 	cad_pid = task_pid(current);
 
-	//准备激活并使用其他CPU
+	//准备激活并使用其他CPU  设定支援的最大CPU数量
 	smp_prepare_cpus(setup_max_cpus);
 
 	/**
@@ -1149,6 +1208,14 @@ static noinline void __init kernel_init_freeable(void)
 	do_basic_setup();
 
 	/* Open the /dev/console on the rootfs, this should never fail */
+    /* 
+    实例在fs/fcntl.c中,”SYSCALL_DEFINE1(dup, unsigned int, fildes)”,
+    在这会连续执行两次sys_dup,复制两个sys_open开啟/dev/console所產生的档案描述0 (也就是会多生出两个1与2),
+    只是都对应到”/dev/console”,我们在System V streams下的Standard Stream一般而言会有如下的对应
+    0:Standard input (stdin)
+    1:Standard output (stdout)
+    2:Standard error (stderr) 
+    */
 	if (sys_open((const char __user *) "/dev/console", O_RDWR, 0) < 0)
 		pr_err("Warning: unable to open an initial console.\n");
 
@@ -1162,6 +1229,8 @@ static noinline void __init kernel_init_freeable(void)
 	if (!ramdisk_execute_command)
 		ramdisk_execute_command = "/init";
 
+    /* 如果sys_access确认档案ramdisk_execute_command 失败,
+          就把ramdisk_execute_command 设定為0,然后呼叫prepare_namespace去mount root FileSystem. */
 	if (sys_access((const char __user *) ramdisk_execute_command, 0) != 0) {
 		ramdisk_execute_command = NULL;
 		prepare_namespace();
@@ -1175,7 +1244,10 @@ static noinline void __init kernel_init_freeable(void)
 	 * rootfs is available now, try loading the public keys
 	 * and default modules
 	 */
-
+    /* 至此我们初始化工作完成, 文件系统也已经准备好了，
+          那么接下来加载 load integrity keys hook*/
 	integrity_load_keys();
+
+    /* 加载基本的模块 */
 	load_default_modules();
 }

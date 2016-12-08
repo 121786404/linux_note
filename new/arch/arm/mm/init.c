@@ -187,7 +187,7 @@ static void __init zone_sizes_init(unsigned long min, unsigned long max_low,
 			arm_dma_zone_size >> PAGE_SHIFT);
 #endif
 
-	//根据起始位置和空洞大小，初始化0号内存区块。
+	//根据起始位置和空洞大小，初始化0号内存区块。初始化内存节点
 	free_area_init_node(0, zone_size, min, zhole_size);
 }
 
@@ -229,6 +229,9 @@ phys_addr_t __init arm_memblock_steal(phys_addr_t size, phys_addr_t align)
 	return phys;
 }
 
+/*
+初始化memblock内存分配器
+*/
 void __init arm_memblock_init(const struct machine_desc *mdesc)
 {
 	/* Register the kernel text, kernel data and initrd with memblock. */
@@ -282,7 +285,7 @@ void __init arm_memblock_init(const struct machine_desc *mdesc)
 }
 
 /**
- * boot内存初始化
+ * boot内存初始化,初始化内存数据结构包括内存节点和内存域
  */
 void __init bootmem_init(void)
 {
@@ -318,7 +321,7 @@ void __init bootmem_init(void)
 	 * for memmap_init_zone(), otherwise all PFNs are invalid.
 	 */
 	/**
-	 * 释放内存块
+	 * 初始化节点和管理区的一些数据项
 	 */
 	zone_sizes_init(min, max_low, max_high);
 
@@ -778,6 +781,13 @@ void free_tcmmem(void)
 #endif
 }
 
+/* 释放Linux Kernel介於init_begin到 init_end属于init Section的函数的所有内存.
+并会把Page个数加到变量totalram_pages中,
+作为后续Linux Kernel在配置记忆体时可以使用的Pages. 
+(在这也可把TCM范围(tcm_start到tcm_end)释放加入到总Page中,
+但TCM比外部记忆体有效率,适合多媒体,中断,
+…etc等对效能要求高的执行需求,放到总Page中,
+成为可供一般目的配置的存储范围 */
 void free_initmem(void)
 {
 	fix_kernmem_perms();

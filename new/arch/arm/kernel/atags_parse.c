@@ -178,6 +178,9 @@ static void __init squash_mem_tags(struct tag *tag)
 			tag->hdr.tag = ATAG_NONE;
 }
 
+/*
+对uboot传递来的tags进行解析，获取mem cmdline等信息
+*/
 const struct machine_desc * __init
 setup_machine_tags(phys_addr_t __atags_pointer, unsigned int machine_nr)
 {

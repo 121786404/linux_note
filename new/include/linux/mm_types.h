@@ -44,9 +44,31 @@ struct mem_cgroup;
  */
 struct page {
 	/* First double word block */
+    /* 
+    用来存放页的状态,linux/page-flags.h
+    这些标识是独立于体系结构的, 因而无法通过特定于CPU或计算机的信息(该信息保存在页表中)
+    */
 	unsigned long flags;		/* Atomic flags, some possibly
-					 * updated asynchronously */
+					 * updated asynchronously  描述page的状态和其他信息 */
 	union {
+/*
+指向与该页相关的address_space对象
+
+mapping指定了页帧所在的地址空间, index是页帧在映射内部的偏移量. 
+地址空间是一个非常一般的概念. 例如, 可以用在向内存读取文件时. 
+地址空间用于将文件的内容与装载数据的内存区关联起来. 
+mapping不仅能够保存一个指针, 而且还能包含一些额外的信息, 
+用于判断页是否属于未关联到地址空间的某个匿名内存区.
+
+1. 如果mapping = 0，说明该page属于交换高速缓存页（swap cache）；
+    当需要使用地址空间时会指定交换分区的地址空间swapper_space。
+2. 如果mapping != 0，第0位bit[0] = 0，说明该page属于页缓存或文件映射，
+    mapping指向文件的地址空间address_space。
+3. 如果mapping != 0，第0位bit[0] != 0，说明该page为匿名映射，mapping指向struct anon_vma对象。
+
+通过mapping恢复anon_vma的方法：
+    anon_vma = (struct anon_vma *)(mapping - PAGE_MAPPING_ANON)。
+*/
 		struct address_space *mapping;	/* If low bit clear, points to
 						 * inode address_space, or NULL.
 						 * If page mapped as anonymous
@@ -61,6 +83,14 @@ struct page {
 
 	/* Second double word */
 	union {
+/*
+在映射的虚拟空间（vma_area）内的偏移；
+ 一个文件可能只映射一部分，假设映射了1M的空间，
+index指的是在1M空间内的偏移，而不是在整个文件内的偏移
+
+pgoff_t index是该页描述结构在地址空间radix树page_tree中的对象索引号即页号,
+表示该页在vm_file中的偏移页数, 其类型pgoff_t被定义为unsigned long即一个机器字长.
+*/
 		pgoff_t index;		/* Our offset within mapping. */
 		void *freelist;		/* sl[aou]b first free object */
 		/* page_deferred_list().prev	-- second tail page */
@@ -91,6 +121,12 @@ struct page {
 				 * in which case the value MUST BE <= -2.
 				 * See page-flags.h for more details.
 				 */
+/*  
+            被页表映射的次数，也就是说该page同时被多少个进程共享。
+            初始值为-1，如果只被一个进程的页表映射了，该值为0. 
+            如果该page处于伙伴系统中，该值为PAGE_BUDDY_MAPCOUNT_VALUE（-128），
+            内核通过判断该值是否为PAGE_BUDDY_MAPCOUNT_VALUE来确定该page是否属于伙伴系统
+*/
 				atomic_t _mapcount;
 
 				unsigned int active;		/* SLAB */
@@ -105,6 +141,12 @@ struct page {
 			 * Usage count, *USE WRAPPER FUNCTION* when manual
 			 * accounting. See page_ref.h
 			 */
+/* 
+            引用计数，表示内核中引用该page的次数, 
+            如果要操作该page, 引用计数会+1, 操作完成-1. 
+            当该值为0时, 表示没有引用该page的位置，
+            所以该page可以被解除映射，这往往在内存回收时是有用的
+*/
 			atomic_t _refcount;
 		};
 	};
@@ -117,6 +159,19 @@ struct page {
 	 * avoid collision and false-positive PageTail().
 	 */
 	union {
+/*
+链表头，用于在各种链表上维护该页, 以便于按页将不同类别分组, 
+主要有3个用途: 伙伴算法, slab分配器, 被用户态使用或被当做页缓存使用
+
+最近、最久未使用struct slab结构指针变量
+lru：链表头，主要有3个用途：
+1 则page处于伙伴系统中时，用于链接相同阶的伙伴
+  （只使用伙伴中的第一个page的lru即可达到目的）。
+2 设置PG_slab, 则page属于slab，page->lru.next指向page驻留的的缓存的管理结构，
+   page->lru.prec指向保存该page的slab的管理结构。
+3 page被用户态使用或被当做页缓存使用时，
+   用于将该page连入zone中相应的lru链表，供内存回收时使用。
+*/
 		struct list_head lru;	/* Pageout list, eg. active_list
 					 * protected by zone_lru_lock !
 					 * Can be used as a generic list
@@ -174,6 +229,13 @@ struct page {
 
 	/* Remainder is not double word aligned */
 	union {
+	    /* 
+        private私有数据指针, 由应用场景确定其具体的含义：
+        如果设置了PG_private标志，则private字段指向struct buffer_head
+        如果设置了PG_compound，则指向struct page
+        如果设置了PG_swapcache标志，private存储了该page在交换分区中对应的位置信息swp_entry_t。
+        如果_mapcount = PAGE_BUDDY_MAPCOUNT_VALUE，说明该page位于伙伴系统，private存储该伙伴的阶
+	    */
 		unsigned long private;		/* Mapping-private opaque data:
 					 	 * usually used for buffer_heads
 						 * if PagePrivate set; used for
@@ -206,6 +268,13 @@ struct page {
 	 * WANT_PAGE_VIRTUAL in asm/page.h
 	 */
 #if defined(WANT_PAGE_VIRTUAL)
+/*
+对于如果物理内存可以直接映射内核的系统, 
+我们可以之间映射出虚拟地址与物理地址的管理, 
+但是对于需要使用高端内存区域的页, 
+即无法直接映射到内核的虚拟地址空间, 
+因此需要用virtual保存该页的虚拟地址
+*/
 	void *virtual;			/* Kernel virtual address (NULL if
 					   not kmapped, ie. highmem) */
 #endif /* WANT_PAGE_VIRTUAL */
@@ -297,17 +366,29 @@ struct vm_userfaultfd_ctx {};
  * space that has a special rule for the page-fault handlers (ie a shared
  * library, the executable area etc).
  */
+/*
+vm_area_struct结构体描述了指定地址空间内连续区间上的一个独立内存范围. 
+内核将每个内存区域作为一个单独的内存对象管理,
+ 每个内存区域都拥有一致的属性, 比如访问权限等. 另外相应的操作也都一致. 
+
+按照这样的方式, 每一个VMA就可以代表不同类型的内存区域
+(比如内存映射文件或者进程用户空间栈). 
+这种管理方式类似于使用CFS层面向对象的方法
+*/
 struct vm_area_struct {
 	/* The first cache line has the info for VMA tree walking. */
 
-    /* vma的起始地址 */
+/*
+vm_end - vm_start的大小便是区间的长度. 
+即内存区域就在[vm_start, vm_end)之中
+*/
 	unsigned long vm_start;		/* Our start address within vm_mm. */
-    /* vma的结束地址 */
 	unsigned long vm_end;		/* The first byte after our end address
 					   within vm_mm. */
 
 	/* linked list of VM areas per task, sorted by address */
-	/* 该vma的在一个进程的vma链表中的前驱vma和后驱vma指针，链表中的vma都是按地址来排序的*/
+	/* 该vma的在一个进程的vma链表中的前驱vma和后驱vma指针，
+          链表中的vma都是按地址来排序的*/
 	struct vm_area_struct *vm_next, *vm_prev;
     /* 红黑树中对应的节点 */ 
 	struct rb_node vm_rb;
@@ -412,8 +493,19 @@ struct mm_struct {
 				unsigned long addr, unsigned long len,
 				unsigned long pgoff, unsigned long flags);
 #endif
+/*
+虚拟地址空间中用于内存映射的起始地址, 
+可调用get_unmapped_area在mmap区域中为新映射找到适当的位置
+*/
 	unsigned long mmap_base;		/* base of mmap area */
 	unsigned long mmap_legacy_base;         /* base of mmap area in bottom-up allocations */
+/*
+对应进程的地址空间长度. 
+对本机应用程序来说, 该值通常是TASK_SIZE. 
+但64位体系结构与前辈处理器通常是二进制兼容的. 
+如果在64位计算机上执行32位二进制代码, 
+则task_size描述了该二进制代码实际可见的地址空间长度.
+*/
 	unsigned long task_size;		/* size of task vm space */
 	unsigned long highest_vm_end;		/* highest vma end address */
 	pgd_t * pgd;
@@ -444,8 +536,23 @@ struct mm_struct {
 	unsigned long exec_vm;		/* VM_EXEC & ~VM_WRITE & ~VM_STACK */
 	unsigned long stack_vm;		/* VM_STACK */
 	unsigned long def_flags;
+/*
+可执行代码占用的虚拟地址空间区域, 其开始和结束分别通过 start_code和end_code标记.
+
+start_data和end_data标记了包含已初始化数据的区域. 请注意, 
+在ELF二进制文件映射到地址空间中之后,这些区域的长度不再改变
+*/
 	unsigned long start_code, end_code, start_data, end_data;
+/*
+堆的起始地址保存在start_brk, brk表示堆区域当前的结束地址. 
+尽管堆的起始地址在进程生命周期中是不变的, 但堆的长度会发生变化,
+因而brk的值也会变.
+*/
 	unsigned long start_brk, brk, start_stack;
+/*
+参数列表和环境变量的位置分别由arg_start和 arg_end、env_start和env_end描述. 
+两个区域都位于栈中最高的区域
+*/
 	unsigned long arg_start, arg_end, env_start, env_end;
 
 	unsigned long saved_auxv[AT_VECTOR_SIZE]; /* for /proc/PID/auxv */

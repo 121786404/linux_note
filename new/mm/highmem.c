@@ -471,6 +471,12 @@ done:
 	return;
 }
 
+/*
+初始化page_address_pool链表；
+将page_address_maps数组元素按索引降序插入
+page_address_pool链表; 
+初始化page_address_htable数组.
+*/
 void __init page_address_init(void)
 {
 	int i;

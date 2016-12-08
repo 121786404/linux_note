@@ -257,7 +257,7 @@ int min_free_kbytes = 1024;
 int user_min_free_kbytes = -1;
 int watermark_scale_factor = 10;
 
-static unsigned long __meminitdata nr_kernel_pages;
+static unsigned long __meminitdata nr_kernel_pages;//Í³¼ÆËùÓĞÒ»ÖÂÓ³ÉäµÄÒ³
 static unsigned long __meminitdata nr_all_pages;
 static unsigned long __meminitdata dma_reserve;
 
@@ -448,6 +448,9 @@ void set_pfnblock_flags_mask(struct page *page, unsigned long flags,
 	}
 }
 
+/*
+ÉèÖÃÒÔpageÎªÊ×µÄÒ»¸öÄÚ´æÇøµÄÇ¨ÒÆÀàĞÍ
+*/
 void set_pageblock_migratetype(struct page *page, int migratetype)
 {
 	if (unlikely(page_group_by_mobility_disabled &&
@@ -1829,9 +1832,23 @@ struct page *__rmqueue_smallest(struct zone *zone, unsigned int order,
  * This array describes the order lists are fallen back to when
  * the free lists for the desirable migrate type are depleted
  */
+ 
+/*
+ ¸ÃÊı×éÃèÊöÁËÖ¸¶¨Ç¨ÒÆÀàĞÍµÄ¿ÕÏĞÁĞ±íºÄ¾¡Ê±
+ ÆäËû¿ÕÏĞÁĞ±íÔÚ±¸ÓÃÁĞ±íÖĞµÄ´ÎĞò
+ Ã¿Ò»ĞĞ¶ÔÓ¦Ò»¸öÀàĞÍµÄ±¸ÓÃËÑË÷ÓòµÄË³Ğò, 
+ ÔÚÄÚºËÏëÒª·ÖÅä²»¿ÉÒÆ¶¯Ò³MIGRATE_UNMOVABLEÊ±,
+ Èç¹û¶ÔÓ¦Á´±íÎª¿Õ, Ôò±éÀúfallbacks[MIGRATE_UNMOVABLE],
+ Ê×ÏÈºóÍËµ½¿É»ØÊÕÒ³Á´±íMIGRATE_RECLAIMABLE, 
+ ½ÓÏÂÀ´µ½¿ÉÒÆ¶¯Ò³Á´±íMIGRATE_MOVABLE, 
+ ×îºóµ½½ô¼±·ÖÅäÁ´±íMIGRATE_TYPES
+*/
 static int fallbacks[MIGRATE_TYPES][4] = {
+    //  ·ÖÅä²»¿ÉÒÆ¶¯Ò³Ê§°ÜµÄ±¸ÓÃÁĞ±í
 	[MIGRATE_UNMOVABLE]   = { MIGRATE_RECLAIMABLE, MIGRATE_MOVABLE,   MIGRATE_TYPES },
+	//  ·ÖÅä¿É»ØÊÕÒ³Ê§°ÜÊ±µÄ±¸ÓÃÁĞ±í
 	[MIGRATE_RECLAIMABLE] = { MIGRATE_UNMOVABLE,   MIGRATE_MOVABLE,   MIGRATE_TYPES },
+	//  ·ÖÅä¿ÉÒÆ¶¯Ò³Ê§°ÜÊ±µÄ±¸ÓÃÁĞ±í
 	[MIGRATE_MOVABLE]     = { MIGRATE_RECLAIMABLE, MIGRATE_UNMOVABLE, MIGRATE_TYPES },
 #ifdef CONFIG_CMA
 	[MIGRATE_CMA]         = { MIGRATE_TYPES }, /* Never used */
@@ -4101,7 +4118,7 @@ EXPORT_SYMBOL_GPL(nr_free_buffer_pages);
  * nr_free_pagecache_pages() counts the number of pages which are beyond the
  * high watermark within all zones.
  */
-//ÔÚ¸ßË®ÏßÉÏÃæµÄ¿ÕÒ³Êı
+//ÔÚ¸ßË®ÏßÉÏÃæµÄ¿ÕÒ³Êı,
 unsigned long nr_free_pagecache_pages(void)
 {
 	return nr_free_zone_pages(gfp_zone(GFP_HIGHUSER_MOVABLE));
@@ -4496,14 +4513,28 @@ static int build_zonelists_node(pg_data_t *pgdat, struct zonelist *zonelist,
  *  If not NUMA, ZONELIST_ORDER_ZONE and ZONELIST_ORDER_NODE will create
  *  the same zonelist. So only NUMA can configure this param.
  */
+/*
+Èç¹ûÏµÍ³µ±Ç°ÏµÍ³ÊÇ·ÇNUMA½á¹¹µÄ, ÔòÏµÍ³ÖĞÖ»ÓĞÒ»¸ö½áµã, 
+ÅäÖÃZONELIST_ORDER_NODEºÍZONELIST_ORDER_ZONE½á¹ûÏàÍ¬. 
+*/
+/*
+ ÓÉÏµÍ³ÖÇÄÜÑ¡ÔñNode»òZone·½Ê½
+*/
 #define ZONELIST_ORDER_DEFAULT  0
+/*
+°´½ÚµãË³ĞòÒÀ´ÎÅÅÁĞ£¬ÏÈÅÅÁĞ±¾µØ½ÚµãµÄËùÓĞzone£¬
+ÔÙÅÅÁĞÆäËü½ÚµãµÄËùÓĞzone
+*/
 #define ZONELIST_ORDER_NODE     1
+/*
+°´zoneÀàĞÍ´Ó¸ßµ½µÍÒÀ´ÎÅÅÁĞ¸÷½ÚµãµÄÍ¬ÏàÀàĞÍzone
+*/
 #define ZONELIST_ORDER_ZONE     2
 
 /* zonelist order in the kernel.
  * set_zonelist_order() will set this to NODE or ZONE.
  */
-static int current_zonelist_order = ZONELIST_ORDER_DEFAULT;
+static int current_zonelist_order = ZONELIST_ORDER_DEFAULT; // ÏµÍ³ÖĞµÄµ±Ç°Ê¹ÓÃµÄÄÚ´æÓòÅÅÁĞ·½Ê½
 static char zonelist_order_name[3][8] = {"Default", "Node", "Zone"};
 
 
@@ -4764,7 +4795,13 @@ static int default_zonelist_order(void)
 	return ZONELIST_ORDER_ZONE;
 }
 #endif /* CONFIG_64BIT */
-
+/*
+Èç¹ûÏµÍ³ÊÇNUMA½á¹¹, ÔòÉèÖÃÎªÏµÍ³Ö¸¶¨µÄ·½Ê½¼´¿É
+µ±Ç°µÄÅÅÁĞ·½Ê½ÎªZONELIST_ORDER_DEFAULT, ¼´ÏµÍ³Ä¬ÈÏ·½Ê½, 
+Ôòcurrent_zonelist_orderÔòÓÉÄÚºË½»¸ødefault_zonelist_order²ÉÓÃÒ»¶¨µÄËã·¨Ñ¡ÔñÒ»¸ö×îÓÅµÄ·ÖÅä²ßÂÔ,¡¡
+Ä¿Ç°µÄÏµÍ³ÖĞÈç¹ûÊÇ32Î»ÔòÅäÖÃÎªZONE·½Ê½, ¶øÈç¹ûÊÇ£¶£´Î»ÏµÍ³ÔòÉèÖÃÎªNODE·½Ê½
+µ±Ç°µÄÅÅÁĞ·½Ê½²»ÊÇÄ¬ÈÏ·½Ê½, ÔòÉèÖÃÎªuser_zonelist_orderÖ¸¶¨µÄÄÚ´æÓòÅÅÁĞ·½Ê½
+*/
 static void set_zonelist_order(void)
 {
 	if (user_zonelist_order == ZONELIST_ORDER_DEFAULT)//Ä¬ÈÏÅÅÁĞ·½Ê½
@@ -4856,12 +4893,19 @@ int local_memory_node(int node)
 static void setup_min_unmapped_ratio(void);
 static void setup_min_slab_ratio(void);
 #else	/* CONFIG_NUMA */
-
 static void set_zonelist_order(void)
 {
 	current_zonelist_order = ZONELIST_ORDER_ZONE;
 }
 
+/*
+³õÊ¼»¯Ã¿¸öÄÚ´æ½áµãµÄzonelists
+Íê³ÉÁË½ÚµãpgdatÉÏzonelistsµÄ³õÊ¼»¯¹¤×÷, 
+Ëü½¨Á¢ÁË±¸ÓÃ²ã´Î½á¹¹zonelists. 
+
+ÓÉÓÚUMAºÍNUMA¼Ü¹¹ÏÂ½áµãµÄ²ã´Î½á¹¹ÓĞºÜ´óµÄÇø±ğ,
+Òò´ËÄÚºË·Ö±ğÌá¹©ÁËÁ½Ì×²»Í¬µÄ½Ó¿Ú
+*/
 static void build_zonelists(pg_data_t *pgdat)
 {
 	int node, local_node;
@@ -4889,6 +4933,20 @@ static void build_zonelists(pg_data_t *pgdat)
 	for (node = 0; node < local_node; node++) {
 		if (!node_online(node))
 			continue;
+/*
+        Îªpgdat->node_zones[0]½¨Á¢ºó±¸µÄzone£¬node_zones[0]ºó±¸µÄzone
+            |     ´æ´¢ÔÚnode_zonelist[0]ÄÚ£¬¶ÔÓÚnode_zone[0]µÄºó±¸zone£¬Æäºó±¸µÄzone
+            |     Á´±íÈçÏÂ(Ö»¿¼ÂÇUMAÌåÏµ£¬¶øÇÒ²»¿¼ÂÇZONE_DMA)£º
+            |     node_zonelist[0]._zonerefs[0].zone = &node_zones[2];
+            |     node_zonelist[0]._zonerefs[0].zone_idx = 2;
+            |     node_zonelist[0]._zonerefs[1].zone = &node_zones[1];
+            |     node_zonelist[0]._zonerefs[1].zone_idx = 1;
+            |     node_zonelist[0]._zonerefs[2].zone = &node_zones[0];
+            |     node_zonelist[0]._zonerefs[2].zone_idx = 0;
+            |     
+            |     zonelist->_zonerefs[3].zone = NULL;
+            |     zonelist->_zonerefs[3].zone_idx = 0;   
+*/
 		j = build_zonelists_node(NODE_DATA(node), zonelist, j);
 	}
 
@@ -4924,6 +4982,10 @@ static void setup_zone_pageset(struct zone *zone);
 DEFINE_MUTEX(zonelists_mutex);
 
 /* return values int ....just for stop_machine() */
+/*
+Memory²»Ö§³ÖÈÈ²å°Î, ÎªÃ¿¸özone½¨Á¢ºó±¸µÄzone,
+Ã¿¸özone¼°×Ô¼ººó±¸µÄzone£¬ĞÎ³Ézonelist
+*/
 static int __build_all_zonelists(void *data)
 {
 	int nid;
@@ -4935,10 +4997,13 @@ static int __build_all_zonelists(void *data)
 #endif
 
 	if (self && !node_online(self->node_id)) {
+        // ÎªÃ¿¸özone½¨Á¢ºó±¸zoneµÄÁĞ±í
 		build_zonelists(self);
 	}
 
-	//±éÀúËùÓĞ½Úµã
+    // ÓÉÓÚUMAÏµÍ³Ö»ÓĞÒ»¸ö½áµã£¬build_zonelistsÖ»µ÷ÓÃÁËÒ»´Î, 
+    // ¾Í¶ÔËùÓĞµÄÄÚ´æ´´½¨ÁËÄÚ´æÓòÁĞ±í
+	// ±éÀúËùÓĞ½Úµã
 	for_each_online_node(nid) {
 		pg_data_t *pgdat = NODE_DATA(nid);
 
@@ -4982,7 +5047,9 @@ static int __build_all_zonelists(void *data)
 static noinline void __init
 build_all_zonelists_init(void)
 {
-	//¹¹½¨±¸·İzoneÁĞ±í
+	/* ÉèÖÃzonelistÖĞ½ÚµãºÍÄÚ´æÓòµÄ×éÖ¯ĞÎÊ½
+       *  current_zonelist_order±äÁ¿±êÊ¶ÁËµ±Ç°ÏµÍ³µÄÄÚ´æ×éÖ¯ĞÎÊ½
+       *  zonelist_order_nameÒÔ×Ö·û´®´æ´¢ÁËÏµÍ³ÖĞÄÚ´æ×éÖ¯ĞÎÊ½µÄÃû³Æ  */
 	__build_all_zonelists(NULL);
 	//balabala,Êä³ö±¸·İÁĞ±íĞÅÏ¢
 	mminit_verify_zonelist();
@@ -4999,17 +5066,25 @@ build_all_zonelists_init(void)
  * (2) call of __init annotated helper build_all_zonelists_init
  * [protected by SYSTEM_BOOTING].
  */
+ 
+/*
+ÎªÏµÍ³ÖĞµÄzone½¨Á¢ºó±¸zoneµÄÁĞ±í.
+ËùÓĞzoneµÄºó±¸ÁĞ±í¶¼ÔÚ
+pglist_data->node_zonelists[0]ÖĞ;
+ÆÚ¼äÒ²¶Ôper-CPU±äÁ¿boot_pageset×öÁË³õÊ¼»¯. 
+*/
 void __ref build_all_zonelists(pg_data_t *pgdat, struct zone *zone)
 {
 	//ÉèÖÃzoneÅÅÁĞ·½Ê½£¬ÊÇ°´½ÚµãÖ®¼äµÄ¾àÀë»¹ÊÇ°´zoneÀàĞÍ¡£
+	// ÉèÖÃzonelistsÖĞ½áµãµÄ×éÖ¯Ë³Ğò
 	set_zonelist_order();
 
 	if (system_state == SYSTEM_BOOTING) {//Æô¶¯½×¶Î
-		build_all_zonelists_init();
+		build_all_zonelists_init(); // ³õÊ¼»¯zonelist
 	} else {
 #ifdef CONFIG_MEMORY_HOTPLUG
 		if (zone)
-			setup_zone_pageset(zone);
+			setup_zone_pageset(zone); // ÉèÖÃÀäÈÈÒ³
 #endif
 		/* we have to stop all cpus to guarantee there is no user
 		   of zonelist */
@@ -5017,7 +5092,8 @@ void __ref build_all_zonelists(pg_data_t *pgdat, struct zone *zone)
 		stop_machine(__build_all_zonelists, pgdat, NULL);
 		/* cpuset refresh routine should be here */
 	}
-	//¼ÆËãËùÓĞzoneÖĞ£¬ÔÚ¸ßË®ÏßµÄÇé¿öÏÂ£¬¿ÉÓÃµÄÄÚ´æÒ³ÃæÊıÁ¿¡£
+	//¼ÆËãËùÓĞzoneÖĞ£¬ÔÚ¸ßË®ÏßµÄÇé¿öÏÂ£¬¿ÉÓÃµÄÄÚ´æÒ³ÃæÊıÁ¿¡
+	// »ñµÃËùÓĞzoneÖĞµÄpresent_pages×ÜºÍ
 	vm_total_pages = nr_free_pagecache_pages();
 	/*
 	 * Disable grouping by mobility if the number of pages in the
@@ -5032,7 +5108,7 @@ void __ref build_all_zonelists(pg_data_t *pgdat, struct zone *zone)
 	if (vm_total_pages < (pageblock_nr_pages * MIGRATE_TYPES))
 		page_group_by_mobility_disabled = 1;
 	else
-		page_group_by_mobility_disabled = 0;
+		page_group_by_mobility_disabled = 0;// ¶ÔÓÚ´úÂëÖĞµÄÅĞ¶ÏÌõ¼şÒ»°ã²»»á³ÉÁ¢£¬ÒòÎªÒ³Êı»á×î¹»¶à£¨ÄÚ´æ½Ï´ó£©
 
 	pr_info("Built %i zonelists in %s order, mobility grouping %s.  Total pages: %ld\n",
 		nr_online_nodes,
@@ -5052,6 +5128,23 @@ void __ref build_all_zonelists(pg_data_t *pgdat, struct zone *zone)
 /**
  * ½«zoneÖĞµÄÒ³¿òPG_reservedÖÃÎ»¡£±íÊ¾¸ÃÒ³²»¿ÉÓÃ¡£
  * Í¬Ê±³õÊ¼»¯Ò³¿òÖĞÆäËûÖµ¡£
+
+ÔÚ·ÖÅäÄÚ´æÊ±, Èç¹û±ØĞë¡±µÁÈ¡¡±²»Í¬ÓÚÔ¤¶¨Ç¨ÒÆÀàĞÍµÄÄÚ´æÇø, 
+ÄÚºËÔÚ²ßÂÔÉÏÇãÏòÓÚ¡±µÁÈ¡¡±¸ü´óµÄÄÚ´æÇø. 
+
+ÓÉÓÚËùÓĞÒ³×î³õ¶¼ÊÇ¿ÉÒÆ¶¯µÄ, ÄÇÃ´ÔÚÄÚºË·ÖÅä²»¿ÉÒÆ¶¯µÄÄÚ´æÇøÊ±, 
+Ôò±ØĞë¡±µÁÈ¡¡±.
+
+Êµ¼ÊÉÏ, ÔÚÆô¶¯ÆÚ¼ä·ÖÅä¿ÉÒÆ¶¯ÄÚ´æÇøµÄÇé¿ö½ÏÉÙ, 
+ÄÇÃ´·ÖÅäÆ÷ÓĞºÜ¸ßµÄ¼¸ÂÊ·ÖÅä³¤¶È×î´óµÄÄÚ´æÇø, 
+²¢½«Æä´Ó¿ÉÒÆ¶¯ÁĞ±í×ª»»µ½²»¿ÉÒÆ¶¯ÁĞ±í. 
+
+ÓÉÓÚ·ÖÅäµÄÄÚ´æÇø³¤¶ÈÊÇ×î´óµÄ, Òò´Ë²»»áÏò¿ÉÒÆ¶¯ÄÚ´æÖĞÒıÈëËéÆ¬.
+
+×Ü¶øÑÔÖ®, ÕâÖÖ×ö·¨±ÜÃâÁËÆô¶¯ÆÚ¼äÄÚºË·ÖÅäµÄÄÚ´æ
+(¾­³£ÔÚÏµÍ³µÄÕû¸öÔËĞĞÊ±¼ä¶¼²»ÊÍ·Å)É¢²¼µ½ÎïÀíÄÚ´æ¸÷´¦, 
+´Ó¶øÊ¹ÆäËûÀàĞÍµÄÄÚ´æ·ÖÅäÃâÊÜËéÆ¬µÄ¸ÉÈÅ£¬
+ÕâÒ²ÊÇÒ³¿ÉÒÆ¶¯ĞÔ·Ö×é¿ò¼ÜµÄ×îÖØÒªµÄÄ¿±êÖ®Ò»
  */
 void __meminit memmap_init_zone(unsigned long size, int nid, unsigned long zone,
 		unsigned long start_pfn, enum memmap_context context)
@@ -5298,6 +5391,15 @@ static void __meminit setup_zone_pageset(struct zone *zone)
  * Allocate per cpu pagesets and initialize them.
  * Before this call only boot pagesets were available.
  */
+/*
+³õÊ¼»¯CPU¸ßËÙ»º´æĞĞ, ÎªpagesetsµÄµÚÒ»¸öÊı×éÔªËØ·ÖÅäÄÚ´æ, 
+»»¾ä»°Ëµ, ÆäÊµ¾ÍÊÇµÚÒ»¸öÏµÍ³´¦ÀíÆ÷·ÖÅä
+
+ÓÉÓÚÔÚ·ÖÒ³Çé¿öÏÂ£¬Ã¿´Î´æ´¢Æ÷·ÃÎÊ¶¼Òª´æÈ¡¶à¼¶Ò³±í£¬
+Õâ¾Í´ó´ó½µµÍÁË·ÃÎÊËÙ¶È¡£ËùÒÔ£¬ÎªÁËÌá¸ßËÙ¶È£¬
+ÔÚCPUÖĞÉèÖÃÒ»¸ö×î½ü´æÈ¡Ò³ÃæµÄ¸ßËÙ»º´æÓ²¼ş»úÖÆ£¬
+µ±½øĞĞ´æ´¢Æ÷·ÃÎÊÊ±£¬ÏÈ¼ì²éÒª·ÃÎÊµÄÒ³ÃæÊÇ·ñÔÚ¸ßËÙ»º´æÖĞ.
+*/
 void __init setup_per_cpu_pageset(void)
 {
 	struct pglist_data *pgdat;
@@ -5312,7 +5414,7 @@ void __init setup_per_cpu_pageset(void)
 		pgdat->per_cpu_nodestats =
 			alloc_percpu(struct per_cpu_nodestat);
 }
-
+// ³¢ÊÔ³õÊ¼»¯¸ÃÄÚ´æÓòµÄper-CPU»º´æ
 static __meminit void zone_pcp_init(struct zone *zone)
 {
 	/*
@@ -5328,6 +5430,11 @@ static __meminit void zone_pcp_init(struct zone *zone)
 					 zone_batchsize(zone));
 }
 
+/*
+³õÊ¼»¯free_areaÁĞ±í£¬²¢½«ÊôÓÚ¸ÃÄÚ´æÓòµÄËùÓĞpageÊµÀı¶¼ÉèÖÃÎª³õÊ¼Ä¬ÈÏÖµ¡£
+ÕıÈçÇ°ÎÄµÄÌÖÂÛ£¬µ÷ÓÃÁËmemmap_init_zoneÀ´³õÊ¼»¯ÄÚ´æÓòµÄÒ³, 
+ÎÒÃÇ»¹¿ÉÒÔ»ØÏëÇ°ÎÄÌáµ½µÄ£¬ËùÓĞÒ³ÊôĞÔÆğ³õ¶¼ÉèÖÃMIGRATE_MOVABLE
+*/
 int __meminit init_currently_empty_zone(struct zone *zone,
 					unsigned long zone_start_pfn,
 					unsigned long size)
@@ -5660,7 +5767,11 @@ static inline unsigned long __meminit zone_absent_pages_in_node(int nid,
 }
 
 #endif /* CONFIG_HAVE_MEMBLOCK_NODE_MAP */
-
+/*
+ÀÛ¼Æ¸÷¸öÄÚ´æÓòµÄÒ³Êı£¬¼ÆËã½áµãÖĞÒ³µÄ×ÜÊı¡£
+¶ÔÁ¬ĞøÄÚ´æÄ£ĞÍ¶øÑÔ£¬Õâ¿ÉÒÔÍ¨¹ızone_sizes_initÍê³É£¬
+µ«calculate_node_totalpages»¹¿¼ÂÇÁËÄÚ´æ¿Õ¶´
+*/
 static void __meminit calculate_node_totalpages(struct pglist_data *pgdat,
 						unsigned long node_start_pfn,
 						unsigned long node_end_pfn,
@@ -5821,7 +5932,10 @@ static void __paginginit free_area_init_core(struct pglist_data *pgdat)
 	INIT_LIST_HEAD(&pgdat->split_queue);
 	pgdat->split_queue_len = 0;
 #endif
+    /*  ³õÊ¼»¯pgdat->kswapd_waitµÈ´ı¶ÓÁĞ  */
 	init_waitqueue_head(&pgdat->kswapd_wait);
+    /*  ³õÊ¼»¯Ò³»»³öÊØ»¤½ø³Ì´´½¨¿ÕÏĞ¿éµÄ´óĞ¡
+           Îª2^kswapd_max_order  */
 	init_waitqueue_head(&pgdat->pfmemalloc_wait);
 #ifdef CONFIG_COMPACTION
 	init_waitqueue_head(&pgdat->kcompactd_wait);
@@ -5829,13 +5943,15 @@ static void __paginginit free_area_init_core(struct pglist_data *pgdat)
 	pgdat_page_ext_init(pgdat);
 	spin_lock_init(&pgdat->lru_lock);
 	lruvec_init(node_lruvec(pgdat));
-
+    /* ±éÀúÃ¿¸ö¹ÜÀíÇø */
 	for (j = 0; j < MAX_NR_ZONES; j++) {
 		struct zone *zone = pgdat->node_zones + j;
 		unsigned long size, realsize, freesize, memmap_pages;
 		unsigned long zone_start_pfn = zone->zone_start_pfn;
 
+        /*  sizeÎª¸Ã¹ÜÀíÇøÖĞµÄÒ³¿òÊı£¬°üÀ¨¶´ */
 		size = zone->spanned_pages;
+        /* realsizeÎª¹ÜÀíÇøÖĞµÄÒ³¿òÊı£¬²»°üÀ¨¶´*/
 		realsize = freesize = zone->present_pages;
 
 		/*
@@ -5843,6 +5959,10 @@ static void __paginginit free_area_init_core(struct pglist_data *pgdat)
 		 * is used by this zone for memmap. This affects the watermark
 		 * and per-cpu initialisations
 		 */
+/*
+	     µ÷ÕûrealsizeµÄ´óĞ¡£¬¼´¼õÈ¥page½á¹¹ÌåÕ¼ÓÃµÄÄÚ´æ´óĞ¡  
+           memmap_pagsÎª°üÀ¨¶´µÄËùÓĞÒ³¿òµÄpage½á¹¹ÌåËùÕ¼µÄ´óĞ¡
+*/
 		memmap_pages = calc_memmap_size(size, realsize);
 		if (!is_highmem_idx(j)) {
 			if (freesize >= memmap_pages) {
@@ -5851,12 +5971,13 @@ static void __paginginit free_area_init_core(struct pglist_data *pgdat)
 					printk(KERN_DEBUG
 					       "  %s zone: %lu pages used for memmap\n",
 					       zone_names[j], memmap_pages);
-			} else
+			} else /*  ÄÚ´æ²»¹»´æ·Åpage½á¹¹Ìå  */
 				pr_warn("  %s zone: %lu pages exceeds freesize %lu\n",
 					zone_names[j], memmap_pages, freesize);
 		}
 
 		/* Account for reserved pages */
+        /* µ÷ÕûrealsizeµÄ´óĞ¡£¬¼´¼õÈ¥DMA±£ÁôÒ³µÄ´óĞ¡ */
 		if (j == 0 && freesize > dma_reserve) {
 			freesize -= dma_reserve;
 			printk(KERN_DEBUG "  %s zone: %lu pages reserved\n",
@@ -5875,12 +5996,17 @@ static void __paginginit free_area_init_core(struct pglist_data *pgdat)
 		 * when the bootmem allocator frees pages into the buddy system.
 		 * And all highmem pages will be managed by the buddy system.
 		 */
+		 /* ÉèÖÃzone->spanned_pagesÎª°üÀ¨¶´µÄÒ³¿òÊı  */
 		zone->managed_pages = is_highmem_idx(j) ? realsize : freesize;
 #ifdef CONFIG_NUMA
+        /* ÉèÖÃzoneÖĞµÄ½Úµã±êÊ¶·û */
 		zone->node = nid;
 #endif
+        /*  ÉèÖÃzoneµÄÃû³Æ  */
 		zone->name = zone_names[j];
+        /* ÉèÖÃ¹ÜÀíÇøÊôÓÚµÄ½Úµã¶ÔÓ¦µÄpg_data_t½á¹¹ */
 		zone->zone_pgdat = pgdat;
+        /* ³õÊ¼»¯¸÷ÖÖËø */
 		spin_lock_init(&zone->lock);
 		zone_seqlock_init(zone);
 		zone_pcp_init(zone);
@@ -5889,9 +6015,15 @@ static void __paginginit free_area_init_core(struct pglist_data *pgdat)
 			continue;
 
 		set_pageblock_order();
+        /* ¶¨ÒåÁËCONFIG_SPARSEMEM¸Ãº¯ÊıÎª¿Õ */
 		setup_usemap(pgdat, zone, zone_start_pfn, size);
+        /* ÉèÖÃpgdat->nr_zonesºÍzone->zone_start_pfn³ÉÔ±
+             * ³õÊ¼»¯zone->free_area³ÉÔ±
+             * ³õÊ¼»¯zone->wait_tableÏà¹Ø³ÉÔ±
+             */
 		ret = init_currently_empty_zone(zone, zone_start_pfn, size);
 		BUG_ON(ret);
+        /* ³õÊ¼»¯¸Ãzone¶ÔÓ¦µÄpage½á¹¹ */
 		memmap_init(size, nid, j, zone_start_pfn);
 	}
 }
@@ -5965,13 +6097,16 @@ void __paginginit free_area_init_node(int nid, unsigned long *zones_size,
 #else
 	start_pfn = node_start_pfn;
 #endif
-	/**
-	 * ³õÊ¼»¯½ÚµãÖĞÃ¿¸özoneµÄ´óĞ¡ºÍ¿Õ¶´¡£
-	 */
+    /*  Ê×ÏÈÀÛ¼Æ¸÷¸öÄÚ´æÓòµÄÒ³Êı
+         *    ¼ÆËã½áµãÖĞÒ³µÄ×ÜÊı
+         *    ¶ÔÁ¬ĞøÄÚ´æÄ£ĞÍ¶øÑÔ
+         *    Õâ¿ÉÒÔÍ¨¹ızone_sizes_initÍê³É
+         *    µ«calculate_node_totalpages»¹¿¼ÂÇÁËÄÚ´æ¿Õ¶´ */
 	calculate_node_totalpages(pgdat, start_pfn, end_pfn,
 				  zones_size, zholes_size);
 
-	//ÉèÖÃ½ÚµãµÄnode_mem_map
+    /*  ·ÖÅäÁË¸Ã½ÚµãµÄÒ³ÃæÃèÊö·ûÊı×é
+        *  [pgdat->node_mem_mapÊı×éµÄÄÚ´æ·ÖÅä  */
 	alloc_node_mem_map(pgdat);
 #ifdef CONFIG_FLAT_NODE_MEM_MAP
 	printk(KERN_DEBUG "free_area_init_node: node %d, pgdat %08lx, node_mem_map %08lx\n",
@@ -5980,6 +6115,7 @@ void __paginginit free_area_init_node(int nid, unsigned long *zones_size,
 #endif
 
 	//³õÊ¼»¯zone£¬ÉèÖÃzoneµÄfree_areaÁ´±í£¬±ê¼ÇËùÓĞÒ³Ãæ²»¿ÉÓÃ¡£
+	/*  ¶Ô¸Ã½ÚµãµÄÃ¿¸öÇø[DMA,NORMAL,HIGH]µÄµÄ½á¹¹½øĞĞ³õÊ¼»¯  */
 	free_area_init_core(pgdat);
 }
 
@@ -6339,14 +6475,26 @@ void __init free_area_init_nodes(unsigned long *max_zone_pfn)
 	int i, nid;
 
 	/* Record where the zone boundaries are */
+/*
+È«¾ÖÊı×éarch_zone_lowest_possible_pfn
+ÓÃÀ´´æ´¢¸÷¸öÄÚ´æÓò¿ÉÊ¹ÓÃµÄ×îµÍÄÚ´æÒ³Ö¡±àºÅ
+*/
 	memset(arch_zone_lowest_possible_pfn, 0,
 				sizeof(arch_zone_lowest_possible_pfn));
+/*
+È«¾ÖÊı×éarch_zone_highest_possible_pfn
+ÓÃÀ´´æ´¢¸÷¸öÄÚ´æÓò¿ÉÊ¹ÓÃµÄ×î¸ßÄÚ´æÒ³Ö¡±àºÅ    
+*/
 	memset(arch_zone_highest_possible_pfn, 0,
 				sizeof(arch_zone_highest_possible_pfn));
 
 	start_pfn = find_min_pfn_with_active_regions();
 
+    /*  ÒÀ´Î±éÀú£¬È·¶¨¸÷¸öÄÚ´æÓòµÄ±ß½ç    */
 	for (i = 0; i < MAX_NR_ZONES; i++) {
+        /*  ÓÉÓÚZONE_MOVABLEÊÇÒ»¸öĞéÄâÄÚ´æÓò
+             *  ²»ÓëÕæÕıµÄÓ²¼şÄÚ´æÓò¹ØÁª
+             *  ¸ÃÄÚ´æÓòµÄ±ß½ç×ÜÊÇÉèÖÃÎª0 */
 		if (i == ZONE_MOVABLE)
 			continue;
 
@@ -6356,14 +6504,19 @@ void __init free_area_init_nodes(unsigned long *max_zone_pfn)
 
 		start_pfn = end_pfn;
 	}
+
 	arch_zone_lowest_possible_pfn[ZONE_MOVABLE] = 0;
 	arch_zone_highest_possible_pfn[ZONE_MOVABLE] = 0;
 
 	/* Find the PFNs that ZONE_MOVABLE begins at in each node */
 	memset(zone_movable_pfn, 0, sizeof(zone_movable_pfn));
+    /*  ÓÃÓÚ¼ÆËã½øÈëZONE_MOVABLEµÄÄÚ´æÊıÁ¿  */
 	find_zone_movable_pfns_for_nodes();
 
 	/* Print out the zone ranges */
+/*
+    ½«¸÷¸öÄÚ´æÓòµÄ×î´ó¡¢×îĞ¡Ò³Ö¡ºÅÏÔÊ¾³öÀ´  
+*/
 	pr_info("Zone ranges:\n");
 	for (i = 0; i < MAX_NR_ZONES; i++) {
 		if (i == ZONE_MOVABLE)
@@ -6383,7 +6536,11 @@ void __init free_area_init_nodes(unsigned long *max_zone_pfn)
 	/* Print out the PFNs ZONE_MOVABLE begins at in each node */
 	pr_info("Movable zone start for each node\n");
 	for (i = 0; i < MAX_NUMNODES; i++) {
+        /*  ¶ÔÃ¿¸ö½áµãÀ´Ëµ£¬zone_movable_pfn[node_id]
+             *  ±íÊ¾ZONE_MOVABLEÔÚmovable_zoneÄÚ´æÓòÖĞËùÈ¡µÃÄÚ´æµÄÆğÊ¼µØÖ·
+             *  ÄÚºËÈ·±£ÕâĞ©Ò³½«ÓÃÓÚÂú×ã·ûºÏZONE_MOVABLEÖ°ÔğµÄÄÚ´æ·ÖÅä */
 		if (zone_movable_pfn[i])
+            /*  ÏÔÊ¾¸÷¸öÄÚ´æÓòµÄ·ÖÅäÇé¿ö  */
 			pr_info("  Node %d: %#018Lx\n", i,
 			       (u64)zone_movable_pfn[i] << PAGE_SHIFT);
 	}
@@ -6398,12 +6555,22 @@ void __init free_area_init_nodes(unsigned long *max_zone_pfn)
 	/* Initialise every node */
 	mminit_verify_pageflags_layout();
 	setup_nr_node_ids();
+    /*  ´úÂë±éÀúËùÓĞµÄ»î¶¯½áµã£¬
+       *  ²¢·Ö±ğ¶Ô¸÷¸ö½áµãµ÷ÓÃfree_area_init_node½¨Á¢Êı¾İ½á¹¹£¬
+       *  ¸Ãº¯ÊıĞèÒª½áµãµÚÒ»¸ö¿ÉÓÃµÄÒ³Ö¡×÷ÎªÒ»¸ö²ÎÊı£¬
+       *  ¶øfind_min_pfn_for_nodeÔò´Óearly_node_mapÊı×éÌáÈ¡¸ÃĞÅÏ¢   */
 	for_each_online_node(nid) {
 		pg_data_t *pgdat = NODE_DATA(nid);
 		free_area_init_node(nid, NULL,
 				find_min_pfn_for_node(nid), NULL);
 
-		/* Any memory on that node */
+        /* Any memory on that node
+             * ¸ù¾İnode_present_pages×Ö¶ÎÅĞ¶Ï½áµã¾ßÓĞÄÚ´æ
+             * ÔòÔÚ½áµãÎ»Í¼ÖĞÉèÖÃN_HIGH_MEMORY±êÖ¾
+             * ¸Ã±êÖ¾Ö»±íÊ¾½áµãÉÏ´æÔÚÆÕÍ¨»ò¸ß¶ËÄÚ´æ
+             * Òò´Ëcheck_for_regular_memory
+             * ½øÒ»²½¼ì²éµÍÓÚZONE_HIGHMEMµÄÄÚ´æÓòÖĞÊÇ·ñÓĞÄÚ´æ
+             * ²¢¾İ´ËÔÚ½áµãÎ»Í¼ÖĞÏàÓ¦µØÉèÖÃN_NORMAL_MEMORY   */
 		if (pgdat->node_present_pages)
 			node_set_state(nid, N_MEMORY);
 		check_for_memory(pgdat, nid);

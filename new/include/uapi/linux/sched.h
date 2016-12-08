@@ -5,6 +5,7 @@
  * cloning flags:
  */
 #define CSIGNAL		0x000000ff	/* signal mask to be sent at exit */
+/* 共享内存描述符和所有页面*/
 #define CLONE_VM	0x00000100	/* set if VM shared between processes */
 /*
 CLONE_FS flag是用来控制父子进程是否共享文件系统信息
@@ -16,16 +17,19 @@ CLONE_FS flag是用来控制父子进程是否共享文件系统信息
 #define CLONE_FS	0x00000200	/* set if fs info shared between processes */
 #define CLONE_FILES	0x00000400	/* set if open files shared between processes */
 /* 如果设定CLONE_SIGHAND这个flag，
-则表示创建的子进程与父进程共享相同的信号处理（signal handler）表 */
+则表示创建的子进程与父进程共享相同的信号处理（signal handler）表 
+必须同时设置CLONE_VM标志*/
 #define CLONE_SIGHAND	0x00000800	/* set if signal handlers and blocked signals shared */
+/* 如果父进程被追踪，那么子进程也被追踪*/
 #define CLONE_PTRACE	0x00002000	/* set if we want to let tracing continue on the child too */
+/* 在发出vfork系统调用时设置*/
 #define CLONE_VFORK	0x00004000	/* set if the parent wants the child to wake it up on mm_release */
 /* 新fork的进程想要和创建该进程的cloner拥有同样的父进程 */
 #define CLONE_PARENT	0x00008000	/* set if we want to have the same parent as the cloner */
 /*
 在一个进程中，如果以CLONE_THREAD标志来调用clone建立的进程
 就是该进程的一个线程（即轻量级进程，Linux其实没有严格的进程概念），
-它们处于一个线程组
+它们处于一个线程组，必须同时设置CLONE_SIGHAND
 */
 #define CLONE_THREAD	0x00010000	/* Same thread group? */
 /*

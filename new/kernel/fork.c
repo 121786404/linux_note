@@ -482,6 +482,7 @@ thread_info数据结构和CPU architecture相关，
 thread_info数据结构的task 成员指向进程描述符（也就是task struct数据结构）。
 进程描述符的stack成员指向对应的thread_info数据结构
 */
+/* 最终执行完dup_task_struct之后，子进程除了tsk->stack指针不同之外，全部都一样 */
 /*
 dup_task_struct这段代码主要动作序列包括：
 1、分配内核栈和thread_info数据结构所需要的memory（统一分配），
@@ -1472,7 +1473,14 @@ init_task_pid(struct task_struct *task, enum pid_type type, struct pid *pid)
  * It copies the registers, and all the appropriate
  * parts of the process environment (as per the clone
  * flags). The actual kick-off is left to the caller.
- */
+ 
+1 dup_task_struct中为其分配了新的堆栈
+2 调用了sched_fork，将其置为TASK_RUNNING
+3 copy_thread(_tls)中将父进程的寄存器上下文复制给子进程，保证了父子进程的堆栈信息是一致的,
+4 将ret_from_fork的地址设置为eip寄存器的值
+5 为新进程分配并设置新的pid
+6 最终子进程从ret_from_fork开始执行
+*/
 static __latent_entropy struct task_struct *copy_process(
 					unsigned long clone_flags,
 					unsigned long stack_start,
@@ -2020,10 +2028,10 @@ struct task_struct *fork_idle(int cpu)
  * it and waits for it to finish using the VM if required.
  */
 long _do_fork(unsigned long clone_flags,
-	      unsigned long stack_start,
-	      unsigned long stack_size,
-	      int __user *parent_tidptr,
-	      int __user *child_tidptr,
+	      unsigned long stack_start, // 与clone()参数stack_start相同, 子进程用户态堆栈的地址
+	      unsigned long stack_size, // 用户状态下栈的大小, 该参数通常是不必要的, 总被设置为0
+	      int __user *parent_tidptr, // 与clone的ptid参数相同, 父进程在用户态下pid的地址，该参数在CLONE_PARENT_SETTID标志被设定时有意义
+	      int __user *child_tidptr, // 与clone的ctid参数相同, 子进程在用户太下pid的地址，该参数在CLONE_CHILD_SETTID标志被设定时有意义
 	      unsigned long tls)
 {
 	struct task_struct *p;
@@ -2129,7 +2137,13 @@ long _do_fork(unsigned long clone_flags,
 
 #ifndef CONFIG_HAVE_COPY_THREAD_TLS
 /* For compatibility with architectures that call do_fork directly rather than
- * using the syscall entry points below. */
+ * using the syscall entry points below. 
+我们会发现，新版本的系统中clone的TLS设置标识会通过TLS参数传递,
+因此_do_fork替代了老版本的do_fork。
+老版本的do_fork只有在如下情况才会定义
+只有当系统不支持通过TLS参数通过参数传递而是使用pt_regs寄存器列表传递时
+未定义CONFIG_HAVE_COPY_THREAD_TLS宏
+*/
 long do_fork(unsigned long clone_flags,
 	      unsigned long stack_start,
 	      unsigned long stack_size,
@@ -2159,8 +2173,12 @@ SYSCALL_DEFINE0(fork)
 #ifdef CONFIG_MMU
     /* 对于fork的实现，在kernel中会使用COW技术，
           如果没有MMU的话，也就没有虚拟地址、页表这些概念，
-          也就无法实现COW版本的fork */
-	return _do_fork(SIGCHLD, 0, 0, NULL, NULL, 0);
+          也就无法实现COW版本的fork 
+          由于写时复制(COW)技术, 最初父子进程的栈地址相同, 
+          但是如果操作栈地址闭并写入数据, 
+          则COW机制会为每个进程分别创建一个新的栈副本
+          标志是SIGCHLD。这意味着在子进程终止后将发送信号SIGCHLD信号通知父进程*/
+	return _do_fork(SIGCHLD, 0, 0, NULL, NULL, 0); // 如果do_fork成功, 则新建进程的pid作为系统调用的结果返回, 否则返回错误码
 #else
     /* 禁止fork，用vfork＋exec来实现fork */
 	/* can not support in nommu mode */
@@ -2172,11 +2190,18 @@ SYSCALL_DEFINE0(fork)
 #ifdef __ARCH_WANT_SYS_VFORK
 SYSCALL_DEFINE0(vfork)
 {
+    // sys_vfork的实现与sys_fork只是略微不同, 前者使用了额外的标志CLONE_VFORK | CLONE_VM
 	return _do_fork(CLONE_VFORK | CLONE_VM | SIGCHLD, 0,
 			0, NULL, NULL, 0);
 }
 #endif
 
+/* 我们可以看到sys_clone的标识不再是硬编码的, 
+而是通过各个寄存器参数传递到系统调用, 因而我们需要提取这些参数。
+另外，clone也不再复制进程的栈, 而是可以指定新的栈地址, 
+在生成线程时, 可能需要这样做, 线程可能与父进程共享地址空间， 
+但是线程自身的栈可能在另外一个地址空间
+另外还指令了用户空间的两个指针(parent_tidptr和child_tidptr), 用于与线程库通信*/
 #ifdef __ARCH_WANT_SYS_CLONE
 #ifdef CONFIG_CLONE_BACKWARDS
 SYSCALL_DEFINE5(clone, unsigned long, clone_flags, unsigned long, newsp,

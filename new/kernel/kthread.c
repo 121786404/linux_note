@@ -181,7 +181,9 @@ static int kthread(void *_create)
 {
 	/* Copy data: it's on kthread's stack */
 	//获得任务参数及主函数。
+    /* create 指向 kthread_create_info 中的 kthread_create_info */
 	struct kthread_create_info *create = _create;
+    /*  新的线程创建完毕后执行的函数 */
 	int (*threadfn)(void *data) = create->threadfn;
 	void *data = create->data;
 	struct completion *done;
@@ -201,11 +203,17 @@ static int kthread(void *_create)
 		do_exit(-EINTR);
 	}
 	/* OK, tell user we're spawned, wait for stop or wakeup */
+    /*  设置运行状态为 TASK_UNINTERRUPTIBLE */
 	__set_current_state(TASK_UNINTERRUPTIBLE);
+    /*  current 表示当前新创建的 thread 的 task_struct 结构  */
 	create->result = current;
 	complete(done);
+    /*  至此线程创建完毕 ,  执行任务切换，让出 CPU  */
 	schedule();
 
+    /* 新创建的线程由于执行了 schedule() 调度，此时并没有执行.
+          直到我们使用wake_up_process(p);唤醒新创建的线程
+          线程被唤醒后, 会接着执行threadfn(data)*/
 	ret = -EINTR;
 
 	if (!test_bit(KTHREAD_SHOULD_STOP, &self.flags)) {
@@ -237,7 +245,11 @@ static void create_kthread(struct kthread_create_info *create)
 	current->pref_node_fork = create->node;
 #endif
 	/* We want our own signal handler (we take no signals by default). */
-	//创建kthreadd线程
+	/*
+    调用首先构造一个假的上下文执行环境，最后调用 do_fork()
+    返回进程 id, 创建后的线程执行 kthread 函数
+    任何一个内核线程入口都是 kthread
+    */
 	pid = kernel_thread(kthread, create, CLONE_FS | CLONE_FILES | SIGCHLD);
 	if (pid < 0) {
 		/* If user was SIGKILLed, I release the structure. */
@@ -529,6 +541,11 @@ EXPORT_SYMBOL(kthread_stop);
 
 /**
  * 内核线程守护线程
+ 它的任务就是管理和调度其他内核线程kernel_thread, 
+会循环执行一个kthread的函数，
+该函数的作用就是运行kthread_create_list全局链表中维护的kthread, 
+当我们调用kernel_thread创建的内核线程会被加入到此链表中，
+因此所有的内核线程都是直接或者间接的以kthreadd为父进程
  */
 int kthreadd(void *unused)
 {
@@ -538,28 +555,42 @@ int kthreadd(void *unused)
 	/* Setup a clean context for our children to inherit. */
 	set_task_comm(tsk, "kthreadd");//设置当前线程名称。
 	ignore_signals(tsk);//忽略所有信号
-	//允许在所有CPU上执行，允许在所有内存节点的分配内存。
+	//允许kthreadd在任意CPU上运行
 	set_cpus_allowed_ptr(tsk, cpu_all_mask);
+    // 允许在所有内存节点的分配内存。
 	set_mems_allowed(node_states[N_MEMORY]);
 
 	current->flags |= PF_NOFREEZE;
 
 	for (;;) {
-		//此状态可以信号唤醒
+        /*  首先将线程状态设置为 TASK_INTERRUPTIBLE, 如果当前
+                 没有要创建的线程则主动放弃 CPU 完成调度.此进程变为阻塞态*/
+
 		set_current_state(TASK_INTERRUPTIBLE);
 		if (list_empty(&kthread_create_list))//没有需要创建的内核线程，调度出去等待唤醒。
-			schedule();
-		//有需要创建的线程，置为运行态
+			schedule();  //   什么也不做, 执行一次调度, 让出CPU
+       
+        /*  运行到此表示 kthreadd 线程被唤醒(就是我们当前)
+                    设置进程运行状态为 TASK_RUNNING */
 		__set_current_state(TASK_RUNNING);
 
+        /* 在for循环中，如果发现kthread_create_list是一空链表，
+                则调用schedule调度函数，因为此前已经将该进程的状态设置为
+                TASK_INTERRUPTIBLE，所以schedule的调用将会使当前进程进入睡眠*/
 		spin_lock(&kthread_create_lock);//获取自旋锁，可能有多个kthreadd线程在运行。
 		while (!list_empty(&kthread_create_list)) {//读取链表，找到所有需要创建的任务。
 			struct kthread_create_info *create;
 
-			//取出要创建的任务，并释放锁。
+            /*  从链表中取得 kthread_create_info 结构的地址，在上文中已经完成插入操作(将
+                        kthread_create_info 结构中的 list 成员加到链表中，此时根据成员 list 的偏移
+                        获得 create)  */
 			create = list_entry(kthread_create_list.next,
 					    struct kthread_create_info, list);
+            
+            /* 完成创建后将其从链表中删除 */
 			list_del_init(&create->list);
+
+            /* 完成真正线程的创建 */
 			spin_unlock(&kthread_create_lock);
 
 			//创建内核线程

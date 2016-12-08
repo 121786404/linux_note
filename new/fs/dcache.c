@@ -3536,7 +3536,13 @@ static int __init set_dhash_entries(char *str)
 	return 1;
 }
 __setup("dhash_entries=", set_dhash_entries);
+/*
+同pidhash_init();
+          |     区别:
+          |         散列度变化了（13 - PAGE_SHIFT）;
+          |         传入alloc_large_system_hash的最后参数值为0;
 
+*/
 static void __init dcache_init_early(void)
 {
 	unsigned int loop;

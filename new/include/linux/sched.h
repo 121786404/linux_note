@@ -2463,6 +2463,15 @@ PF_WQ_WORKER是用来标识该task是一个workqueue worker。
 #define PF_MEMALLOC_NOIO 0x00080000	/* Allocating memory without IO involved */
 #define PF_LESS_THROTTLE 0x00100000	/* Throttle me less: I clean memory */
 #define PF_KTHREAD	0x00200000	/* I am a kernel thread */
+/*
+内核不会为栈和内存映射的起点选择固定位置,
+而是在每次新进程启动时随机改变这些值的设置. 
+
+这引入了一些复杂性, 例如, 使得攻击因缓冲区溢出导致的安全漏洞更加困难. 
+如果攻击者无法依靠固定地址找到栈
+,那么想要构建恶意代码, 通过缓冲器溢出获得栈内存区域的访问权, 
+而后恶意操纵栈的内容,将会困难得多.
+*/
 #define PF_RANDOMIZE	0x00400000	/* randomize virtual address space */
 #define PF_SWAPWRITE	0x00800000	/* Allowed to write to swap */
 #define PF_NO_SETAFFINITY 0x04000000	/* Userland is not allowed to meddle with cpus_allowed */
@@ -2805,7 +2814,14 @@ extern void ia64_set_curr_task(int cpu, struct task_struct *p);
 
 void yield(void);
 
-/*进 程的线程描述符和内核栈 */
+/*进 程的线程描述符和内核栈 
+对每个进程，Linux内核都把两个不同的数据结构紧凑的存放在一个单独为进程分配的内存区域中：
+一个是内核态的进程堆栈stack
+另一个是紧挨着进程描述符的小数据结构thread_info，叫做线程描述符。
+这两个结构被紧凑的放在一个联合体中thread_union中,
+这块区域32位上通常是8K=8192（占两个页框），64位上通常是16K,其实地址必须是8192的整数倍。
+出于效率考虑，内核让这8K(或者16K)空间占据连续的两个页框并让第一个页框的起始地址是213的倍数。
+*/
 union thread_union {
 #ifndef CONFIG_THREAD_INFO_IN_TASK
 	struct thread_info thread_info;

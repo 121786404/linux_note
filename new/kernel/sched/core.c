@@ -2366,6 +2366,9 @@ static inline void init_schedstats(void) {}
 
 /*
  * fork()/clone()-time setup:
+ 我们可以看到sched_fork大致完成了两项重要工作，
+ 一是将子进程状态设置为 TASK_RUNNING，
+ 二是为其分配 CPU
  */
 int sched_fork(unsigned long clone_flags, struct task_struct *p)
 {
@@ -2378,6 +2381,7 @@ int sched_fork(unsigned long clone_flags, struct task_struct *p)
 	 * nobody will actually run it, and a signal or other external
 	 * event cannot wake it up and insert it on the runqueue either.
 	 */
+    //  将子进程状态设置为 TASK_RUNNING
 	p->state = TASK_NEW;
 
 	/*
@@ -5305,7 +5309,7 @@ void init_idle(struct task_struct *idle, int cpu)
 	rcu_read_lock();
 	__set_task_cpu(idle, cpu);
 	rcu_read_unlock();
-
+    /* 把当前进程（0号进程）置为每个rq运行队列的的idle上 */
 	rq->curr = rq->idle = idle;
 	idle->on_rq = TASK_ON_RQ_QUEUED;
 #ifdef CONFIG_SMP
@@ -7459,6 +7463,9 @@ void __init sched_init_smp(void)
 	//获取调度域的锁
 	mutex_lock(&sched_domains_mutex);
 	//初始化调度域。
+    /* 设定scheduler domains与groups,参考Linux Documentation/scheduler/sched-domains.txt文件,
+          一个Scheduling Domain会包含一个或多个CPU Groups,
+          排程的Load-Balance就会根据Domain中的Groups来做调整*/
 	init_sched_domains(cpu_active_mask);
 	//设置非隔离调度CPU
 	cpumask_andnot(non_isolated_cpus, cpu_possible_mask, cpu_isolated_map);
@@ -7470,6 +7477,15 @@ void __init sched_init_smp(void)
 
 	/* Move init over to a non-isolated CPU */
 	//设置当前任务可以运行的核，不能占用被隔离的CPU
+    /*
+    呼叫set_cpus_allowed_ptr,透过这函式可以设定CPU bitmask,
+    限定Task只能在特定的处理器上运作.在这会用参数”non_isolated_cpus”,
+    也就是会把init指定给non-isolated CPU. Linux Kernel可以在啟动时,
+    透过Boot Parameters “isolcpus=“指定CPU编号或是范围,
+    让这些处理器不被包含在Linux Kernel SMP balancing/scheduling算法内,
+    可以在啟动后指派给特定的Task运作.
+    而不在 “isolcpus=“ 指定范围内的处理器就算是non-isolated CPU.
+    */
 	if (set_cpus_allowed_ptr(current, non_isolated_cpus) < 0)
 		BUG();
 	sched_init_granularity();

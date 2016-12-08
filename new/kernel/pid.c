@@ -574,11 +574,21 @@ struct pid *find_ge_pid(int nr, struct pid_namespace *ns)
  */
 /**
  * 初始化系统管理所有进程的数据结构
+ 根据低端内存页数和散列度，分配hash空间，并赋予pid_hash
  */
 void __init pidhash_init(void)
 {
 	unsigned int i, pidhash_size;
-
+/*
+根据nr_kernel_pages(低端内存的页数)，分配哈希数组，以及各个哈希
+    |     数组元素下的哈希链表的空间，原理如下：
+    |     number = nr_kernel_pages; 
+    |     number >= (18 - PAGE_SHIFT) 根据散列度获得数组元素个数
+    |     number = roundup_pow_of_two(number);
+    |     pidhash_shift = max{x | 2**x <= number}
+    |     size = number * sizeof(*pid_hash);
+    |     使用位图分配器分配size空间，将返回值付给pid_hash;
+*/
 	pid_hash = alloc_large_system_hash("PID", sizeof(*pid_hash), 0, 18,
 					   HASH_EARLY | HASH_SMALL,
 					   &pidhash_shift, NULL,

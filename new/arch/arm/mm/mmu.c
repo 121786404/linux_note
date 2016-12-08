@@ -1159,6 +1159,9 @@ early_param("vmalloc", early_vmalloc);
 
 phys_addr_t arm_lowmem_limit __initdata = 0;
 
+/*
+对meminfo中所有的membank进行范围检查，不能覆盖最小的vmalloc区域
+*/
 void __init sanity_check_meminfo(void)
 {
 	phys_addr_t memblock_limit = 0;
