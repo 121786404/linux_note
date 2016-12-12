@@ -785,8 +785,6 @@ __pv_phys_pfn_offset:
 __pv_offset:
 	.quad	0
 	.size	__pv_offset, . -__pv_offset
-EXPORT_SYMBOL(__pv_phys_pfn_offset)
-EXPORT_SYMBOL(__pv_offset)
 #endif
 
 #include "head-common.S"
