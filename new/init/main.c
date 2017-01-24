@@ -475,6 +475,8 @@ void __init parse_early_options(char *cmdline)
 /**
  * 用未修正的原始参数进行解析
  * 对boot_command_line进行早期的解析
+ * 有些參數有較高的優先權，需要先被處理，這類的參數被稱為 early_param
+ * 舉例來說，像 log level 的設定會影響訊息的輸出，若太晚生效的話，有些除錯訊息可能就不會被看到
  */
 void __init parse_early_param(void)
 {
@@ -536,8 +538,8 @@ static void __init mm_init(void)
  */
 asmlinkage __visible void __init start_kernel(void)
 {
-	char *command_line;
-	char *after_dashes;
+	char *command_line; // a pointer to the kernel command line
+	char *after_dashes; // a pointer to the kernel command line after "--", which will be passed to the init process
 
 	//设置init任务的堆栈魔法数，用于故障诊断
 	set_task_stack_end_magic(&init_task);
@@ -554,6 +556,13 @@ asmlinkage __visible void __init start_kernel(void)
 	/**
 	 * 在堆栈中放入"金丝雀"，这种小动物对矿山上的有毒物质很敏感
 	 * 用于侦测堆栈攻击，防止攻击代码修改返回地址。
+	 * 這邊的 stack canary (金絲雀) 和上面 stack end magic 是同樣作用，
+	 * 都是放在 stack 後面用來檢查是否發生 stack overflow。 
+	 * 內核這邊的 boot_init_stack_canary() 函式的功用是設定一個不固定的 stack canary 值，
+	 * 用以防止 stack overflow 的攻擊，不過內核這邊也僅僅是設定一個不固定的 canary 值，
+	 * 真正的檢查 stack overflow 的機制是由 gcc 實現。 
+	 * gcc 提供 -fstack-protector 編譯選項，它會參考這個 canary 值， 
+	 * 加入用來檢查的程式碼，在函式返回前檢查這個值是否被覆寫。 
 	 */
 	boot_init_stack_canary();
 
@@ -591,8 +600,9 @@ init=/linuxrc earlyprintk console=ttyAMA0,115200 root=/dev/mmcblk0 rw rootwait
 	mm_init_cpumask(&init_mm);
 	//保存命令行参数
 	setup_command_line(command_line);
+	// set "nr_cpu_ids" according to the last bit in possible mask
 	setup_nr_cpu_ids();
-
+    // per cpu memory allocator
 	setup_per_cpu_areas();
 	boot_cpu_state_init();
 	smp_prepare_boot_cpu();	/* arch-specific boot-cpu hooks */
@@ -614,21 +624,26 @@ init=/linuxrc earlyprintk console=ttyAMA0,115200 root=/dev/mmcblk0 rw rootwait
 		parse_args("Setting init args", after_dashes, NULL, 0, -1, -1,
 			   NULL, set_init_arg);
 
+    // Jump label: https://lwn.net/Articles/412072/
 	jump_label_init();
 
 	/*
 	 * These use large bootmem allocations and must precede
 	 * kmem_cache_init()
 	 */
+	// buf for printk
 	setup_log_buf(0);
 	//进程pid管理用到的数据结构初始化。
 	pidhash_init();
 	//初始化目录项和索引节点缓存
+	// allocate and caches initialize for hash tables of dcache and inode
 	vfs_caches_init_early();
 	//对异常表进行排序，以减少异常修复入口的查找时间
+	// sort the kernel's built-in exception table (for page faults)
 	sort_main_extable();
-	//do nothing
+	// architecture-specific, interrupt vector table, handle hardware traps, exceptions and faults.
 	trap_init();
+	// memory management
 	mm_init();
 
 	/*
@@ -652,45 +667,59 @@ init=/linuxrc earlyprintk console=ttyAMA0,115200 root=/dev/mmcblk0 rw rootwait
 	rcu_init();
 
 	/* trace_printk() and trace points may be used after this */
+	// https://www.kernel.org/doc/Documentation/trace/
 	trace_init();
-
+    // prepare for using a static key in the context tracking subsystem
 	context_tracking_init();
 	/**
 	 * 初始化文件系统中使用的基数
+	 * allocate a cache for radix_tree. [LWN] radix_tree: https://lwn.net/Articles/175432/
 	 */
 	radix_tree_init();
 	/* init some links before init_ISA_irqs() */
 	//中断亲和性相关的初始化。
+	// allocate caches for irq_desc, interrupt descriptor
 	early_irq_init();
 	//中断初始化，注册bad_irq_desc
+	// architecture-specific, initialize kernel's interrupt subsystem and the interrupt controllers.
 	init_IRQ();
 	/**
 	 * 初始化时钟
+	 * initialize the tick control
 	 */
 	tick_init();
 	rcu_init_nohz();
 	//初始化计时器
+	// init timer stats, register cpu notifier, and open softirq for timer
 	init_timers();
 	//高分辨率时钟初始化。
+	// high-resolution timer, https://www.kernel.org/doc/Documentation/timers/hrtimers.txt
 	hrtimers_init();
 	//软中断初始化
+	// initialize tasklet_vec and open softirq for tasklet
 	softirq_init();
 	//初始化xtime
+	// https://www.kernel.org/doc/Documentation/timers/timekeeping.txt
 	timekeeping_init();
-	//初始化硬件时钟并设置计时器，注册处理函数。
+	//初始化硬件时钟并设置计时器，注册处理函数
+	// architecture-specific, timer initialization
 	time_init();
 	//调度器使用的时间系统初始化。
+	// start the high-resolution timer to keep sched_clock() properly updated and sets the initial epoch
 	sched_clock_postinit();
 	printk_nmi_init();
+	// perf is a profiler tool for Linux, https://perf.wiki.kernel.org/index.php/Tutorial
 	perf_event_init();
+	// initializes basic kernel profiler
 	profile_init();
 	//smp中，为管理核间回调函数的初始化。
+	// SMP initializes call_single_queue and register notifier
 	call_function_init();
 	WARN(!irqs_disabled(), "Interrupts were enabled early\n");
 	early_boot_irqs_disabled = false;
 	//中断已经初始化完毕，现在要开启控制台了，打开中断。
 	local_irq_enable();
-
+    // post-initialization of cache (slab)
 	kmem_cache_init_late();
 
 	/*
@@ -699,6 +728,7 @@ init=/linuxrc earlyprintk console=ttyAMA0,115200 root=/dev/mmcblk0 rw rootwait
 	 * this. But we do want output early, in case something goes wrong.
 	 */
 	//初始化控制台。
+	// call console initcalls to initialize the console device, usually it's tty device.
 	console_init();
 	if (panic_later)
 		panic("Too many boot %s vars at `%s'", panic_later,
@@ -723,35 +753,47 @@ init=/linuxrc earlyprintk console=ttyAMA0,115200 root=/dev/mmcblk0 rw rootwait
 		initrd_start = 0;
 	}
 #endif
+    // memory page extension, allocates memory for extended data per page
 	page_ext_init();
 	//内核对象跟踪
+	// allocate a dedicated cache pool for debug objects
 	debug_objects_mem_init();
 	//内存泄漏检测初始化
+	// initialize kmemleak (memory leak check facility)
 	kmemleak_init();
 	//设置pageset，即每个zone上面的每cpu页面缓存
+	// allocate and initialize per cpu pagesets
 	setup_per_cpu_pageset();
 	//将16M以上的内存节点指定为交叉节点，并设置当前进程的模式
+    // allocate caches and do initialization for NUMA memory policy
 	numa_policy_init();
 	//延后的时钟初始化操作
+	// default late_time_init is NULL. archs can override it
 	if (late_time_init)
-		late_time_init();
+		late_time_init(); // architecture-specific
+	// set the time info for scheduler and make sched clock running
 	sched_clock_init();
 	//测试BogoMIPS值，计算每个jiffy内消耗掉多少CPU周期。
+	// calibrate the delay loop
 	calibrate_delay();
 	//快速执行pid分配，分配pid位图并生成slab缓存.
+	// initialize PID map for initial PID namespace
 	pidmap_init();
 	//为anon_vma生成slab分配器。
+	// allocate a cache for "anon_vma" (anonymous memory), http://lwn.net/Kernel/Index/#anon_vma
 	anon_vma_init();
+	// initialize ACPI subsystem and populate the ACPI namespace
 	acpi_early_init();
 #ifdef CONFIG_X86
+    // Extensible Firmware Interface
 	if (efi_enabled(EFI_RUNTIME_SERVICES))
-		efi_enter_virtual_mode();
+		efi_enter_virtual_mode(); // switch EFI to virtual mode, if possible
 #endif
 #ifdef CONFIG_X86_ESPFIX64
 	/* Should be run before the first non-init thread is created */
 	init_espfix_bsp();
 #endif
-	//do nothing
+	// allocate cache for thread_info if THREAD_SIZE < PAGE_SIZE
 	thread_stack_cache_init();
 	//审计初始化，用于确定对象是否有执行某种操作的资格。
 	cred_init();
@@ -762,18 +804,23 @@ init=/linuxrc earlyprintk console=ttyAMA0,115200 root=/dev/mmcblk0 rw rootwait
 	//初始化buffer,用于缓存从块设备中读取的块。为其构建slab缓存管理器。
 	buffer_init();
 	//密钥服务初始化。
+	// initialize the authentication token and access key management
 	key_init();
 	//安全子系统初始化。
 	security_init();
+	// late init for kgdb
 	dbg_late_init();
+	// file system, including kernfs, sysfs, rootfs, mount tree
 	vfs_caches_init();
 	//初始化以准备使用进程信号。
 	signals_init();
 	/* rootfs populating might need page-writeback */
 	//初始化页回写机制。
+	// set the ratio limits for the dirty pages
 	page_writeback_init();
 	//注册proc文件系统并生成一些默认的proc文件
 	proc_root_init();
+	// mount pseudo-filesystem: nsfs
 	nsfs_init();
 	//初始化cpuset子系统。设置top_cpuset并将cpuset注册到文件系统。
 	cpuset_init();
@@ -790,16 +837,19 @@ init=/linuxrc earlyprintk console=ttyAMA0,115200 root=/dev/mmcblk0 rw rootwait
 	 */
 	check_bugs();
 
-	//arm不支持,do nothing
+    // enable ACPI subsystem ,arm不支持
 	acpi_subsystem_init();
+	// SFI: Simple Firmware Interface. Map SFI tables again by using ioremap
 	sfi_init_late();
 
+    // Extensible Firmware Interface
 	if (efi_enabled(EFI_RUNTIME_SERVICES)) {
 		efi_late_init();
 		efi_free_boot_services();
 	}
 
 	//初始化ftrace，一个有用的内核调测功能。
+	// https://www.kernel.org/doc/Documentation/trace/ftrace.txt
 	ftrace_init();
 
 	/* Do the rest non-__init'ed, we're now alive */
@@ -1009,7 +1059,7 @@ static void __init do_basic_setup(void)
 	//初始化cpuset子系统的top_cpuset
 	cpuset_init_smp();
 	shmem_init();
-	//初始化linux设备驱动模型。
+    // init driver model. (kobject, kset)
 	driver_init();
 	//初始化 “/proc/irq”与其下的File Nodes. 
 	init_irq_proc();
@@ -1018,6 +1068,7 @@ static void __init do_basic_setup(void)
 	//允许khelper workqueue生效，这个队列允许用户态为内核态执行一些辅助工作。
 	usermodehelper_enable();
 	//调用各子系统的初始化函数。
+	// call init functions in .initcall[0~9].init sections
 	do_initcalls();
 	random_int_secret_init();
 }
@@ -1103,15 +1154,19 @@ static int __ref kernel_init(void *unused)
 {
 	int ret;
 
-	//内核初始化准备文件系统，准备模块信息，不必在主核上运行。
+	// 初始化 device, driver, rootfs, 掛載 /dev, /sys 等虛擬檔案系統目錄，開啟 /dev/console 做為訊息輸出
+	// 不必在主核上运行。
 	kernel_init_freeable();
 	/* need to finish all async __init code before freeing the memory */
     /* 用以同步所有非同步函式呼叫的执行,在这函数中会等待
           List async_running与async_pending都清空后,才会返回. 
           Asynchronously called functions主要设计用来加速Linux Kernel开机的效率,
           避免在开机流程中等待硬体反应延迟,影响到开机完成的时间 */
+    // waits until all asynchronous function calls have been done
 	async_synchronize_full();
+	// free .init section from memory
 	free_initmem();
+	// mark rodata read-only
 	mark_readonly();
     /* 设置运行状态SYSTEM_RUNNING */
 	system_state = SYSTEM_RUNNING;

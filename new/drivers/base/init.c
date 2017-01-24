@@ -21,6 +21,7 @@
 void __init driver_init(void)
 {
 	/* These are the core pieces */
+	// mount root node: "/"
 	devtmpfs_init();
 	//在sysfs中生成devices,dev,block,char等目录。
 	devices_init();

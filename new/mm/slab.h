@@ -435,22 +435,25 @@ struct kmem_cache_node {
 	spinlock_t list_lock;
 
 #ifdef CONFIG_SLAB
-	//包含部分slab对象的slab链表
+    /* 只使用了部分对象的SLAB描述符的双向循环链表 */
 	struct list_head slabs_partial;	/* partial list first, better asm code */
-	//全满链表
+    /* 不包含空闲对象的SLAB描述符的双向循环链表 */
 	struct list_head slabs_full;
-	//空闲链表，可回收
+    /* 只包含空闲对象的SLAB描述符的双向循环链表 */
 	struct list_head slabs_free;
 	unsigned long num_slabs;
+	/* 高速缓存中空闲对象个数(包括slabs_partial链表中和slabs_free链表中所有的空闲对象) */
 	unsigned long free_objects;
+	/* 高速缓存中空闲对象的上限 */
 	unsigned int free_limit;
-	//当前节点的可用着色值
+    /* 下一个被分配的SLAB使用的颜色 */
 	unsigned int colour_next;	/* Per-node cache coloring */
+	/* 指向这个结点上所有CPU共享的一个本地高速缓存 */
 	struct array_cache *shared;	/* shared per node */
 	struct alien_cache **alien;	/* on other nodes */
-	//用于回收
+    /* 两次缓存收缩时的间隔，降低次数，提高性能 */
 	unsigned long next_reap;	/* updated without locking */
-	//是否用过slab
+    /* 0:收缩  1:获取一个对象 */
 	int free_touched;		/* updated without locking */
 #endif
 

@@ -976,6 +976,9 @@ static void __init new_kmalloc_cache(int idx, unsigned long flags)
  * Create the kmalloc array. Some of the regular kmalloc arrays
  * may already have been created because they were needed to
  * enable allocations for slab creation.
+规划需要创建的kmalloc size，例如kmalloc-128，kmalloc-256，kmalloc-512等。
+调用kmem_cache_zalloc()从分配一个kmem_cache对象（kmem_cache cache在前面已经创建了，现在可以使用了）。
+调用create_boot_cache()创建cache。
  */
 void __init create_kmalloc_caches(unsigned long flags)
 {

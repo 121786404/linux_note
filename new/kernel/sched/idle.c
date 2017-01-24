@@ -218,10 +218,16 @@ static void cpu_idle_loop(void)
 
 		__current_set_polling();
 		quiet_vmstat();
+		// stop the idle tick from the idle task
 		tick_nohz_idle_enter();
         /* 循环判断need_resched以降低退出延迟，用idle()来节能 */
 		while (!need_resched()) {
 			check_pgt_cache();
+			// read memory barrier.
+            // It ensures that no loads are reordered across the rmb() call.
+            // no loads prior to the call will be reordered to after the call
+            // and no loads after the call will be reordered to before the call.
+            // http://www.makelinux.net/books/lkd2/ch09lev1sec10
 			rmb();
 
 			if (cpu_is_offline(cpu)) {
