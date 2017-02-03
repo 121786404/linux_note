@@ -8,14 +8,8 @@
 #include <linux/pid_namespace.h>	/* For task_active_pid_ns.  */
 #include <uapi/linux/ptrace.h>
 
-/*
-Ptrace 提供了一种父进程可以控制子进程运行，
-并可以检查和改变它的核心image。它主要用于实现断点调试。
-一个被跟踪的进程运行中，直到发生一个信号。
-则进程被中止，并且通知其父进程。
-在进程中止的状态下，进程的内存空间可以被读写。
-父进程还可以使子进程继续执行，并选择是否是否忽略引起中止的信号。
-*/
+extern int ptrace_access_vm(struct task_struct *tsk, unsigned long addr,
+			    void *buf, int len, unsigned int gup_flags);
 
 /*
  * Ptrace flags
@@ -28,7 +22,6 @@ Ptrace 提供了一种父进程可以控制子进程运行，
 #define PT_SEIZED	0x00010000	/* SEIZE used, enable new behavior */
 #define PT_PTRACED	0x00000001
 #define PT_DTRACE	0x00000002	/* delayed trace (used on m68k, i386) */
-#define PT_PTRACE_CAP	0x00000004	/* ptracer can follow suid-exec */
 
 #define PT_OPT_FLAG_SHIFT	3
 /* PT_TRACE_* event enable flags */

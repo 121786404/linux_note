@@ -81,6 +81,7 @@
 #include <linux/integrity.h>
 #include <linux/proc_ns.h>
 #include <linux/io.h>
+#include <linux/cache.h>
 
 #include <asm/io.h>
 #include <asm/bugs.h>
@@ -492,6 +493,7 @@ void __init parse_early_param(void)
 	parse_early_options(tmp_cmdline);
 	done = 1;
 }
+void __init __weak arch_post_acpi_subsys_init(void) { }
 
 void __init __weak smp_setup_processor_id(void)
 {
@@ -664,6 +666,7 @@ init=/linuxrc earlyprintk console=ttyAMA0,115200 root=/dev/mmcblk0 rw rootwait
 	//idr用于管理整数ID，为POSIX计时器相关系统所用，生成特定计时器对象的ID.
 	idr_init_cache();
 	//初始化cpu相关的rcu数据结构。注册rcu回调。
+	workqueue_init_early();
 	rcu_init();
 
 	/* trace_printk() and trace points may be used after this */
@@ -812,12 +815,11 @@ init=/linuxrc earlyprintk console=ttyAMA0,115200 root=/dev/mmcblk0 rw rootwait
 	dbg_late_init();
 	// file system, including kernfs, sysfs, rootfs, mount tree
 	vfs_caches_init();
-	//初始化以准备使用进程信号。
+	pagecache_init();
 	signals_init();
 	/* rootfs populating might need page-writeback */
 	//初始化页回写机制。
 	// set the ratio limits for the dirty pages
-	page_writeback_init();
 	//注册proc文件系统并生成一些默认的proc文件
 	proc_root_init();
 	// mount pseudo-filesystem: nsfs
@@ -839,7 +841,7 @@ init=/linuxrc earlyprintk console=ttyAMA0,115200 root=/dev/mmcblk0 rw rootwait
 
     // enable ACPI subsystem ,arm不支持
 	acpi_subsystem_init();
-	// SFI: Simple Firmware Interface. Map SFI tables again by using ioremap
+	arch_post_acpi_subsys_init();
 	sfi_init_late();
 
     // Extensible Firmware Interface
@@ -1116,14 +1118,16 @@ static int try_to_run_init_process(const char *init_filename)
 
 static noinline void __init kernel_init_freeable(void);
 
-#ifdef CONFIG_DEBUG_RODATA
-static bool rodata_enabled = true;
+#if defined(CONFIG_DEBUG_RODATA) || defined(CONFIG_DEBUG_SET_MODULE_RONX)
+bool rodata_enabled __ro_after_init = true;
 static int __init set_debug_rodata(char *str)
 {
 	return strtobool(str, &rodata_enabled);
 }
 __setup("rodata=", set_debug_rodata);
+#endif
 
+#ifdef CONFIG_DEBUG_RODATA
 static void mark_readonly(void)
 {
 	if (rodata_enabled)
@@ -1205,7 +1209,7 @@ static int __ref kernel_init(void *unused)
 		return 0;
 
 	panic("No working init found.  Try passing init= option to kernel. "
-	      "See Linux Documentation/init.txt for guidance.");
+	      "See Linux Documentation/admin-guide/init.rst for guidance.");
 }
 
 static noinline void __init kernel_init_freeable(void)
@@ -1246,10 +1250,8 @@ static noinline void __init kernel_init_freeable(void)
 	//准备激活并使用其他CPU  设定支援的最大CPU数量
 	smp_prepare_cpus(setup_max_cpus);
 
-	/**
-	 * 执行模块注册的初始化函数。
-	 * 这些函数主要是初始化多核间调度需要的队列。
-	 */
+	workqueue_init();
+
 	do_pre_smp_initcalls();
 	lockup_detector_init();
 

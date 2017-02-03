@@ -590,6 +590,7 @@ start_data和end_data标记了包含已初始化数据的区域. 请注意,
 	 */
 	struct task_struct __rcu *owner;
 #endif
+	struct user_namespace *user_ns;
 
 	/* store ref to file /proc/<pid>/exe symlink points to */
 	struct file __rcu *exe_file;
@@ -625,10 +626,6 @@ start_data和end_data标记了包含已初始化数据的区域. 请注意,
 	bool tlb_flush_pending;
 #endif
 	struct uprobes_state uprobes_state;
-#ifdef CONFIG_X86_INTEL_MPX
-	/* address of the bounds directory */
-	void __user *bd_addr;
-#endif
 #ifdef CONFIG_HUGETLB_PAGE
 	atomic_long_t hugetlb_usage;
 #endif

@@ -6,7 +6,7 @@
  *  proc root directory handling functions
  */
 
-#include <asm/uaccess.h>
+#include <linux/uaccess.h>
 
 #include <linux/errno.h>
 #include <linux/time.h>
@@ -126,6 +126,7 @@ void __init proc_root_init(void)
 
 	//创建proc_inode缓存管理器
 	proc_init_inodecache();
+	set_proc_pid_nlink();
 	//注册proc文件系统。
 	err = register_filesystem(&proc_fs_type);
 	if (err)
