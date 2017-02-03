@@ -560,8 +560,9 @@ not_relocated:	mov	r0, #0
 		mov	r3, r7
 /**
  * 开始解压内核
+ * r0:zImage解压位置，r1:位于堆栈上方的动态内存，r2:动态内存大小，r3:体系架构编号
  */
-		bl	decompress_kernel	@r0:zImage解压位置，r1:位于堆栈上方的动态内存，r2:动态内存大小，r3:体系架构编号
+		bl	decompress_kernel
 /**
  * 清除缓存，并关闭缓存
  */
@@ -712,7 +713,10 @@ __armv3_mpu_cache_on:
  */
 __setup_mmu:	sub	r3, r4, #16384		@ Page directory size
 		bic	r3, r3, #0xff		@ Align the pointer
-		bic	r3, r3, #0x3f00		@ r3是页目录起始地址，位于zimage代码前
+/*
+r3是页目录起始地址，位于zimage代码前
+*/
+		bic	r3, r3, #0x3f00
 /*
  * Initialise the page tables, turning on the cacheable and bufferable
  * bits for the RAM area only.

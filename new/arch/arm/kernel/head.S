@@ -92,12 +92,20 @@ ENTRY(stext)
 #endif
 	@ ensure svc mode and all interrupts masked
 	safe_svcmode_maskall r9
-
-	mrc	p15, 0, r9, c0, c0		@ 从arm协处理器里面读到CPU ID存储到r9，这里的CPU主要是指arm架构相关的CPU型号，比如ARM9，ARM11等等
-	bl	__lookup_processor_type		@ OUT r5=procinfo IN r9=cpuid  在procinfo中，根据CPUID查找对应的proc
+/*
+@ 从arm协处理器里面读到CPU ID存储到r9，这里的CPU主要是指arm架构相关的CPU型号，比如ARM9，ARM11等等
+*/
+	mrc	p15, 0, r9, c0, c0		@ get processor id
+/*
+	OUT r5=procinfo IN r9=cpuid  在procinfo中，根据CPUID查找对应的proc
+*/
+	bl	__lookup_processor_type		@ r5=procinfo r9=cpuid
 	movs	r10, r5				@ invalid processor (r5=0)?
  THUMB( it	eq )		@ force fixup-able long branch encoding
-	beq	__error_p			@ yes, error 'p'  CPUID与proc不匹配，只好打印错误信息并停止了
+ /*
+ CPUID与proc不匹配，只好打印错误信息并停止了
+ */
+	beq	__error_p			@ yes, error 'p'
 
 #ifdef CONFIG_ARM_LPAE
 	mrc	p15, 0, r3, c0, c1, 4		@ read ID_MMFR0
@@ -119,15 +127,19 @@ ENTRY(stext)
 	/*
 	 * r1 = machine no, r2 = atags or dtb,
 	 * r8 = phys_offset, r9 = cpuid, r10 = procinfo
+	 * 检查atags parameter的有效性
 	 */
-	bl	__vet_atags   @ 检查atags parameter的有效性
+	bl	__vet_atags
 #ifdef CONFIG_SMP_ON_UP
 	bl	__fixup_smp
 #endif
 #ifdef CONFIG_ARM_PATCH_PHYS_VIRT
 	bl	__fixup_pv_table
 #endif
-	bl	__create_page_tables  @ 创建临时页表，它所要做的工作就是将RAM基地址开始的4M空间的物理地址映射到0xC0000000开始的虚拟地址处
+/*
+创建临时页表，它所要做的工作就是将RAM基地址开始的4M空间的物理地址映射到0xC0000000开始的虚拟地址处
+*/
+	bl	__create_page_tables
 
 	/*
 	 * The following calls CPU specific code in a position independent
@@ -193,9 +205,12 @@ ENDPROC(stext)
  *  r4 = physical page table address
  */
 __create_page_tables:
-	pgtbl	r4, r8		@ add r4,r8,#TEXT_OFFSET;sub r4,r4,#PG_DIR_SIZE
-                                @ 设置r4为内核页表起始地址，物理地址:内核代码段起始位置TEXT_OFFSET(0x8000)前移PG_DIR_SIZE(0x4000)
-	                        @ arch/arm/Makefile   textofs-y:= 0x00008000  TEXT_OFFSET := $(textofs-y)
+/*
+add r4,r8,#TEXT_OFFSET;sub r4,r4,#PG_DIR_SIZE
+设置r4为内核页表起始地址，物理地址:内核代码段起始位置TEXT_OFFSET(0x8000)前移PG_DIR_SIZE(0x4000)
+arch/arm/Makefile   textofs-y:= 0x00008000  TEXT_OFFSET := $(textofs-y)
+*/
+	pgtbl	r4, r8				@ page table address
 
 	/*
 	 * Clear the swapper page table
@@ -237,8 +252,10 @@ __create_page_tables:
 	add	r4, r4, #4			@ we only write the bottom word
 #endif
 #endif
-
-	ldr	r7, [r10, #PROCINFO_MM_MMUFLAGS] @ mm_mmuflags  获得proc_info_list的__cpu_mm_mmu_flags的值，并存储到r7中
+/*
+获得proc_info_list的__cpu_mm_mmu_flags的值，并存储到r7中
+*/
+	ldr	r7, [r10, #PROCINFO_MM_MMUFLAGS] @ mm_mmuflags
 
 	/*
 	 * Create identity mapping to cater for __enable_mmu.

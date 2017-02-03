@@ -199,20 +199,60 @@ ENDPROC(lookup_processor_type)
  *	r9 = cpuid (preserved)
  */
 __lookup_processor_type:
-	adr	r3, __lookup_processor_type_data  @ r3=(phys)__lookup_processor_type_data
-	ldmia	r3, {r4 - r6}	                  @ r4=(virt). r5=(virt)__proc_info_begin r6=(virt)__proc_info_end
-	sub	r3, r3, r4			  @ r3=(phys)r3-(virt)r4 (接下来两行把virt转换成phys的时候使用)
-	add	r5, r5, r3			  @ (phys)r5=(virt)r5+r3
-	add	r6, r6, r3			  @ (phys)r6=(virt)r6+r3
-1:	ldmia	r5, {r3, r4}	                  @ r3=value r4=mask (参考struct proc_info_list)
-	and	r4, r4, r9			  @ 对processor id进行mask
-	teq	r3, r4				  @ 比较cpu_val
-	beq	2f                                @ 匹配成功即退出
-	add	r5, r5, #PROC_INFO_SZ		  @ r5往后偏移sizeof(struct proc_info_list)
-	cmp	r5, r6                            @ r6是存放proc_info_list的末尾       
-	blo	1b                                @ 小于__proc_info_end ,继续查找
-	mov	r5, #0				  @ 如果没有匹配成功结果是unknown processor(r5=0)
-2:	ret	lr                                @ lr中保存的地址是__enable_mmu
+/* @ r3=(phys)__lookup_processor_type_data */
+	adr	r3, __lookup_processor_type_data  
+/*
+	@ r4=(virt). r5=(virt)__proc_info_begin r6=(virt)__proc_info_end
+*/
+	ldmia	r3, {r4 - r6}	
+/*
+	r3=(phys)r3-(virt)r4 (接下来两行把virt转换成phys的时候使用)
+*/                  
+	sub	r3, r3, r4			@ get offset between virt&phys
+/*
+	(phys)r5=(virt)r5+r3
+*/
+	add	r5, r5, r3			@ convert virt addresses to
+/*
+(phys)r6=(virt)r6+r3
+*/
+	add	r6, r6, r3			@ physical address space
+/*
+	r3=value r4=mask (参考struct proc_info_list)
+*/
+1:	ldmia	r5, {r3, r4}			@ value, mask
+/*
+对processor id进行mask
+*/                  
+	and	r4, r4, r9			@ mask wanted bits
+/*
+	比较cpu_val
+*/
+	teq	r3, r4
+/*
+	 匹配成功即退出
+*/
+	beq	2f
+/*
+	r5往后偏移sizeof(struct proc_info_list)
+*/
+	add	r5, r5, #PROC_INFO_SZ		@ sizeof(proc_info_list)
+/*
+	r6是存放proc_info_list的末尾
+*/
+	cmp	r5, r6
+/*
+	小于__proc_info_end ,继续查找
+*/   
+	blo	1b
+/*
+	如果没有匹配成功结果是unknown processor(r5=0)
+*/
+	mov	r5, #0				@ unknown processor
+/*
+	lr中保存的地址是__enable_mmu
+*/
+2:	ret	lr
 ENDPROC(__lookup_processor_type)
 
 /*
@@ -221,9 +261,12 @@ ENDPROC(__lookup_processor_type)
 	.align	2
 	.type	__lookup_processor_type_data, %object
 __lookup_processor_type_data:
-	.long	.                      @ r4
-	.long	__proc_info_begin      @ r5
-	.long	__proc_info_end        @ r6
+/*r4*/
+	.long	.         
+/*r5*/	             
+	.long	__proc_info_begin
+/*r6*/	
+	.long	__proc_info_end
 	.size	__lookup_processor_type_data, . - __lookup_processor_type_data
 
 __error_lpae:
