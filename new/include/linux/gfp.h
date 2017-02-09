@@ -15,6 +15,20 @@ struct vm_area_struct;
  */
 /*
 GFP缩写的意思为获取空闲页get free page
+
+常见的几种内存分配场景及使用的标志
+    1) 缺页异常分配内存时：
+        GFP_HIGHUSER | __GFP_ZERO | __GFP_MOVABLE   
+        分配可移动的page，并且将page清零
+        do_page_fault() -> handle_pte_fault() -> do_anonymous_page() -> alloc_zeroed_user_highpage_movable()
+    2) 文件映射分配内存时：
+        GFP_HIGHUSER_MOVABLE    
+        分配可移动的page 
+        do_page_fault() -> handle_pte_fault() -> do_anonymous_page() -> do_nonlinear_fault() -> __do_fault()
+    3) vmalloc分配内存时：
+        GFP_KERNEL | __GFP_HIGHMEM   
+        优先从高端内存中分配
+        vmalloc() -> __vmalloc_node_flags(size, -1, GFP_KERNEL | __GFP_HIGHMEM)
 */
 /* Plain integer GFP bitmasks. Do not use this directly. */
 #define ___GFP_DMA		0x01u
@@ -94,22 +108,18 @@ GFP缩写的意思为获取空闲页get free page
  * __GFP_ACCOUNT causes the allocation to be accounted to kmemcg.
  */
 /*
- 是页迁移机制所需的标志. 顾名思义，
- 它们分别将分配的内存标记为可回收的或可移动的。
- 这影响从空闲列表的哪个子表获取内存
+ 请求分配可回收的page
 */
 #define __GFP_RECLAIMABLE ((__force gfp_t)___GFP_RECLAIMABLE)
 #define __GFP_WRITE	((__force gfp_t)___GFP_WRITE)
 /*
-只在NUMA系统上有意义. 它限制只在分配到当前进程的各个CPU所关联的结点分配内存。
-如果进程允许在所有CPU上运行（默认情况），该标志是无意义的。
-只有进程可以运行的CPU受限时，该标志才有效果
+只在NUMA系统上有意义. 
+只能在当前进程可运行的cpu关联的内存节点上分配内存，
+如果进程可在所有cpu上运行，该标志无意义
 */
 #define __GFP_HARDWALL   ((__force gfp_t)___GFP_HARDWALL)
 /*
-也只在NUMA系统上有意义。如果设置该比特位，
-则内存分配失败的情况下不允许使用其他结点作为备用，
-需要保证在当前结点或者明确指定的结点上成功分配内存
+只能在当前节点上分配内存
 */
 #define __GFP_THISNODE	((__force gfp_t)___GFP_THISNODE)
 #define __GFP_ACCOUNT	((__force gfp_t)___GFP_ACCOUNT)
@@ -136,11 +146,11 @@ GFP缩写的意思为获取空闲页get free page
 #define __GFP_ATOMIC	((__force gfp_t)___GFP_ATOMIC)
 /*
 如果请求非常重要, 则设置__GFP_HIGH，即内核急切地需要内存时。
-在分配内存失败可能给内核带来严重后果时(比如威胁到系统稳定性或系统崩溃), 
-总是会使用该标志
+它被允许来消耗甚至被内核保留给紧急状况的最后的内存页
 */
 #define __GFP_HIGH	((__force gfp_t)___GFP_HIGH)
 #define __GFP_MEMALLOC	((__force gfp_t)___GFP_MEMALLOC)
+/* 不使用紧急分配链表 */
 #define __GFP_NOMEMALLOC ((__force gfp_t)___GFP_NOMEMALLOC)
 
 /*
@@ -179,10 +189,10 @@ GFP缩写的意思为获取空闲页get free page
  *   the allocation to succeed.  The OOM killer is not called with the current
  *   implementation.
  */
-/*
- 说明在查找空闲内存期间内核可以进行I/O操作. 
- 实际上, 这意味着如果内核在内存分配期间换出页, 
- 那么仅当设置该标志时, 才能将选择的页写入硬盘
+/* 
+内存分配的过程中可进行IO操作，
+也就是说分配过程中如果需要换出页，
+必须设置该标志，才能将换出的页写入磁盘 
 */
 #define __GFP_IO	((__force gfp_t)___GFP_IO)
 /*
@@ -231,6 +241,8 @@ GFP缩写的意思为获取空闲页get free page
  */
 /*
  如果需要分配不在CPU高速缓存中的“冷”页时，则设置__GFP_COLD
+ 它在一段时间没被使用. 它对分配页作 DMA 读是有用的, 
+ 此时在处理器缓冲中出现是无用的. 
 */
 #define __GFP_COLD	((__force gfp_t)___GFP_COLD)
 /*
@@ -241,10 +253,9 @@ GFP缩写的意思为获取空闲页get free page
 添加混合页元素, 在hugetlb的代码内部使用
 */
 #define __GFP_COMP	((__force gfp_t)___GFP_COMP)
-/*
-在分配成功时，将返回填充字节0的页
-*/
+/* 申请全部填充为0的page */
 #define __GFP_ZERO	((__force gfp_t)___GFP_ZERO)
+/* 不对分配的内存进行跟踪 */
 #define __GFP_NOTRACK	((__force gfp_t)___GFP_NOTRACK)
 #define __GFP_NOTRACK_FALSE_POSITIVE (__GFP_NOTRACK)
 
@@ -306,17 +317,20 @@ GFP缩写的意思为获取空闲页get free page
  *   in page fault path, while the non-light is used by khugepaged.
  */
 /*
- 用于原子分配，在任何情况下都不能中断, 
+Get Free Pages = GFP
+*/
+/*
+ 用于原子分配，不能中断, 不能睡眠，不能有IO和VFS操作
  可能使用紧急分配链表中的内存, 
  这个标志用在中断处理程序, 下半部, 
  持有自旋锁以及其他不能睡眠的地方
 */
 #define GFP_ATOMIC	(__GFP_HIGH|__GFP_ATOMIC|__GFP_KSWAPD_RECLAIM)
 /*
-这是一种常规的分配方式, 可能会阻塞. 
-这个标志在睡眠安全时用在进程的长下文代码中. 
-为了获取调用者所需的内存, 内核会尽力而为. 
-这个标志应该是首选标志
+* 当内存不足时，允许通过文件系统、IO操作将页面换出以释放内存空间。
+* 因此这时分配函数必须是可重入的
+* 一般的系统调用代码中，都使用此分配标志。
+* 这也是最常见的分配标志
 */
 #define GFP_KERNEL	(__GFP_RECLAIM | __GFP_IO | __GFP_FS)
 #define GFP_KERNEL_ACCOUNT (GFP_KERNEL | __GFP_ACCOUNT)
@@ -326,24 +340,25 @@ GFP缩写的意思为获取空闲页get free page
 */
 #define GFP_NOWAIT	(__GFP_KSWAPD_RECLAIM)
 /*
-这种分配可以阻塞, 但不会启动磁盘I/O, 
-这个标志在不能引发更多的磁盘I/O时阻塞I/O代码, 
-这可能导致令人不愉快的递归
+不允许IO操作。
+当内存不足时，可能需要将内存换出到外部设备，这需要IO操作。
+但是在进行IO操作的过程，需要申请内存时必须指定此标志，以免死锁。
 */
 #define GFP_NOIO	(__GFP_RECLAIM)
 /*
-这种分配在必要时可以阻塞, 但是也可能启动磁盘, 
-但是不会启动文件系统操作,
-这个标志在你不鞥在启动另一个文件系统操作时, 
-用在文件系统部分的代码中
+不允许文件系统操作。
+在文件系统代码中，申请内存需要有此标志。也是为了避免死锁
 */
 #define GFP_NOFS	(__GFP_RECLAIM | __GFP_IO)
+/**
+ * 类似于GFP_KERNEL，并且在内存不足时，还允许进行内存回收。
+ */
 #define GFP_TEMPORARY	(__GFP_RECLAIM | __GFP_IO | __GFP_FS | \
 			 __GFP_RECLAIMABLE)
-/*
-这是一种常规的分配方式, 可能会阻塞. 
-这个标志用于为用户空间进程分配内存时使用
-*/
+/**
+ * 分配用于用户进程的页面。与GFP_KERNEL相比，
+ 增加__GFP_HARDWALL 只能从进程可运行的node上分配内存。
+ */
 #define GFP_USER	(__GFP_RECLAIM | __GFP_IO | __GFP_FS | __GFP_HARDWALL)
 /*
 用于分配适用于DMA的内存, 当前是__GFP_DMA的同义词, 
@@ -352,10 +367,8 @@ GFP_DMA32也是__GFP_GMA32的同义词
 #define GFP_DMA		__GFP_DMA
 #define GFP_DMA32	__GFP_DMA32
 /*
-是GFP_USER的一个扩展, 也用于用户空间. 
-它允许分配无法直接映射的高端内存. 
-使用高端内存页是没有坏处的，
-因为用户过程的地址空间总是通过非线性页表组织的
+GFP_USER的一个扩展, 分配用于用户进程的页面，
+优先从高端zone中分配内存
 */
 #define GFP_HIGHUSER	(GFP_USER | __GFP_HIGHMEM)
 /*
@@ -364,6 +377,9 @@ GFP_DMA32也是__GFP_GMA32的同义词
 #define GFP_HIGHUSER_MOVABLE	(GFP_HIGHUSER | __GFP_MOVABLE)
 #define GFP_TRANSHUGE_LIGHT	((GFP_HIGHUSER_MOVABLE | __GFP_COMP | \
 			 __GFP_NOMEMALLOC | __GFP_NOWARN) & ~__GFP_RECLAIM)
+/**
+ * 分配的页面用于透明巨页。
+ */
 #define GFP_TRANSHUGE	(GFP_TRANSHUGE_LIGHT | __GFP_DIRECT_RECLAIM)
 
 /* Convert GFP flags to their corresponding migrate type */

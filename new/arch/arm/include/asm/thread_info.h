@@ -15,7 +15,9 @@
 #include <linux/compiler.h>
 #include <asm/fpstate.h>
 #include <asm/page.h>
-
+/*
+内核栈
+*/
 #define THREAD_SIZE_ORDER	1
 #define THREAD_SIZE		(PAGE_SIZE << THREAD_SIZE_ORDER) // 8K
 #define THREAD_START_SP		(THREAD_SIZE - 8)
@@ -93,7 +95,15 @@ register unsigned long current_stack_pointer asm ("sp");
  也就是8KB块的开始位置。4KB的话，就屏蔽低12位
  */
 static inline struct thread_info *current_thread_info(void) __attribute_const__;
-
+/*
+把thread_info放在内核栈的底部是一个精巧的设计，
+因为当前进程是一个使用率极高的数据结构，
+在高端CPU中往往都保留了一个专门的寄存器来存放当前进程的指针，
+比如PowerPC、Itanium，然而x86的寄存器实在是太少了，
+专门分配一个寄存器实在太奢侈，所以Linux设计了thread_info，
+把它放在内核栈的底部，这样通过栈寄存器里的指针可以很方便地算出thread_info的地址，
+进而得到进程的指针
+*/
 static inline struct thread_info *current_thread_info(void)
 {
 	return (struct thread_info *)

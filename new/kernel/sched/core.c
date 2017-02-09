@@ -2863,6 +2863,9 @@ asmlinkage __visible void schedule_tail(struct task_struct *prev)
 
 /*
  * context_switch - switch to the new MM and the new thread's register state.
+ rq：在多核系统中，进程切换总是发生在各个cpu core上，参数rq指向本次切换发生的那个cpu对应的run queue 
+ prev：将要被剥夺执行权利的那个进程 
+ next：被选择在该cpu上执行的那个进程
  */
 static __always_inline struct rq *
 context_switch(struct rq *rq, struct task_struct *prev,
@@ -2881,10 +2884,10 @@ context_switch(struct rq *rq, struct task_struct *prev,
 	 */
 	arch_start_context_switch(prev);
 
-	if (!mm) {
-		next->active_mm = oldmm;
+	if (!mm) { /* B进程是内核线程 */
+		next->active_mm = oldmm; /* 借用A进程当前正在使用的那个地址空间 */
 		atomic_inc(&oldmm->mm_count);
-		enter_lazy_tlb(oldmm, next);
+		enter_lazy_tlb(oldmm, next); 
 	} else
 		switch_mm_irqs_off(oldmm, mm, next);
 

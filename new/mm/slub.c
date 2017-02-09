@@ -3721,10 +3721,15 @@ void *__kmalloc(size_t size, gfp_t flags)
 {
 	struct kmem_cache *s;
 	void *ret;
-
+/*
+判断申请是否超过最大cache大小,如果是则通过kmalloc_large()进行分配
+*/
 	if (unlikely(size > KMALLOC_MAX_CACHE_SIZE))
 		return kmalloc_large(size, flags);
 
+/*
+查找适用的kmem_cache
+*/
 	s = kmalloc_slab(size, flags);
 
 	if (unlikely(ZERO_OR_NULL_PTR(s)))
@@ -3858,19 +3863,34 @@ void kfree(const void *x)
 {
 	struct page *page;
 	void *object = (void *)x;
-
+/*
+记录kfree轨迹
+*/
 	trace_kfree(_RET_IP_, x);
-
+/*
+对地址做非零判断
+*/
 	if (unlikely(ZERO_OR_NULL_PTR(x)))
 		return;
-
+/*
+将虚拟地址转换到页面
+*/
 	page = virt_to_head_page(x);
 	if (unlikely(!PageSlab(page))) {
 		BUG_ON(!PageCompound(page));
+/*
+		做释放前kmemleak处理
+*/
 		kfree_hook(x);
+/*
+		将页面释放
+*/
 		__free_pages(page, compound_order(page));
 		return;
 	}
+/*
+	是作为slab分配管理，转为通过slab_free()进行释放
+*/
 	slab_free(page->slab_cache, page, object, NULL, 1, _RET_IP_);
 }
 EXPORT_SYMBOL(kfree);

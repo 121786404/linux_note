@@ -72,41 +72,51 @@
  * SPARSEMEM_EXTREME with !SPARSEMEM_VMEMMAP).
  */
 enum pageflags {
-/* 指定了页是否被锁定, 如果该比特未被置位, 
-说明有使用者正在操作该page, 则内核的其他部分不允许访问该页， 
-这可以防止内存管理出现竞态条件 */
+/*页被锁定 */
 	PG_locked,		/* Page is locked. Don't touch. */
 /*
-如果涉及该page的I/O操作发生了错误, 则该位被设置
+在传输过程中发生I/O错误
 */
 	PG_error,
 /*
-表示page刚刚被访问过
+刚刚被访问过
 */
 	PG_referenced,
 /*
-表示page的数据已经与后备存储器是同步的, 即页的数据已经从块设备读取，且没有出错,数据是最新的
+在完成读操作后置位
+表示page的数据已经与后备存储器是同步的, 
+即页的数据已经从块设备读取，且没有出错,数据是最新的
 */
 	PG_uptodate,
 /*
-与后备存储器中的数据相比，该page的内容已经被修改. 出于性能能的考虑，页并不在每次改变后立即回写, 因此内核需要使用该标识来表明页面中的数据已经改变, 应该在稍后刷出
+与后备存储器中的数据相比，该page的内容已经被修改. 
+出于性能能的考虑，页并不在每次改变后立即回写, 
+因此内核需要使用该标识来表明页面中的数据已经改变, 
+应该在稍后刷出
 */
 	PG_dirty,
 /*
-表示该page处于LRU链表上， 这有助于实现页面的回收和切换. 内核使用两个最近最少使用(least recently used-LRU)链表来区别活动和不活动页. 如果页在其中一个链表中, 则该位被设置
+表示该page处于LRU链表上， 这有助于实现页面的回收和切换. 
+内核使用两个最近最少使用(least recently used-LRU)链表来区别活动和不活动页. 
+如果页在其中一个链表中, 则该位被设置
 */
 	PG_lru,
 /*
-page处于inactive LRU链表, PG_active和PG_referenced一起控制该page的活跃程度，这在内存回收时将会非常有用
-当位于LRU active_list链表上的页面该位被设置, 并在页面移除时清除该位, 它标记了页面是否处于活动状态
+当位于LRU active_list链表上的页面该位被设置,
+并在页面移除时清除该位, 它标记了页面是否处于活动状态
 */
 	PG_active,
 	PG_waiters,		/* Page has waiters, check its waitqueue. Must be bit #7 and in the same byte as "PG_locked" */
+/*
+包含在slab中的页框
+*/
 	PG_slab,
 	PG_owner_priv_1,	/* Owner use. If pagecache, fs may use*/
 	PG_arch_1,
 /*
 设置该标志，防止该page被交换到swap
+页框留给内核代码或没有使用
+
 */	
 	PG_reserved,
 	/*
@@ -120,7 +130,13 @@ page中的数据正在被回写到后备存储器
 */
 	PG_writeback,		/* Page is under writeback */
 	PG_head,		/* A head page */
+/*
+	页框中的所有数据对应于磁盘上分配的块
+*/
 	PG_mappedtodisk,	/* Has blocks allocated on-disk */
+/*
+	为回收内存对页已经做了写入磁盘标记
+*/
 	PG_reclaim,		/* To be reclaimed asap */
 	PG_swapbacked,		/* Page is backed by RAM/swap */
 /*
@@ -147,9 +163,15 @@ page中的数据正在被回写到后备存储器
 	__NR_PAGEFLAGS,
 
 	/* Filesystems */
+/*
+	由一些文件系统使用的标识
+*/
 	PG_checked = PG_owner_priv_1,
 
 	/* SwapBacked */
+/*
+	页属于对换高速缓存
+*/
 	PG_swapcache = PG_owner_priv_1,	/* Swap page: swp_entry_t in private */
 
 	/* Two page bits are conscripted by FS-Cache to maintain local caching

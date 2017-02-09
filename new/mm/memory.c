@@ -105,6 +105,9 @@ EXPORT_SYMBOL(mem_map);
  * highstart_pfn must be the same; there must be no gap between ZONE_NORMAL
  * and ZONE_HIGHMEM.
  */
+/**
+ * 高端内存的起始地址，被设置成896MB.
+ */
 void * high_memory;
 
 EXPORT_SYMBOL(high_memory);
@@ -114,6 +117,9 @@ EXPORT_SYMBOL(high_memory);
  *
  * ( When CONFIG_COMPAT_BRK=y we exclude brk from randomization,
  *   as ancient (libc5 based) binaries can segfault. )
+ */
+/**
+ * 是否启动地址空间随机化功能
  */
 int randomize_va_space __read_mostly =
 #ifdef CONFIG_COMPAT_BRK
@@ -1051,6 +1057,12 @@ static inline int copy_pud_range(struct mm_struct *dst_mm, struct mm_struct *src
 	return 0;
 }
 
+/**
+ * 在dump_mmap中，插入一个新的线性区描述符后，通过本过程创建必要的页表映射线性区
+ * 所包含的一组页。并且初始化新页表的表项。与私有的、可写的页(VM_SHARED标志关闭，
+ * VM_MAYWRITE标志打开)所对应的任意页框都标记为对父子进程都是只读以便这种页框能用
+ * 写时复制机制进行处理。
+ */
 int copy_page_range(struct mm_struct *dst_mm, struct mm_struct *src_mm,
 		struct vm_area_struct *vma)
 {
@@ -1762,6 +1774,16 @@ static inline int remap_pud_range(struct mm_struct *mm, pgd_t *pgd,
  * @prot: page protection flags for this mapping
  *
  *  Note: this is only safe if the mm semaphore is held when called.
+ */
+/**
+ * 为一段物理内存建立新的页表。
+ *  vma:  虚拟内存区域，在一定范围内的页将被映射到该区域。
+ *  addr: 重新映射时的起始用户虚拟地址。该函数为处于virt_addr和
+ *        virt_addr+size之间的虚拟地址建立页表。
+ *  pfn:  与物理内存对应的页帧号。虚拟内存将要被映射到该物理内存上。
+ *  size: 以字节为单位，被重新映射的区域大小。
+ *  prot: 新VMA要求的保护属性。
+ * 返回为0表示成功，负值表示错误。
  */
 int remap_pfn_range(struct vm_area_struct *vma, unsigned long addr,
 		    unsigned long pfn, unsigned long size, pgprot_t prot)
@@ -2541,6 +2563,20 @@ EXPORT_SYMBOL(unmap_mapping_range);
  * We return with the mmap_sem locked or unlocked in the same cases
  * as does filemap_fault().
  */
+/**
+ * 换入进程的页面。
+ *
+ * 当对一个已经被换到磁盘的页进行寻址时，就会发生页的换入。
+ *   mm-引起缺页异常的进程的内存描述符地址。
+ *   vma-address所在的线性区的线性区描述符地址。
+ *   address-引起异常的线性地址。
+ *   page_table-映射address的页表项的地址。
+ *   pmd-映射address的页中间目录的址
+ *   orig_pte-映射address的页表项的内容
+ *   write_access-一个标志，表示试图执行的是读操作还是写操作
+ * 返回值：它从不返回0，如果页在交换高速缓存中就返回1（次错误）
+ * 如果页已经从交换区读入就返回2（主错误），如果在进行换入时发生错误就返回-1。
+ */
 int do_swap_page(struct vm_fault *vmf)
 {
 	struct vm_area_struct *vma = vmf->vma;
@@ -2552,9 +2588,15 @@ int do_swap_page(struct vm_fault *vmf)
 	int exclusive = 0;
 	int ret = 0;
 
+	/**
+	 * pte_unmap释放任何页表的临时内核映射。当访问高端内存页表需要进行内核映射。
+	 */
 	if (!pte_unmap_same(vma->vm_mm, vmf->pmd, vmf->pte, vmf->orig_pte))
 		goto out;
 
+	/**
+	 * 查找该页所在的交换槽, 从orig_pte中获得换出页标识符。
+	 */
 	entry = pte_to_swp_entry(vmf->orig_pte);
 	if (unlikely(non_swap_entry(entry))) {
 		if (is_migration_entry(entry)) {
@@ -2569,17 +2611,31 @@ int do_swap_page(struct vm_fault *vmf)
 		goto out;
 	}
 	delayacct_set_flag(DELAYACCT_PF_SWAPIN);
+	/**
+	 * 在交换缓存中查找 检查页是否在高速缓存中
+	 * 如果该页尚未写出，或者该页是共享页并且由其他进程读入内存了，那么就会存在于交换缓存中。
+	 */
 	page = lookup_swap_cache(entry);
+	/* 没有在交换缓存中 */
 	if (!page) {
+		/**
+		 * swapin_readahead函数从交换区读取最多2n个页,当然也包含请求的页。
+		 * 每个页是由read_swap_cache_async读入的。
+		 */
 		page = swapin_readahead(entry, GFP_HIGHUSER_MOVABLE, vma,
 					vmf->address);
+		/* 页还是没有被加到交换高速缓存。那么，再看看另一个控制路径是否换入了请求的页 */
 		if (!page) {
 			/*
 			 * Back out if somebody else faulted in this pte
 			 * while we released the pte lock.
 			 */
 			vmf->pte = pte_offset_map_lock(vma->vm_mm, vmf->pmd,
-					vmf->address, &vmf->ptl);
+				vmf->address, &vmf->ptl);
+			/**
+			 * 比较page_table与orig_pte，如果二者有差异，说明该页已经被其他内核控制路径换入，
+			 * 则返回1（次错误, 否则返回-1(失败)
+			 */
 			if (likely(pte_same(*vmf->pte, vmf->orig_pte)))
 				ret = VM_FAULT_OOM;
 			delayacct_clear_flag(DELAYACCT_PF_SWAPIN);
@@ -2587,6 +2643,10 @@ int do_swap_page(struct vm_fault *vmf)
 		}
 
 		/* Had to read the page from swap area: Major fault */
+		/**
+		 * 当函数执行到这里时，说明页已经在高速缓存中
+		 * 调用grab_swap_token试图获得一个交换标记。
+		 */
 		ret = VM_FAULT_MAJOR;
 		count_vm_event(PGMAJFAULT);
 		mem_cgroup_count_vm_event(vma->vm_mm, PGMAJFAULT);
@@ -2635,6 +2695,9 @@ int do_swap_page(struct vm_fault *vmf)
 	/*
 	 * Back out if somebody else already faulted in this pte.
 	 */
+	/**
+	 * 检查另一个内核控制路径是否换入了所请求的页。
+	 */
 	vmf->pte = pte_offset_map_lock(vma->vm_mm, vmf->pmd, vmf->address,
 			&vmf->ptl);
 	if (unlikely(!pte_same(*vmf->pte, vmf->orig_pte)))
@@ -2657,18 +2720,28 @@ int do_swap_page(struct vm_fault *vmf)
 
 	inc_mm_counter_fast(vma->vm_mm, MM_ANONPAGES);
 	dec_mm_counter_fast(vma->vm_mm, MM_SWAPENTS);
+	/* 构建PTE */
+	/**
+	 * 更新页表项，这样进程就能够找到这一页了。
+	 */
 	pte = mk_pte(page, vma->vm_page_prot);
+	/* 写访问，并且当前进程可以直接写交换缓存中的页。 */
 	if ((vmf->flags & FAULT_FLAG_WRITE) && reuse_swap_page(page, NULL)) {
+		/* 构建PTE，并设置其可写属性 */
 		pte = maybe_mkwrite(pte_mkdirty(pte), vma);
 		vmf->flags &= ~FAULT_FLAG_WRITE;
 		ret |= VM_FAULT_WRITE;
 		exclusive = RMAP_EXCLUSIVE;
 	}
+	/* 刷新CPU指令缓冲 */
 	flush_icache_page(vma, page);
 	if (pte_swp_soft_dirty(vmf->orig_pte))
 		pte = pte_mksoft_dirty(pte);
 	set_pte_at(vma->vm_mm, vmf->address, vmf->pte, pte);
 	vmf->orig_pte = pte;
+	/**
+	 * page_add_anon_rmap处理反向映射。
+	 */
 	if (page == swapcache) {
 		do_page_add_anon_rmap(page, vma, vmf->address, exclusive);
 		mem_cgroup_commit_charge(page, memcg, true, false);
@@ -2763,12 +2836,18 @@ static inline int check_stack_guard_page(struct vm_area_struct *vma, unsigned lo
  * but allow concurrent faults), and pte mapped but not yet locked.
  * We return with mmap_sem still held, but pte unmapped and unlocked.
  */
+/*
+ * 对于没有关联到文件作为后备存储器的页，需要调用do_anonymous_page()进行映射。除了无需向页
+ * 读入数据之外，该过程几乎与映射基于文件的数据没什么不同。在highmem内存域建立一个新页，
+ * 并清空其内容。接下来将页加入到进程的页表，并更新高速缓存或者MMU。
+ */
 static int do_anonymous_page(struct vm_fault *vmf)
 {
 	struct vm_area_struct *vma = vmf->vma;
 	struct mem_cgroup *memcg;
 	struct page *page;
 	pte_t entry;
+
 
 	/* File mapping without ->vm_ops ? */
 	if (vma->vm_flags & VM_SHARED)
@@ -2815,6 +2894,7 @@ static int do_anonymous_page(struct vm_fault *vmf)
 	/* Allocate our own private page. */
 	if (unlikely(anon_vma_prepare(vma)))
 		goto oom;
+	/* 这里强制分配了一个新页，而不是象老版本那样使用0页 */
 	page = alloc_zeroed_user_highpage_movable(vma, vmf->address);
 	if (!page)
 		goto oom;
@@ -2878,6 +2958,14 @@ static int __do_fault(struct vm_fault *vmf)
 	struct vm_area_struct *vma = vmf->vma;
 	int ret;
 
+	/*
+	 * 首先，内核必须确保所需数据读入到发生异常的页。具体的处理依赖于
+	 * 映射到发生异常的地址空间中的文件，因此需要调用特定于文件的方法
+	 * 来获取数据。通常该方法保存在vma->vm_ops->fault。大多数文件都使
+	 * 用filemap_fault()读入所需的数据。该函数不仅读入所需数据，还实
+	 * 现了预读功能，即提前读入在未来很可能需要的页。目前只需要知道，
+	 * 内核使用address_space()对象中的信息，从后备存储器将数据读取到物理内存页。
+	 */
 	ret = vma->vm_ops->fault(vma, vmf);
 	if (unlikely(ret & (VM_FAULT_ERROR | VM_FAULT_NOPAGE | VM_FAULT_RETRY |
 			    VM_FAULT_DONE_COW)))
@@ -3072,17 +3160,20 @@ int alloc_set_pte(struct vm_fault *vmf, struct mem_cgroup *memcg,
 		return VM_FAULT_NOPAGE;
 
 	flush_icache_page(vma, page);
+	/* 构建页表项 */
 	entry = mk_pte(page, vma->vm_page_prot);
 	if (write)
 		entry = maybe_mkwrite(pte_mkdirty(entry), vma);
 	/* copy-on-write page */
 	if (write && !(vma->vm_flags & VM_SHARED)) {
 		inc_mm_counter_fast(vma->vm_mm, MM_ANONPAGES);
+		/* 将匿名页添加到反向映射结构中 */
 		page_add_new_anon_rmap(page, vma, vmf->address, false);
 		mem_cgroup_commit_charge(page, memcg, false, false);
 		lru_cache_add_active_or_unevictable(page, vma);
 	} else {
 		inc_mm_counter_fast(vma->vm_mm, mm_counter_file(page));
+		/* 添加到反向映射中 */
 		page_add_file_rmap(page, false);
 	}
 	set_pte_at(vma->vm_mm, vmf->address, vmf->pte, entry);
@@ -3567,8 +3658,12 @@ static int handle_pte_fault(struct vm_fault *vmf)
 
 	if (!vmf->pte) {
 		if (vma_is_anonymous(vmf->vma))
+				/* 处理匿名页 */
 			return do_anonymous_page(vmf);
 		else
+				/*
+				 * 非匿名页,按需分配页
+				 */
 			return do_fault(vmf);
 	}
 
@@ -3583,8 +3678,21 @@ static int handle_pte_fault(struct vm_fault *vmf)
 	entry = vmf->orig_pte;
 	if (unlikely(!pte_same(*vmf->pte, entry)))
 		goto unlock;
+	/*
+	 * 如果该区域对页授予了写权限，而硬件的存储机制没有授予(因此
+	 * 触发异常)，则会发生另一种潜在的情况。请注意，此时对应的页
+	 * 已经在内存中。
+	 */
 	if (vmf->flags & FAULT_FLAG_WRITE) {
+		/* pte没有写权限 */
 		if (!pte_write(entry))
+			/**
+			 * do_wp_page()负责创建该页的副本，并插入到进程的页表中(在硬件
+			 * 层具备写权限)。该机制称为写时复制(copy on write，简称COW)。
+			 * 在进程发生分支时，页并不是立即复制的，而是映射到进程的地址
+			 * 空间中作为"只读"副本，以免在复制信息时花费太多时间。在实际
+			 * 发生写访问之前，都不会为进程创建页的独立副本。
+			 */
 			return do_wp_page(vmf);
 		entry = pte_mkdirty(entry);
 	}
@@ -3613,6 +3721,16 @@ unlock:
  * The mmap_sem may have been released depending on flags and our
  * return value.  See filemap_fault() and __lock_page_or_retry().
  */
+/*
+ * 该函数确认在各级页目录中，通向对应于异常地址
+ * 的页表项的各个页目录项都存在。
+ *
+ * 当程序缺页时，调用此过程分配新的页框。
+ * mm-异常发生时，正在CPU上运行的进程的内存描述符
+ * vma-指向引起异常的线性地址所在线性区的描述符。
+ * address-引起异常的地址。
+ * write_access-如果tsk试图向address写，则为1，否则为0。
+ */
 static int __handle_mm_fault(struct vm_area_struct *vma, unsigned long address,
 		unsigned int flags)
 {
@@ -3627,7 +3745,11 @@ static int __handle_mm_fault(struct vm_area_struct *vma, unsigned long address,
 	pgd_t *pgd;
 	pud_t *pud;
 
+	/**
+	 * pgd_offset和pud_alloc检查映射address的页中间目录和页表是否存在。
+	 */
 	pgd = pgd_offset(mm, address);
+	/* 分配页中间目录 */
 	pud = pud_alloc(mm, pgd, address);
 	if (!pud)
 		return VM_FAULT_OOM;

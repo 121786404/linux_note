@@ -378,10 +378,27 @@ static inline void __nodes_fold(nodemask_t *dstp, const nodemask_t *origp,
 /*
  * Bitmasks that are kept for all the nodes.
  */
+/*
+ 如果系统中结点多于一个，内核会维护一个位图，
+ 用以提供各个结点的状态信息，状态是用位掩码指定的，
+ 可使用下列的值
+*/
 enum node_states {
+/*
+结点在某个时候可能变为联机/在线
+*/
 	N_POSSIBLE,		/* The node could become online at some point  结点在某个时候可能变成联机*/
+/*
+结点是联机/在线的
+*/
 	N_ONLINE,		/* The node is online 节点是联机的*/
+/*
+结点有普通内存域
+*/
 	N_NORMAL_MEMORY,	/* The node has regular memory 结点是普通内存域*/
+/*
+结点有普通内存域或高端内存域
+*/
 #ifdef CONFIG_HIGHMEM
 	N_HIGH_MEMORY,		/* The node has regular or high memory 结点是普通或者高端内存域*/
 #else
@@ -392,7 +409,10 @@ enum node_states {
 #else
 	N_MEMORY = N_HIGH_MEMORY,
 #endif
-	N_CPU,		/* The node has one or more cpus 结点有一个或多个CPU*/
+/*
+结点有一个或多个CPU
+*/
+	N_CPU,		/* The node has one or more cpus */
 	NR_NODE_STATES
 };
 

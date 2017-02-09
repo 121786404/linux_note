@@ -62,6 +62,10 @@ static unsigned long __init bootmap_bytes(unsigned long pages)
  * bootmem_bootmap_pages - calculate bitmap size in pages
  * @pages: number of pages the bitmap has to represent
  */
+/*
+ * 计算bootmem位图所需页的数目。该函数使用了BIOS在e820映射
+ * 提供的信息，类似于IA-32，相应的位图可用于查找长度适当的连续内存区。
+ */
 unsigned long __init bootmem_bootmap_pages(unsigned long pages)
 {
 	unsigned long bytes = bootmap_bytes(pages);
@@ -72,6 +76,7 @@ unsigned long __init bootmem_bootmap_pages(unsigned long pages)
 /*
  * link bdata in order
  */
+/* 确保bdata_list是以node_min_pfn升序的队列 */
 static void __init link_bootmem(bootmem_data_t *bdata)
 {
 	bootmem_data_t *ent;
@@ -88,6 +93,10 @@ static void __init link_bootmem(bootmem_data_t *bdata)
 
 /*
  * Called once to set up the allocator itself.
+ */
+/*
+ * 将bdata按顺序插入全局bdata_list队列，并设置好bdata所代表的内存起始地址
+ * 以及用于标志内存页面是否保留页的bitmap的起始地址
  */
 static unsigned long __init init_bootmem_core(bootmem_data_t *bdata,
 	unsigned long mapstart, unsigned long start, unsigned long end)
@@ -137,8 +146,11 @@ unsigned long __init init_bootmem_node(pg_data_t *pgdat, unsigned long freepfn,
  */
 unsigned long __init init_bootmem(unsigned long start, unsigned long pages)
 {
+	/* 可以被内核映射的内存最大page编号 */
 	max_low_pfn = pages;
+	/* 可以被内核映射的内存最小page编号 */
 	min_low_pfn = start;
+	/* 只初始化第一个node对应的bdata? */
 	return init_bootmem_core(NODE_DATA(0)->bdata, start, 0, pages);
 }
 
@@ -168,6 +180,10 @@ void __init free_bootmem_late(unsigned long physaddr, unsigned long size)
 
 /**
  * 释放某个内存块中的内存到伙伴系统中
+ * 扫描bootmem分配器的页位图，释放每个未用的页。到伙伴系统的接口是__free_pages_bootmem()，
+ * 该函数对每个空闲页调用。该函数内部依赖于标准函数__free_page。它使得这些页并入伙伴系统
+ * 的数据结构，在其中作为空闲页管理，可用于分配。在页位图已经完全扫描之后，它占据的内存空间
+ * 也必须释放。伺候，只有伙伴系统可用于内存分配。
  */
 static unsigned long __init free_all_bootmem_core(bootmem_data_t *bdata)
 {
@@ -301,6 +317,7 @@ unsigned long __init free_all_bootmem(void)
 	return total_pages;
 }
 
+/* 将[sidx, eidx)对应pages的boot分配位图清空, 即标记为未分配 */
 static void __init __free(bootmem_data_t *bdata,
 			unsigned long sidx, unsigned long eidx)
 {
@@ -313,6 +330,7 @@ static void __init __free(bootmem_data_t *bdata,
 	if (WARN_ON(bdata->node_bootmem_map == NULL))
 		return;
 
+	/* hint_idx指示第一个可分配的最小page的编号 */
 	if (bdata->hint_idx > sidx)
 		bdata->hint_idx = sidx;
 
@@ -321,6 +339,7 @@ static void __init __free(bootmem_data_t *bdata,
 			BUG();
 }
 
+/* 将[sidx, eidx)对应pages的boot分配位图置位, 即标记为已分配 */
 static int __init __reserve(bootmem_data_t *bdata, unsigned long sidx,
 			unsigned long eidx, int flags)
 {
@@ -357,6 +376,7 @@ static int __init mark_bootmem_node(bootmem_data_t *bdata,
 	bdebug("nid=%td start=%lx end=%lx reserve=%d flags=%x\n",
 		bdata - bootmem_node_data, start, end, reserve, flags);
 
+	/* 确保[start, end)所代表的地址在bdata的地址范围内 */
 	BUG_ON(start < bdata->node_min_pfn);
 	BUG_ON(end > bdata->node_low_pfn);
 
@@ -370,6 +390,7 @@ static int __init mark_bootmem_node(bootmem_data_t *bdata,
 	return 0;
 }
 
+/* bootmem内存分配或释放 */
 static int __init mark_bootmem(unsigned long start, unsigned long end,
 				int reserve, int flags)
 {
@@ -377,6 +398,7 @@ static int __init mark_bootmem(unsigned long start, unsigned long end,
 	bootmem_data_t *bdata;
 
 	pos = start;
+	/* [start, end)可能会跨越好几个bdata_list中相邻的bdata */
 	list_for_each_entry(bdata, &bdata_list, list) {
 		int err;
 		unsigned long max;
@@ -512,6 +534,16 @@ static unsigned long __init align_off(struct bootmem_data *bdata,
 	return ALIGN(base + off, align) - base;
 }
 
+/*
+ * 该函数执行下列操作:
+ * 1)从goal开始，扫描位图，查找满足分配请求的空闲内存区
+ * 2)如果目标页紧接着上一次分配的页，即bootmem_data->last_end_off，
+ *   内核会检查bootmem->last_offset，判断所需的内存(包括对齐
+ *   数据所需的空间)是否能够在上一页分配或从上一页开始分配
+ * 3)新分配的页在位图对应的比特位设置为1.最后一页的数目
+ *   也保存在bootmem_data->last_pos。如果该页未完全分配，则相应
+ *   的偏移量保存在bootmem_data->last_offset；否则，该值设置为0.
+ */
 static void * __init alloc_bootmem_bdata(struct bootmem_data *bdata,
 					unsigned long size, unsigned long align,
 					unsigned long goal, unsigned long limit)
@@ -695,6 +727,14 @@ void * __init __alloc_bootmem_nopanic(unsigned long size, unsigned long align,
 	return ___alloc_bootmem_nopanic(size, align, goal, limit);
 }
 
+/**
+ * 分配页中间目录
+ * 其中前448项是用RAM前896MB的物理地址填充，虽然有512项，但是后64项留给非连续分配内存
+ * 在所有节点中分配boot内存
+ *  size:   所需分配的内存长度
+ *  align:  对齐方式
+ *  goal:   从何处开始分配,DMA内存从0开始，普通内存从MAX_DAM_ADDRESS开始
+ */
 static void * __init ___alloc_bootmem(unsigned long size, unsigned long align,
 					unsigned long goal, unsigned long limit)
 {
@@ -796,6 +836,9 @@ void * __init ___alloc_bootmem_node(pg_data_t *pgdat, unsigned long size,
  * can not hold the requested memory.
  *
  * The function panics if the request can not be satisfied.
+ */
+/**
+ * 在NUMA系统中，在指定节点分配初始化内存
  */
 void * __init __alloc_bootmem_node(pg_data_t *pgdat, unsigned long size,
 				   unsigned long align, unsigned long goal)

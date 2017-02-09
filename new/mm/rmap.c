@@ -777,9 +777,11 @@ int page_mapped_in_vma(struct page *page, struct vm_area_struct *vma)
 	pte_t *pte;
 	spinlock_t *ptl;
 
+	/* 计算页面在该地址空间内的虚拟地址 */
 	address = __vma_address(page, vma);
 	if (unlikely(address < vma->vm_start || address >= vma->vm_end))
 		return 0;
+	/* 检查该地址在地址空间中是否进行了映射 */
 	pte = page_check_address(page, vma->vm_mm, address, &ptl, 1);
 	if (!pte)			/* the page is not in this mm */
 		return 0;
@@ -968,6 +970,9 @@ static bool invalid_page_referenced_vma(struct vm_area_struct *vma, void *arg)
  * Quick test_and_clear_referenced for all mappings to a page,
  * returns the number of ptes which referenced the page.
  */
+/**
+ * 测试某个页面是否被引用统计最近活跃使用某个共享页的进程数目
+ */
 int page_referenced(struct page *page,
 		    int is_locked,
 		    struct mem_cgroup *memcg,
@@ -1136,7 +1141,14 @@ static void __page_set_anon_rmap(struct page *page,
 	if (!exclusive)
 		anon_vma = anon_vma->root;
 
+	/*
+	 * anon_vma表头的地址在加上PAGE_MAPPING_ANON之后，保存到
+	 * page实例的mapping成员中。这使得内核可以通过检查最低位来区分
+	 * 匿名页和普通映射的页:如果为0(没有设置PAGE_MAPPING_ANON)，
+	 * 则为普通映射；如果为1(PAGE_MAPPING_ANON置位)，则为匿名页。
+	 */
 	anon_vma = (void *) anon_vma + PAGE_MAPPING_ANON;
+	/* mapping通过最后一位表示是否为匿名映射 */
 	page->mapping = (struct address_space *) anon_vma;
 	page->index = linear_page_index(vma, address);
 }
@@ -1179,6 +1191,9 @@ static void __page_check_anon_rmap(struct page *page,
  * the anon_vma case: to serialize mapping,index checking after setting,
  * and to ensure that PageAnon is not being upgraded racily to PageKsm
  * (but PageKsm is never downgraded to PageAnon).
+ */
+/**
+ * 如果一个匿名页已经有引用计数，则调用本函数将页添加到反射映射数据结构中。
  */
 void page_add_anon_rmap(struct page *page,
 	struct vm_area_struct *vma, unsigned long address, bool compound)
@@ -1243,6 +1258,9 @@ void do_page_add_anon_rmap(struct page *page,
  * This means the inc-and-test can be bypassed.
  * Page does not have to be locked.
  */
+/**
+ * 将新的匿名页添加到反向映射数据结构中
+ */
 void page_add_new_anon_rmap(struct page *page,
 	struct vm_area_struct *vma, unsigned long address, bool compound)
 {
@@ -1253,6 +1271,7 @@ void page_add_new_anon_rmap(struct page *page,
 	if (compound) {
 		VM_BUG_ON_PAGE(!PageTransHuge(page), page);
 		/* increment count (starts at -1) */
+		/* 初始化_mapcount计数为0，表示第一个映射的匿名页 */
 		atomic_set(compound_mapcount_ptr(page), 0);
 		__inc_node_page_state(page, NR_ANON_THPS);
 	} else {
@@ -1262,6 +1281,7 @@ void page_add_new_anon_rmap(struct page *page,
 		atomic_set(&page->_mapcount, 0);
 	}
 	__mod_node_page_state(page_pgdat(page), NR_ANON_MAPPED, nr);
+	/* 将vma添加到反向映射中 */
 	__page_set_anon_rmap(page, vma, address, 1);
 }
 
@@ -1270,6 +1290,10 @@ void page_add_new_anon_rmap(struct page *page,
  * @page: the page to add the mapping to
  *
  * The caller needs to hold the pte lock.
+ */
+/*
+ * 添加基于文件映射的页。基本上，所需要的
+ * 只是对_mapcount变量加1(原子操作)并更新各内存域的统计量。
  */
 void page_add_file_rmap(struct page *page, bool compound)
 {
@@ -1435,6 +1459,11 @@ struct rmap_private {
 /*
  * @arg: enum ttu_flags will be passed to this argument
  */
+/**
+ * 被try_to_unmap_anon和try_to_unmap_file重复调用。用于解除反向映射。
+ * 	page:	是一个指向目标页描述符的指针。该页将被解除所有反向映射。
+ *	vma:	指向线性区描述符的指针。
+ */
 static int try_to_unmap_one(struct page *page, struct vm_area_struct *vma,
 		     unsigned long address, void *arg)
 {
@@ -1493,6 +1522,9 @@ static int try_to_unmap_one(struct page *page, struct vm_area_struct *vma,
 
 	/* Nuke the page table entry. */
 	flush_cache_page(vma, address, page_to_pfn(page));
+	/**
+	 * 清空页表项并刷新TLB。
+	 */
 	if (should_defer_flush(mm, flags)) {
 		/*
 		 * We clear the PTE but do not flush so potentially a remote
@@ -1509,6 +1541,9 @@ static int try_to_unmap_one(struct page *page, struct vm_area_struct *vma,
 	}
 
 	/* Move the dirty bit to the physical page now the pte is gone. */
+	/**
+	 * 页可以被回收，如果页表项的Dirty标志被置位，则将页的PG_dirty标志置位。
+	 */
 	if (pte_dirty(pteval))
 		set_page_dirty(page);
 
@@ -1580,10 +1615,20 @@ static int try_to_unmap_one(struct page *page, struct vm_area_struct *vma,
 		dec_mm_counter(mm, mm_counter_file(page));
 
 discard:
+	/**
+	 * 递减页描述符的_mapcount，因为对用户态页表项中页框的引用已经被删除。
+	 */
 	page_remove_rmap(page, PageHuge(page));
+	/**
+	 * 递减存放在页描述符_count字段中的页框使用计数器。
+	 * 如果计数器小于0，还会从活动或者非活动链表中删除页描述符，并调用free_hot_page释放页框。
+	 */
 	put_page(page);
 
 out_unmap:
+	/**
+	 * pte_offset_map可能建立了临时内核映射。在此释放它。
+	 */
 	pte_unmap_unlock(pte, ptl);
 	if (ret != SWAP_FAIL && ret != SWAP_MLOCK && !(flags & TTU_MUNLOCK))
 		mmu_notifier_invalidate_page(mm, address);

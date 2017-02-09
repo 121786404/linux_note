@@ -93,6 +93,7 @@ static void unmap_region(struct mm_struct *mm,
  *								r: (no) no
  *								w: (no) no
  *								x: (yes) yes
+ * 线性区的访问权限有16种组合，每种组合所对应的页的保护位存放在protection_map数组中
  */
 pgprot_t protection_map[16] = {
 	__P000, __P001, __P010, __P011, __P100, __P101, __P110, __P111,
@@ -202,6 +203,11 @@ SYSCALL_DEFINE1(brk, unsigned long, brk)
 #else
 	min_brk = mm->start_brk;
 #endif
+	/* 不能将堆缩小到代码段结束处 */
+	/**
+	 * 首先验证addr参数是否位于进程代码所在的线性区。
+	 * 如果是，则立即返回。因为堆不能与进程代码所在的线性区重叠。
+	 */
 	if (brk < min_brk)
 		goto out;
 
@@ -211,27 +217,54 @@ SYSCALL_DEFINE1(brk, unsigned long, brk)
 	 * segment grow beyond its set limit the in case where the limit is
 	 * not page aligned -Ram Gupta
 	 */
+	/* 堆的大小超过了数据段限制 */
 	if (check_data_rlimit(rlimit(RLIMIT_DATA), brk, mm->start_brk,
 			      mm->end_data, mm->start_data))
 		goto out;
 
+	/*
+	 * 将请求的地址按页长度对齐。确保brk的新值(原值也同样)是系统页长度
+	 * 的倍数。换句话说，一页是用brk能分配的最小内存区域。
+	 * 因此在用户空间需要另一个分配器函数，将页拆分为更小的区域。这是C标准库的任务。
+	 *
+	 * 由于brk系统调用作用于某一个线性区，它分配和释放完整的页。因此，把addr调整
+	 * 为PAGE_SIZE的整数倍。然后把调整的结果与内存描述符的brk字段的值进行比较。
+	 */
 	newbrk = PAGE_ALIGN(brk);
 	oldbrk = PAGE_ALIGN(mm->brk);
+	/* 没有变化，直接退出 */
 	if (oldbrk == newbrk)
 		goto set_brk;
 
 	/* Always allow shrinking brk. */
+	/*
+	 * 在需要收缩堆时将调用do_munmap()。
+	 */
 	if (brk <= mm->brk) {
+		/* 解除映射 */
 		if (!do_munmap(mm, newbrk, oldbrk-newbrk))
 			goto set_brk;
 		goto out;
 	}
 
 	/* Check against existing mmap mappings. */
+	/*
+	 * 如果堆将要扩大，内核首先必须检查新的长度是否超出进程的最大堆长度
+	 * 限制。find_vma_intersection()接下来检查扩大的堆是否与进程中现存
+	 * 的映射重叠。倘若如此，则什么也不作，立即返回。
+	 */
+	/* 扩大的堆与其他VMA重叠了，扩展失败。注意中间需要保留一个空白页面 */
 	if (find_vma_intersection(mm, oldbrk, newbrk+PAGE_SIZE))
 		goto out;
 
 	/* Ok, looks good - let it rip. */
+	/*
+	 * 扩大堆的实际工作委托给do_brk()。函数总是返回
+	 * mm->brk的新值，无论与原值相比是增大、缩小、还是不变。
+	 *
+	 * 如果一切顺利，则调用do_brk函数。该函数其实是do_mmap的简化版。
+	 * 如果它返回oldbrk，则分配成功且sys_brk返回addr的值，否则返回mm->brk值。
+	 */
 	if (do_brk(oldbrk, newbrk-oldbrk) < 0)
 		goto out;
 
@@ -470,6 +503,10 @@ anon_vma_interval_tree_post_update_vma(struct vm_area_struct *vma)
 		anon_vma_interval_tree_insert(avc, &avc->anon_vma->rb_root);
 }
 
+/**
+ * 确定新里子节点在与给定线性地址对应的红黑树中的位置。并返回
+ * 前一个线性区的地址和要插入的叶子节点的父节点的地址
+ */
 static int find_vma_links(struct mm_struct *mm, unsigned long addr,
 		unsigned long end, struct vm_area_struct **pprev,
 		struct rb_node ***rb_link, struct rb_node **rb_parent)
@@ -580,7 +617,15 @@ __vma_link(struct mm_struct *mm, struct vm_area_struct *vma,
 	struct vm_area_struct *prev, struct rb_node **rb_link,
 	struct rb_node *rb_parent)
 {
+	/*
+	 * __vma_link_list()将新区域放置到进程管理区域
+	 * 的线性链表上。完成该工作，只需提供
+	 * 使用find_vma_prepare()找到的前一个和后一个区域。
+	 */
 	__vma_link_list(mm, vma, prev, rb_parent);
+	/*
+	 * __vma_link_rb()将新区域连接到红黑树的数据结构中
+	 */
 	__vma_link_rb(mm, vma, rb_link, rb_parent);
 }
 
@@ -597,7 +642,12 @@ static void vma_link(struct mm_struct *mm, struct vm_area_struct *vma,
 
     /* 将vma插入到相应的数据结构中--双向链表，红黑树和匿名映射链表*/
 	__vma_link(mm, vma, prev, rb_link, rb_parent);
-    /* 将vma插入到文件地址空间的相应数据结构中 */
+	/*
+	 * __vma_link_file()将相关的address_space和映射(
+	 * 如果是文件映射)管理起来，并使用
+	 * vma_prio_tree_insert()将该区域添加到优先树
+	 * 中，对多个相同区域的处理如上所述。
+	 */
 	__vma_link_file(vma);
 
 	if (mapping)
@@ -623,6 +673,11 @@ static void __insert_vm_struct(struct mm_struct *mm, struct vm_area_struct *vma)
 	mm->map_count++;
 }
 
+/**
+ * 从内存描述符链表和红黑树中删除vma。
+ *   mm-内存描述符的地址。
+ *   vma,prev-两个线性区对象。都应当属于mm。prev应当在线性区的排序中位于vma之前。
+ */
 static __always_inline void __vma_unlink_common(struct mm_struct *mm,
 						struct vm_area_struct *vma,
 						struct vm_area_struct *prev,
@@ -1106,7 +1161,13 @@ can_vma_merge_after(struct vm_area_struct *vma, unsigned long vm_flags,
 
  vm_userfaultfd_ctx :
 
- */
+* 在新区域被加到进程的地址空间时，内核会检查它是否可以与一个或多个现存区域合并。
+ * vma_merge()在可能的情况下，将一个新区域与周边区域合并。mm是相关进程的地址空间实例
+ * 而prev是紧接着新区域之前的区域。rb_parent是该区域在红黑树中的父结点。
+ * addr、end和vm_flags分别是新区域的开始地址、结束地址、标志。
+ * 如果该区域属于一个文件映射，则file是一个指向表示该文件的file实例的指针。
+ * pgoff指定了映射在文件数据内的偏移量。policy参数只在NUMA系统上需要
+*/
 struct vm_area_struct *vma_merge(struct mm_struct *mm, // 
 			struct vm_area_struct *prev, unsigned long addr,
 			unsigned long end, unsigned long vm_flags,
@@ -1121,6 +1182,14 @@ struct vm_area_struct *vma_merge(struct mm_struct *mm, //
 	/*
 	 * We later require that vma->vm_flags == vm_flags,
 	 * so this tests vma->vm_flags & VM_SPECIAL, too.
+	 */
+	/*
+	 * 首席那检查确定前一个区域的结束地址是否对应于新区域的起始地址。倘若如此，内核
+	 * 接下来必须检查两个区域，确认二者的标志和映射的文件相同，文件映射内部的偏移量
+	 * 符合连续区域的要求，两个区域内都不包含匿名映射，而且两个区域彼此兼容。(如果两个
+	 * 文件映射在地址空间中连续，但在文件中不连续，亦无法合并)
+	 *
+	 * 此标志禁止合并，一般由系统对区域进行特殊管理
 	 */
 	if (vm_flags & VM_SPECIAL)
 		return NULL;
@@ -1147,7 +1216,11 @@ struct vm_area_struct *vma_merge(struct mm_struct *mm, //
 	 * Can it merge with the predecessor?
 	 */
    /* 
-     * 先判断给定的区域能否和前驱vma进行合并，需要判断如下的几个方面: 
+   	 通过can_vma_merge_after()辅助函数完成检查，检查
+	 区域与前一个区域是否可以合并。
+	 前一个节点的结尾处与当前起始位置符，有合并的可能性 && 检查二者的属性是否允许合并 
+		
+     先判断给定的区域能否和前驱vma进行合并，需要判断如下的几个方面: 
        1.前驱vma必须存在 
        2.前驱vma的结束地址正好等于给定区域的起始地址 
        3.两者的struct mempolicy中的相关属性要相同，这项检查只对NUMA架构有意义 
@@ -1161,6 +1234,17 @@ struct vm_area_struct *vma_merge(struct mm_struct *mm, //
 		/*
 		 * OK, it can.  Can we now merge in the successor as well?
 		 */
+		/**
+		 * 如果可以，内核接下来检查后一个区域是否可以合并。
+		 * 与前一例相比，第一个差别是使用can_vma_merge_before()来检查两个区域是否可以
+		 * 合并，替代了can_vma_merge_after()。如果前一个
+		 * 和后一个区域都可以与当前区域合并，还必须确认前一个和后一个区域的匿名
+		 * 映射可以合并，然后才能创建包含这3个区域的一个单一区域。
+		 * 在这两种情况下，调用了vma_adjust()执行
+		 * 最后的合并。它会适当地修改涉及的所有数据结构，包括优先树和
+		 * vm_area_struct()实例，还包括释放不再需要的结构实例。
+		 */
+		/* 当前区域的结束地址与后一个区域的起始地址相同，可能合并 && 判断二者属性是否允许合并*/
 		  /* 
           *确定可以和前驱vma合并后再判断是否能和后驱vma合并，判断方式和前面一样， 
            不过这里多了一项检查，在给定区域能和前驱、后驱vma合并的情况下还要检查 
@@ -1175,10 +1259,12 @@ struct vm_area_struct *vma_merge(struct mm_struct *mm, //
 				is_mergeable_anon_vma(prev->anon_vma,
 						      next->anon_vma, NULL)) {
 							/* cases 1, 6 */
+			/* 将三个区域合并 */
 			err = __vma_adjust(prev, prev->vm_start,
 					 next->vm_end, prev->vm_pgoff, NULL,
 					 prev);
 		} else					/* cases 2, 5, 7 */
+			/* 与前一个区域进行合并 */
 			err = __vma_adjust(prev, prev->vm_start,
 					 end, prev->vm_pgoff, NULL, prev);
 		if (err)
@@ -1192,6 +1278,7 @@ struct vm_area_struct *vma_merge(struct mm_struct *mm, //
 	 */
 	 /*如果前面的步骤失败，
 	 那么则从后驱vma开始进行和上面类似的步骤*/ 
+	 /* 不能与前一个区域合并，则判断是否能与后一个区域进行合并 */
 	if (next && end == next->vm_start &&
 			mpol_equal(policy, vma_policy(next)) &&
 			can_vma_merge_before(next, vm_flags,
@@ -1333,6 +1420,10 @@ static inline int mlock_future_check(struct mm_struct *mm,
 {
 	unsigned long locked, lock_limit;
 
+	/**
+	 * 进程加锁页的总数超过了保存在进程描述符的
+	 * rlim[RLIMIT_MEMLOCK].rlim_cur字段中的值。也直接返回错误。
+	 */
 	/*  mlock MCL_FUTURE? */
 	if (flags & VM_LOCKED) {
 		locked = len >> PAGE_SHIFT;
@@ -1358,6 +1449,7 @@ unsigned long do_mmap(struct file *file, unsigned long addr,
 
 	*populate = 0;
 
+	/* 参数有效性检查 */
 	if (!len)
 		return -EINVAL;
 
@@ -1367,30 +1459,48 @@ unsigned long do_mmap(struct file *file, unsigned long addr,
 	 * (the exception is when the underlying filesystem is noexec
 	 *  mounted, in which case we dont add PROT_EXEC.)
 	 */
+	/* 有读权限，同时该体系结构中，读即意味着执行 */
 	if ((prot & PROT_READ) && (current->personality & READ_IMPLIES_EXEC))
+		/* 文件在mount时，没有禁止执行 */
 		if (!(file && path_noexec(&file->f_path)))
+			/* 添加可执行标志 */
 			prot |= PROT_EXEC;
 
 	if (!(flags & MAP_FIXED))
 		addr = round_hint_to_min(addr);
 
 	/* Careful about overflows.. */
+	/* 检查长度是否合法 */
 	len = PAGE_ALIGN(len);
 	if (!len)
 		return -ENOMEM;
 
 	/* offset overflow? */
+	/**
+	 * 是否越界了
+	 */
 	if ((pgoff + (len >> PAGE_SHIFT)) < pgoff)
 		return -EOVERFLOW;
 
 	/* Too many mappings? */
+	/**
+	 * 进程映射了过多的线性区。
+	 */
 	if (mm->map_count > sysctl_max_map_count)
 		return -ENOMEM;
 
 	/* Obtain the address to map to. we verify (or select) it and ensure
 	 * that it represents a valid section of the address space.
 	 */
+	/*
+	 * 在虚拟地址空间中找到一个适当的区域用于映射。应用程序
+	 * 可以对映射指定固定地址、建议一个地址或由内核选择地址
+	 *
+	 * get_unmapped_area获得新线性区的线性地址区间。
+	 * 这个函数可能会调用文件对象的get_unapped_area方法。
+	 */
 	addr = get_unmapped_area(file, addr, len, pgoff, flags);
+	/* 查找一个可用的虚拟地址空间 */
 	if (offset_in_page(addr))
 		return addr;
 
@@ -1403,10 +1513,30 @@ unsigned long do_mmap(struct file *file, unsigned long addr,
 	/* Do simple checking here so the lower-level routines won't have
 	 * to. we assume access permissions have been handled by the open
 	 * of the memory object, so we don't do any here.
+	 *
+	 * 将属性标志转换为VM_***标志，易于后续处理。def_flags主要包含
+	 * VM_LOCKED标志。该标志表示禁止相应的页换出
+	 *
+	 * calc_vm_prot_bits()和calc_vm_flag_bits()将系统调用中指定的标志
+	 * 和访问权限常数合并到一个共同的标志集中，在后续的操作中比较容易
+	 * 处理(MAP_和PROT_标志转换为前缀VM_的标志)。内核从当前运行进程的
+	 * mm_struct实例获得def_flags之后，又将其包含到标志集中。def_flags
+	 * 的值为0或VM_LOCK。前者不会改变结果标志集，而VM_LOCK意味着随后
+	 * 映射的页无法换出。为设置def_flags的值，进程必须发出mlockall()
+	 * 系统调用，使用上述机制防止所有未来的映射被换出，即使在创建时没
+	 * 有显式指定VM_LOCK标志，也是如此。
+	 *
+	 * 通过prot和flag计算新线性区描述符的标志。
+	 * mm->def_flags是线性区的默认标志。它只能由mlockall系统调用修改。
+	 * 这个调用可以设置VM_LOCKED标志。由此锁住以后申请的RAM中的有页。
 	 */
 	vm_flags |= calc_vm_prot_bits(prot, pkey) | calc_vm_flag_bits(flags) |
 			mm->def_flags | VM_MAYREAD | VM_MAYWRITE | VM_MAYEXEC;
 
+	/**
+	 * flag参数指定新线性区地址区间的页必须被锁在RAM中，但不允许进程
+	 * 创建上锁的线性区检查用户是否真的有权限锁定页面
+	 */
 	if (flags & MAP_LOCKED)
 		if (!can_do_mlock())
 			return -EPERM;
@@ -1419,6 +1549,11 @@ unsigned long do_mmap(struct file *file, unsigned long addr,
 
 		switch (flags & MAP_TYPE) {
 		case MAP_SHARED:
+		/* 共享映射 */
+			/**
+			 * 如果请求一个共享可写的内存映射，就检查文件是否为写入而打开的。
+			 */
+			/* 文件只读，不允许写 */
 			if ((prot&PROT_WRITE) && !(file->f_mode&FMODE_WRITE))
 				return -EACCES;
 
@@ -1426,29 +1561,47 @@ unsigned long do_mmap(struct file *file, unsigned long addr,
 			 * Make sure we don't allow writing to an append-only
 			 * file..
 			 */
+			/**
+			 * 如果节点仅仅允许追加写，但是文件以写方式打开，则返回错误。
+			 */
 			if (IS_APPEND(inode) && (file->f_mode & FMODE_WRITE))
 				return -EACCES;
 
 			/*
 			 * Make sure there are no mandatory locks on the file.
 			 */
+			/**
+			 * 如果请求一个共享内存映射，就检查文件上没有强制锁。
+			 */
 			if (locks_verify_locked(file))
 				return -EAGAIN;
 
 			vm_flags |= VM_SHARED | VM_MAYSHARE;
+			/**
+			 * 如果文件没有写权限，那么相应的线性区也不会有写权限。
+			 */
 			if (!(file->f_mode & FMODE_WRITE))
 				vm_flags &= ~(VM_MAYWRITE | VM_SHARED);
 
 			/* fall through */
+			/**
+			 * 此处没有调用break，也就是说，即便是共享映射，也要进行下面的映射。
+			 */
 		case MAP_PRIVATE:
+			/**
+			 * 不论是共享映射还是私有映射，都要检查文件的读权限。
+			 */
+			/* 文件映射后，必然允许读。但是文件没有读权限 */
 			if (!(file->f_mode & FMODE_READ))
 				return -EACCES;
+			/* 文件系统在挂载时不允许执行，但是mmap允许执行 */
 			if (path_noexec(&file->f_path)) {
 				if (vm_flags & VM_EXEC)
 					return -EPERM;
 				vm_flags &= ~VM_MAYEXEC;
 			}
 
+			/* 文件没有提供映射方法 */
 			if (!file->f_op->mmap)
 				return -ENODEV;
 			if (vm_flags & (VM_GROWSDOWN|VM_GROWSUP))
@@ -1459,6 +1612,7 @@ unsigned long do_mmap(struct file *file, unsigned long addr,
 			return -EINVAL;
 		}
 	} else {
+	/* 匿名映射 */
 		switch (flags & MAP_TYPE) {
 		case MAP_SHARED:
 			if (vm_flags & (VM_GROWSDOWN|VM_GROWSUP))
@@ -1654,8 +1808,12 @@ unsigned long mmap_region(struct file *file, unsigned long addr,
 	}
 
 	/* Clear old maps */
+	/**
+	 * find_vma_links确定处于新区间前的线性区对象的位置，以及在红黑树中新线性区的位置。
+	 */
 	while (find_vma_links(mm, addr, addr + len, &prev, &rb_link,
 			      &rb_parent)) {
+		/* 解除映射，如果失败则退出 */
 		if (do_munmap(mm, addr, len))
 			return -ENOMEM;
 	}
@@ -1664,7 +1822,14 @@ unsigned long mmap_region(struct file *file, unsigned long addr,
 	 * Private writable mapping: check memory availability
 	 */
 	if (accountable_mapping(file, vm_flags)) {
+		/**
+		 * 需要检查空闲页框数目，并且新的线性区是私有可写页
+		 */
 		charged = len >> PAGE_SHIFT;
+		/**
+		 * 如果没有足够的空闲页框，就返回ENOMEM
+		 */
+		/* 检查内存是否支持映射 */
 		if (security_vm_enough_memory_mm(mm, charged))
 			return -ENOMEM;
 		vm_flags |= VM_ACCOUNT;
@@ -1673,6 +1838,7 @@ unsigned long mmap_region(struct file *file, unsigned long addr,
 	/*
 	 * Can we just expand an old mapping?
 	 */
+	/* 成功合并，不需要分配单独的VMA对象，直接退出 */
 	vma = vma_merge(mm, prev, addr, addr + len, vm_flags,
 			NULL, file, pgoff, NULL, NULL_VM_UFFD_CTX);
 	if (vma)
@@ -1683,7 +1849,17 @@ unsigned long mmap_region(struct file *file, unsigned long addr,
 	 * specific mapper. the address has already been validated, but
 	 * not unmapped, but the maps are removed from the list.
 	 */
+	/*
+	 * 在内核分配了所需的内存之后，会执行下列步骤:
+	 * 1)分配并初始化一个新的vm_area_struct实例，并插入
+	 *   到进程的链表/树数据结构中。
+	 * 2)用特定于文件的函数file->f_op->mmap创建映射。
+	 *   大多数文件系统将generic_file_mmap()用于该目的。
+	 *   它所有的工作，就是将映射的vm_ops成员设置为generic_file_vm_ops。
+	 */
+	/* 分配VMA描述符 */
 	vma = kmem_cache_zalloc(vm_area_cachep, GFP_KERNEL);
+	/* 分配失败，退出 */
 	if (!vma) {
 		error = -ENOMEM;
 		goto unacct_error;
@@ -1697,6 +1873,7 @@ unsigned long mmap_region(struct file *file, unsigned long addr,
 	vma->vm_pgoff = pgoff;
 	INIT_LIST_HEAD(&vma->anon_vma_chain);
 
+	/* 文件映射 */
 	if (file) {
 		if (vm_flags & VM_DENYWRITE) {
 			error = deny_write_access(file);
@@ -1714,7 +1891,20 @@ unsigned long mmap_region(struct file *file, unsigned long addr,
 		 * and map writably if VM_SHARED is set. This usually means the
 		 * new file must not have been exposed to user-space, yet.
 		 */
+		/**
+		 * 创建文件映射，一般情况下，该回调是generic_file_mmap。
+		 * generic_file_mmap设置vm_ops成员为generic_file_vm_ops 
+		 * generic_file_vm_ops的fault回调为filemap_fault
+		 */
 		vma->vm_file = get_file(file);
+		/**
+		 * 对映射的文件调用mmap方法，对于大多数文件系统，该方法由generic_file_mmap实现。
+		 * 它执行以下步骤:
+		 *  将当前时间赋给文件索引节点对象的i_atime字段，并将该索引节点标记为脏。
+		 *  用generic_file_vm_ops表的地址初始化线性区描述符的vm_ops字段，在这个表中的方法，
+		 *  除了nopage和populate方法外，其他所有都为空。
+		 *  其中nopage方法由filemap_nopage实现，而populate方法由filemap_populate实现。
+		 */
 		error = file->f_op->mmap(file, vma);
 		if (error)
 			goto unmap_and_free_vma;
@@ -1731,11 +1921,18 @@ unsigned long mmap_region(struct file *file, unsigned long addr,
 		addr = vma->vm_start;
 		vm_flags = vma->vm_flags;
 	} else if (vm_flags & VM_SHARED) {
+		/**
+		 * 新线性区有VM_SHARED标志，又不是映射磁盘上的文件。则该线性区是一个共享匿名区。
+		 * shmem_zero_setup对它进行初始化。共享匿名区主要用于进程间通信。
+		 */
 		error = shmem_zero_setup(vma);
 		if (error)
 			goto free_vma;
 	}
 
+	/**
+	 * vma_link将新线性区插入到线性区链表和红黑树中。
+	 */
 	vma_link(mm, vma, prev, rb_link, rb_parent);
 	/* Once vma denies write, undo our temporary denial count */
 	if (file) {
@@ -1749,9 +1946,17 @@ out:
 	perf_event_mmap(vma);
 
 	vm_stat_account(mm, vm_flags, len >> PAGE_SHIFT);
+	/*
+	 * 如果设置了VM_LOCKED，或者通过系统调用的标志参数显式传递过来，或者通过
+	 * mlockall机制隐式设置，内核都会调用make_pages_present()依次扫描映射中的各页
+	 * 对每一页触发缺页异常以便读入其数据.当然，这意味着失去了延迟读取带来的
+	 * 性能提高，但内核可以确保在映射建立后所涉及的页总是在物理内存中
+	 * 毕竟VM_LOCKED标志用来防止从内存换出页,因此这些页必须先读进来
+	 */
 	if (vm_flags & VM_LOCKED) {
 		if (!((vm_flags & VM_SPECIAL) || is_vm_hugetlb_page(vma) ||
 					vma == get_gate_vma(current->mm)))
+			/* 锁定页面计数 */
 			mm->locked_vm += (len >> PAGE_SHIFT);
 		else
 			vma->vm_flags &= VM_LOCKED_CLEAR_MASK;
@@ -2005,6 +2210,9 @@ found_highest:
  * This function "knows" that -ENOMEM has the bits set.
  */
 #ifndef HAVE_ARCH_UNMAPPED_AREA
+/**
+ * 分配从低端地址向高端地址移动的线性区
+ */
 unsigned long
 arch_get_unmapped_area(struct file *filp, unsigned long addr,
 		unsigned long len, unsigned long pgoff, unsigned long flags)
@@ -2013,20 +2221,43 @@ arch_get_unmapped_area(struct file *filp, unsigned long addr,
 	struct vm_area_struct *vma;
 	struct vm_unmapped_area_info info;
 
+	/**
+	 * 当然了，只要是普通进程地址，就不能超过TASK_SIZE(一般就是3G)
+	 */
 	if (len > TASK_SIZE - mmap_min_addr)
 		return -ENOMEM;
 
+	/**
+	 * 检查是否设置了MAP_FIXED标志，该标志表示映射将在固定地址创建。倘若如此，
+	 * 内核只会确保该地址满足对齐要求(按页),而且所要求的区间完全在可用地址空间内
+	 */
+	/* 必须使用传入的地址，直接返回 */
 	if (flags & MAP_FIXED)
 		return addr;
 
+	/**
+	 * 如果没有指定区域位置，内核将调用find_vma()在进程的虚拟内存区中查找适当
+	 * 的可用区域。如果指定了一个特定的优先选用(与固定地址不同)地址，内核
+	 * 会检查该区域是否与现存区域重叠,如果不重叠，则将该地址作为目标返回
+	 */
+	/* 优先使用传递的地址 */
 	if (addr) {
+		/**
+		 * 如果地址不是0，就从addr处开始分配,当然，需要将addr按4K取整
+		 */
 		addr = PAGE_ALIGN(addr); //将地址按页对齐
+		/* 查找后一个地址区间 */
 		vma = find_vma(mm, addr); //获取一个vma，该vma可能包含了addr也可能在addr后面并且离addr最近
         /*这里确定是否有一块适合的空闲区域，先要保证addr+len不会 
                超过进程地址空间的最大允许范围，然后如果前面vma获取成功的话则要保证 
                vma位于addr的后面并且addr+len不会延伸到该vma的区域*/ 
+		/**
+		 * TASK_SIZE - len >= addr而不是addr + len <= TASK_SIZE
+		 */
+		/* 没有整形溢出 && 没有与后一个区间重叠 */
 		if (TASK_SIZE - len >= addr && addr >= mmap_min_addr &&
 		    (!vma || addr + len <= vma->vm_start))
+			/* 没有被映射，这块区间可以使用。 */
 			return addr;
 	}
 
@@ -2095,6 +2326,14 @@ arch_get_unmapped_area_topdown(struct file *filp, const unsigned long addr0,
 }
 #endif
 
+/**
+ * 在进程的虚拟地址空间中，查找一段可用的区域
+ *
+ * 搜索进程的地址空间以找到一个可以使用的线性地址区间。
+ * len-区间的长度。
+ * addr-指定必须从哪个地址开始进行查找。如果查找成功，
+ *    函数返回这个新区间的起始地址。否则返回错误码-ENOMEM.
+ */
 unsigned long
 get_unmapped_area(struct file *file, unsigned long addr, unsigned long len,
 		unsigned long pgoff, unsigned long flags)
@@ -2110,6 +2349,7 @@ get_unmapped_area(struct file *file, unsigned long addr, unsigned long len,
 	if (len > TASK_SIZE)
 		return -ENOMEM;
 
+	/* 默认用mm_struct中的get_unmapped_area回调，一般是arch_get_unmapped_area */
 	get_area = current->mm->get_unmapped_area;
 	if (file) {
 		if (file->f_op->get_unmapped_area)
@@ -2123,13 +2363,20 @@ get_unmapped_area(struct file *file, unsigned long addr, unsigned long len,
 		pgoff = 0;
 		get_area = shmem_get_unmapped_area;
 	}
-
+	/* 调用体系结构对应的函数来查找可用区域 */
 	addr = get_area(file, addr, len, pgoff, flags);
 	if (IS_ERR_VALUE(addr))
 		return addr;
 
+	/**
+	 * 如果addr不等于0,就检查指定的地址是否在用户态空间。
+	 * 这是为了避免用户态程序绕过安全检查而影响内核地址空间。
+	 */
 	if (addr > TASK_SIZE - len)
 		return -ENOMEM;
+	/**
+	 * 检查是否与页边界对齐。
+	 */
 	if (offset_in_page(addr))
 		return -EINVAL;
 
@@ -2140,6 +2387,20 @@ get_unmapped_area(struct file *file, unsigned long addr, unsigned long len,
 EXPORT_SYMBOL(get_unmapped_area);
 
 /* Look up the first VMA which satisfies  addr < vm_end,  NULL if none. */
+/*
+ * 通过虚拟地址，find_vma可以查找用户地址空间中
+ * 结束地址在给定地址之后的第一个区域，
+ * 即满足addr<vm_area_struct->vm_end条件的第一个区域。
+ * 该函数的参数不仅包括虚拟地址(addr)，还包括
+ * 一个指向mm_struct实例的指针，后者指定了扫描哪个进程的地址空间。
+ *
+ * 查找给定地址的最邻近区。
+ * 它查找线性区的vm_end字段大于addr的第一个线性区的位置。并返回这个线性区描述符的地址。
+ * 如果没有这样的线性区存在，就返回NULL。
+ * 由find_vma函数所选择的线性区并不一定要包含addr，因为addr可能位于任何线性区之外。
+ *     mm-进程内存描述符地址
+ *     addr-线性地址。
+ */
 struct vm_area_struct *find_vma(struct mm_struct *mm, unsigned long addr)
 {
 	struct rb_node *rb_node;
@@ -2147,26 +2408,62 @@ struct vm_area_struct *find_vma(struct mm_struct *mm, unsigned long addr)
 
 	/* Check the cache first. */
 	//首先尝试mmap_cache中缓存的vma
+	/*
+	 * 内核首先检查上次处理的区域中是否包含所需的地址，即是否
+	 * 该区域的结束地址在目标地址之后，而起始
+	 * 地址在目标地址之前。倘若如此，内核
+	 * 不会执行if语句，而是立即将指向该区域的指针返回。
+	 */
 	vma = vmacache_find(mm, addr);
 	if (likely(vma))
 		return vma;
 
+	/*
+	 * 否则必须逐步搜索红黑树。rb_node是用于表示树中各个结点的数据结构。
+	 * rb_entry用于从结点取出"有用数据"(在这里是vm_area_struct实例)。
+	 * 树的根节点位于mm->mm_rb.rb_node。如果相关区域结束地址大于目标
+	 * 地址而起始地址小于目标地址，内核就找到一个适当的结点，可以退出
+	 * while循环，返回指向vm_area_struct实例的指针。否则，再继续搜索:
+	 *  1)如果当前区域结束地址大于目标地址，则从左子结点开始
+	 *  2)如果当前区域的结束地址小于等于目标地址，则从右子结点开始。
+	 * 如果树根结点的子结点为NULL指针，则内核很容易判断何时结束搜索并
+	 * 返回NULL指针作为错误信息。如果找到适当的区域，则将其指针保存在
+	 * mmap_cache中，因为下一次find_vma()调用搜索同一个区域中临近地址
+	 * 的可能性很高。 
+	 */
 	rb_node = mm->mm_rb.rb_node;
 
+	/* 遍历红黑树 */
 	while (rb_node) {
 		struct vm_area_struct *tmp;
 
+		/* 从红黑树的节点找到对应的VMA结构 */
+		/**
+		 * rb_entry从指向红黑树中一个节点的指针导出相应线性区描述符的指针。
+		 */
 		tmp = rb_entry(rb_node, struct vm_area_struct, vm_rb);
 
+		/**
+		 * 视情况在左右子树中查找。
+		 */
 		if (tmp->vm_end > addr) {
 			vma = tmp;
+			/* 符合条件，退出 */
+			/**
+			 * 当前线性区包含addr,退出循环并返回vma.
+			 */
 			if (tmp->vm_start <= addr)
 				break;
+			/* 节点所在区域太多，移动到左边继续查找, 在左子树中继续 */
 			rb_node = rb_node->rb_left;
 		} else
+		/* 移动到右边查找,在右子树中继续 */
 			rb_node = rb_node->rb_right;
 	}
 
+	/**
+	 * 如果有必要，记录下mmap_cache。这样，下次就从mmap_cache继续查找。
+	 */
 	if (vma)
 		vmacache_update(addr, vma); //将结果保存在缓存中
 	return vma;
@@ -2176,6 +2473,9 @@ EXPORT_SYMBOL(find_vma);
 
 /*
  * Same as find_vma, but also return a pointer to the previous VMA in *pprev.
+ */
+/**
+ * 与find_vma类似，不同的是它把函数选中的前一个线性区描述符的指针赋给附加参数ppre。
  */
 struct vm_area_struct *
 find_vma_prev(struct mm_struct *mm, unsigned long addr,
@@ -2431,6 +2731,9 @@ find_extend_vma(struct mm_struct *mm, unsigned long addr)
 	return prev;
 }
 #else
+/**
+ * 当进程操作堆栈时，遇到地址访问错误，那么，将调用本过程，扩展用户态程序的堆栈空间。
+ */
 int expand_stack(struct vm_area_struct *vma, unsigned long address)
 {
 	struct vm_area_struct *prev;
@@ -2498,6 +2801,13 @@ static void remove_vma_list(struct mm_struct *mm, struct vm_area_struct *vma)
  *
  * Called with the mm semaphore held.
  */
+/**
+ * 遍历线性区链表并释放它们的页框。
+ * mm-内存描述符指针
+ * vma-指向第一个被删除线性区描述符的指针。
+ * prev-指向vma前面的线性区的指针。
+ * start,end-界定被删除线性地址区间的范围。
+ */
 static void unmap_region(struct mm_struct *mm,
 		struct vm_area_struct *vma, struct vm_area_struct *prev,
 		unsigned long start, unsigned long end)
@@ -2506,17 +2816,40 @@ static void unmap_region(struct mm_struct *mm,
 	struct mmu_gather tlb;
 
 	lru_add_drain();
+	/**
+	 * tlb_gather_mmu初始化每CPU变量mmu_gathers。mmu_gather的值依赖于体系结构。
+	 * 通常该变量应该存放成功更新进程页表项所需要的所有信息。
+	 * 在x86中，该函数只是简单地把内存描述符指针mm的值赋给本地CPU的mmu_gather变量
+	 */
 	tlb_gather_mmu(&tlb, mm, start, end);
 	update_hiwater_rss(mm);
+	/**
+	 * 调用unmap_vmas扫描线性地址空间的所有页表项。
+	 * 如果只有一个CPU，就调用free_swap_and_cache反复释放相应的页。
+	 */
 	unmap_vmas(&tlb, vma, start, end);
+	/**
+	 * free_pgtables回收已经清空的进程页表。
+	 */
 	free_pgtables(&tlb, vma, prev ? prev->vm_end : FIRST_USER_ADDRESS,
 				 next ? next->vm_start : USER_PGTABLES_CEILING);
+	/**
+	 * 刷新TLB
+	 */
 	tlb_finish_mmu(&tlb, start, end);
 }
 
 /*
  * Create a list of vma's touched by the unmap, removing them from the mm's
  * vma list as we go..
+ */
+/*
+ * detach_vmas_to_be_unmapped()会遍历vm_area_struct实例的线性表，直至要解除
+ * 映射的地址范围已经全部涵盖在内。该结构的vm_next成员在此处用于将解除映射
+ * 的区域彼此连接起来。该函数还将mmap缓存设置为NULL，使之无效。
+ *
+ * 从进程的线性地址空间中删除位于线性地址区间中的线性区。
+ * 要删除的线性区的描述放在一个排好序的链表中，局部变量mpnt指向该链表的头。
  */
 static void
 detach_vmas_to_be_unmapped(struct mm_struct *mm, struct vm_area_struct *vma,
@@ -2549,6 +2882,14 @@ detach_vmas_to_be_unmapped(struct mm_struct *mm, struct vm_area_struct *vma,
  * __split_vma() bypasses sysctl_max_map_count checking.  We use this on the
  * munmap path where it doesn't make sense to fail.
  */
+/**
+ * 把与线性地址区间交叉的线性区划分成两个较小的区。一个在线性地址区间外部，
+ * 另一个在区间的内部。
+ *   mm-内存描述符指针。
+ *   vma-要被划分的线性区。
+ *   addr-区间与线性区之间交叉点的地址。
+ *   new_below-表示区间与线性区之间交叉点在区间超始处还是结束处的标志。
+ */
 static int __split_vma(struct mm_struct *mm, struct vm_area_struct *vma,
 	      unsigned long addr, int new_below)
 {
@@ -2559,6 +2900,9 @@ static int __split_vma(struct mm_struct *mm, struct vm_area_struct *vma,
 					~(huge_page_mask(hstate_vma(vma)))))
 		return -EINVAL;
 
+	/**
+	 * 获得线性区描述符。如果没有可用的空闲空间，就返回-ENOMEM
+	 */
 	new = kmem_cache_alloc(vm_area_cachep, GFP_KERNEL);
 	if (!new)
 		return -ENOMEM;
@@ -2569,8 +2913,16 @@ static int __split_vma(struct mm_struct *mm, struct vm_area_struct *vma,
 	INIT_LIST_HEAD(&new->anon_vma_chain);
 
 	if (new_below)
+		/**
+		 * 如果new_below为1,表示线性地址区间的结束地址在vma线性区的内部。
+		 * 因此把新线性区放在vma线性区的前面。因此把new->vm_end和vma->vm_start设置成addr.
+		 */
 		new->vm_end = addr;
 	else {
+		/**
+		 * 线性地址区间的起始地址在vma线性区的内部。因此必须把新线性区
+		 * 放在vma线性区之后。因此把new->vm_start和vma->vm_end设置成addr.
+		 */
 		new->vm_start = addr;
 		new->vm_pgoff += ((addr - vma->vm_start) >> PAGE_SHIFT);
 	}
@@ -2586,9 +2938,15 @@ static int __split_vma(struct mm_struct *mm, struct vm_area_struct *vma,
 	if (new->vm_file)
 		get_file(new->vm_file);
 
+	/**
+	 * 如果定义了新线性区的open方法，就执行它。
+	 */
 	if (new->vm_ops && new->vm_ops->open)
 		new->vm_ops->open(new);
 
+	/**
+	 * 把新线性区链接到线性区链表和红黑树中。
+	 */
 	if (new_below)
 		err = vma_adjust(vma, addr, vma->vm_end, vma->vm_pgoff +
 			((addr - new->vm_start) >> PAGE_SHIFT), new);
@@ -2630,20 +2988,38 @@ int split_vma(struct mm_struct *mm, struct vm_area_struct *vma,
  * work.  This now handles partial unmappings.
  * Jeremy Fitzhardinge <jeremy@goop.org>
  */
+/**
+ * 从当前进程的地址空间中删除一个线性地址区间。要删除的区间并不总是
+ * 对应一个线性区。它或者是一个线性区的一部分，或者是多个线性区。
+ * mm-进程内存描述符。
+ * start-要删除的地址区间的起始地址。
+ * len-要删除的长度。
+ */
 int do_munmap(struct mm_struct *mm, unsigned long start, size_t len)
 {
 	unsigned long end;
 	struct vm_area_struct *vma, *prev, *last;
 
+	/**
+	 * 初步检查：线性区地址不能大于TASK_SIZE，start必须是4096的整数倍。
+	 */
 	if ((offset_in_page(start)) || start > TASK_SIZE || len > TASK_SIZE-start)
 		return -EINVAL;
 
+	/**
+	 * len也不能为0
+	 */
 	len = PAGE_ALIGN(len);
 	if (len == 0)
 		return -EINVAL;
 
 	/* Find the first overlapping VMA */
+	/* 找到要解除映射的VMA及其前一个VMA */
+	/**
+	 * mpnt是要删除的线性地址区间之后第一个线性区的位置。mpnt->end>start
+	 */
 	vma = find_vma(mm, start);
+	/* 地址没有被映射，退出 */
 	if (!vma)
 		return 0;
 	prev = vma->vm_prev;
@@ -2651,6 +3027,9 @@ int do_munmap(struct mm_struct *mm, unsigned long start, size_t len)
 
 	/* if it doesn't overlap, we have nothing.. */
 	end = start + len;
+	/**
+	 * 也没有与线性地址区间重叠的线性区，就不必做什么了。
+	 */
 	if (vma->vm_start >= end)
 		return 0;
 
@@ -2660,6 +3039,14 @@ int do_munmap(struct mm_struct *mm, unsigned long start, size_t len)
 	 * Note: mremap's move_vma VM_ACCOUNT handling assumes a partially
 	 * unmapped vm_area_struct will remain in use: so lower split_vma
 	 * places tmp vma above, and higher split_vma places tmp vma below.
+	 */
+	/*
+	 * 线性区的起始地址在mpnt内，就调用split_vma把线性区mpnt划分成两个较小的区：
+	 * 一个区在线性地址区间外部，而另一个区间内部
+	 *
+	 * 如果解除映射区域的起始地址与find_vma() 找到的区域起始地址不同，则只解除部分
+	 * 映射，而不是整个映射区域。在内核这样做之前，首先必须将现存的映射划分为几个
+	 * 部分。映射的前一部分不需要解除映射，首先通过split_vma()分裂出来。
 	 */
 	if (start > vma->vm_start) {
 		int error;
@@ -2672,19 +3059,42 @@ int do_munmap(struct mm_struct *mm, unsigned long start, size_t len)
 		if (end < vma->vm_end && mm->map_count >= sysctl_max_map_count)
 			return -ENOMEM;
 
+		/* 将vma拆分 */
 		error = __split_vma(mm, vma, start, 0);
 		if (error)
 			return error;
+		/**
+		 * prev以前存储的是指向线性区mpnt前面一个线性区的指针。
+		 * 现在它指向mpnt，即指向线性地址区间外部的那个新线性区。
+		 * 这样，prev仍然指向要删除的那个线性区前面的那个线性区。
+		 */
 		prev = vma;
 	}
 
 	/* Does it split the last one? */
+	/*
+	 * 如果解除映射的部分区域的末端与原区域末端并不重合，
+	 * 那么原区域后部仍然有一部分未解除映射，因此需要对
+	 * 这部分也重复上述的处理过程。
+	 */
+	/* 前面可能将start前面的vma拆分了，这次以end进行查找 */
 	last = find_vma(mm, end);
+	/**
+	 * 如果线性地址空间的结束地址在一个线性区内部，就再次调用
+	 * split_vma把最后重叠的那个线性区划分成两个较小的区。
+	 */
 	if (last && end > last->vm_start) {
+		/* 拆分vma */
 		int error = __split_vma(mm, last, end, 1);
 		if (error)
 			return error;
 	}
+	/**
+	 * 确定从哪一个vma开始遍历，查找要munmap的vma 
+	 *
+	 * 更新mpnt，使它指向线性地址区间的第一个线性区。
+	 * 如果prev为空，即没有，就从mm->mmap获得第一个线性区的地址。
+	 */
 	vma = prev ? prev->vm_next : mm->mmap;
 
 	/*
@@ -2704,12 +3114,25 @@ int do_munmap(struct mm_struct *mm, unsigned long start, size_t len)
 	/*
 	 * Remove the vma's, and unmap the actual pages
 	 */
+	/*
+	 * 调用detach_vmas_to_be_unmapped()，列出所有需要解除映射
+	 * 的区域。由于解除映射操作可能设计地址空间中的任何区域，
+	 * 很可能影响连续几个区域。内核可能拆分这一系列区域中首尾
+	 * 两端的区域，以确保只影响到完整的区域。
+	 */
 	detach_vmas_to_be_unmapped(mm, vma, prev, end);
+	/*
+	 * 调用unmap_region()从页表删除与映射相关的所有项。
+	 * 完成后，内核还必须确保将相关的项从TLB移除或使之无效。
+	 */
 	unmap_region(mm, vma, prev, start, end);
 
 	arch_unmap(mm, vma, start, end);
 
 	/* Fix up all other VM information */
+	/*
+	 * 释放vm_area_struct实例占用的内存，完成从内核中删除映射的工作。
+	 */
 	remove_vma_list(mm, vma);
 
 	return 0;
@@ -2720,15 +3143,20 @@ int vm_munmap(unsigned long start, size_t len)
 	int ret;
 	struct mm_struct *mm = current->mm;
 
+	/* 获取mmap_sem信号量 */
 	if (down_write_killable(&mm->mmap_sem))
 		return -EINTR;
-
+	/* 调用do_munmap完成实际的工作 */
 	ret = do_munmap(mm, start, len);
 	up_write(&mm->mmap_sem);
 	return ret;
 }
 EXPORT_SYMBOL(vm_munmap);
 
+/**
+ * 解决文件映射
+ * addr,len:要解除映射的起始地址及其长度
+ */
 SYSCALL_DEFINE2(munmap, unsigned long, addr, size_t, len)
 {
 	int ret;
@@ -2856,6 +3284,10 @@ static inline void verify_mm_writelocked(struct mm_struct *mm)
  *  this is really a simplified "do_mmap".  it only handles
  *  anonymous maps.  eventually we may be able to do some
  *  brk-specific accounting here.
+ */
+/**
+ * 它其实是do_mmap的简化版，但是它比do_mmap快，因为它假定线性区不
+ * 映射磁盘上的文件。从而避免了检查线性区对象上的几个字段。
  */
 static int do_brk(unsigned long addr, unsigned long request)
 {
@@ -3009,14 +3441,23 @@ void exit_mmap(struct mm_struct *mm)
  * and into the inode's i_mmap tree.  If vm_file is non-NULL
  * then i_mmap_rwsem is taken here.
  */
+/**
+ * 在线性区对象链表和内存描述符的红黑树中插入一个vm_area_struct结构。
+ * mm-指定进程内存描述符的地址。
+ * vmp-指定要插入的vm_area_struct对象的地址。要求线性区对象的vm_start和vm_end字段必须被初始化。
+ */
 int insert_vm_struct(struct mm_struct *mm, struct vm_area_struct *vma)
 {
 	struct vm_area_struct *prev;
 	struct rb_node **rb_link, *rb_parent;
 
+	/**
+	 * 根据待插入区域的起始地址，查找前一个区域，红黑树的父节点，叶节点
+	 */
 	if (find_vma_links(mm, vma->vm_start, vma->vm_end,
 			   &prev, &rb_link, &rb_parent))
 		return -ENOMEM;
+	/* 此VMA需要接受审计 && 超过允许的空间范围了 */
 	if ((vma->vm_flags & VM_ACCOUNT) &&
 	     security_vm_enough_memory_mm(mm, vma_pages(vma)))
 		return -ENOMEM;
@@ -3033,11 +3474,23 @@ int insert_vm_struct(struct mm_struct *mm, struct vm_area_struct *vma)
 	 * using the existing file pgoff checks and manipulations.
 	 * Similarly in do_mmap_pgoff and in do_brk.
 	 */
+	/* 匿名映射的vm_pgoff表示起始地址的页号 */
 	if (vma_is_anonymous(vma)) {
 		BUG_ON(vma->anon_vma);
 		vma->vm_pgoff = vma->vm_start >> PAGE_SHIFT;
 	}
 
+	/*
+	 * find_vma_links()查到的信息足以使用vma_link()将
+	 * 新区域合并到该进程现存的数据结构中。
+	 *
+	 * 调用vma_link执行以下操作:
+	 *   在mm->mmap所指向的链表中插入线性区。
+	 *   在红黑树中插入线性区。
+	 *   如果线性区是匿名的，就把它插入相应的anon_vma数据结构作为头节点的链表中。
+	 *   递增mm->map_count计数器。
+	 *   如果线性区包含一个内存映射文件，则vma_link执行其他与内存映射文件相关的任务。
+	 */
 	vma_link(mm, vma, prev, rb_link, rb_parent);
 	return 0;
 }

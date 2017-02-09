@@ -910,16 +910,28 @@ struct kmem_cache *kmalloc_slab(size_t size, gfp_t flags)
 	if (size <= 192) {
 		if (!size)
 			return ZERO_SIZE_PTR;
-
+         /*
+            通过size_index_elem宏转换为下标后,  经size_index全局数组取得索引值
+            */
 		index = size_index[size_index_elem(size)];
 	} else
+        /*
+        	直接通过fls()取得索引值
+           */
 		index = fls(size - 1);
 
 #ifdef CONFIG_ZONE_DMA
+/*
+开启了DMA内存配置且设置了GFP_DMA标志，
+将结合索引值通过kmalloc_dma_caches返回kmem_cache管理结构信息，
+*/
 	if (unlikely((flags & GFP_DMA)))
 		return kmalloc_dma_caches[index];
 
 #endif
+/*
+    通过kmalloc_caches返回该结构
+*/
 	return kmalloc_caches[index];
 }
 

@@ -42,33 +42,47 @@ struct mem_cgroup;
  * allows the use of atomic double word operations on the flags/mapping
  * and lru list pointers also.
  */
+/*
+因为内核会为每一个物理页帧创建一个struct page的结构体，
+因此要保证page结构体足够的小，否则仅struct page就要占用大量的内存。
+出于节省内存的考虑，struct page中使用了大量的联合体union
+
+考虑一个例子：一个物理内存页能够通过多个地方的不同页表映射到虚拟地址空间，
+内核想要跟踪有多少地方映射了该页，
+为此，struct page中有一个计数器用于计算映射的数目。
+
+如果一页用于slab分配器，那么可以确保只有内核会使用该页，
+而不会有其它地方使用，因此映射计数信息就是多余的，
+因此内核可以重新解释该字段，
+用来表示该页被细分为多少个小的内存对象使用，
+联合体就很适用于该问题
+*/
 struct page {
 	/* First double word block */
     /* 
-    用来存放页的状态,linux/page-flags.h
-    这些标识是独立于体系结构的, 因而无法通过特定于CPU或计算机的信息(该信息保存在页表中)
+    用来存放页的体系结构无关的标志,linux/page-flags.h
     */
 	unsigned long flags;		/* Atomic flags, some possibly
 					 * updated asynchronously  描述page的状态和其他信息 */
 	union {
-/*
-指向与该页相关的address_space对象
+    /*
+        指向与该页相关的address_space对象
 
-mapping指定了页帧所在的地址空间, index是页帧在映射内部的偏移量. 
-地址空间是一个非常一般的概念. 例如, 可以用在向内存读取文件时. 
-地址空间用于将文件的内容与装载数据的内存区关联起来. 
-mapping不仅能够保存一个指针, 而且还能包含一些额外的信息, 
-用于判断页是否属于未关联到地址空间的某个匿名内存区.
+        mapping指定了页帧所在的地址空间, index是页帧在映射内部的偏移量. 
+        地址空间是一个非常一般的概念. 例如, 可以用在向内存读取文件时. 
+        地址空间用于将文件的内容与装载数据的内存区关联起来. 
+        mapping不仅能够保存一个指针, 而且还能包含一些额外的信息, 
+        用于判断页是否属于未关联到地址空间的某个匿名内存区.
 
-1. 如果mapping = 0，说明该page属于交换高速缓存页（swap cache）；
-    当需要使用地址空间时会指定交换分区的地址空间swapper_space。
-2. 如果mapping != 0，第0位bit[0] = 0，说明该page属于页缓存或文件映射，
-    mapping指向文件的地址空间address_space。
-3. 如果mapping != 0，第0位bit[0] != 0，说明该page为匿名映射，mapping指向struct anon_vma对象。
+        1. 如果mapping = 0，说明该page属于交换高速缓存页（swap cache）；
+            当需要使用地址空间时会指定交换分区的地址空间swapper_space。
+        2. 如果mapping != 0，bit[0] = 0，说明该page属于页缓存或文件映射，
+            mapping指向文件的地址空间address_space。
+        3. 如果mapping != 0，bit[0] != 0，说明该page为匿名映射，mapping指向struct anon_vma对象。
 
-通过mapping恢复anon_vma的方法：
-    anon_vma = (struct anon_vma *)(mapping - PAGE_MAPPING_ANON)。
-*/
+        通过mapping恢复anon_vma的方法：
+            anon_vma = (struct anon_vma *)(mapping - PAGE_MAPPING_ANON)。
+    */
 		struct address_space *mapping;	/* If low bit clear, points to
 						 * inode address_space, or NULL.
 						 * If page mapped as anonymous
@@ -83,14 +97,14 @@ mapping不仅能够保存一个指针, 而且还能包含一些额外的信息,
 
 	/* Second double word */
 	union {
-/*
-在映射的虚拟空间（vma_area）内的偏移；
- 一个文件可能只映射一部分，假设映射了1M的空间，
-index指的是在1M空间内的偏移，而不是在整个文件内的偏移
+        /*
+        在映射的虚拟空间（vma_area）内的偏移；
+         一个文件可能只映射一部分，假设映射了1M的空间，
+        index指的是在1M空间内的偏移，而不是在整个文件内的偏移
 
-pgoff_t index是该页描述结构在地址空间radix树page_tree中的对象索引号即页号,
-表示该页在vm_file中的偏移页数, 其类型pgoff_t被定义为unsigned long即一个机器字长.
-*/
+        pgoff_t index是该页描述结构在地址空间radix树page_tree中的对象索引号即页号,
+        表示该页在vm_file中的偏移页数, 其类型pgoff_t被定义为unsigned long即一个机器字长.
+        */
 		pgoff_t index;		/* Our offset within mapping. */
 		void *freelist;		/* sl[aou]b first free object */
 		/* page_deferred_list().prev	-- second tail page */
@@ -126,6 +140,7 @@ pgoff_t index是该页描述结构在地址空间radix树page_tree中的对象索引号即页号,
             初始值为-1，如果只被一个进程的页表映射了，该值为0. 
             如果该page处于伙伴系统中，该值为PAGE_BUDDY_MAPCOUNT_VALUE（-128），
             内核通过判断该值是否为PAGE_BUDDY_MAPCOUNT_VALUE来确定该page是否属于伙伴系统
+            _mapcount表示的是映射次数，而_count表示的是使用次数；被映射了不一定在使用，但要使用必须先映射
 */
 				atomic_t _mapcount;
 
@@ -484,8 +499,22 @@ struct mm_rss_stat {
 };
 
 struct kioctx_table;
+/*
+3G进程空间的数据抽象
+*/
 struct mm_struct {
+/*
+而由于进程往往不会整个3G空间都使用，而是使用不同的离散虚存区域，
+并且每个离散区域的使用都不一样，
+比如说栈所在的区域和代码段所在的区域的使用就不一样，
+从而导致各个区域的属性、需要的管理操作都不一致，
+所以就将各个虚存区域提炼出来单独管理，
+然后就再将所有虚存区域组成一颗红黑树交由mm_struct统一管理。
+*/
 	struct vm_area_struct *mmap;		/* list of VMAs */
+/*
+	l指向进程所有虚存区域构成的红黑树的根节点
+*/
 	struct rb_root mm_rb;
 	u32 vmacache_seqnum;                   /* per-thread vmacache */
 #ifdef CONFIG_MMU
@@ -508,6 +537,9 @@ struct mm_struct {
 */
 	unsigned long task_size;		/* size of task vm space */
 	unsigned long highest_vm_end;		/* highest vma end address */
+/*
+	进程的页目录
+*/
 	pgd_t * pgd;
 	atomic_t mm_users;			/* How many users with user space? */
 	atomic_t mm_count;			/* How many references to "struct mm_struct" (users count as 1) */

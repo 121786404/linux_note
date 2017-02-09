@@ -33,22 +33,27 @@
  * coalesce naturally under reasonable reclaim pressure and those which
  * will not.
  */
+/* 内核认为超过8个页算是大的内存分配 */
 #define PAGE_ALLOC_COSTLY_ORDER 3
 
 enum {
 /*
-不可移动页
+不可以移动, 内核中大部分数据是这样的
 */
 	MIGRATE_UNMOVABLE,
 /*
-	可移动页
+不能够直接移动,但是可以删除,
+而内容则可以从某些源重新生成.如文件数据映射的页面则归属此类
 */
 	MIGRATE_MOVABLE,
 /*
-	可回收页
+可以移动。分配给用户态程序运行的用户空间页面则为该类.
+由于是通过页面映射而得,将其复制到新位置后,
+更新映射表项,重新映射,应用程序是不感知的.
 */
 	MIGRATE_RECLAIMABLE,
 /*
+      是一个分界数,小于这个数的都是在pcplist上的
 	是per_cpu_pageset, 即用来表示每CPU页框高速缓存的数据结构中的链表的迁移类型数目
 */
 	MIGRATE_PCPTYPES,	/* the number of types on the pcp lists */
@@ -73,7 +78,10 @@ enum {
 	 * a single pageblock.
 	 */
 /*
-	 Linux内核最新的连续内存分配器(CMA), 用于避免预留大块内存
+     连续内存分配，
+     用于避免预留大块内存导致系统可用内存减少而实现的，
+     即当驱动不使用内存时，将其分配给用户使用，
+     而需要时则通过回收或者迁移的方式将内存腾出来。
 */
 	MIGRATE_CMA,
 #endif
@@ -136,13 +144,17 @@ struct pglist_data;
  * So add a wild amount of padding here to ensure that they fall into separate
  * cachelines.  There are very few zone structures in the machine, so space
  * consumption is not a concern here.
-由于自旋锁频繁的被使用，因此为了性能上的考虑，
-将某些成员对齐到cache line中，有助于提高执行的性能。
-使用这个宏，可以确定zone->lock，zone->lru_lock，zone->pageset这些成员使用不同的cache line
-
-____cacheline_internodealigned_in_smp,来实现最优的高速缓存行对其方式
 */
 #if defined(CONFIG_SMP)
+/*
+____cacheline_internodealigned_in_smp 展开为
+__attribute__((__aligned__(1 << (INTERNODE_CACHE_SHIFT))))
+#define INTERNODE_CACHE_SHIFT L1_CACHE_SHIFT
+#define L1_CACHE_SHIFT		CONFIG_ARM_L1_CACHE_SHIFT
+#define CONFIG_ARM_L1_CACHE_SHIFT 6
+表示64对齐
+char x[0] 是一个柔性数组，编译器会根据64字节对齐，自动决定大小
+*/
 struct zone_padding {
 	char x[0];
 } ____cacheline_internodealigned_in_smp;
@@ -223,15 +235,32 @@ enum node_stat_item {
  * This has to be kept in sync with the statistics in zone_stat_item
  * above and the descriptions in vmstat_text in mm/vmstat.c
  */
+/*
+ LRU = Least Recently Used
+*/
 #define LRU_BASE 0
 #define LRU_ACTIVE 1
 #define LRU_FILE 2
+/*
+Active/inactive memory是针对用户进程所占用的内存而言的，
+内核占用的内存（包括slab）不在其中。
 
+如果Inactive list很大，表明在必要时可以回收的页面很多；
+
+*/
 enum lru_list {
 	LRU_INACTIVE_ANON = LRU_BASE,
-	LRU_ACTIVE_ANON = LRU_BASE + LRU_ACTIVE,
+	/*
+      anonymous pages 与文件无关的内存（比如进程的堆栈，用malloc申请的内存）
+      anonymous pages 在发生换页时，是对交换区进行读/写操作
+	*/
+	LRU_ACTIVE_ANON = LRU_BASE + LRU_ACTIVE,  
 	LRU_INACTIVE_FILE = LRU_BASE + LRU_FILE,
-	LRU_ACTIVE_FILE = LRU_BASE + LRU_FILE + LRU_ACTIVE,
+    /*
+        File-backed pages 与文件关联的内存（比如程序文件、数据文件所对应的内存页）
+        File-backed pages 在发生换页(page-in或page-out)时，是从它对应的文件读入或写出
+      */
+	LRU_ACTIVE_FILE = LRU_BASE + LRU_FILE + LRU_ACTIVE, 
 	LRU_UNEVICTABLE,
 	NR_LRU_LISTS
 };
@@ -265,6 +294,9 @@ struct zone_reclaim_stat {
 
 struct lruvec {
 	struct list_head		lists[NR_LRU_LISTS];
+	/**
+          * 页面回收状态。
+          */
 	struct zone_reclaim_stat	reclaim_stat;
 	/* Evictions & activations on the inactive file list */
 	atomic_long_t			inactive_age;
@@ -316,7 +348,10 @@ WMARK_MIN所表示的page的数量值，是在内存初始化的过程中调用free_area_init_core
 #define min_wmark_pages(z) (z->watermark[WMARK_MIN])
 #define low_wmark_pages(z) (z->watermark[WMARK_LOW])
 #define high_wmark_pages(z) (z->watermark[WMARK_HIGH])
-
+/*
+每个zone都会有一个这个结构用于缓存页的分配, 
+中文一般就叫高速缓存.
+*/
 struct per_cpu_pages {
 	//当前数量
 	int count;		/* number of pages in the list */
@@ -375,6 +410,8 @@ ISA总线的直接内存存储DMA处理器有一个严格的限制 : 他们只能对RAM的前16MB进行寻址
 这远大于当前我们系统中的内存空间, 
 因此所有的物理地址都可以直接映射到内核中, 
 不需要高端内存的特殊映射.
+
+对于Arm 实际上只有ZONE_NORMAL和ZONE_MOVABLE 
 */
 enum zone_type {
 #ifdef CONFIG_ZONE_DMA
@@ -400,6 +437,10 @@ enum zone_type {
 标记了适合DMA的内存域. 该区域的长度依赖于处理器类型.
  这是由于古老的ISA设备强加的边界. 
 但是为了兼容性, 现代的计算机也可能受此影响
+
+ARM所有地址都可以进行DMA，所以该值可以很大，
+或者干脆不定义DMA类型的内存域。
+而在IA-32的处理器上，一般定义为16M
 */
 	ZONE_DMA,
 #endif
@@ -414,6 +455,10 @@ enum zone_type {
 只有在53位系统中ZONE_DMA32才和ZONE_DMA有区别, 
 在32位系统中, 本区域是空的, 即长度为0MB, 在Alpha和AMD64系统上, 
 该内存的长度可能是从0到4GB
+
+只在64位系统上有效，为一些32位外设DMA时分配内存。
+如果物理内存大于4G，该值为4G，
+否则与实际的物理内存大小相同。
 */
 	ZONE_DMA32,
 #endif
@@ -429,6 +474,9 @@ enum zone_type {
 
 例如, 如果AMD64系统只有两2G内存, 那么所有的内存都属于ZONE_DMA32范围, 
 而ZONE_NORMAL则为空
+
+在64位系统上，如果物理内存小于4G，该内存域为空。
+而在32位系统上，该值最大为896M
 */
 	ZONE_NORMAL,
 #ifdef CONFIG_HIGHMEM
@@ -456,9 +504,9 @@ enum zone_type {
 	ZONE_HIGHMEM,
 #endif
 /*
-内核定义了一个伪内存域ZONE_MOVABLE, 
+伪内存域
 在防止物理内存碎片的机制memory migration中需要使用该内存域. 
-供防止物理内存碎片的极致使用
+可以将虚拟地址对应的物理地址进行迁移
 */
 	ZONE_MOVABLE,
 #ifdef CONFIG_ZONE_DEVICE
@@ -472,20 +520,46 @@ enum zone_type {
 };
 
 #ifndef __GENERATING_BOUNDS_H
+/*
+为什么要按cache line进行对齐呢？
+因为zone结构体会被频繁访问到，在多核环境下，
+会有多个CPU同时访问同一个结构体，
+为了避免彼此间的干扰，必须对每次访问进行加锁。
 
+那么是不是要对整个zone加锁呢？一把锁锁住zone中所有的成员？
+这应该不是最有效的方法。我们知道zone结构体很大，
+访问zone最频繁的有两个两个场景，一是页面分配，二是页面回收，
+这两种场景各自访问结构体zone中不同的成员。
+如果一把锁锁住zone中所有成员的话，
+当一个cpu正在处理页面分配的事情，
+另一个cpu想要进行页面回收的处理，
+却因为第一个cpu锁住了zone中所有成员而只好等待。
+第二个CPU明知道此时可以“安全的”进行回收处理
+（因为第一个CPU不会访问与回收处理相关的成员）
+却也只能干着急。可见，我们应该将锁再细分。
+zone中定义了两把锁，lock以及lru_lock，lock与页面分配有关，
+lru_lock与页面回收有关。定义了两把锁，自然，
+每把锁所控制的成员最好跟锁呆在一起，
+最好是跟锁在同一个cache line中。
+当CPU对某个锁进行上锁处理时，CPU会将锁从内存加载到cache中，
+因为是以cache line为单位进行加载，
+所以与锁紧挨着的成员也被加载到同一cache line中。
+CPU上完锁想要访问相关的成员时，这些成员已经在cache line中了。
+
+增加padding，会额外占用一些字节，
+但内核中zone结构体的实例并不会太多(UMA下只有三个)，
+相比效率的提升，损失这点空间是值得的
+
+*/
 struct zone {
 	/* Read-mostly fields */
 
 	/* zone watermarks, access with *_wmark_pages(zone) macros */
-	//各种级别的水线需要保留的内存页面数量
     /*
-    Zone的管理调度的一些参数watermarks水印, 水存量很小(MIN)进水量，
-    水存量达到一个标准(LOW)减小进水量，当快要满(HIGH)的时候，
-    可能就关闭了进水口
-    WMARK_LOW, WMARK_LOW, WMARK_HIGH就是这个标准
-    如果空闲页多于pages_high = watermark[WMARK_HIGH], 则说明内存页面充足, 内存域的状态是理想的.
-    如果空闲页的数目低于pages_low = watermark[WMARK_LOW], 则说明内存页面开始紧张, 内核开始将页患处到硬盘.
-    如果空闲页的数目低于pages_min = watermark[WMARK_MIN], 则内存页面非常紧张, 页回收工作的压力就比较大
+    内核线程kswapd检测到不同的水线值会进行不同的处理
+    如果空闲页多于pages_high = watermark[WMARK_HIGH], 内存域状态理想，不需要进行内存回收
+    如果空闲页低于pages_low = watermark[WMARK_LOW], 开始进行内存回收，将page换出到硬盘.
+    如果空闲页低于pages_min = watermark[WMARK_MIN], 内存回收的压力很重，因为内存域中的可用page数已经很少了，必须加快进行内存回收
     */
 	unsigned long watermark[NR_WMARK];
 
@@ -500,22 +574,38 @@ struct zone {
 	 * recalculated at runtime if the sysctl_lowmem_reserve_ratio sysctl
 	 * changes.
 	 */
-/*
-分别为各种内存域指定了若干页
-用于一些无论如何都不能失败的关键性内存分配
-为了防止一些代码必须运行在低地址区域，所以事先保留一些低地址区域的内存
-*/
+    /*
+      为各个内存域指定的保留内存，用于分配不能失败的关键性内存分配 
+      当高端内存、normal内存区域中无法分配到内存时，需要从normal、DMA区域中分配内存。
+      为了避免DMA区域被消耗光，需要额外保留一些内存供驱动使用。
+      该字段就是指从上级内存区退到回内存区时，需要额外保留的内存数量。
+
+      内核为内存域定义了一个“价值”的层次结构，
+      按分配的“廉价度”依次为：ZONE_HIGHMEM > ZONE_NORMAL > ZONE_DMA。
+      高端内存域是最廉价的，因为内核没有任何部分依赖于从该zone中分配内存，
+      如果高端内存用尽，对内核没有任何副作用，这也是优先分配高端内存的原因。
+      普通内存域有所不同，因为所有的内核数据都保存在该区域，
+      如果用尽内核将面临紧急情况，甚至崩溃。
+      DMA内存域是最昂贵的，因为它不但数量少很容易被用尽，
+      而且被用于与外设进行DMA交互，一旦用尽则失去了与外设交互的能力。
+      因此内核在进行内存分配时，优先从高端内存进行分配，
+      其次是普通内存，最后才是DMA内存
+      */
 	long lowmem_reserve[MAX_NR_ZONES];
 
 #ifdef CONFIG_NUMA
-	int node;
+    /* 该zone所属的node的node id */
+	int node;  
 #endif
     /*  指向这个zone所在的pglist_data对象  */
+    /**
+         * 管理区所属性的节点。通过此字段可以找到同一节点的其他的管理区。
+      */
 	struct pglist_data	*zone_pgdat;
 	//每CPU的页面缓存。
     /*
         内核经常请求和释放单个页框. 为了提升性能,
-        每个内存管理区都定义了一个每CPU(Per-CPU)的页面高速缓存. 
+        每个内存管理区都定义了一个Per-CPU 的页面高速缓存. 
         所有”每CPU高速缓存”包含一些预先分配的页框, 
         他们被定义满足本地CPU发出的单一内存请求
 
@@ -528,6 +618,17 @@ struct zone {
         page管理的数据结构对象，内部有一个page的列表(list)来管理。
         每个CPU维护一个page list，避免自旋锁的冲突。
         这个数组的大小和NR_CPUS(CPU的数量）有关，这个值是编译的时候确定的
+
+         为什么是per-cpu? 
+         因为每个cpu都可从当前zone中分配内存，而pageset本身实现的一个功能就是批量申请和释放
+         修改为per-cpu可减小多个cpu在申请内存时的所竞争
+      */
+    /**
+      * 每CPU的页面缓存。
+      * 当分配单个页面时，首先从该缓存中分配页面。这样可以:
+      *              避免使用全局的锁
+      *              避免同一个页面反复被不同的CPU分配，引起缓存行的失效。
+      *              避免将管理区中的大块分割成碎片。
       */
 	struct per_cpu_pageset __percpu *pageset;
 
@@ -536,6 +637,28 @@ struct zone {
 	 * Flags for a pageblock_nr_pages block. See pageblock-flags.h.
 	 * In SPARSEMEM, this map is stored in struct mem_section
 	 */
+/*
+    在内存释放时，为了能够快速的将内存块返回到正确的迁移链表上，
+    内核提供了一个专门的字段pageblock_flags，
+    用来跟踪包含pageblock_nr_pages个页的内存块的迁移类型，
+    在启用大页的情况下pageblock_nr_pages与大页大小（2M）相同，
+    否则pageblock_nr_pages=2^(MAX_ORDER-1)=2^10个page。
+
+    pageblock_flags是一个比特位空间，每3位（保证能表示5种迁移类型）对应一个内存块；
+    在使能SPARSEMEM（稀疏内存模型）的系统上，pageblock_flags被定义在struct mem_section中，
+    否则定义在struct zone中。
+
+    几点说明：
+    1) pageblock_flags的空间是根据内存大小，在内存初始化时就分配好的，
+        它的比特位总是可用的，与page是否由伙伴系统管理无关。
+    2) 函数set_pageblock_migratetype(page, migratetype)用于设置以page为首的内存块的迁移类型，
+        而get_pageblock_migratetype(page)用于获取以page为首的内存块的迁移类型。
+    3) 所有页最开始都被标记为可移动的。
+    4) 分配内存时，如果需要从备用列表中申请，内核优先申请更大的内存块。
+        比如计划申请1个page的不可移动内存块，优先查找是否存在2^10个page的可回收内存块，
+        如果不存在再查找是否存在2^9个page的可回收内存块，直到2^0。
+        这样做是为了尽量避免向可回收和可移动内存块中引入碎片。
+*/
 	unsigned long		*pageblock_flags;
 #endif /* CONFIG_SPARSEMEM */
 
@@ -591,8 +714,10 @@ spanned_pages: 和node中的类似的成员含义一样
 	 */
 	//该zone管理的页面数量
 	unsigned long		managed_pages;
-	unsigned long		spanned_pages; /*  总页数，包含空洞  */
-	unsigned long		present_pages;  /*  可用页数，不包含空洞  */
+    /*  总页数，包含空洞  */
+	unsigned long		spanned_pages;
+	/*  可用页数，不包含空洞  */
+	unsigned long		present_pages;  
     // zone的名字，字符串表示： “DMA”，”Normal” 和”HighMem”
 	const char		*name;
 
@@ -607,6 +732,10 @@ spanned_pages: 和node中的类似的成员含义一样
 
 #ifdef CONFIG_MEMORY_HOTPLUG
 	/* see spanned/present_pages for more description */
+	/**
+      * 用于保护spanned/present_pages等变量。这些变量几乎不会发生变化，除非发生了内存热插拨操作。
+      * 这几个变量并不被lock字段保护。并且主要用于读，因此使用读写锁。
+      */
 	seqlock_t		span_seqlock;
 #endif
 
@@ -623,7 +752,9 @@ spanned_pages: 和node中的类似的成员含义一样
            如果页帧被频繁访问，则是活动的，相反则是不活动的，
            在需要换出页帧时，这样的信息是很重要的：  
       */
-
+    /**
+      * 伙伴系统的主要变量。这个数组定义了11个队列，每个队列中的元素都是大小为2^n的页面块。
+      */
 	struct free_area	free_area[MAX_ORDER];
 
 	/* zone flags, see below */
@@ -632,6 +763,9 @@ spanned_pages: 和node中的类似的成员含义一样
 
 	/* Primarily protects free_area */
     /* 对zone并发访问的保护的自旋锁  */
+  /**
+      * 该锁用于保护伙伴系统数据结构。即保护free_area相关数据。
+      */
 	spinlock_t		lock;
 
 	/* Write-intensive fields used by compaction and vmstats. */
@@ -660,6 +794,12 @@ spanned_pages: 和node中的类似的成员含义一样
 	 * are skipped before trying again. The number attempted since
 	 * last failure is tracked with compact_considered.
 	 */
+    /**
+      * 这两个字段用于内存紧缩。其目的是为了避免内存外碎片。
+      * 通过页面迁移，将已经分配的页面合并到一起，
+      * 未分配页面合并到一起，这样可用页面将形成大的块，减少外碎片。
+      * 这两个标志用于判断是否需要在本管理区进行内在紧缩。
+      */
 	unsigned int		compact_considered;
 	unsigned int		compact_defer_shift;
 	int			compact_order_failed;
@@ -799,16 +939,6 @@ struct bootmem_data;
 /**
  * 内存区域，在非连续内存模型中，代表一块内存bank
  * 在NUMA系统中，一般表示一个NUMA节点。
-
- 该结构比较特殊的地方是它由ZONE_PADDING分隔的几个部分. 
- 这是因为堆zone结构的访问非常频繁. 在多处理器系统中, 
- 通常会有不同的CPU试图同时访问结构成员. 
- 因此使用锁可以防止他们彼此干扰, 避免错误和不一致的问题. 
- 由于内核堆该结构的访问非常频繁, 
- 因此会经常性地获取该结构的两个自旋锁zone->lock和zone->lru_lock
- 那么数据保存在CPU高速缓存中, 那么会处理得更快速. 高速缓冲分为行,
-  每一行负责不同的内存区. 内核使用ZONE_PADDING宏生成”填充”字段添加到结构中,
- 以确保每个自旋锁处于自身的缓存行中
  */
 typedef struct pglist_data {
     /*  
@@ -817,10 +947,12 @@ typedef struct pglist_data {
     */
 	struct zone node_zones[MAX_NR_ZONES];
 	/*
-     这个是备用节点及其内存域的列表，当当前节点的内存不够分配时，
-     会选取访问代价最低的内存进行分配。
-     分配内存操作时的区域顺序，当调用free_area_init_core()时，
-     由mm/page_alloc.c文件中的build_zonelists()函数设置
+     node_zonelists定义了一个zone搜索列表（每一项代表一个zone），
+     当从某个node的某个zone申请内存失败后，会搜索该列表，
+     查找一个合适的zone继续分配内存
+
+    当调用free_area_init_core()时，
+    由mm/page_alloc.c文件中的build_zonelists()函数设置
 	*/
 	struct zonelist node_zonelists[MAX_ZONELISTS];
     /*  
@@ -830,9 +962,13 @@ typedef struct pglist_data {
 	int nr_zones;
 #ifdef CONFIG_FLAT_NODE_MEM_MAP	/* means !SPARSEMEM */
     /*  
+        平坦型的内存模型中，它指向本节点第一个页面的描述符
          node中的第一个page，它可以指向mem_map中的任何一个page，
         指向page实例数组的指针，用于描述该节点所拥有的的物理内存页，
-        它包含了该页面所有的内存页，被放置在全局mem_map数组中
+
+        linux为每个物理页分配了一个struct page的管理结构体，
+        并形成了一个结构体数组，node_mem_map即为数组的指针；
+        pfn_to_page和page_to_pfn都借助该数组实现
      */
 	struct page *node_mem_map;
 #ifdef CONFIG_PAGE_EXTENSION
@@ -875,15 +1011,28 @@ typedef struct pglist_data {
         只有一个节点，所以该值总是0
      */
 	unsigned long node_start_pfn;
-	unsigned long node_present_pages; /* total number of physical pages  node中的真正可以使用的page数量 */
-	unsigned long node_spanned_pages; /* total size of physical page  range, including holes  
-                                                        该节点以页帧为单位的总长度，这个不等于前面的node_present_pages,因为这里面包含空洞内存*/
+/*
+	node中的真正可以使用的page数量 
+*/
+	unsigned long node_present_pages; /* total number of physical pages  */
+/*
+     node中page数量(包含空洞)
+*/
+	unsigned long node_spanned_pages; /* total size of physical page  range, including holes*/
 	int node_id; /*  全局结点ID，系统中的NUMA结点都从0开始编号  */
-	wait_queue_head_t kswapd_wait; /*  node的等待队列，交换守护列队进程的等待列表*/
+	/*  node的等待队列，交换守护列队进程的等待列表*/
+	wait_queue_head_t kswapd_wait; 
 	wait_queue_head_t pfmemalloc_wait;
-	struct task_struct *kswapd;	/* Protected by   mem_hotplug_begin/end() 
-                                                        指向负责该结点的交换守护进程的task_struct */
-	int kswapd_order;              /*  定义需要释放的区域的长度  */
+	/* 指向负责回收该node中内存的swap内核线程kswapd，
+	一个node对应一个kswapd */
+	struct task_struct *kswapd;	/* Protected by   mem_hotplug_begin/end() */
+    /*  
+        定义需要释放的区域的长度  
+     */
+	int kswapd_order;              
+    /**
+        * 临时变量，用于内存回收时使用。记录上一次回收时，扫描的最后一个区域。
+      */
 	enum zone_type kswapd_classzone_idx;
 
 #ifdef CONFIG_COMPACTION
@@ -912,14 +1061,26 @@ typedef struct pglist_data {
 #ifdef CONFIG_NUMA
 	/*
 	 * zone reclaim becomes active if more unmapped pages exist.
-	 */
+	 对应的page个数大于这两个值时，开始进行回收 
+	*/
 	unsigned long		min_unmapped_pages;
+	/**
+      * 当管理区中，用于slab的可回收页大于此值时，将回收slab中的缓存页。
+      */
 	unsigned long		min_slab_pages;
 #endif /* CONFIG_NUMA */
 
 	/* Write-intensive fields used by page reclaim */
+	 /**
+      * 填充的未用字段，确保后面的字段是缓存行对齐的。
+      */
 	ZONE_PADDING(_pad1_)
-	spinlock_t		lru_lock; /* LRU(最近最少使用算法)活动以及非活动链表使用的自旋锁  */
+	/**
+      * lru相关的字段用于内存回收。这个字段用于保护这几个回收相关的字段。
+      * lru用于确定哪些字段是活跃的，哪些不是活跃的，并据此确定应当被写回到磁盘以释放内存。
+      * LRU(最近最少使用算法)活动以及非活动链表使用的自旋锁  
+      */
+	spinlock_t		lru_lock; 
 
 #ifdef CONFIG_DEFERRED_STRUCT_PAGE_INIT
 	/*
@@ -942,9 +1103,9 @@ typedef struct pglist_data {
 	 * The target ratio of ACTIVE_ANON to INACTIVE_ANON pages on
 	 * this node's LRU.  Maintained by the pageout code.
 	 */
-    /* 
-        不活动页的比例
-      */
+     /**
+          * 将匿名活动页向匿名非活动页中移动的比率。
+       */
 	unsigned int inactive_ratio;
 
 	unsigned long		flags;
@@ -953,6 +1114,9 @@ typedef struct pglist_data {
 
 	/* Per-node vmstats */
 	struct per_cpu_nodestat __percpu *per_cpu_nodestats;
+	/**
+      * 一些统计信息，如可用页面数。
+      */
 	atomic_long_t		vm_stat[NR_VM_NODE_STAT_ITEMS];
 } pg_data_t;
 
@@ -1348,6 +1512,9 @@ struct mem_section {
 	unsigned long section_mem_map;
 
 	/* See declaration of similar field in struct zone */
+	/**
+      * 本管理区里的页面标志数组。
+      */
 	unsigned long *pageblock_flags;
 #ifdef CONFIG_PAGE_EXTENSION
 	/*

@@ -54,7 +54,32 @@
  */
 
 #define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
-
+/**
+ *  每CPU变量主要是数据结构的数组，系统的每个CPU对应数组的一个元素。
+ *一个CPU不应该访问与其他CPU对应的数组元素，另外，它可以随意读或修
+ *改它自己的元素而不用担心出现竞争条件，因为它是唯一有资格这么做的
+ *CPU。但是，这也意味着每CPU变量基本上只能在特殊情况下使用，也就是
+ *当它确定在系统的CPU上的数据在逻辑上是独立的时候。
+ *  每CPU的数组元素在主存中被排列以使每个数据结构存放在硬件高速缓存
+ *的不同行，因此，对每CPU数组的并发访问不会导致高速缓存行的窃用和
+ *失效（这种操作会带来昂贵的系统开销）。
+ *  虽然每CPU变量为来自不同CPU的并发访问提供保护，但对来自异步函数
+ *（中断处理程序和可延迟函数）的访问不提供保护，在这种情况下需要
+ *另外的同步技术。
+ *  此外，在单处理器和多处理器系统中，内核抢占都可能使每CPU变量产生
+ *竞争条件。总的原则是内核控制路径应该在禁用抢占的情况下访问每CPU
+ *变量。因为当一个内核控制路径获得了它的每CPU变量本地副本的地址，
+ *然后它因被抢占而转移到另外一个CPU上，但仍然引用原来CPU元素的地址，
+ *这是非常危险的。
+ *
+ * 每cpu变量是最简单也是最重要的同步技术。每cpu变量主要是数据结构数组，
+ * 系统的每个cpu对应数组的一个元素。一个cpu不应该访问与其它cpu对应的
+ * 数组元素，另外，它可以随意读或修改它自己的元素而不用担心出现竞争条件，
+ * 因为它是唯一有资格这么做的cpu。这也意味着每cpu变量基本上只能在特殊
+ * 情况下使用，也就是当它确定在系统的cpu上的数据在逻辑上是独立的时候.
+ *   每个处理器访问自己的副本，无需加锁，可以放入自己的cache中，极大地
+ * 提高了访问与更新效率。常用于计数器。
+ */
 #include <linux/bitmap.h>
 #include <linux/bootmem.h>
 #include <linux/err.h>
@@ -103,17 +128,40 @@
 #define __pcpu_ptr_to_addr(ptr)		(void __force *)(ptr)
 #endif	/* CONFIG_SMP */
 
+/* 内核使用pcpu_chunk结构管理percpu内存 */
 struct pcpu_chunk {
+	/**
+	 * 用来把chunk链接起来形成链表。每一个链表又都放到pcpu_slot数组中，
+	 * 根据chunk中空闲空间的大小决定放到数组的哪个元素中。
+	 */
 	struct list_head	list;		/* linked to pcpu_slot lists */
+	/* chunk中的空闲大小 */
 	int			free_size;	/* free bytes in the chunk */
+	/* 该chunk所管理的副本空间中空闲空间大小 */
+	/* 该chunk中最大的可用空间的map项的size */
 	int			contig_hint;	/* max contiguous size hint */
+	/**
+	 * 副本空间首地址。副本空间也是由一个chunk来管，称之为first chunk中，
+	 * 副本空间中的dynamic空间用来给动态per-cpu变量使用. percpu内存开始基地值
+	 */
 	void			*base_addr;	/* base address of this chunk */
 
+	/* 为了对chunk所管理的副本空间分配情况的跟踪，用来表示可以管理的个数 */
 	int			map_used;	/* # of map entries used before the sentry */
+	/**
+	 * 已经分配的小块个数，因为每个分配的小块都是给动态per-cpu使用的，
+	 * 所以其实是已经分配的变量的个数. 记录map数组的项数，为PERCPU_DYNAMIC_EARLY_SLOTS=128
+	 */
 	int			map_alloc;	/* # of map entries allocated */
+	/* map数组，记录该chunk的空间使用情况. 正数表示该空间空闲，负数就已经分配给一个变量了 */
+	/*
+	 * 若map项>0,表示该map中记录的size是可以用来分配percpu空间的
+	 * 若map项<0,表示该map项中的size已经被分配使用
+	 */
 	int			*map;		/* allocation map */
 	struct list_head	map_extend_list;/* on pcpu_map_extend_chunks */
 
+	/* 指向分配的页数据 */
 	void			*data;		/* chunk data */
 	int			first_free;	/* no free below this */
 	bool			immutable;	/* no [de]population allowed */
@@ -207,6 +255,12 @@ static bool pcpu_addr_in_reserved_chunk(void *addr)
 		addr < first_start + pcpu_reserved_chunk_limit;
 }
 
+/*
+ *fls找到size中最高的置1的位，返回该位号
+ *例：fls(0) = 0, fls(1) = 1, fls(0x80000000) = 32.
+ *若size=32768=0x8000，则fls(32768)=16
+ *若highbit=0-4，则slot个数均为1
+ */
 static int __pcpu_size_to_slot(int size)
 {
 	int highbit = fls(size);	/* size is in bytes */
@@ -215,13 +269,16 @@ static int __pcpu_size_to_slot(int size)
 
 static int pcpu_size_to_slot(int size)
 {
+	/*若size等于每个cpu占用的percpu内存空间大小，返回最后一项pcpu_slot数组下标*/
 	if (size == pcpu_unit_size)
 		return pcpu_nr_slots - 1;
+	/*否则根据size返回在pcpu_slot数组中的下标*/
 	return __pcpu_size_to_slot(size);
 }
 
 static int pcpu_chunk_slot(const struct pcpu_chunk *chunk)
 {
+	/*该chunk中的空闲空间小于sizeof(int)，或者最大的空闲空间块小于sizeof(int)，返回0*/
 	if (chunk->free_size < sizeof(int) || chunk->contig_hint < sizeof(int))
 		return 0;
 
@@ -365,8 +422,10 @@ static int pcpu_count_occupied_pages(struct pcpu_chunk *chunk, int i)
  */
 static void pcpu_chunk_relocate(struct pcpu_chunk *chunk, int oslot)
 {
+	/*返回该chunk对应的要挂入的slot数组的下标*/
 	int nslot = pcpu_chunk_slot(chunk);
 
+	/*静态chunk不需挂入pcpu_slot数组中*/
 	if (chunk != pcpu_reserved_chunk && oslot != nslot) {
 		if (oslot < nslot)
 			list_move(&chunk->list, &pcpu_slot[nslot]);
@@ -394,6 +453,7 @@ static void pcpu_chunk_relocate(struct pcpu_chunk *chunk, int oslot)
  * New target map allocation length if extension is necessary, 0
  * otherwise.
  */
+/*检查chunk的map数组是否需要扩展*/
 static int pcpu_need_to_extend(struct pcpu_chunk *chunk, bool is_atomic)
 {
 	int margin, new_alloc;
@@ -415,10 +475,12 @@ static int pcpu_need_to_extend(struct pcpu_chunk *chunk, bool is_atomic)
 		margin = PCPU_ATOMIC_MAP_MARGIN_HIGH;
 	}
 
+	/*map_alloc默认设置为128，只有map_used记录超过126时才会进行map数组扩展*/
 	if (chunk->map_alloc >= chunk->map_used + margin)
 		return 0;
 
 	new_alloc = PCPU_DFL_MAP_ALLOC;
+	/*计算该chunk的map数组新的大小，并返回*/
 	while (new_alloc < chunk->map_used + margin)
 		new_alloc *= 2;
 
@@ -438,6 +500,7 @@ static int pcpu_need_to_extend(struct pcpu_chunk *chunk, bool is_atomic)
  * RETURNS:
  * 0 on success, -errno on failure.
  */
+/*对map数组的大小进行扩展*/
 static int pcpu_extend_area_map(struct pcpu_chunk *chunk, int new_alloc)
 {
 	int *old = NULL, *new = NULL;
@@ -445,7 +508,7 @@ static int pcpu_extend_area_map(struct pcpu_chunk *chunk, int new_alloc)
 	unsigned long flags;
 
 	lockdep_assert_held(&pcpu_alloc_mutex);
-
+	/*为新的map数组大小分配内存空间*/
 	new = pcpu_mem_zalloc(new_size);
 	if (!new)
 		return -ENOMEM;
@@ -459,8 +522,10 @@ static int pcpu_extend_area_map(struct pcpu_chunk *chunk, int new_alloc)
 	old_size = chunk->map_alloc * sizeof(chunk->map[0]);
 	old = chunk->map;
 
+	/*复制老的map数组信息到new*/
 	memcpy(new, old, old_size);
 
+	/*重新设置map数组，完成map数组的扩展*/
 	chunk->map_alloc = new_alloc;
 	chunk->map = new;
 	new = NULL;
@@ -548,6 +613,7 @@ static int pcpu_fit_in_area(struct pcpu_chunk *chunk, int off, int this_size,
  * Allocated offset in @chunk on success, -1 if no matching area is
  * found.
  */
+/*从chunk的map数组中分配size大小空间，返回该size的偏移值*/
 static int pcpu_alloc_area(struct pcpu_chunk *chunk, int size, int align,
 			   bool pop_only, int *occ_pages_p)
 {
@@ -557,6 +623,7 @@ static int pcpu_alloc_area(struct pcpu_chunk *chunk, int size, int align,
 	bool seen_free = false;
 	int *p;
 
+	/*遍历该chunk的map中记录的空间，map中负数为已经使用的空间，正数为可以分配使用的空间*/
 	for (i = chunk->first_free, p = chunk->map + i; i < chunk->map_used; i++, p++) {
 		int head, tail;
 		int this_size;
@@ -569,11 +636,13 @@ static int pcpu_alloc_area(struct pcpu_chunk *chunk, int size, int align,
 
 		head = pcpu_fit_in_area(chunk, off, this_size, size, align,
 					pop_only);
+		/*若map中的空间大小小于要分配的空间大小，继续下一个*/
 		if (head < 0) {
 			if (!seen_free) {
 				chunk->first_free = i;
 				seen_free = true;
 			}
+			/*更新该chunk中可使用的空间大小*/
 			max_contig = max(this_size, max_contig);
 			continue;
 		}
@@ -583,6 +652,11 @@ static int pcpu_alloc_area(struct pcpu_chunk *chunk, int size, int align,
 		 * merge'em.  Note that 'small' is defined as smaller
 		 * than sizeof(int), which is very small but isn't too
 		 * uncommon for percpu allocations.
+		 */
+		/*
+		 *如果head不为0，并且head很小(小于sizeof(int))，或者前一个map的可用空间大于0(但是p[i - 1] < head+size)
+		 *如果前一个map项>0，则将head合并到前一个map中
+		 *如果前一个map项<0,则将head合并到前一个map，并且是负数，不可用空间，当前chunk空闲size减去这head大小的空间
 		 */
 		if (head && (head < sizeof(int) || !(p[-1] & 1))) {
 			*p = off += head;
@@ -595,6 +669,7 @@ static int pcpu_alloc_area(struct pcpu_chunk *chunk, int size, int align,
 		}
 
 		/* if tail is small, just keep it around */
+		/*计算要分配空间的尾部*/
 		tail = this_size - head - size;
 		if (tail < sizeof(int)) {
 			tail = 0;
@@ -602,6 +677,7 @@ static int pcpu_alloc_area(struct pcpu_chunk *chunk, int size, int align,
 		}
 
 		/* split if warranted */
+		/*如果head不为0，或者tail不为0，则要将当前map分割*/
 		if (head || tail) {
 			int nr_extra = !!head + !!tail;
 
@@ -610,15 +686,23 @@ static int pcpu_alloc_area(struct pcpu_chunk *chunk, int size, int align,
 				sizeof(chunk->map[0]) * (chunk->map_used - i));
 			chunk->map_used += nr_extra;
 
+			/*
+			 *如果head不为0，tail不为0，经过split之后，map[i]记录head，
+			 *map[i+1]记录要分配的size，map[i+2]记录tail
+			 */
 			if (head) {
 				if (!seen_free) {
 					chunk->first_free = i;
 					seen_free = true;
 				}
+				/*偏移要加上head，表示从head之后开始*/
 				*++p = off += head;
+				/*移到记录要分配size空间的map项*/
 				++i;
+				/*与max_contig比较大小，为下边更新chunk的最大空闲空间*/
 				max_contig = max(head, max_contig);
 			}
+			/*比较与max_contig的大小，为下边更新chunk的最大空闲空间*/
 			if (tail) {
 				p[1] = off + size;
 				max_contig = max(tail, max_contig);
@@ -629,16 +713,20 @@ static int pcpu_alloc_area(struct pcpu_chunk *chunk, int size, int align,
 			chunk->first_free = i + 1;
 
 		/* update hint and mark allocated */
+		/*更新chunk的最大空闲空间*/
 		if (i + 1 == chunk->map_used)
 			chunk->contig_hint = max_contig; /* fully scanned */
 		else
 			chunk->contig_hint = max(chunk->contig_hint,
 						 max_contig);
 
+		/*chunk中的空闲空间大小递减*/
 		chunk->free_size -= size;
+		/*表示该map中的size大小已分配*/
 		*p |= 1;
 
 		*occ_pages_p = pcpu_count_occupied_pages(chunk, i);
+		/*重新计算chunk在slot中的位置*/
 		pcpu_chunk_relocate(chunk, oslot);
 		return off;
 	}
@@ -865,6 +953,7 @@ static struct pcpu_chunk *pcpu_chunk_addr_search(void *addr)
  * RETURNS:
  * Percpu pointer to the allocated area on success, NULL on failure.
  */
+/*动态分配percpu*/
 static void __percpu *pcpu_alloc(size_t size, size_t align, bool reserved,
 				 gfp_t gfp)
 {
@@ -899,16 +988,21 @@ static void __percpu *pcpu_alloc(size_t size, size_t align, bool reserved,
 	spin_lock_irqsave(&pcpu_lock, flags);
 
 	/* serve reserved allocations from the reserved chunk if available */
+	/*若指定reserved分配，则从pcpu_reserved_chunk进行*/
 	if (reserved && pcpu_reserved_chunk) {
+		/*找到静态percpu的chunk*/
 		chunk = pcpu_reserved_chunk;
 
+		/*检查要分配的空间size是否超出该chunk的所具有的最大的空闲size*/
 		if (size > chunk->contig_hint) {
 			err = "alloc from reserved chunk failed";
 			goto fail_unlock;
 		}
 
+		/*检查是否要扩展chunk的的map数组，map数组默认设置为128项*/
 		while ((new_alloc = pcpu_need_to_extend(chunk, is_atomic))) {
 			spin_unlock_irqrestore(&pcpu_lock, flags);
+			/*对map数组进行扩展*/
 			if (is_atomic ||
 			    pcpu_extend_area_map(chunk, new_alloc) < 0) {
 				err = "failed to extend area map of reserved chunk";
@@ -917,6 +1011,10 @@ static void __percpu *pcpu_alloc(size_t size, size_t align, bool reserved,
 			spin_lock_irqsave(&pcpu_lock, flags);
 		}
 
+		/*
+		 *从该chunk分配出size大小的空间，返回该size空间在chunk中的
+		 *偏移量off, 然后重新将该chunk挂到slot数组对应链表中
+		 */
 		off = pcpu_alloc_area(chunk, size, align, is_atomic,
 				      &occ_pages);
 		if (off >= 0)
@@ -928,16 +1026,23 @@ static void __percpu *pcpu_alloc(size_t size, size_t align, bool reserved,
 
 restart:
 	/* search through normal chunks */
+	/*根据需要分配内存块的大小索引slot数组找到对应链表*/
 	for (slot = pcpu_size_to_slot(size); slot < pcpu_nr_slots; slot++) {
 		list_for_each_entry(chunk, &pcpu_slot[slot], list) {
+			/*在该链表中进一步寻找符合尺寸要求的chunk*/
 			if (size > chunk->contig_hint)
 				continue;
 
+			/*
+			 *chunck用数组map记录每次分配的内存块，若该数组项数用完(默认为128项)，
+			 *但是若该chunk仍然还有空闲空间可分配，则需要增长该map数组项数来记录可分配的空间
+			 */
 			new_alloc = pcpu_need_to_extend(chunk, is_atomic);
 			if (new_alloc) {
 				if (is_atomic)
 					continue;
 				spin_unlock_irqrestore(&pcpu_lock, flags);
+				/*扩展map数组*/
 				if (pcpu_extend_area_map(chunk,
 							 new_alloc) < 0) {
 					err = "failed to extend area map";
@@ -951,6 +1056,10 @@ restart:
 				goto restart;
 			}
 
+			/*
+			 *从该chunk分配出size大小的空间，返回该size空间在chunk中的
+			 *偏移量off,然后重新将该chunk挂到slot数组对应链表中
+			 */
 			off = pcpu_alloc_area(chunk, size, align, is_atomic,
 					      &occ_pages);
 			if (off >= 0)
@@ -958,6 +1067,7 @@ restart:
 		}
 	}
 
+	/*到这里表示没有找到合适的chunk，需要重新创建一个新的chunk*/
 	spin_unlock_irqrestore(&pcpu_lock, flags);
 
 	/*
@@ -969,6 +1079,7 @@ restart:
 		goto fail;
 
 	if (list_empty(&pcpu_slot[pcpu_nr_slots - 1])) {
+		/*创建一个新的chunk，这里进行的是虚拟地址空间的分配*/
 		chunk = pcpu_create_chunk();
 		if (!chunk) {
 			err = "failed to allocate new chunk";
@@ -976,6 +1087,7 @@ restart:
 		}
 
 		spin_lock_irqsave(&pcpu_lock, flags);
+		/*把一个全新的chunk挂到slot数组对应链表中*/
 		pcpu_chunk_relocate(chunk, -1);
 	} else {
 		spin_lock_irqsave(&pcpu_lock, flags);
@@ -996,6 +1108,7 @@ area_found:
 		pcpu_for_each_unpop_region(chunk, rs, re, page_start, page_end) {
 			WARN_ON(chunk->immutable);
 
+			/*这里要检查该段区域对应物理页是否已经分配*/
 			ret = pcpu_populate_chunk(chunk, rs, re);
 
 			spin_lock_irqsave(&pcpu_lock, flags);
@@ -1021,6 +1134,17 @@ area_found:
 	for_each_possible_cpu(cpu)
 		memset((void *)pcpu_chunk_addr(chunk, cpu, 0) + off, 0, size);
 
+	/*
+	 *chunk->base_addr + off表示分配该size空间的起始percpu内存地址
+	 *最终返回的地址即__per_cpu_start+off，即得到该动态分配percpu变量
+	 *在内核镜像中的一个虚拟内存地址。实际上该动态分配percpu变量并不
+	 *在此地址上，只是为了以后通过per_cpu(var, cpu)引用该变量时，与静态
+	 *percpu变量一致，因为静态percpu变量在内核镜像中是有分配内存虚拟地址
+	 *的(在.data..percpu段中)。使用per_cpu(var, cpu)时，该动态分配percpu
+	 *变量的内核镜像中的虚拟地址(假的地址，为了跟静态percpu变量一致)，
+	 *加上本cpu所在percpu空间与.data..percpu段的偏移量，即得到该动态分配
+	 *percpu变量在本cpu副本中的内存地址
+	 */
 	ptr = __addr_to_pcpu_ptr(chunk->base_addr + off);
 	kmemleak_alloc_percpu(ptr, size, gfp);
 	return ptr;
@@ -1386,6 +1510,7 @@ phys_addr_t per_cpu_ptr_to_phys(void *addr)
  * Pointer to the allocated pcpu_alloc_info on success, NULL on
  * failure.
  */
+/*分配pcpu_alloc_info结构，并初始化*/
 struct pcpu_alloc_info * __init pcpu_alloc_alloc_info(int nr_groups,
 						      int nr_units)
 {
@@ -1394,22 +1519,28 @@ struct pcpu_alloc_info * __init pcpu_alloc_alloc_info(int nr_groups,
 	void *ptr;
 	int unit;
 
+	/*根据group数以及，group[0]中cpu个数确定pcpu_alloc_info结构体大小ai_size*/
 	base_size = ALIGN(sizeof(*ai) + nr_groups * sizeof(ai->groups[0]),
 			  __alignof__(ai->groups[0].cpu_map[0]));
 	ai_size = base_size + nr_units * sizeof(ai->groups[0].cpu_map[0]);
 
+	/*分配空间*/
 	ptr = memblock_virt_alloc_nopanic(PFN_ALIGN(ai_size), 0);
 	if (!ptr)
 		return NULL;
 	ai = ptr;
+	/*指针指向group的cpu_map数组地址处*/
 	ptr += base_size;
 
 	ai->groups[0].cpu_map = ptr;
 
+	/*初始化group[0]的cpu_map数组值为NR_CPUS*/
 	for (unit = 0; unit < nr_units; unit++)
 		ai->groups[0].cpu_map[unit] = NR_CPUS;
 
+	/*group个数*/
 	ai->nr_groups = nr_groups;
+	/*整个pcpu_alloc_info结构体的大小*/
 	ai->__ai_size = PFN_ALIGN(ai_size);
 
 	return ai;
@@ -1539,6 +1670,7 @@ static void pcpu_dump_alloc_info(const char *lvl,
  * RETURNS:
  * 0 on success, -errno on failure.
  */
+/*为percpu建立第一个chunk */
 int __init pcpu_setup_first_chunk(const struct pcpu_alloc_info *ai,
 				  void *base_addr)
 {
@@ -1579,26 +1711,34 @@ int __init pcpu_setup_first_chunk(const struct pcpu_alloc_info *ai,
 	PCPU_SETUP_BUG_ON(pcpu_verify_alloc_info(ai) < 0);
 
 	/* process group information and build config tables accordingly */
+	/*为group相关percpu信息保存数组分配空间*/
 	group_offsets = memblock_virt_alloc(ai->nr_groups *
 					     sizeof(group_offsets[0]), 0);
 	group_sizes = memblock_virt_alloc(ai->nr_groups *
 					   sizeof(group_sizes[0]), 0);
+	/*为每个cpu相关percpu信息保存数组分配空间*/
 	unit_map = memblock_virt_alloc(nr_cpu_ids * sizeof(unit_map[0]), 0);
 	unit_off = memblock_virt_alloc(nr_cpu_ids * sizeof(unit_off[0]), 0);
 
+	/*对unit_map、pcpu_low_unit_cpu和pcpu_high_unit_cpu变量初始化*/
 	for (cpu = 0; cpu < nr_cpu_ids; cpu++)
 		unit_map[cpu] = UINT_MAX;
 
 	pcpu_low_unit_cpu = NR_CPUS;
 	pcpu_high_unit_cpu = NR_CPUS;
 
+	/*遍历每一group的每一个cpu*/
 	for (group = 0, unit = 0; group < ai->nr_groups; group++, unit += i) {
 		const struct pcpu_group_info *gi = &ai->groups[group];
 
+		/*取得该组处理器的percpu内存空间的偏移量*/
 		group_offsets[group] = gi->base_offset;
+		/*取得该组处理器的percpu内存空间占用的虚拟地址空间大小，即包含改组中每个cpu所占的percpu空间*/
 		group_sizes[group] = gi->nr_units * ai->unit_size;
 
+		/*遍历该group中的cpu*/
 		for (i = 0; i < gi->nr_units; i++) {
+			/*得到该group中的cpu id号*/
 			cpu = gi->cpu_map[i];
 			if (cpu == NR_CPUS)
 				continue;
@@ -1607,7 +1747,9 @@ int __init pcpu_setup_first_chunk(const struct pcpu_alloc_info *ai,
 			PCPU_SETUP_BUG_ON(!cpu_possible(cpu));
 			PCPU_SETUP_BUG_ON(unit_map[cpu] != UINT_MAX);
 
+			/*计算每个cpu的跨group的编号，保存在unit_map数组中*/
 			unit_map[cpu] = unit + i;
+			/*计算每个cpu的在整个系统percpu内存空间中的偏移量，保存到数组unit_off中*/
 			unit_off[cpu] = gi->base_offset + i * ai->unit_size;
 
 			/* determine low/high unit_cpu */
@@ -1619,6 +1761,7 @@ int __init pcpu_setup_first_chunk(const struct pcpu_alloc_info *ai,
 				pcpu_high_unit_cpu = cpu;
 		}
 	}
+	/*pcpu_nr_units变量保存系统中有多少个cpu的percpu内存空间*/
 	pcpu_nr_units = unit;
 
 	for_each_possible_cpu(cpu)
@@ -1628,16 +1771,26 @@ int __init pcpu_setup_first_chunk(const struct pcpu_alloc_info *ai,
 #undef PCPU_SETUP_BUG_ON
 	pcpu_dump_alloc_info(KERN_DEBUG, ai);
 
+	/*记录下全局参数，留在pcpu_alloc时使用*/
+	/*系统中group数量*/
 	pcpu_nr_groups = ai->nr_groups;
+	/*记录每个group的percpu内存偏移量数组*/
 	pcpu_group_offsets = group_offsets;
+	/*记录每个group的percpu内存空间大小数组*/
 	pcpu_group_sizes = group_sizes;
+	/*整个系统中cpu(跨group)的编号数组*/
 	pcpu_unit_map = unit_map;
+	/*每个cpu的percpu内存空间偏移量*/
 	pcpu_unit_offsets = unit_off;
 
 	/* determine basic parameters */
+	/*每个cpu的percpu内存虚拟空间所占的页面数量*/
 	pcpu_unit_pages = ai->unit_size >> PAGE_SHIFT;
+	/*每个cpu的percpu内存虚拟空间大小*/
 	pcpu_unit_size = pcpu_unit_pages << PAGE_SHIFT;
+	/*PAGE_SIZE*/
 	pcpu_atom_size = ai->atom_size;
+	/*计算pcpu_chunk结构的大小，加上populated域的大小*/
 	pcpu_chunk_struct_size = sizeof(struct pcpu_chunk) +
 		BITS_TO_LONGS(pcpu_unit_pages) * sizeof(unsigned long);
 
@@ -1645,7 +1798,9 @@ int __init pcpu_setup_first_chunk(const struct pcpu_alloc_info *ai,
 	 * Allocate chunk slots.  The additional last slot is for
 	 * empty chunks.
 	 */
+	/*计算pcpu_nr_slots，即pcpu_slot数组的组项数量*/
 	pcpu_nr_slots = __pcpu_size_to_slot(pcpu_unit_size) + 2;
+	/*为pcpu_slot数组分配空间，不同size的chunck挂在不同“pcpu_slot”项目中*/
 	pcpu_slot = memblock_virt_alloc(
 			pcpu_nr_slots * sizeof(pcpu_slot[0]), 0);
 	for (i = 0; i < pcpu_nr_slots; i++)
@@ -1658,27 +1813,44 @@ int __init pcpu_setup_first_chunk(const struct pcpu_alloc_info *ai,
 	 * covers static area + reserved area (mostly used for module
 	 * static percpu allocation).
 	 */
+	/*构建静态chunck,即pcpu_reserved_chunk*/
 	schunk = memblock_virt_alloc(pcpu_chunk_struct_size, 0);
 	INIT_LIST_HEAD(&schunk->list);
 	INIT_LIST_HEAD(&schunk->map_extend_list);
+	/*整个系统中percpu内存的起始地址*/
 	schunk->base_addr = base_addr;
+	/*初始化为一个静态数组*/
 	schunk->map = smap;
+	/*PERCPU_DYNAMIC_EARLY_SLOTS=128*/
 	schunk->map_alloc = ARRAY_SIZE(smap);
 	schunk->immutable = true;
+	/*
+	 *物理内存已经分配这里标志之. 若pcpu_unit_pages=8即每个
+	 *cpu占用的percpu空间为8页的空间，则populated域被设置为0xff
+	 */
 	bitmap_fill(schunk->populated, pcpu_unit_pages);
 	schunk->nr_populated = pcpu_unit_pages;
 
 	if (ai->reserved_size) {
+		/*如果存在percpu保留空间，在指定reserved分配时作为空闲空间使用*/
 		schunk->free_size = ai->reserved_size;
 		pcpu_reserved_chunk = schunk;
+		/*静态chunk的大小限制包括，定义的静态变量的空间+保留的空间*/
 		pcpu_reserved_chunk_limit = ai->static_size + ai->reserved_size;
 	} else {
+		/*若不存在保留空间，则将动态分配空间作为空闲空间使用*/
 		schunk->free_size = dyn_size;
+		/*覆盖掉动态分配空间*/
 		dyn_size = 0;			/* dynamic area covered */
 	}
+	/*记录静态chunk中空闲可使用的percpu空间大小*/
 	schunk->contig_hint = schunk->free_size;
 
 	schunk->map[0] = 1;
+	/*
+	 *map数组保存空间的使用情况，负数为已使用的空间，
+	 *正数表示为以后可以分配的空间. map_used记录chunk中存在几个map项
+	 */
 	schunk->map[1] = ai->static_size;
 	schunk->map_used = 1;
 	if (schunk->free_size)
@@ -1686,18 +1858,28 @@ int __init pcpu_setup_first_chunk(const struct pcpu_alloc_info *ai,
 	schunk->map[schunk->map_used] |= 1;
 
 	/* init dynamic chunk if necessary */
+	/*构建动态chunk分配空间*/
 	if (dyn_size) {
 		dchunk = memblock_virt_alloc(pcpu_chunk_struct_size, 0);
 		INIT_LIST_HEAD(&dchunk->list);
 		INIT_LIST_HEAD(&dchunk->map_extend_list);
+		/*整个系统中percpu内存的起始地址*/
 		dchunk->base_addr = base_addr;
+		/*初始化为一个静态数组*/
 		dchunk->map = dmap;
+		/*PERCPU_DYNAMIC_EARLY_SLOTS=128*/
 		dchunk->map_alloc = ARRAY_SIZE(dmap);
 		dchunk->immutable = true;
+		/*记录下来分配的物理页*/
 		bitmap_fill(dchunk->populated, pcpu_unit_pages);
 		dchunk->nr_populated = pcpu_unit_pages;
 
+		/*设置动态chunk中的空闲可分配空间大小*/
 		dchunk->contig_hint = dchunk->free_size = dyn_size;
+		/*
+		 * map数组保存空间的使用情况，负数为已使用的空间
+		 *（静态变量空间和reserved空间），正数表示为以后可以分配的空间
+		 */
 		dchunk->map[0] = 1;
 		dchunk->map[1] = pcpu_reserved_chunk_limit;
 		dchunk->map[2] = (pcpu_reserved_chunk_limit + dchunk->free_size) | 1;
@@ -1705,12 +1887,17 @@ int __init pcpu_setup_first_chunk(const struct pcpu_alloc_info *ai,
 	}
 
 	/* link the first chunk in */
+	/*
+	 *把第一个chunk链接进对应的slot链表，reserverd的空间
+	 *有自己单独的chunk：pcpu_reserved_chunk
+	 */
 	pcpu_first_chunk = dchunk ?: schunk;
 	pcpu_nr_empty_pop_pages +=
 		pcpu_count_occupied_pages(pcpu_first_chunk, 1);
 	pcpu_chunk_relocate(pcpu_first_chunk, -1);
 
 	/* we're done */
+	/*pcpu_base_addr记录整个系统中percpu内存的起始地址*/
 	pcpu_base_addr = base_addr;
 	return 0;
 }
@@ -1785,6 +1972,7 @@ early_param("percpu_alloc", percpu_alloc_setup);
  * On success, pointer to the new allocation_info is returned.  On
  * failure, ERR_PTR value is returned.
  */
+/*收集整理该架构下的percpu信息*/
 static struct pcpu_alloc_info * __init pcpu_build_alloc_info(
 				size_t reserved_size, size_t dyn_size,
 				size_t atom_size,
@@ -1806,8 +1994,10 @@ static struct pcpu_alloc_info * __init pcpu_build_alloc_info(
 	memset(group_cnt, 0, sizeof(group_cnt));
 
 	/* calculate size_sum and ensure dyn_size is enough for early alloc */
+	/*计算每个cpu所占有的percpu空间大小，包括静态空间+保留空间+动态空间*/
 	size_sum = PFN_ALIGN(static_size + reserved_size +
 			    max_t(size_t, dyn_size, PERCPU_DYNAMIC_EARLY_SIZE));
+	/*重新计算动态分配的percpu空间大小*/
 	dyn_size = size_sum - static_size - reserved_size;
 
 	/*
@@ -1816,8 +2006,13 @@ static struct pcpu_alloc_info * __init pcpu_build_alloc_info(
 	 * which can accommodate 4k aligned segments which are equal to
 	 * or larger than min_unit_size.
 	 */
+	/*计算每个unit的大小，即每个group中的每个cpu占用的percpu内存大小为一个unit*/
 	min_unit_size = max_t(size_t, size_sum, PCPU_MIN_UNIT_SIZE);
 
+	/*
+	 *atom_size为PAGE_SIZE，即4K. 将min_unit_size按4K向上舍入，例如min_unit_size=5k，
+	 *则alloc_size为两个页面大小即8K，若min_unit_size=9k，则alloc_size为三个页面大小即12K
+	 */
 	alloc_size = roundup(min_unit_size, atom_size);
 	upa = alloc_size / min_unit_size;
 	while (alloc_size % upa || (offset_in_page(alloc_size / upa)))
@@ -1825,6 +2020,11 @@ static struct pcpu_alloc_info * __init pcpu_build_alloc_info(
 	max_upa = upa;
 
 	/* group cpus according to their proximity */
+	/*
+	 * 为cpu分组，将接近的cpu分到一组中，因为没有定义cpu_distance_fn函数体，
+	 * 所以所有的cpu分到一个组中。可以得到所有的cpu都是group=0，group_cnt[0]
+	 * 即是该组中的cpu个数
+	 */
 	for_each_possible_cpu(cpu) {
 		group = 0;
 	next_group:
@@ -1878,12 +2078,15 @@ static struct pcpu_alloc_info * __init pcpu_build_alloc_info(
 	upa = best_upa;
 
 	/* allocate and fill alloc_info */
+	/*计算每个group中的cpu个数*/
 	for (group = 0; group < nr_groups; group++)
 		nr_units += roundup(group_cnt[group], upa);
 
+	/*分配pcpu_alloc_info结构空间，并初始化*/
 	ai = pcpu_alloc_alloc_info(nr_groups, nr_units);
 	if (!ai)
 		return ERR_PTR(-ENOMEM);
+	/*为每个group的cpu_map指针赋值为group[0]，group[0]中的cpu_map中的值初始化为NR_CPUS*/
 	cpu_map = ai->groups[0].cpu_map;
 
 	for (group = 0; group < nr_groups; group++) {
@@ -1891,11 +2094,17 @@ static struct pcpu_alloc_info * __init pcpu_build_alloc_info(
 		cpu_map += roundup(group_cnt[group], upa);
 	}
 
+	/*静态percpu变量空间*/
 	ai->static_size = static_size;
+	/*保留percpu变量空间*/
 	ai->reserved_size = reserved_size;
+	/*动态分配的percpu变量空间*/
 	ai->dyn_size = dyn_size;
+	/*每个cpu占用的percpu变量空间*/
 	ai->unit_size = alloc_size / upa;
+	/*PAGE_SIZE*/
 	ai->atom_size = atom_size;
+	/*实际分配的空间*/
 	ai->alloc_size = alloc_size;
 
 	for (group = 0, unit = 0; group_cnt[group]; group++) {
@@ -1906,8 +2115,13 @@ static struct pcpu_alloc_info * __init pcpu_build_alloc_info(
 		 * back-to-back.  The caller should update this to
 		 * reflect actual allocation.
 		 */
+		/*设置组内的相对于0地址偏移量，后边会设置真正的对于percpu起始地址的偏移量*/
 		gi->base_offset = unit * ai->unit_size;
 
+		/*
+		 *设置cpu_map数组，数组保存该组中的cpu id号。以及设置组中的cpu个数gi->nr_units
+		 *gi->nr_units=0,cpu=0;  gi->nr_units=1,cpu=1; gi->nr_units=2,cpu=2
+		 */
 		for_each_possible_cpu(cpu)
 			if (group_map[cpu] == group)
 				gi->cpu_map[gi->nr_units++] = cpu;
@@ -1966,14 +2180,17 @@ int __init pcpu_embed_first_chunk(size_t reserved_size, size_t dyn_size,
 	unsigned long max_distance;
 	int group, i, highest_group, rc;
 
+	/*收集整理该架构下的percpu信息，结果放在struct pcpu_alloc_info结构中*/
 	ai = pcpu_build_alloc_info(reserved_size, dyn_size, atom_size,
 				   cpu_distance_fn);
 	if (IS_ERR(ai))
 		return PTR_ERR(ai);
 
+	/*计算每个cpu占用的percpu内存空间大小，包括静态定义变量占用空间+reserved空间+动态分配空间*/
 	size_sum = ai->static_size + ai->reserved_size + ai->dyn_size;
 	areas_size = PFN_ALIGN(ai->nr_groups * sizeof(void *));
 
+	/*areas用来保存每个group的percpu内存起始地址，为其分配空间，做临时存储使用，用完释放掉*/
 	areas = memblock_virt_alloc_nopanic(areas_size, 0);
 	if (!areas) {
 		rc = -ENOMEM;
@@ -1982,16 +2199,26 @@ int __init pcpu_embed_first_chunk(size_t reserved_size, size_t dyn_size,
 
 	/* allocate, copy and determine base address & max_distance */
 	highest_group = 0;
+	/*
+	 *针对该系统下的每个group操作，为每个group分配percpu内存区域，
+	 *前边只是计算出percpu信息，并没有分配percpu的内存空间
+	 */
 	for (group = 0; group < ai->nr_groups; group++) {
+		/*取出该group下的组信息*/
 		struct pcpu_group_info *gi = &ai->groups[group];
 		unsigned int cpu = NR_CPUS;
 		void *ptr;
 
+		/*检查cpu_map数组*/
 		for (i = 0; i < gi->nr_units && cpu == NR_CPUS; i++)
 			cpu = gi->cpu_map[i];
 		BUG_ON(cpu == NR_CPUS);
 
 		/* allocate space for the whole group */
+		/*
+		 *为该group分配percpu内存区域。长度为该group里的cpu数目X每颗处理器的percpu递进单位。
+         *函数pcpu_dfl_fc_alloc是从bootmem里取得内存，得到的是物理内存，返回物理地址的内存虚拟地址ptr
+		 */
 		ptr = alloc_fn(cpu, gi->nr_units * ai->unit_size, atom_size);
 		if (!ptr) {
 			rc = -ENOMEM;
@@ -1999,8 +2226,13 @@ int __init pcpu_embed_first_chunk(size_t reserved_size, size_t dyn_size,
 		}
 		/* kmemleak tracks the percpu allocations separately */
 		kmemleak_free(ptr);
+		/*将分配到的改组percpu内存虚拟起始地址保存在areas数组中*/
 		areas[group] = ptr;
 
+		/*
+		 *比较每个group的percpu内存地址，保存最小的内存地址，即percpu
+         *内存的起始地址, 为后边计算group的percpu内存地址的偏移量
+		 */
 		base = min(ptr, base);
 		if (ptr > areas[highest_group])
 			highest_group = group;
@@ -2024,23 +2256,34 @@ int __init pcpu_embed_first_chunk(size_t reserved_size, size_t dyn_size,
 	 * allocations are complete; otherwise, we may end up with
 	 * overlapping groups.
 	 */
+	/*为每个group中的每个cpu建立其percpu区域*/
 	for (group = 0; group < ai->nr_groups; group++) {
+		/*取出该group下的组信息*/
 		struct pcpu_group_info *gi = &ai->groups[group];
+		/*得到该group的percpu内存起始地址*/
 		void *ptr = areas[group];
 
+		/*遍历该组中的cpu，并得到每个cpu对应的percpu内存地址*/
 		for (i = 0; i < gi->nr_units; i++, ptr += ai->unit_size) {
 			if (gi->cpu_map[i] == NR_CPUS) {
 				/* unused unit, free whole */
+				/*释放掉未使用的unit*/
 				free_fn(ptr, ai->unit_size);
 				continue;
 			}
 			/* copy and return the unused part */
+			/*将静态定义的percpu变量拷贝到每个cpu的percpu内存起始地址*/
 			memcpy(ptr, __per_cpu_load, ai->static_size);
+			/*
+			 *为每个cpu释放掉多余的空间，多余的空间是指ai->unit_size
+			 *减去静态定义变量占用空间+reserved空间+动态分配空间
+			 */
 			free_fn(ptr + size_sum, ai->unit_size - size_sum);
 		}
 	}
 
 	/* base address is now known, determine group base offsets */
+	/*计算group的percpu内存地址的偏移量*/
 	for (group = 0; group < ai->nr_groups; group++) {
 		ai->groups[group].base_offset = areas[group] - base;
 	}
@@ -2049,6 +2292,7 @@ int __init pcpu_embed_first_chunk(size_t reserved_size, size_t dyn_size,
 		PFN_DOWN(size_sum), base, ai->static_size, ai->reserved_size,
 		ai->dyn_size, ai->unit_size);
 
+	/*为percpu建立第一个chunk*/
 	rc = pcpu_setup_first_chunk(ai, base);
 	goto out_free;
 
@@ -2099,6 +2343,7 @@ int __init pcpu_page_first_chunk(size_t reserved_size,
 
 	snprintf(psize_str, sizeof(psize_str), "%luK", PAGE_SIZE >> 10);
 
+	/*收集整理该架构下的percpu信息，结果放在struct pcpu_alloc_info结构中*/
 	ai = pcpu_build_alloc_info(reserved_size, 0, PAGE_SIZE, NULL);
 	if (IS_ERR(ai))
 		return PTR_ERR(ai);
@@ -2109,10 +2354,11 @@ int __init pcpu_page_first_chunk(size_t reserved_size,
 		pcpu_free_alloc_info(ai);
 		return -EINVAL;
 	}
-
+	/*计算每个cpu占用的percpu内存空间大小*/
 	unit_pages = ai->unit_size >> PAGE_SHIFT;
 
 	/* unaligned allocations can't be freed, round up to page size */
+	/*pages用来保存每个unit的percpu内存起始地址，为其分配空间，做临时存储使用，用完释放掉*/
 	pages_size = PFN_ALIGN(unit_pages * num_possible_cpus() *
 			       sizeof(pages[0]));
 	pages = memblock_virt_alloc(pages_size, 0);
@@ -2132,6 +2378,7 @@ int __init pcpu_page_first_chunk(size_t reserved_size,
 			}
 			/* kmemleak tracks the percpu allocations separately */
 			kmemleak_free(ptr);
+			/*将分配到的改组percpu内存虚拟起始地址保存在pages数组中*/
 			pages[j++] = virt_to_page(ptr);
 		}
 	}
@@ -2163,6 +2410,7 @@ int __init pcpu_page_first_chunk(size_t reserved_size,
 		 */
 
 		/* copy static data */
+		/* 将静态定义的percpu变量拷贝到每个cpu的percpu内存起始地址 */
 		memcpy((void *)unit_addr, __per_cpu_load, ai->static_size);
 	}
 
@@ -2171,6 +2419,7 @@ int __init pcpu_page_first_chunk(size_t reserved_size,
 		unit_pages, psize_str, vm.addr, ai->static_size,
 		ai->reserved_size, ai->dyn_size);
 
+	/*为percpu建立第一个chunk*/
 	rc = pcpu_setup_first_chunk(ai, vm.addr);
 	goto out_free_ar;
 
@@ -2214,6 +2463,16 @@ static void __init pcpu_dfl_fc_free(void *ptr, size_t size)
 }
 
 /*
+ *   在系统初始化期间，start_kernel()函数中调用setup_per_cpu_areas()函数，
+ * 用于为每个cpu的per-cpu变量副本分配空间，注意这时alloc内存分配器还没
+ * 建立起来，该函数调用alloc_bootmem函数为初始化期间的这些变量副本分配物理空间。
+ *   在建立percpu内存管理机制之前要整理出该架构下的处理器信息，包括处理器
+ * 如何分组、每组对应的处理器位图、静态定义的percpu变量占用内存区域、
+ * 每颗处理器percpu虚拟内存递进基本单位等信息。
+ * setup_per_cpu_areas->为每个cpu的per-cpu变量副本分配空间
+ */
+
+/*
 给每个CPU分配内存，并拷贝.data.percpu段的数据. 
 为系统中的每个CPU的per_cpu变量申请空间.
 在SMP系统中, setup_per_cpu_areas初始化源代码中(使用per_cpu宏)定义的静态per-cpu变量,
@@ -2232,13 +2491,26 @@ void __init setup_per_cpu_areas(void)
 	 * Always reserve area for module percpu variables.  That's
 	 * what the legacy allocator did.
 	 */
+	/*为percpu建立第一个chunk*/
 	rc = pcpu_embed_first_chunk(PERCPU_MODULE_RESERVE,
 				    PERCPU_DYNAMIC_RESERVE, PAGE_SIZE, NULL,
 				    pcpu_dfl_fc_alloc, pcpu_dfl_fc_free);
 	if (rc < 0)
 		panic("Failed to initialize percpu areas.");
 
+	/*
+	 * 内核为percpu分配了一大段空间，在整个percpu空间中根据cpu个数将
+	 * percpu的空间分为不同的unit。而pcpu_base_addr表示整个系统中percpu
+	 * 的起始内存地址. __per_cpu_start表示静态分配的percpu起始地址。
+	 * 即节区".data..percpu"中起始地址。函数首先算出副本空间首地址(pcpu_base_addr)
+	 * 与".data..percpu"section首地址(__per_cpu_start)之间的偏移量delta
+	 */
 	delta = (unsigned long)pcpu_base_addr - (unsigned long)__per_cpu_start;
+	/*
+	 * 遍历系统中的cpu，设置每个cpu的__per_cpu_offset指针pcpu_unit_offsets[cpu]
+	 * 保存对应cpu所在副本空间相对于pcpu_base_addr的偏移量加上delta，
+	 * 这样就可以得到每个cpu的per-cpu变量副本的偏移量, 放在__per_cpu_offset数组中.
+	 */
 	for_each_possible_cpu(cpu)
 		__per_cpu_offset[cpu] = delta + pcpu_unit_offsets[cpu];
 }
