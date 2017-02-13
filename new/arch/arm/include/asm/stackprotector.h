@@ -23,19 +23,19 @@ extern unsigned long __stack_chk_guard;
  * NOTE: this must only be called from functions that never return,
  * and it must always be inlined.
  */
-/**
- * åœ¨åˆå§‹ä»»åŠ¡çš„æ ˆä¸­ï¼Œæ”¾å…¥ç”¨äºŽæ£€æµ‹å †æ ˆè¿”å›žå€¼æ”»å‡»çš„canaryå€¼ã€‚
+ /**
+ * ÔÚ³õÊ¼ÈÎÎñµÄÕ»ÖÐ£¬·ÅÈëÓÃÓÚ¼ì²â¶ÑÕ»·µ»ØÖµ¹¥»÷µÄcanaryÖµ¡£
  */
 static __always_inline void boot_init_stack_canary(void)
 {
 	unsigned long canary;
 
 	/* Try to get a semi random initial value. */
-	//ç”Ÿæˆéšæœºçš„å°æ•´æ•°ï¼Œä½œä¸ºcanaryå€¼
+	/* Éú³ÉËæ»úµÄÐ¡ÕûÊý£¬×÷ÎªcanaryÖµ */
 	get_random_bytes(&canary, sizeof(canary));
 	canary ^= LINUX_VERSION_CODE;
-
-	//è®°å½•å½“å‰çº¿ç¨‹(idleçº¿ç¨‹)çš„canaryå€¼ã€‚
+	
+	/* ¼ÇÂ¼µ±Ç°Ïß³Ì(idleÏß³Ì)µÄcanaryÖµ¡£*/
 	current->stack_canary = canary;
 	__stack_chk_guard = current->stack_canary;
 }

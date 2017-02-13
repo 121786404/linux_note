@@ -154,7 +154,7 @@ typedef u64 dma_addr_t;
 typedef u32 dma_addr_t;
 #endif
 
-typedef unsigned __bitwise__ gfp_t;	/*定义gfp_mask变量*/
+typedef unsigned __bitwise gfp_t;
 typedef unsigned __bitwise fmode_t;
 
 #ifdef CONFIG_PHYS_ADDR_T_64BIT

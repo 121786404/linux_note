@@ -845,6 +845,7 @@ struct file {
 					  * 执行关闭操作*/
 	unsigned int 		f_flags; /* 记录当前文件被open时制定的打开模式*/
 	fmode_t			f_mode;
+	struct mutex		f_pos_lock;
 	loff_t			f_pos;	 /*表示进程对文件操作的位置,例如对文件
 					读取前10个字节，f_ops就指示第11字节位置*/
 	struct fown_struct	f_owner;

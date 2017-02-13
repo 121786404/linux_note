@@ -428,7 +428,7 @@ do {									\
  */
 #define wait_event_exclusive_cmd(wq, condition, cmd1, cmd2)		\
 do {									\
-		/*如果condition条件依然为假,并且当前进程也没有等待的信号需要处理,schedule函数将被调用,在那里调度器将把当前进程从他的运行队列中移除,wait_event_interrupt的表现形式是阻塞在了schedule函数上知道进程下次被再次唤醒并被调度执行*/		\
+		/*如果condition条件依然为假,并且当前进程也没有等待的信号需要处理,schedule函数将被调用,在那里调度器将把当前进程从他的运行队列中移除,wait_event_interrupt的表现形式是阻塞在了schedule函数上知道进程下次被再次唤醒并被调度执行*/		
 	if (condition)							\
 		break;							\
 	__wait_event_exclusive_cmd(wq, condition, cmd1, cmd2);		\
