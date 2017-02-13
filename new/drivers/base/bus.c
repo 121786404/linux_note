@@ -126,6 +126,7 @@ static const struct sysfs_ops bus_sysfs_ops = {
 	.store	= bus_attr_store,
 };
 
+/*生成bus的属性文件*/
 int bus_create_file(struct bus_type *bus, struct bus_attribute *attr)
 {
 	int error;
@@ -161,19 +162,25 @@ static struct kobj_type bus_ktype = {
 	.release	= bus_release,
 };
 
+/*决定是否向用户空间发送uevent消息*/
 static int bus_uevent_filter(struct kset *kset, struct kobject *kobj)
 {
 	struct kobj_type *ktype = get_ktype(kobj);
 
 	if (ktype == &bus_ktype)
 		return 1;
+	/*如果要求发送uevent消息的kobj对象类型不是总线类型,那么函数将返回0,意味着uevent
+	 *意味着uevent消息将不会发送到用户空间,所以bus_uevent_ops使得bus_kset只用来发送
+	 *bus类型的内核内核对象产生的uevent消息*/
 	return 0;
 }
 
+/*顶层kset的事件处理函数*/
 static const struct kset_uevent_ops bus_uevent_ops = {
-	.filter = bus_uevent_filter,
+	.filter = bus_uevent_filter,/*决定是否向用户空间发送uevent消息*/
 };
 
+/*bus的顶层kset*/
 static struct kset *bus_kset;
 
 /* Manually detach a device from its associated driver. */
@@ -235,15 +242,18 @@ static ssize_t bind_store(struct device_driver *drv, const char *buf,
 }
 static DRIVER_ATTR_WO(bind);
 
+/*显示总线属性的函数*/
 static ssize_t show_drivers_autoprobe(struct bus_type *bus, char *buf)
 {
 	return sprintf(buf, "%d\n", bus->p->drivers_autoprobe);
 }
 
+/*修改总线属性的函数*/
 static ssize_t store_drivers_autoprobe(struct bus_type *bus,
 				       const char *buf, size_t count)
 {
 	if (buf[0] == '0')
+		/*是否进行设备与驱动的绑定工作*/
 		bus->p->drivers_autoprobe = 0;
 	else
 		bus->p->drivers_autoprobe = 1;
@@ -307,6 +317,7 @@ int bus_for_each_dev(struct bus_type *bus, struct device *start,
 	if (!bus || !bus->p)
 		return -EINVAL;
 
+	/*初始化一个klist,从设备start开始*/
 	klist_iter_init_node(&bus->p->klist_devices, &i,
 			     (start ? &start->p->knode_bus : NULL));
 	while ((dev = next_device(&i)) && !error)
@@ -447,6 +458,7 @@ static struct device_driver *next_driver(struct klist_iter *i)
  * in the callback. It must also be sure to increment the refcount
  * so it doesn't disappear before returning to the caller.
  */
+/*遍历dev所在总线dev->bus上挂载的所有驱动程序对象*/
 int bus_for_each_drv(struct bus_type *bus, struct device_driver *start,
 		     void *data, int (*fn)(struct device_driver *, void *))
 {
@@ -545,6 +557,7 @@ out_put:
  *
  * - Automatically probe for a driver if the bus allows it.
  */
+/*一个体现设备驱动模型中总线 设备与驱动相互沟通的重要函数*/
 void bus_probe_device(struct device *dev)
 {
 	struct bus_type *bus = dev->bus;
@@ -621,6 +634,7 @@ static void remove_bind_files(struct device_driver *drv)
 }
 
 static BUS_ATTR(drivers_probe, S_IWUSR, NULL, store_drivers_probe);
+/*表明对root用户而言具有读与写的权限*/
 static BUS_ATTR(drivers_autoprobe, S_IWUSR | S_IRUGO,
 		show_drivers_autoprobe, store_drivers_autoprobe);
 
@@ -628,6 +642,7 @@ static int add_probe_files(struct bus_type *bus)
 {
 	int retval;
 
+	/*生成总线属性文件*/
 	retval = bus_create_file(bus, &bus_attr_drivers_probe);
 	if (retval)
 		goto out;
@@ -671,6 +686,7 @@ static void driver_attach_async(void *_drv, async_cookie_t cookie)
  * bus_add_driver - Add a driver to the bus.
  * @drv: driver.
  */
+/*进行实际的驱动注册*/
 int bus_add_driver(struct device_driver *drv)
 {
 	struct bus_type *bus;
@@ -683,15 +699,19 @@ int bus_add_driver(struct device_driver *drv)
 
 	pr_debug("bus: '%s': add driver %s\n", bus->name, drv->name);
 
+	/*首先分配了一块类型为struct driver_private的空间对象priv*/
 	priv = kzalloc(sizeof(*priv), GFP_KERNEL);
 	if (!priv) {
 		error = -ENOMEM;
 		goto out_put_bus;
 	}
 	klist_init(&priv->klist_devices, NULL, NULL);
+	/*将priv与drv对象建立了关联*/
 	priv->driver = drv;
 	drv->p = priv;
 	priv->kobj.kset = bus->p->drivers_kset;
+	/*把drv所对应的内核对象加入到sysfs文件树中,如此将在/sys/bus/drivers目录下新建
+	 *一目录,其名称为drv->name*/
 	error = kobject_init_and_add(&priv->kobj, &driver_ktype, NULL,
 				     "%s", drv->name);
 	if (error)
@@ -711,6 +731,7 @@ int bus_add_driver(struct device_driver *drv)
 	}
 	module_add_driver(drv->owner, drv);
 
+	/*在新建的drv目录中生成属性文件*/
 	error = driver_create_file(drv, &driver_attr_uevent);
 	if (error) {
 		printk(KERN_ERR "%s: uevent attr (%s) failed\n",
@@ -884,12 +905,13 @@ static BUS_ATTR(uevent, S_IWUSR, NULL, bus_uevent_store);
  * infrastructure, then register the children subsystems it has:
  * the devices and drivers that belong to the subsystem.
  */
+/*向系统注册一个bus*/
 int bus_register(struct bus_type *bus)
 {
 	int retval;
 	struct subsys_private *priv;
 	struct lock_class_key *key = &bus->lock_key;
-
+	/*分配一个struct subsys_private类型的对象*/
 	priv = kzalloc(sizeof(struct subsys_private), GFP_KERNEL);
 	if (!priv)
 		return -ENOMEM;
@@ -899,22 +921,32 @@ int bus_register(struct bus_type *bus)
 
 	BLOCKING_INIT_NOTIFIER_HEAD(&priv->bus_notifier);
 
+	/*为bus所在的内核对象设定名称,该名称将显示在sysfs文件系统树中*/
 	retval = kobject_set_name(&priv->subsys.kobj, "%s", bus->name);
 	if (retval)
 		goto out;
 
+	/*bus作为一个kset类型的内核对象,其对象属性等特性体现在struct subsys_private对象的
+	 *subsys成员中,这是个kset型的变量,所以注册一个bus,将同时赋予该bus特定的属性特质*/
+	 /*指明了当前注册的bus对象所属的上层kset对象,就是buses_init中创建的名为bus的kset*/
 	priv->subsys.kobj.kset = bus_kset;
+	/*指明了当前注册的bus的属性类型bus_ktype,后者定义了该特定bus上的一些与总线属性
+	 *文件相关的操作*/
 	priv->subsys.kobj.ktype = &bus_ktype;
 	priv->drivers_autoprobe = 1;
 
+	/*在kset/bus目录下为当前注册的bus生成一个新的目录,用来将当前操作的bus所对应的kset
+	 *加入到sysfs文件系统树中*/
 	retval = kset_register(&priv->subsys);
 	if (retval)
 		goto out;
 
+	/*生成bus的属性文件*/
 	retval = bus_create_file(bus, &bus_attr_uevent);
 	if (retval)
 		goto bus_uevent_fail;
 
+	/*为当前bus产生容纳设备的kset容器,它将生成一个kset对象并将其加入到sysfs文件系统中*/
 	priv->devices_kset = kset_create_and_add("devices", NULL,
 						 &priv->subsys.kobj);
 	if (!priv->devices_kset) {
@@ -922,6 +954,7 @@ int bus_register(struct bus_type *bus)
 		goto bus_devices_fail;
 	}
 
+	/*为当前bus产生容纳驱动的kset容器,它将生成一个kset对象并将其加入到sysfs文件系统中**/
 	priv->drivers_kset = kset_create_and_add("drivers", NULL,
 						 &priv->subsys.kobj);
 	if (!priv->drivers_kset) {
@@ -931,9 +964,11 @@ int bus_register(struct bus_type *bus)
 
 	INIT_LIST_HEAD(&priv->interfaces);
 	__mutex_init(&priv->mutex, "subsys mutex", key);
+	/*初始化bus上的设备与驱动的链表*/
 	klist_init(&priv->klist_devices, klist_devices_get, klist_devices_put);
 	klist_init(&priv->klist_drivers, NULL, NULL);
 
+	/*为当前bus增加probe相关的属性文件*/
 	retval = add_probe_files(bus);
 	if (retval)
 		goto bus_probe_files_fail;
@@ -1276,6 +1311,11 @@ EXPORT_SYMBOL_GPL(subsys_virtual_register);
 
 int __init buses_init(void)
 {
+	/*将创建一个名称为bus的kset并将其加入到sysfs文件系统中,主要bus_uevent_ops定义了
+	 *当bus这个kset中有状态变化时,用来通知用户空间uevent消息的操作集;当kset中有状态的
+	 *变化时,如果需要向用户空间发送event消息,将由该kset的最顶层kset来执行,因为bus_kset
+	 *是系统中所有bus_subsystem最顶层的kset,所以bus中的uevent调用最终会汇集到这里的
+	 *bus_uevent_ops中,这个操作集中只定义了一个filter操作,以决定是否通知用户空间*/
 	bus_kset = kset_create_and_add("bus", &bus_uevent_ops, NULL);
 	if (!bus_kset)
 		return -ENOMEM;

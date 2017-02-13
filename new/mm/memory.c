@@ -1724,6 +1724,7 @@ static int remap_pte_range(struct mm_struct *mm, pmd_t *pmd,
 	return 0;
 }
 
+/*最终的页表建立*/
 static inline int remap_pmd_range(struct mm_struct *mm, pud_t *pud,
 			unsigned long addr, unsigned long end,
 			unsigned long pfn, pgprot_t prot)
@@ -1738,6 +1739,7 @@ static inline int remap_pmd_range(struct mm_struct *mm, pud_t *pud,
 	VM_BUG_ON(pmd_trans_huge(*pmd));
 	do {
 		next = pmd_addr_end(addr, end);
+		/*建立对应的页表项*/
 		if (remap_pte_range(mm, pmd, addr, next,
 				pfn + (addr >> PAGE_SHIFT), prot))
 			return -ENOMEM;
@@ -1745,6 +1747,7 @@ static inline int remap_pmd_range(struct mm_struct *mm, pud_t *pud,
 	return 0;
 }
 
+/*用来做实际的页目录表项的操作*/
 static inline int remap_pud_range(struct mm_struct *mm, pgd_t *pgd,
 			unsigned long addr, unsigned long end,
 			unsigned long pfn, pgprot_t prot)
@@ -1758,6 +1761,7 @@ static inline int remap_pud_range(struct mm_struct *mm, pgd_t *pgd,
 		return -ENOMEM;
 	do {
 		next = pud_addr_end(addr, end);
+		/*最终的页表建立*/
 		if (remap_pmd_range(mm, pud, addr, next,
 				pfn + (addr >> PAGE_SHIFT), prot))
 			return -ENOMEM;
@@ -1785,6 +1789,7 @@ static inline int remap_pud_range(struct mm_struct *mm, pgd_t *pgd,
  *  prot: 新VMA要求的保护属性。
  * 返回为0表示成功，负值表示错误。
  */
+ 
 int remap_pfn_range(struct vm_area_struct *vma, unsigned long addr,
 		    unsigned long pfn, unsigned long size, pgprot_t prot)
 {
@@ -1827,10 +1832,15 @@ int remap_pfn_range(struct vm_area_struct *vma, unsigned long addr,
 
 	BUG_ON(addr >= end);
 	pfn -= addr >> PAGE_SHIFT;
+	/*用来获得某一虚拟地址在页目录表中的对应单元的地址pgd*/
 	pgd = pgd_offset(mm, addr);
+	/*将(addr,end)地址范围对应的cache内容同步到主存中*/
 	flush_cache_range(vma, addr, end);
+	/*循环用来在页目录中建立对应的映射页表项*/
 	do {
+		/*用来获取addr对应页表项的下一个entry对应的虚拟起始地址*/
 		next = pgd_addr_end(addr, end);
+		/*用来做实际的页目录表项的操作*/
 		err = remap_pud_range(mm, pgd, addr, next,
 				pfn + (addr >> PAGE_SHIFT), prot);
 		if (err)

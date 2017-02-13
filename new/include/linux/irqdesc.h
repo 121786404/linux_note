@@ -51,44 +51,73 @@ struct pt_regs;
 /**
  * 中断描述符
  */
+  /* 该结构在整个中断处理框架中非常重要，起着沟通从通用的中断处理函数
+  * 到设备特定的中断处理例程之间的桥梁作用*/
 struct irq_desc {
 	struct irq_common_data	irq_common_data;
 	//中断控制器相关的数据
 	struct irq_data		irq_data;
 	//中断在每个CPU上的执行状态
 	unsigned int __percpu	*kstat_irqs;
-	//高级irq事件事件??
+	//高级irq事件事件
+	/*指向该中断请求的处理函数,他与软件中断号一一对应,代表了对IRQ　line上的处理动作*/
 	irq_flow_handler_t	handle_irq;
 #ifdef CONFIG_IRQ_PREFLOW_FASTEOI
 	//arm上未用
 	irq_preflow_handler_t	preflow_handler;
 #endif
 	//注册的irq回调链表
+	/* IRQ action list */
+				/* 指向响应该IRQ的动作链表中的第一项,
+				 * 代表着与具体设备相关的中断处理,
+				 * 也是设备驱动程序员要直接与之打交道的对象
+				 * 通过action成员可以在一条IRQ line上挂在多个
+				 * 设备,即多个设备可以通过同一条IRQ line来
+				 * 共享同一个软件中断号irq,形成所谓的中断链*/
+	/* handle_irq和action的层次关系
+	IRQ line	     handle_irq
+	___________________________________
+	 |	　    |		 |      　｜
+	 |            |		 |  PIC    |___处理器
+	设备１	     设备n	 ___________
+	 |	      |
+     action  -next-> action
+	
+	*/
 	struct irqaction	*action;	/* IRQ action list */
 	//和irq_common_data中的状态有什么区别?
 	unsigned int		status_use_accessors;
 	unsigned int		core_internal_state__do_not_mess_with_it;
 	//禁止该中断的次数
+	/* 指出该IRQ线上的中断嵌套深度*/
 	unsigned int		depth;		/* nested irq disables */
 	//打开该中断的次数
+	/* 指出该IRQ线上的中断嵌套深度*/
 	unsigned int		wake_depth;	/* nested wake enables */
-	//发生的中断次数，用于检测硬件故障。
+	//发生的中断次数，用于检测硬件故障	/* 指出该IRQ线上中断请求的数目*/	unsigned int		irq_count;	/* For detecting broken IRQs */
 	unsigned int		irq_count;	/* For detecting broken IRQs */
 	//上次未处理该中断的时间。
 	unsigned long		last_unhandled;	/* Aging timer for unhandled count */
 	//未处理的中断次数
+	/* 指出该IRQ线上未处理的中断数目*/
 	unsigned int		irqs_unhandled;
 	//???
 	atomic_t		threads_handled;
 	int			threads_handled_last;
 	//保护该数据结构的自旋锁
+	/* 操作irq_desc数组时用作互斥保护的
+					 * 成员，因为irq_desc在多个处理器之间
+					 * 共享，即使单处理器系统，也有并发操
+					 * 作该数组的可能*/
 	raw_spinlock_t		lock;
 	struct cpumask		*percpu_enabled;
 	const struct cpumask	*percpu_affinity;
 #ifdef CONFIG_SMP
+    /* 在多处理器上使用，用以实现负载均衡*/
 	const struct cpumask	*affinity_hint;
 	struct irq_affinity_notify *affinity_notify;
 #ifdef CONFIG_GENERIC_PENDING_IRQ
+    /* 用以挂起被负载均衡的中断*/
 	cpumask_var_t		pending_mask;
 #endif
 #endif
@@ -104,6 +133,7 @@ struct irq_desc {
 	unsigned int		force_resume_depth;
 #endif
 #ifdef CONFIG_PROC_FS
+    /* 指向/proc/irq目录项*/
 	struct proc_dir_entry	*dir;
 #endif
 #ifdef CONFIG_SPARSE_IRQ
@@ -113,6 +143,8 @@ struct irq_desc {
 	int			parent_irq;
 	struct module		*owner;
 	//proc中的名称
+	/* handle_irq所对应的名称，
+						 * 最终显示在/proc/interrupts*/
 	const char		*name;
 } ____cacheline_internodealigned_in_smp;
 
@@ -172,6 +204,10 @@ static inline void generic_handle_irq_desc(struct irq_desc *desc)
 	 */
 	desc->handle_irq(desc);
 }
+/* 负责对当前发生的中断进行实际的处理
+ * 函数通过软件中断号irq来索引数组irq_desc,得到一个struct irq_desc类型的指针变量
+ * desc,然后调用其成员函数handle_irq对当前中断进行实际的处理
+ */
 
 int generic_handle_irq(unsigned int irq);
 

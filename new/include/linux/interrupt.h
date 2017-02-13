@@ -26,11 +26,17 @@
  * setting should be assumed to be "as already configured", which
  * may be as per machine or firmware initialisation.
  */
+ /*系统定义的中断信号触发类型标志,设定中断触发信号类型的函数为__irq_set_trigger*/
 #define IRQF_TRIGGER_NONE	0x00000000
+/*上升沿触发*/
 #define IRQF_TRIGGER_RISING	0x00000001
+/*下降沿触发*/
 #define IRQF_TRIGGER_FALLING	0x00000002
+/*高电瓶触发*/
 #define IRQF_TRIGGER_HIGH	0x00000004
+/*低电平触发*/
 #define IRQF_TRIGGER_LOW	0x00000008
+/*中断触发信号掩码*/
 #define IRQF_TRIGGER_MASK	(IRQF_TRIGGER_HIGH | IRQF_TRIGGER_LOW | \
 				 IRQF_TRIGGER_RISING | IRQF_TRIGGER_FALLING)
 #define IRQF_TRIGGER_PROBE	0x00000010
@@ -89,6 +95,7 @@ enum {
 	IRQC_IS_NESTED,
 };
 
+/*irq_return_t声明,设备驱动程序负责实现该函数,然后调用request_irq函数，后者会把驱动程序实现的中断服务例程赋值给handler*/
 typedef irqreturn_t (*irq_handler_t)(int, void *);
 
 /**
@@ -107,11 +114,19 @@ typedef irqreturn_t (*irq_handler_t)(int, void *);
  * @thread_mask:	bitmask for keeping track of @thread activity
  * @dir:	pointer to the proc/irq/NN/name entry
  */
+ /*设备驱动程序通过这个结构将其中断处理函数挂在在action上*/
 struct irqaction {
-	irq_handler_t		handler;
+	irq_handler_t handler;	/*指向设备特定的中断服务例程函数的指针*/
+/* 调用handler时传给他的参数，在多个设备共享一个irq的
+			 * 情况下特别重要，这种链式的action中，
+			 * 设备驱动程序通过dev_id来标识自己*/
 	void			*dev_id;
 	void __percpu		*percpu_dev_id;
+/* 指向下一个action对象,用于多个设备共享一个irq
+	 			 * 的情形，此时action通过next构成一个链表*/
 	struct irqaction	*next;
+/* 当驱动程序调用request_threaded_irq函数
+				   * 来安装中断处理例程时，用来实现irq_thread机制*/
 	irq_handler_t		thread_fn;
 	struct task_struct	*thread;
 	struct irqaction	*secondary;
@@ -120,6 +135,7 @@ struct irqaction {
 	unsigned long		thread_flags;
 	unsigned long		thread_mask;
 	const char		*name;
+	/*中断处理函数中用来创建在proc文件系统中的目录项*/
 	struct proc_dir_entry	*dir;
 } ____cacheline_internodealigned_in_smp;
 
@@ -140,6 +156,12 @@ request_threaded_irq(unsigned int irq, irq_handler_t handler,
 		     irq_handler_t thread_fn,
 		     unsigned long flags, const char *name, void *dev);
 
+/* 把驱动程序实现的中断服务例程赋值给handler,驱动程序中安装中断服务例程
+ * @irq:当前要安装的中断处理例程对应的中断号
+ * @handler:中断处理例程ISR,由设备驱动程序负责实现
+ * @flags:是标志变量,可影响内核在安装ISR时的一些行为模式,信号触发类型
+ * @name:当前安装中断ISR的设备名称，内核在proc文件系统生成name的一个入口点
+ * @dev:是个传递到中断处理例程的指针，在中断共享的情况下，将在free_irq时用到，以     区分当前是要释放的哪一个struct irqaction对象*/
 static inline int __must_check
 request_irq(unsigned int irq, irq_handler_t handler, unsigned long flags,
 	    const char *name, void *dev)
@@ -155,6 +177,7 @@ extern int __must_check
 request_percpu_irq(unsigned int irq, irq_handler_t handler,
 		   const char *devname, void __percpu *percpu_dev_id);
 
+/*通过request_irq安装的中断处理函数，如果不再需要应该调用free_irq予以释放*/
 extern void free_irq(unsigned int, void *);
 extern void free_percpu_irq(unsigned int, void __percpu *);
 
@@ -443,17 +466,17 @@ extern bool force_irqthreads;
    tasklets are more than enough. F.e. all serial device BHs et
    al. should be converted to tasklets, not to softirqs.
  */
-
+/*softirq的类型,软件中断的类型*/
 enum
 {
-	HI_SOFTIRQ=0,//高优先级软中断
-	TIMER_SOFTIRQ,//定时器软中断
-	NET_TX_SOFTIRQ, //网络发送软中断，回收发送内存
-	NET_RX_SOFTIRQ, //接收软中断
-	BLOCK_SOFTIRQ,  //块设备软中断
+	HI_SOFTIRQ=0,	/*用来实现tasklet,优先级高于TASKLET_SOFTIRQ*/
+	TIMER_SOFTIRQ,	/*用于定时器*/
+	NET_TX_SOFTIRQ,	/*网络设备的发送操作*/
+	NET_RX_SOFTIRQ,	/*网络设备的接收操作*/
+	BLOCK_SOFTIRQ,	/*块设备的操作*/
 	IRQ_POLL_SOFTIRQ, //块设备poll软中断
-	TASKLET_SOFTIRQ, //tasklet软中断
-	SCHED_SOFTIRQ, //调度软中断
+	TASKLET_SOFTIRQ,	/*用来实现tasklet*/
+	SCHED_SOFTIRQ,		/*用于调度器*/
 	//高精度时钟软中断，未用
 	HRTIMER_SOFTIRQ, /* Unused, but kept as tools rely on the
 			    numbering. Sigh! */
@@ -474,6 +497,7 @@ extern const char * const softirq_to_name[NR_SOFTIRQS];
  * asm/hardirq.h to get better cache usage.  KAO
  */
 
+/*软中断处理函数原形*/
 struct softirq_action
 {
 	void	(*action)(struct softirq_action *);
@@ -524,26 +548,37 @@ static inline struct task_struct *this_cpu_ksoftirqd(void)
      wrt another tasklets. If client needs some intertask synchronization,
      he makes it with spinlocks.
  */
-
+ /*表示tasklet对象的数据结构
+  * 驱动程序为了实现基于tasklet机制的延迟操作,首先需要声明一个tasklet对象*/
 struct tasklet_struct
 {
-	struct tasklet_struct *next;
-	unsigned long state;
-	atomic_t count;
-	void (*func)(unsigned long);
-	unsigned long data;
+	struct tasklet_struct *next;	/*将系统中的tasklet对象构建成链表*/
+	unsigned long state; /*记录每个tasklet在系统中的状态,其值时枚举型变量
+				TASKLET_STATE_SCHED和TASKLET_STATE_RUN两者之一*/
+
+	atomic_t count;	/*用来实现tasklet的disable和enable操作,count.counter=0
+			表示当前的tasklet是enabled的,可以被调度执行,否则便是
+			disabled的tasklet,不可被执行*/
+	void (*func)(unsigned long);	/*该tasklet上的执行函数或者延迟函数,当该tasklet在SOFTIRQ部分被调度执行时,该函数指针指向的函数被调用,用来完成驱动程序中实际的延迟操作任务*/
+	unsigned long data;	/*作为参数传给func函数*/
 };
 
+/*声明并初始化一个tasklet对象*/
 #define DECLARE_TASKLET(name, func, data) \
 struct tasklet_struct name = { NULL, 0, ATOMIC_INIT(0), func, data }
 
+/*用来声明一个处于disabled状态的tasklet对象*/
 #define DECLARE_TASKLET_DISABLED(name, func, data) \
 struct tasklet_struct name = { NULL, 0, ATOMIC_INIT(1), func, data }
 
 
 enum
 {
+	/*TASKLET_STATE_SCHED表示当前tasklet已经被提交*/
 	TASKLET_STATE_SCHED,	/* Tasklet is scheduled for execution */
+
+	/* TASKLET_STATE_RUN只用在对称多处理器系统SMP中,
+	 * 表示当前tasklet正在执行*/
 	TASKLET_STATE_RUN	/* Tasklet is running (SMP only) */
 };
 
@@ -571,6 +606,8 @@ static inline void tasklet_unlock_wait(struct tasklet_struct *t)
 
 extern void __tasklet_schedule(struct tasklet_struct *t);
 
+/* 驱动程序项系统提交这个tasklet,即将tastlet对象加入到tasklet_vec管理的链表中
+ * 对于HI_SOFTIRQ,提交tasklet对象的函数为tasklet_hi_schedule*/
 static inline void tasklet_schedule(struct tasklet_struct *t)
 {
 	if (!test_and_set_bit(TASKLET_STATE_SCHED, &t->state))
@@ -579,6 +616,7 @@ static inline void tasklet_schedule(struct tasklet_struct *t)
 
 extern void __tasklet_hi_schedule(struct tasklet_struct *t);
 
+/* 驱动程序项系统提交这个tasklet,即将tastlet对象加入到tasklet_hi_vec管理的链表中*/
 static inline void tasklet_hi_schedule(struct tasklet_struct *t)
 {
 	if (!test_and_set_bit(TASKLET_STATE_SCHED, &t->state))
@@ -600,12 +638,14 @@ static inline void tasklet_hi_schedule_first(struct tasklet_struct *t)
 }
 
 
+/*disable一个tasklet,使之无法被SOFTIRQ调度运行*/
 static inline void tasklet_disable_nosync(struct tasklet_struct *t)
 {
 	atomic_inc(&t->count);
 	smp_mb__after_atomic();
 }
 
+/*disable一个tasklet,使之无法被SOFTIRQ调度运行*/
 static inline void tasklet_disable(struct tasklet_struct *t)
 {
 	tasklet_disable_nosync(t);
@@ -621,6 +661,7 @@ static inline void tasklet_enable(struct tasklet_struct *t)
 
 extern void tasklet_kill(struct tasklet_struct *t);
 extern void tasklet_kill_immediate(struct tasklet_struct *t, unsigned int cpu);
+/*动态初始化tasklet对象*/
 extern void tasklet_init(struct tasklet_struct *t,
 			 void (*func)(unsigned long), unsigned long data);
 

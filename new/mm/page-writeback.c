@@ -70,11 +70,11 @@ static long ratelimit_pages = 32;
 /*
  * Start background writeback (via writeback threads) at this percentage
  */
-/* 当脏页占后备存储器百分比超过此值，进行pdflush回写 */
-/**
- * 当内存中的缓冲脏页超过此比例时，对页调整缓存中的页进行修改
- * 的函数会唤醒pdflush进程，执行回调函数backgroud_writeout
- */
+/* 
+并周期性同步文件系统的元数据。
+若超出了这个后台回写百分比，
+则 pdflush守护进程异步处理回写操作(backgroud_writeout)
+*/
 int dirty_background_ratio = 10;
 
 /*
@@ -92,7 +92,16 @@ int vm_highmem_is_dirtyable;
 /*
  * The generator of dirty data starts writeback at this percentage
  */
-/* 当脏页相对于非高端内存域的比例超过此比例时，开始回写 */
+/* 当脏页相对于非高端内存域的比例超过此比例时，开始回写 
+
+当一个任务在脏内存过多的环境中执行文件写操作时，
+系统必须要对脏内存页面执行写出操作，
+直至脏内存页面的百分比低于系统规定的阈值。
+这一点很重要， 因为 I/O操作被看作具有高延迟。 
+如果某个任务在系统能够满足一个分配请求之前需要
+等待回写操作完成，则该任务的性能会受到影响。
+这主要被看作是大型内存系统中的一个问题
+*/
 int vm_dirty_ratio = 20;
 
 /*
@@ -117,7 +126,13 @@ EXPORT_SYMBOL_GPL(dirty_writeback_interval);
 /*
  * The longest time for which data is allowed to remain dirty
  */
-/* 页面保持为脏页的最大时间 */
+/*
+参数是数据可以保持为脏状态的最大厘秒数， 
+这个时间段通过查询所有在内存中缓存了脏页面的文件
+的时间戳来确定。
+该参数表示一个上限值，确保最终可以将数据写到磁盘子系统。
+厘秒表示1/100s的时间单位。
+*/
 unsigned int dirty_expire_interval = 30 * 100; /* centiseconds */
 
 /*

@@ -366,6 +366,7 @@ static BLOCKING_NOTIFIER_HEAD(vmap_notify_list);
  * Allocate a region of KVA of the specified size and alignment, within the
  * vstart and vend.
  */
+ /* 根据指定的长度和对齐要求，在KVA空间中分配一段可用空间 */
 static struct vmap_area *alloc_vmap_area(unsigned long size,
 				unsigned long align,
 				unsigned long vstart, unsigned long vend,
@@ -376,13 +377,21 @@ static struct vmap_area *alloc_vmap_area(unsigned long size,
 	unsigned long addr;
 	int purged = 0;
 	struct vmap_area *first;
+    /**
+         * 这几种情况都是不可饶恕的错误:
+         *        长度为0
+         *        长度不是页面的整数倍
+         *        长度不是2的n次方
+         */
 
 	BUG_ON(!size);
 	BUG_ON(offset_in_page(size));
 	BUG_ON(!is_power_of_2(align));
 
 	might_sleep();
-
+    /* KVA地址空间通过vmap_area结构进行管理，
+    这里分配一个vmap_area描述符。
+    与vm_struct不同，vm_struct仅仅代表一个与vmalloc对应的地址空间 */
 	va = kmalloc_node(sizeof(struct vmap_area),
 			gfp_mask & GFP_RECLAIM_MASK, node);
 	if (unlikely(!va))
@@ -395,6 +404,7 @@ static struct vmap_area *alloc_vmap_area(unsigned long size,
 	kmemleak_scan_area(&va->rb_node, SIZE_MAX, gfp_mask & GFP_RECLAIM_MASK);
 
 retry:
+    /* 获得保护KVA红黑树的自旋锁 */
 	spin_lock(&vmap_area_lock);
 	/*
 	 * Invalidate cache if we have more permissive parameters.
@@ -418,43 +428,66 @@ nocache:
 	cached_align = align;
 
 	/* find starting point for our search */
+	/* 从上次分配的区域开始向后查找 */
 	if (free_vmap_cache) {
+	/* 得到上次分配的KVA描述符 */
 		first = rb_entry(free_vmap_cache, struct vmap_area, rb_node);
+    /* 上次分配的结束地址向上对齐，得到本次可用的地址 */
 		addr = ALIGN(first->va_end, align);
+		/* 可用地址小于我们的起始地址，缓存失效 */
 		if (addr < vstart)
 			goto nocache;
+	 /**
+         * 溢出，说明地址空间不足。 
+         * 初看似乎这里有点问题，因为从上次分配的结点开始向后查找可用空间，即使后面的可用空间不足，也不能表示真的没有可用空间了。
+         * 因为前面已经分配的空间之间应该还有空洞。
+         * 实际上内核这样处理是没有问题。请阅读时注意。
+         */
 		if (addr + size < addr)
 			goto overflow;
 
 	} else {
+	/* 将虚拟地址向上对齐，对vmalloc来说，vstart表示可以使用的虚拟地址空间起始地址 */
 		addr = ALIGN(vstart, align);
+		/* 长度太长，造成整形溢出，退出。这类检查可以防止安全方面的问题 */
 		if (addr + size < addr)
 			goto overflow;
-
+        /* 获取KVA(应该是指kernel vitural address)红黑树的根，从根开始遍历树 */
 		n = vmap_area_root.rb_node;
 		first = NULL;
-
+        /* 遍历红黑树 */
 		while (n) {
 			struct vmap_area *tmp;
+			/* 获取当前红黑树节点对应的vmap_area描述符 */
 			tmp = rb_entry(n, struct vmap_area, rb_node);
 			if (tmp->va_end >= addr) {
+			/* 该区域结束地址大于我们要搜索的起始地址 */
 				first = tmp;
 				if (tmp->va_start <= addr)
+				/* 该区域起始地址小于我们要搜索的起始地址 */
+                /* 这种情况下，说明我们可以从当前节点开始查找地址空间了 */
 					break;
+				/* 否则，说明该节点还位于较高端，我们移动到树的左节点上，查找更小的区域 */
 				n = n->rb_left;
 			} else
+			/* 否则说明该节点代表的区域还比较小，我们需要移动到右节点上，查找更大的区域 */
 				n = n->rb_right;
 		}
-
+        /* 我们要查找的区域大于当前树中所有的区域，说明我们的地址区间还没有被占用 */
 		if (!first)
 			goto found;
 	}
 
 	/* from the starting point, walk areas until a suitable hole is found */
+    /* 运行到这里，说明我们要查找的区间位于红黑树的区域范围内，从当前节点开始，搜索合适大小的区间空洞 */
 	while (addr + size > first->va_start && addr + size <= vend) {
+	/* 要求的地址空间与当前节点重叠，说明需要向后移动节点，查找更高范围的地址空间 */
 		if (addr + cached_hole_size < first->va_start)
+		/* 根据当前地址到当前区间的起始地址之间有距离，计算空洞大小 */
 			cached_hole_size = first->va_start - addr;
+        /* 可用地址是当前区间结束地址向上对齐的地址 */
 		addr = ALIGN(first->va_end, align);
+		/* 整形溢出了，退出。说明空间不足。 */
 		if (addr + size < addr)
 			goto overflow;
 
@@ -465,19 +498,18 @@ nocache:
 	}
 
 found:
-/*
-越界
-*/
+    /* 可用地址加上分配长度超过了分配范围，说明地址空间不足了，退出 */
 	if (addr + size > vend)
 		goto overflow;
-/*
-初始化area
-*/
+    /* 运行到这里，说明找到合适的地址区间，初始化KVA数据结构 */
 	va->va_start = addr;
 	va->va_end = addr + size;
 	va->flags = 0;
+	/* 将分配的vmap_area插入到红黑树中，代表这一段地址空间已经从KVA中分配出去了 */
 	__insert_vmap_area(va);
+	/* 记录下本次分配的空间，下次分配可从该节点开始搜索，提高搜索速度用 */
 	free_vmap_cache = &va->rb_node;
+	/* 释放KVA红黑树的自旋锁 */
 	spin_unlock(&vmap_area_lock);
 
 	BUG_ON(!IS_ALIGNED(va->va_start, align));
@@ -485,12 +517,17 @@ found:
 	BUG_ON(va->va_end > vend);
 
 	return va;
-
+    /* 运行到这里，说明地址空间不足 */
 overflow:
+    /* 首先释放自旋锁 */
 	spin_unlock(&vmap_area_lock);
+	/* 如果我们还没有进行KVA地址空间清理(如果幸运的话，我们可以清理出一些可用空间) */
 	if (!purged) {
+	/* 清理懒模式下没有及时释放的KVA空间，内核中经常用到懒模式，性能方面的原因 */
 		purge_vmap_area_lazy();
+		/* 设置标志，表示我们已经清理过KVA空间了 */
 		purged = 1;
+		 /* 再试一次，如果还不行再返回错误 */
 		goto retry;
 	}
 
@@ -502,10 +539,11 @@ overflow:
 			goto retry;
 		}
 	}
-
+    /* 运行到这里，说明实在没有可用空间了，打印一下警告信息。注意这里用了printk_ratelimit，防止Dos攻击 */
 	if (printk_ratelimit())
 		pr_warn("vmap allocation for size %lu failed: use vmalloc=<size> to increase size\n",
 			size);
+    /* 没有分配到可用空间，释放临时分配的KVA描述符 */
 	kfree(va);
 	return ERR_PTR(-EBUSY);
 }
@@ -1326,6 +1364,7 @@ EXPORT_SYMBOL_GPL(unmap_kernel_range);
 /*
  * 内核调用map_vm_area将分散的物理内存页连续映射到虚拟的vmalloc区域。
  * 该函数遍历分配的物理内存页，在各级页目录/页表中分配所需的目录项/表项。
+ 在当前进程的页表项中建立数据结构，并刷新了tlb使pte页表项生效
  */
 int map_vm_area(struct vm_struct *area, pgprot_t prot, struct page **pages)
 {
@@ -1382,6 +1421,7 @@ static struct vm_struct *__get_vm_area_node(unsigned long size,
     如果上层调用是通过ioremap进入的
 */
 	if (flags & VM_IOREMAP)
+	/* 起始地址以分配大小的边界对齐，也就是说，如果分配1M到2M之间的内存，则以1M为边界对齐 */
 		align = 1ul << clamp_t(int, get_count_order_long(size),
 				       PAGE_SHIFT, IOREMAP_MAX_ORDER);
 /*
@@ -1543,6 +1583,7 @@ static void __vunmap(const void *addr, int deallocate_pages)
 	 * 调用remove_vm_area得到vm_struct描述符的地址。
 	 * 并清除非连续内存区中的线性地址对应的内核的页表项。
 	 */
+	 /* 从KVA和vmlist中移除虚拟地址块 */
 	area = remove_vm_area(addr);
 	/* 要删除的区域不存在 */
 	if (unlikely(!area)) {
@@ -1551,6 +1592,8 @@ static void __vunmap(const void *addr, int deallocate_pages)
 	那么说明调用者传入了错误的地址参数，
 	或者多次释放同一地址  
 */
+    /* 如果虚拟地址块没有位于KVA中，那么说明调用者传入了错误的地址参数，或者多次释放同一地址。 */
+
 		WARN(1, KERN_ERR "Trying to vfree() nonexistent vm area (%p)\n",
 				addr);
 		return;
@@ -1643,15 +1686,15 @@ void vfree_atomic(const void *addr)
  */
 void vfree(const void *addr)
 {
-/*
-__vunmap函数不能在中断中被调用
-*/
 	BUG_ON(in_nmi());
 
 	kmemleak_free(addr);
 
 	if (!addr)
 		return;
+/*
+__vunmap函数不能在中断中被调用
+*/
 	if (unlikely(in_interrupt()))
 		__vfree_deferred(addr);
 	else
@@ -1737,6 +1780,7 @@ EXPORT_SYMBOL(vmap);
 static void *__vmalloc_node(unsigned long size, unsigned long align,
 			    gfp_t gfp_mask, pgprot_t prot,
 			    int node, const void *caller);
+/* 为vmalloc分配物理内存并进行虚实映射 */
 static void *__vmalloc_area_node(struct vm_struct *area, gfp_t gfp_mask,
 				 pgprot_t prot, int node)
 {
@@ -1746,6 +1790,7 @@ static void *__vmalloc_area_node(struct vm_struct *area, gfp_t gfp_mask,
 	const gfp_t alloc_mask = gfp_mask | __GFP_NOWARN;
 
 	/* 计算所需要的物理页面数量，注意要剔除保护页 */
+	/* 这里计算需要分配的页面数量，减去PAGE_SIZE是因为分配虚拟地址空间时多指定了一个空洞页面防止越界 */
 	nr_pages = get_vm_area_size(area) >> PAGE_SHIFT;
 /*
 	分配的物理页面描述符要记录到一个临时数组中去，
@@ -1798,14 +1843,11 @@ static void *__vmalloc_area_node(struct vm_struct *area, gfp_t gfp_mask,
 		 * 否则，使用alloc_page()从当前结点分配页帧。
 		 */
 		if (node == NUMA_NO_NODE)
-/*
-		没有显示指定分配页帧的结点
-*/
+        /* 没有指定在哪个NUMA节点中分配页面 */
+        /* 随便分配一个页面 */
 			page = alloc_page(alloc_mask);
 		else
-/*
-		从指定结点分配页帧
-*/
+        /* 在指定NUMA节点中分配页面 */
 			page = alloc_pages_node(node, alloc_mask, 0);
 
 		if (unlikely(!page)) {
@@ -1817,6 +1859,7 @@ static void *__vmalloc_area_node(struct vm_struct *area, gfp_t gfp_mask,
 			area->nr_pages = i;
 			goto fail;
 		}
+		/* 记录下分配的页面描述符 */
 		area->pages[i] = page;
 		if (gfpflags_allow_blocking(gfp_mask))
 			cond_resched();
@@ -1829,15 +1872,16 @@ static void *__vmalloc_area_node(struct vm_struct *area, gfp_t gfp_mask,
 	 * 现在已经得到了一个连续的线性地址空间，并且分配了一组非连续的页框来映射
 	 * 这些地址。需要修改内核页表项，将二者对应起来。这是map_vm_area的工作。
 	 */
+	 /* 进行虚实地址映射 */
 	if (map_vm_area(area, prot, pages))
 		goto fail;
 	return area->addr;
-
+/* 分配物理内存失败，或者虚实映射失败 */
 fail:
 	warn_alloc(gfp_mask,
 			  "vmalloc: allocation failure, allocated %ld of %ld bytes",
 			  (area->nr_pages*PAGE_SIZE), area->size);
-	/* 没有分配到合适的页面，释放地址空间并返回NULL */
+    /* 释放已经分配的页面并解除虚实映射 */
 	vfree(area->addr);
 	return NULL;
 }
@@ -1892,7 +1936,7 @@ vmalloc分配的大小必须是页面的整数倍，这里将长度对齐到页面
 */
 	if (!area)
 		goto fail;
-
+    /* 这里分配物理页面，并进行pte页表项映射 */
 	addr = __vmalloc_area_node(area, gfp_mask, prot, node);
 	if (!addr)
 		return NULL;
@@ -1909,8 +1953,9 @@ vmalloc分配的大小必须是页面的整数倍，这里将长度对齐到页面
 	 * __get_vm_area_node() contains a reference to the virtual address of
 	 * the vmalloc'ed block.
 	 */
+	 /* 调试代码，内核内存泄漏检测 */
 	kmemleak_alloc(addr, real_size, 2, gfp_mask);
-
+    /* 返回映射的虚拟地址 */
 	return addr;
 
 fail:

@@ -41,6 +41,17 @@
 #include <trace/events/pagemap.h>
 
 /* How many pages do we try to swap or page in/out together? */
+/*
+page-cluster 参数所代表的整数值当 2作为 x的乘幂时标识了
+内核一次性读入的页面数目(实际的交换预读窗口)。
+
+该参数的默认值对于内存小于 16MB的系统为 2，
+对于内存更大的系统为3， 
+这些取值在多数情况下都可看作是合理的设置。 
+
+该参数可用于改进页面 I/O效率， 但如果该参数被不当指定的话， 
+系统可能会面临过度的I/O和内存消耗
+*/
 int page_cluster;
 
 /**

@@ -29,39 +29,26 @@ struct notifier_block;		/* in notifier.h */
 #define IOREMAP_MAX_ORDER	(7 + PAGE_SHIFT)	/* 128 pages */
 #endif
 
+/*结构表示vmalloc区中每一个分配出来的虚拟内存块*/
 struct vm_struct {
-/*
-使得内核可以将vmalloc区域中的所有子区域保存在一个单链表上
-*/
-	struct vm_struct	*next;
-/*
-	定义了分配的子区域在虚拟地址空间中的起始地址
-*/
-	void			*addr;
-/*
-	表示该子区域的长度
-*/
-	unsigned long		size;
-/*
-	存储了与该内存区关联的标志集合，它只用于指定内存区类型
-	VM_MALLOC指定由vmalloc产生的子区域；
-	VM_MAP用于表示将现存pages集合映射到连续的虚拟地址空间中；
-	VM_IOREMAP表示将几乎随机的物理内存区域映射到vmalloc区域中，这是一个特定于体系结构的操作
-*/
-	unsigned long		flags;
-/*
-	pages是一个指针，指向page指针的数组，
-	每个数组成员都表示一个映射到虚拟地址空间中物理内存页得page实例  
-*/
-	struct page		**pages;
-/*
-	指定pages中数组项的数目，即涉及的内存页数目
-*/
-	unsigned int		nr_pages;
+	struct vm_struct	*next;	/* 用来把vmalloc区中所有已分配的
+					 * struct vm_struct对象构成链表
+					 * 该链表的表头为全局变量
+					 * struct vm_struct *vmlist
+					 */
+	void			*addr;/*对应虚拟内存块的起始地址,应该时页对齐*/
+	unsigned long		size; /*虚拟内存块的大小,总是页面大小的整数倍*/
+	unsigned long		flags;/* 当前虚拟内存块映射特性的标志
+				       * VM_ALLOC标志表示当前虚拟内存块是给vmalloc函数使用，映射的是实际物理内存(RAM);VM_IOREMAP表示当前虚拟内存块是给ioremap相关函数使用，映射的是I/O空间地址，也就是设备内存*/
+	struct page		**pages;/*是被映射的物理内存页面所形成的数组收地址*/
+	unsigned int		nr_pages;/*映射的物理页数量*/
 /*
 	phys_addr仅当用ioremap映射了由物理地址描述的物理内存区域时才需要
 */
 	phys_addr_t		phys_addr;
+	/**
+     * 调用vmalloc函数的上层函数地址。调试用。
+     */
 	const void		*caller;
 };
 
@@ -92,6 +79,7 @@ static inline void vmalloc_init(void)
 }
 #endif
 
+/*内核在调用伙伴系统获取物理内存页时，使用了GFP_KERNEL|GFP_HIGHMEM标志，GFP_KERNEL意味着vmalloc函数在执行过程中可能睡眠,因此不能在中断上下文中调用*/
 extern void *vmalloc(unsigned long size);
 extern void *vzalloc(unsigned long size);
 extern void *vmalloc_user(unsigned long size);
@@ -105,7 +93,7 @@ extern void *__vmalloc_node_range(unsigned long size, unsigned long align,
 			unsigned long start, unsigned long end, gfp_t gfp_mask,
 			pgprot_t prot, unsigned long vm_flags, int node,
 			const void *caller);
-
+/*释放vmalloc分配的虚拟地址块*/
 extern void vfree(const void *addr);
 extern void vfree_atomic(const void *addr);
 

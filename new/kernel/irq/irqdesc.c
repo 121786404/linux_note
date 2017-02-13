@@ -618,6 +618,15 @@ EXPORT_SYMBOL_GPL(generic_handle_irq);
  *
  * Returns:	0 on success, or -EINVAL if conversion has failed
  */
+ 
+/* 当有外部中断发生时，预先设计好的处理器硬件逻辑会把当前任务上下文寄存器保存在一个
+ * 特定的中断栈中，屏蔽掉处理器响应外部中断的能力，在结束部分，
+ * 硬件逻辑根据中断向量表中的外部中断对应的入口地址，开始调用由操作系统提供的通用中断处理函数
+ * 通用中断处理函数调用此函数, 中断处理的绝大部分流程都浓缩在了这个Ｃ函数中，
+ * 当这个函数返回时,通用中断处理函数余下的部分完成中断现场恢复的工作，标志者中断处理流程的结束, 被中断的任务开始继续执行
+ * @irq:通用中断处理函数从ＰＩＣ中得到的软件中断号
+ * @regs是保存下来的被中断任务的执行现场*/
+ 
 int __handle_domain_irq(struct irq_domain *domain, unsigned int hwirq,
 			bool lookup, struct pt_regs *regs)
 {
@@ -625,6 +634,8 @@ int __handle_domain_irq(struct irq_domain *domain, unsigned int hwirq,
 	 * 将当前中断现场保存下来
 	 * 这样其他代码就可以通过get_irq_regs函数获得中断现场了。
 	 */
+	 
+	/*set_irq_regs将一个per_CPU型的指针变量__irq_regs保存到old_regs中，然后将__irq_regs赋予了一个新值regs,这样中断处理过程中，系统中每个ｃｐｕ都可以通过__irq_regs来访问系统保存的中断现场*/
 	struct pt_regs *old_regs = set_irq_regs(regs);
 	unsigned int irq = hwirq;
 	int ret = 0;
@@ -632,6 +643,8 @@ int __handle_domain_irq(struct irq_domain *domain, unsigned int hwirq,
 	/**
 	 * 处理抢占计数，rcu等等
 	 */
+	 
+	/*HARDIRQ部分的开始,告诉系统进入冲断处理的上半部分，与irq_enter对应的是irq_exit,irq_enter会更新系统中的一些统计量，同时会把当前栈中的preemtp_count变量加上HARDIRQ_OFFSET来标识一个HARDIRQ中上下文*/
 	irq_enter();
 
 #ifdef CONFIG_IRQ_DOMAIN
@@ -648,15 +661,19 @@ int __handle_domain_irq(struct irq_domain *domain, unsigned int hwirq,
 		ret = -EINVAL;
 	} else {
 		//进行通常的中断处理
+		
+		/*负责对当前发生的中断进行实际的处理*/
 		generic_handle_irq(irq);
 	}
 
 	//处理rcu，抢占计数等等，也处理软中断
+	/*SOFTIRQ在此函数中完成,中断处理的下班部分在此函数完成*/
 	irq_exit();
 	/**
 	 * 退出中断前，恢复上一个pt_regs指针。
 	 * 上一次中断的处理代码调用get_irq_regs才正常。
 	 */
+	/*函数结束调用set_irq_regs来恢复__irq_regs，__irq_regs一般用来在调试或者诊断时打印当前栈的信息，也可以通过这些保存的中断现场寄存器判断出被中断的进程当时运行在用户态还是内核态*/
 	set_irq_regs(old_regs);
 	return ret;
 }

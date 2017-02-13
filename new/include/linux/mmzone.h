@@ -420,10 +420,14 @@ enum zone_type {
 	 * to do DMA to all of addressable memory (ZONE_NORMAL). Then we
 	 * carve out the portion of memory that is needed for these devices.
 	 * The range is arch specific.
+	 * 当有些设备不能使用所有的ZONE_NORMAL区域中的内存空间作DMA访问时，
+	 * 就可以使用ZONE_DMA所表示的内存区域，于是我么把这部分空间划分出来
+	 * 专门用作DMA访问的内存空间。
+	 * 该区域的空间访问是处理器体系结构相关的
 	 *
-	 * Some examples
+	 * Some examples(一些例子)
 	 *
-	 * Architecture		Limit
+	 * Architecture(体系架构) Limit(限制)
 	 * ---------------------------
 	 * parisc, ia64, sparc	<4G
 	 * s390			<2G
@@ -449,6 +453,9 @@ ARM所有地址都可以进行DMA，所以该值可以很大，
 	 * x86_64 needs two ZONE_DMAs because it supports devices that are
 	 * only able to do DMA to the lower 16M but also 32 bit devices that
 	 * can only do DMA areas below 4G.
+	 * X86_64架构因为除了支持只能使用低于16MB空间的DMA设备外，
+	 * 还支持可以访问4GB以下空间的32位DMA设备，所以需要两个ZONE_DMA
+	 * 内存区域
 	 */
 /*
 标记了使用32位地址字可寻址, 适合DMA的内存域. 显然, 
@@ -466,6 +473,8 @@ ARM所有地址都可以进行DMA，所以该值可以很大，
 	 * Normal addressable memory is in ZONE_NORMAL. DMA operations can be
 	 * performed on pages in ZONE_NORMAL if the DMA devices support
 	 * transfers to all addressable memory.
+	 * 常规内存访问区域由ZONE_NORMAL标识，如果DMA设备可以在次区域
+	 * 作内存访问，也可以使用本区域
 	 */
 /*
 标记了可直接映射到内存段的普通内存域. 
@@ -487,6 +496,11 @@ ARM所有地址都可以进行DMA，所以该值可以很大，
 	 * 900MB. The kernel will set up special mappings (page
 	 * table entries on i386) for each page that the kernel needs to
 	 * access.
+	 * 高端内存区域用ZONE_HIGHMEM标识，该区域无法从内核虚拟地址空间直接
+	 * 做线性映射，所以为访问该区域必须经内核作特殊的页映射，比如在i386
+	 * 体系上，内核空间1GB，除去其他一些开销，能对物理地址进行线性映射的
+	 * 空间大约只有896MB，此时高于896MB以上的物理地址空间就叫ZONE_HIGHMEM
+	 * 区域
 	 */
 /*
 标记了超出内核虚拟地址空间的物理内存段, 
@@ -921,6 +935,7 @@ struct zonelist {
 
 #ifndef CONFIG_DISCONTIGMEM
 /* The array of struct pages - for discontigmem use pgdat->lmem_map */
+/* 全局变量，存放所有物理页page对象的指针*/
 extern struct page *mem_map;
 #endif
 

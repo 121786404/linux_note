@@ -1976,11 +1976,15 @@ void __init inode_init(void)
 		INIT_HLIST_HEAD(&inode_hashtable[loop]);
 }
 
+/* 为新生成的inode初始化其中的i_fop和i_rdev成员；
+ * inode的文件函数指针i_fop被替换，从此inode不再是普通的文件inode，而是分配可以代表字符设备、块设备、fifo和socket的特殊inode
+ * @i_rdev:表示该inode对应设备的设备号
+ */
 void init_special_inode(struct inode *inode, umode_t mode, dev_t rdev)
 {
 	inode->i_mode = mode;
 	if (S_ISCHR(mode)) {
-		inode->i_fop = &def_chr_fops;
+		inode->i_fop = &def_chr_fops;/*def_chr_fops定义了一个open操作*/
 		inode->i_rdev = rdev;
 	} else if (S_ISBLK(mode)) {
 		inode->i_fop = &def_blk_fops;

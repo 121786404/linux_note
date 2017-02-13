@@ -1439,6 +1439,7 @@ static inline int mlock_future_check(struct mm_struct *mm,
 /*
  * The caller must hold down_write(&current->mm->mmap_sem).
  */
+/*完成后续的内存映射,根据用户空间进程调用mmap api时传入的参数构造一个struct vm_area_struct对象的实例,然后调用file->f_op->mmap()*/
 unsigned long do_mmap(struct file *file, unsigned long addr,
 			unsigned long len, unsigned long prot,
 			unsigned long flags, vm_flags_t vm_flags,
@@ -1783,6 +1784,7 @@ static inline int accountable_mapping(struct file *file, vm_flags_t vm_flags)
 	return (vm_flags & (VM_NORESERVE | VM_SHARED | VM_WRITE)) == VM_WRITE;
 }
 
+/*实际的映射在此函数中完成,当该函数被调用时,参数addr已经指向了一块空闲的待映射的MMAP区域中的起始地址*/
 unsigned long mmap_region(struct file *file, unsigned long addr,
 		unsigned long len, vm_flags_t vm_flags, unsigned long pgoff)
 {

@@ -7,6 +7,12 @@
 #include <linux/linkage.h>
 #include <linux/topology.h>
 
+
+/* 
+ * 以'__'打头的GFP掩码只限于在内存管理组件内部的代码使用，
+ * gfp_mask掩码以"GFP_"的形式出现
+ */
+
 struct vm_area_struct;
 
 /*
@@ -408,7 +414,7 @@ static inline bool gfpflags_allow_blocking(const gfp_t gfp_flags)
 }
 
 #ifdef CONFIG_HIGHMEM
-#define OPT_ZONE_HIGHMEM ZONE_HIGHMEM
+#define OPT_ZONE_HIGHMEM ZONE_HIGHMEM/*在ZONE_HIGHMEM标识的内存区域中查找空闲页*/
 #else
 #define OPT_ZONE_HIGHMEM ZONE_NORMAL
 #endif
@@ -497,6 +503,9 @@ static inline bool gfpflags_allow_blocking(const gfp_t gfp_flags)
 	| 1 << (___GFP_MOVABLE | ___GFP_DMA32 | ___GFP_DMA | ___GFP_HIGHMEM)  \
 )
 
+/* 根据gfp_mask制定在囊二域中分配物理页面
+ * 如果没有在gfp_mask中明确制定__GFP_DMA或者__GFP_HIGHMEM,那么默认在ZONE_NORMAL中分配物理页
+ * 如果ZONE_NORMAL中现有空闲页不足以满足当前的分配，那么页分配器会到ZONE_DMA域中查找空闲页，而不会到ZONE_HIGHMEM中查找*/
 static inline enum zone_type gfp_zone(gfp_t flags)
 {
 	enum zone_type z;
@@ -597,6 +606,7 @@ extern struct page *alloc_pages_vma(gfp_t gfp_mask, int order,
 #define alloc_hugepage_vma(gfp_mask, vma, addr, order)	\
 	alloc_pages_vma(gfp_mask, order, vma, addr, numa_node_id(), true)
 #else
+/*页面分配器,分配2的order次方个连续的物理页面并返回起始页的 page实例*/
 #define alloc_pages(gfp_mask, order) \
 		alloc_pages_node(numa_node_id(), gfp_mask, order)
 #define alloc_pages_vma(gfp_mask, order, vma, addr, node, false)\
@@ -604,12 +614,15 @@ extern struct page *alloc_pages_vma(gfp_t gfp_mask, int order,
 #define alloc_hugepage_vma(gfp_mask, vma, addr, order)	\
 	alloc_pages(gfp_mask, order)
 #endif
+
+/*只用于分配一个物理页面，alloc_page()是order=0时alloc_pages的简化形式，
+只分配单个页面,如果系统没有足够的空间满足alloc_page的分配，函数将返回NULL*/
 #define alloc_page(gfp_mask) alloc_pages(gfp_mask, 0)
 #define alloc_page_vma(gfp_mask, vma, addr)			\
 	alloc_pages_vma(gfp_mask, 0, vma, addr, numa_node_id(), false)
 #define alloc_page_vma_node(gfp_mask, vma, addr, node)		\
 	alloc_pages_vma(gfp_mask, 0, vma, addr, node, false)
-
+/*该函数不能在高端内存分配页面*/
 extern unsigned long __get_free_pages(gfp_t gfp_mask, unsigned int order);
 extern unsigned long get_zeroed_page(gfp_t gfp_mask);
 
@@ -617,9 +630,12 @@ void *alloc_pages_exact(size_t size, gfp_t gfp_mask);
 void free_pages_exact(void *virt, size_t size);
 void * __meminit alloc_pages_exact_nid(int nid, size_t size, gfp_t gfp_mask);
 
+/* 如果只想分配单个物理页面可以用这个函数，他是order=0时
+ * __get_free_pages的简化形式*/
 #define __get_free_page(gfp_mask) \
 		__get_free_pages((gfp_mask), 0)
 
+/*用于从ZONE_DMA区域中分配物理页，返回页面所在线性地址*/
 #define __get_dma_pages(gfp_mask, order) \
 		__get_free_pages((gfp_mask) | GFP_DMA, (order))
 

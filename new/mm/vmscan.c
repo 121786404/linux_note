@@ -163,6 +163,25 @@ struct scan_control {
 /*
  * From 0 .. 100.  Higher means more swappy.
  */
+/*
+ swappiness 参数指示了 VM子系统在通过解除页面映射
+ 并将其换出的方式来回收页面与只回收未被
+ 任何进程映射的页面之间的相对优先选择。
+
+ 实际的决策依赖于一个二元开关，
+ 当映射至进程页表中的内存百分比的一半取值与 
+ swappiness取值之和超过 100时激活该开关。 
+
+ 系统在决策过程中进一步利用了某个危机因子，
+ 该因子在每次需要重试页面替换操作时都增加 2倍。
+ 如果系统难以定位可回收的未映射页面，
+ 则 VM子系统执行反向工作过程并开始对匿名内存进行页换出。
+ 如果不想对匿名内存进行页换出，
+ 则可以通过为 swappiness参数赋予较低取值来表达。
+
+ 如果 kswapd正在使用大量 CPU资源或者系统正在 iowait状态中耗费时间，
+ 则可以增加 swappiness参数值可以提高系统的整体性能
+*/
 int vm_swappiness = 60;
 /*
  * The total number of pages which are beyond the high watermark within all

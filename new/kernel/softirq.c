@@ -237,6 +237,7 @@ static inline void lockdep_softirq_end(bool in_hardirq)
 static inline bool lockdep_softirq_start(void) { return false; }
 static inline void lockdep_softirq_end(bool in_hardirq) { }
 #endif
+/*函数的核心思想是:从CPU本地的_softirq_pending的最低位开始,依次往高位扫描,如果发现某位为1,说明对应该位有个等待中的softirq需要处理,那么就调用soft_vec数组中对应项的action函数,这个过程会一直持续下去,知道__softirq_pending为0*/
 
 asmlinkage __visible void __softirq_entry __do_softirq(void)
 {
@@ -333,6 +334,7 @@ asmlinkage __visible void do_softirq(void)
 /*
  * Enter an interrupt context.
  */
+/*HARDIRQ部分的开始,告诉系统进入冲断处理的上半部分，与irq_enter对应的是irq_exit,irq_enter会更新系统中的一些统计量，同时会把当前栈中的preemtp_count变量加上HARDIRQ_OFFSET来标识一个HARDIRQ中上下文*/
 void irq_enter(void)
 {
 	rcu_irq_enter();
@@ -348,7 +350,7 @@ void irq_enter(void)
 
 	__irq_enter();
 }
-
+/*invoke_softirq是真正处理SOFTIRQ部分的函数*/
 static inline void invoke_softirq(void)
 {
 	if (ksoftirqd_running())
@@ -391,6 +393,7 @@ static inline void tick_irq_exit(void)
 /*
  * Exit an interrupt context. Process softirqs if needed and possible:
  */
+ /*中断下半部SOFTIRQ*/
 void irq_exit(void)
 {
 #ifndef __ARCH_IRQ_EXIT_IRQS_DISABLED
@@ -443,7 +446,7 @@ void __raise_softirq_irqoff(unsigned int nr)
 	trace_softirq_raise(nr);
 	or_softirq_pending(1UL << nr);
 }
-
+/*用来给TASKLET_SOFTIRQ和HI_SOFTIRQ安装对应的执行函数*/
 void open_softirq(int nr, void (*action)(struct softirq_action *))
 {
 	softirq_vec[nr].action = action;
@@ -451,10 +454,11 @@ void open_softirq(int nr, void (*action)(struct softirq_action *))
 
 /*
  * Tasklets
+ * tasklet_vec的声明
  */
 struct tasklet_head {
-	struct tasklet_struct *head;
-	struct tasklet_struct **tail;
+	struct tasklet_struct *head;	/*head总是指向tasklet对象链表的第一个节点*/
+	struct tasklet_struct **tail;	/*这是个指向tasklet对象指针的指针,tail总是保存tasklet链表最后一个节点所在tasklet对象中next成员的地址*/
 };
 
 static DEFINE_PER_CPU(struct tasklet_head, tasklet_vec);
@@ -496,6 +500,7 @@ void __tasklet_hi_schedule_first(struct tasklet_struct *t)
 }
 EXPORT_SYMBOL(__tasklet_hi_schedule_first);
 
+/*tasklet执行函数*/
 static __latent_entropy void tasklet_action(struct softirq_action *a)
 {
 	struct tasklet_struct *list;
@@ -532,6 +537,7 @@ static __latent_entropy void tasklet_action(struct softirq_action *a)
 	}
 }
 
+/*tasklet_hi_action执行函数*/
 static __latent_entropy void tasklet_hi_action(struct softirq_action *a)
 {
 	struct tasklet_struct *list;
@@ -568,6 +574,8 @@ static __latent_entropy void tasklet_hi_action(struct softirq_action *a)
 	}
 }
 
+
+/*动态初始化tasklet对象*/
 void tasklet_init(struct tasklet_struct *t,
 		  void (*func)(unsigned long), unsigned long data)
 {
@@ -648,6 +656,7 @@ EXPORT_SYMBOL_GPL(tasklet_hrtimer_init);
 /**
  * 初始化软中断
  */
+/*系统初始化期间调用该函数为TASKLET_SOFTIRQ和HI_SOFTIRQ安装了执行函数*/
 void __init softirq_init(void)
 {
 	int cpu;
@@ -661,6 +670,7 @@ void __init softirq_init(void)
 	}
 
 	//注册tasklet软中断
+	/*用来给TASKLET_SOFTIRQ和HI_SOFTIRQ安装对应的执行函数*/
 	open_softirq(TASKLET_SOFTIRQ, tasklet_action);
 	open_softirq(HI_SOFTIRQ, tasklet_hi_action);
 }

@@ -50,9 +50,10 @@ extern u64 uevent_seqnum;
  * kobject_uevent_env(kobj, KOBJ_CHANGE, env) with additional event
  * specific variables added to the event environment.
  */
+/*枚举型变量,定义了kset对象的一些状态变化*/
 enum kobject_action {
-	KOBJ_ADD,
-	KOBJ_REMOVE,
+	KOBJ_ADD,	/*表明将向系统添加一个kset对象*/
+	KOBJ_REMOVE,	/*从系统删除一个kset对象*/
 	KOBJ_CHANGE,
 	KOBJ_MOVE,
 	KOBJ_ONLINE,
@@ -136,10 +137,11 @@ struct kobject {
 */
 	unsigned int state_add_uevent_sent:1;
 	unsigned int state_remove_uevent_sent:1;
-	/*
-    如果该字段为1，则表示忽略所有上报的uevent事件
-	*/
-	unsigned int uevent_suppress:1;
+
+	/*如果该kobject对象隶属于某一个kset,那么它的状态变化可以导致其所在的kset对象向
+	 *用户空间发送event消息,成员uevent_suppress用来表示当该kobject状态发生变化时,
+	 *是否让其所在的kset向用户空间发送event消息,值1表示不让kset发送这种event消息*/
+	unsigned int uevent_suppress:1;	
 };
 
 extern __printf(2, 3)
@@ -153,15 +155,20 @@ static inline const char *kobject_name(const struct kobject *kobj)
 	return kobj->name;
 }
 
+/*kobject初始化函数,设置 kobject 引用计数为 1*/
 extern void kobject_init(struct kobject *kobj, struct kobj_type *ktype);
 extern __printf(3, 4) __must_check
+/*一是建立kobject对象间的层次关系,二是在sysfs文件系统中建立一个目录,将一个kobject对象通过
+kobject_add函数调用加入系统前,kobject对象必须已经初始化*/
 int kobject_add(struct kobject *kobj, struct kobject *parent,
 		const char *fmt, ...);
 extern __printf(4, 5) __must_check
+/*kobject注册函数，该函数只是kobject_init和kobject_add_varg的简单组合*/
 int kobject_init_and_add(struct kobject *kobj,
 			 struct kobj_type *ktype, struct kobject *parent,
 			 const char *fmt, ...);
 
+/*从linux设备曾测中(hierarchy)中删除kobj对象*/
 extern void kobject_del(struct kobject *kobj);
 
 extern struct kobject * __must_check kobject_create(void);
@@ -171,6 +178,7 @@ extern struct kobject * __must_check kobject_create_and_add(const char *name,
 extern int __must_check kobject_rename(struct kobject *, const char *new_name);
 extern int __must_check kobject_move(struct kobject *, struct kobject *);
 
+/*增加或减少kobject的引用计数*/
 extern struct kobject *kobject_get(struct kobject *kobj);
 extern void kobject_put(struct kobject *kobj);
 
@@ -220,7 +228,12 @@ struct kobj_uevent_env {
 	int buflen;
 };
 
+/*对热插拔事件的控制,定义了一组函数指针,当kset中的某些kobject对象发生状态变化需要
+ *通知用户空间时,调用其中的函数来完成*/
 struct kset_uevent_ops {
+	/*一个kset对象状态的变化,将会首先调用隶属于该kset对象的uevent_ops操作集中的filter
+	 *函数,决定kset对象当前状态的改变是否要通知到用户层,如果uevent_ops->filter返回0,
+	 *将不再通知用户层*/
 	int (* const filter)(struct kset *kset, struct kobject *kobj);
 	const char *(* const name)(struct kset *kset, struct kobject *kobj);
 	int (* const uevent)(struct kset *kset, struct kobject *kobj,
@@ -256,10 +269,16 @@ struct sock;
  * can add new environment variables, or filter out the uevents if so
  * desired.
  */
+/*kset可以任务是一组kobject的集合,是kobject的容器,kset本身也是一个内核对象,所以需要内嵌
+ *一个kobject对象*/
+/*kset对象与单个的kobject对象不一样的地方在于,将一个kset对象向系统注册时,如果linux内核
+ *编译时启用了CONFIG_HOTPLUG,那么需要将这一事件通知用户空间,这个过程有kobject_uevent完成,
+ *如果一个kobject对象不属于任一kset,那么这个孤立的kobject对象将无法通过uevent机制向用户
+ *空间发送event消息*/
 struct kset {
 /* 用于保存该kset下所有的kobject的链表 */
 	struct list_head list;
-	spinlock_t list_lock;
+	spinlock_t list_lock;	/*对kset上的list链表进行访问操作时用来作为互斥保护使用的自旋锁*/
 	/* 该kset自己的kobject（kset是一个特殊的kobject，也会在sysfs中以目录的形式体现） */
 	struct kobject kobj;
 	/*
@@ -271,9 +290,15 @@ struct kset {
 	const struct kset_uevent_ops *uevent_ops;
 };
 
+/*用来初始化一个kset对象*/
 extern void kset_init(struct kset *kset);
+/*用来初始化并向系统注册一个kset对象*/
 extern int __must_check kset_register(struct kset *kset);
+/*用来将k指向的kset对象从系统中注销,完成的是kset_register的反向操作*/
 extern void kset_unregister(struct kset *kset);
+/*主要作用是动态产生一kset对象然后将其加入到sysfs文件系统中,参数name是创建的kset对象的名,
+ *uevent_ops是新kset对象上用来处理用户空间event消息的操作集,parent_kobj是kset对象的上层
+ *(父级)的内核对象指针*/
 extern struct kset * __must_check kset_create_and_add(const char *name,
 						const struct kset_uevent_ops *u,
 						struct kobject *parent_kobj);

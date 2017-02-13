@@ -605,6 +605,8 @@ init=/linuxrc earlyprintk console=ttyAMA0,115200 root=/dev/mmcblk0 rw rootwait
 	// set "nr_cpu_ids" according to the last bit in possible mask
 	setup_nr_cpu_ids();
     // per cpu memory allocator
+	/* 完成per_CPU变量副本的生成，
+	 * 而且会对per-CPU变量的动态分配机制进行初始化*/
 	setup_per_cpu_areas();
 	boot_cpu_state_init();
 	smp_prepare_boot_cpu();	/* arch-specific boot-cpu hooks */

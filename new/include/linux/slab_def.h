@@ -10,6 +10,7 @@
 /**
  * slab分配器描述符
  */
+/*slab分配器,管理其下所有的struct slab*/
 struct kmem_cache {
 	/**
 	 * 为每个CPU缓存的临时对象，可以加快每个CPU上的分配过程
@@ -57,6 +58,8 @@ struct kmem_cache {
 
 	/* constructor func */
 	//分配slab时的回调
+	/*构造函数，当在kmem_cache中分配一个新的时，
+	用来初始化slab中的所有内存对象*/
 	void (*ctor)(void *obj);
 
 /* 4) cache creation/removal */

@@ -376,24 +376,33 @@ static inline irq_hw_number_t irqd_to_hwirq(struct irq_data *d)
  */
 struct irq_chip {
 	struct device	*parent_device;
+	/*该中断控制器的名字，显示在/proc/interrupts*/
 	const char	*name;
+	/*启动中断*/
 	unsigned int	(*irq_startup)(struct irq_data *data);
+		/*关闭中断*/
 	void		(*irq_shutdown)(struct irq_data *data);
+	/*使能中断*/
 	void		(*irq_enable)(struct irq_data *data);
+		/*禁止中断*/
 	void		(*irq_disable)(struct irq_data *data);
-
+        /* 中断应答函数，就是清除中观标志*/
 	void		(*irq_ack)(struct irq_data *data);
 	void		(*irq_mask)(struct irq_data *data);
+	/*屏蔽中断应答函数，一般用于电瓶触发方式，需要先屏蔽再应答*/
 	void		(*irq_mask_ack)(struct irq_data *data);
+	/*开启中断*/
 	void		(*irq_unmask)(struct irq_data *data);
 	void		(*irq_eoi)(struct irq_data *data);
 
 	int		(*irq_set_affinity)(struct irq_data *data, const struct cpumask *dest, bool force);
 	int		(*irq_retrigger)(struct irq_data *data);
+		/* 设置中断类型，其中包括设置GPIO口为中断输入*/
 	int		(*irq_set_type)(struct irq_data *data, unsigned int flow_type);
 	int		(*irq_set_wake)(struct irq_data *data, unsigned int on);
-
+    /*上锁函数*/
 	void		(*irq_bus_lock)(struct irq_data *data);
+		/*解锁*/
 	void		(*irq_bus_sync_unlock)(struct irq_data *data);
 
 	void		(*irq_cpu_online)(struct irq_data *data);

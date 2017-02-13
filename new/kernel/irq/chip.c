@@ -276,7 +276,8 @@ void irq_percpu_disable(struct irq_desc *desc, unsigned int cpu)
 		desc->irq_data.chip->irq_mask(&desc->irq_data);
 	cpumask_clear_cpu(cpu, desc->percpu_enabled);
 }
-
+/* mask_ack_irq利用PIC对象的irq_mask例程将该条中断线在PIC中屏蔽掉，
+ * 然后将IRQD_IRQ_MASKED位置１*/
 static inline void mask_ack_irq(struct irq_desc *desc)
 {
 	if (desc->irq_data.chip->irq_mask_ack)

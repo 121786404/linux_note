@@ -2123,9 +2123,19 @@ static bool set_on_slab_cache(struct kmem_cache *cachep,
  * cacheline.  This can be beneficial if you're counting cycles as closely
  * as davem.
  */
-/**
- * 建立专用高速缓存。
- */
+ /* 通过cache_cache来分配kmem_cache对象，函数如果成功执行，将返回指向kmem_cache的指针*cachep,否则返回NULL.新分配的kmem_cache对象最终会被加入到cache_chain所表示的链表中。
+    成功创建一个kmem_cache对象后，就可以通过kmem_cache_alloc在kmem_cache中分配对象了
+    @ctor:函数指针，称为kmem_cache的构造函数
+  * @name:用来表示kmem_cache的名称，该名称会导出到/proc/slabinfo文件中
+  * @size:用来指定在缓存中分配对象的大小
+  * @align:指定数据对齐时的偏移量，默认为0
+  * @flag:用于创建kmem_cache时的标志位掩码，０表示默认值，
+      驱动程序中常用的标志位有:
+      SLAG_HWCACHE_ALIGN:
+      SLAB_CACHE_DMA:
+      SLAB_PANIC
+    @ctor:函数指针，称为kmem_cache的构造函数
+  */
 int
 __kmem_cache_create (struct kmem_cache *cachep, unsigned long flags)
 {
@@ -4094,7 +4104,7 @@ void kfree(const void *objp)
 	if (unlikely(ZERO_OR_NULL_PTR(objp)))
 		return;
 	local_irq_save(flags);
-	kfree_debugcheck(objp);
+	kfree_debugcheck(objp);	/*获得objp所在页面对象指针page*/
 	/* 根据指针找到它所属的缓存对象 */
 	c = virt_to_cache(objp);
 	debug_check_no_locks_freed(objp, c->object_size);
