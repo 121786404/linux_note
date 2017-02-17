@@ -43,7 +43,7 @@ int do_truncate(struct dentry *dentry, loff_t length, unsigned int time_attrs,
 	/* Not pretty: "inode->i_size" shouldn't really be signed. But it is. */
 	if (length < 0)
 		return -EINVAL;
-
+    /* 设置要改变的属性，对于截断来说，最重要的是文件长度 */
 	newattrs.ia_size = length;
 	newattrs.ia_valid = ATTR_SIZE | time_attrs;
 	if (filp) {
@@ -57,7 +57,7 @@ int do_truncate(struct dentry *dentry, loff_t length, unsigned int time_attrs,
 		return ret;
 	if (ret)
 		newattrs.ia_valid |= ret | ATTR_FORCE;
-
+    /* 修改inode属性 */
 	inode_lock(dentry->d_inode);
 	/* Note any delegations or leases have already been broken: */
 	ret = notify_change(dentry, &newattrs, NULL);
@@ -74,20 +74,23 @@ long vfs_truncate(const struct path *path, loff_t length)
 	inode = path->dentry->d_inode;
 
 	/* For directories it's -EISDIR, for other non-regulars - -EINVAL */
+    /* 目录不能被截断 */ 
 	if (S_ISDIR(inode->i_mode))
 		return -EISDIR;
+    /* 不是普通文件不能被截断 */
 	if (!S_ISREG(inode->i_mode))
 		return -EINVAL;
-
+    /* 尝试获得文件系统的写权限 */
 	error = mnt_want_write(path->mnt);
 	if (error)
 		goto out;
-
+    /* 检查是否有文件写权限 */
 	error = inode_permission(inode, MAY_WRITE);
 	if (error)
 		goto mnt_drop_write_and_out;
 
 	error = -EPERM;
+    /* 文件设置了追加属性，则不能被截断 */ 
 	if (IS_APPEND(inode))
 		goto mnt_drop_write_and_out;
 
@@ -100,7 +103,7 @@ long vfs_truncate(const struct path *path, loff_t length)
 	error = PTR_ERR(upperdentry);
 	if (IS_ERR(upperdentry))
 		goto mnt_drop_write_and_out;
-
+    /* 得到inode的写权限 */
 	error = get_write_access(upperdentry->d_inode);
 	if (error)
 		goto mnt_drop_write_and_out;
@@ -109,13 +112,17 @@ long vfs_truncate(const struct path *path, loff_t length)
 	 * Make sure that there are no leases.  get_write_access() protects
 	 * against the truncate racing with a lease-granting setlease().
 	 */
+    /* 查看是否与文件lease锁相冲突 */
 	error = break_lease(inode, O_WRONLY);
 	if (error)
 		goto put_write_and_out;
-
+/*
+检查是否与文件锁相冲突 
+*/
 	error = locks_verify_truncate(inode, NULL, length);
 	if (!error)
 		error = security_path_truncate(path);
+    /* 如果没有错误，则进行真正的截断 */
 	if (!error)
 		error = do_truncate(path->dentry, length, 0, NULL);
 
@@ -133,11 +140,12 @@ static long do_sys_truncate(const char __user *pathname, loff_t length)
 	unsigned int lookup_flags = LOOKUP_FOLLOW;
 	struct path path;
 	int error;
-
+    /* 长度不能为负数 */
 	if (length < 0)	/* sorry, but loff_t says... */
 		return -EINVAL;
 
 retry:
+    /* 得到路径结构 */  
 	error = user_path_at(AT_FDCWD, pathname, lookup_flags, &path);
 	if (!error) {
 		error = vfs_truncate(&path, length);
@@ -170,33 +178,40 @@ static long do_sys_ftruncate(unsigned int fd, loff_t length, int small)
 	int error;
 
 	error = -EINVAL;
+    /* 长度检查 */ 
 	if (length < 0)
 		goto out;
 	error = -EBADF;
+    /* 从文件描述符得到file指针 */ 
 	f = fdget(fd);
 	if (!f.file)
 		goto out;
 
 	/* explicitly opened as large or we are on 64-bit box */
+    /* 如果文件是以O_LARGEFILE选项打开的，则将标志small置为0即假 */
 	if (f.file->f_flags & O_LARGEFILE)
 		small = 0;
 
 	dentry = f.file->f_path.dentry;
 	inode = dentry->d_inode;
 	error = -EINVAL;
+    /* 如果文件不是普通文件或文件不是写打开，则报错 */ 
 	if (!S_ISREG(inode->i_mode) || !(f.file->f_mode & FMODE_WRITE))
 		goto out_putf;
 
 	error = -EINVAL;
 	/* Cannot ftruncate over 2^31 bytes without large file support */
+    /* 如果文件不是以O_LARGEFILE打开的话，长度就不能超过MAX_NON_LFS */
 	if (small && length > MAX_NON_LFS)
 		goto out_putf;
 
 	error = -EPERM;
+    /* 如果是追加模式打开的，也不能进行截断 */ 
 	if (IS_APPEND(inode))
 		goto out_putf;
 
 	sb_start_write(inode->i_sb);
+    /* 检查是否有锁冲突 */
 	error = locks_verify_truncate(inode, f.file, length);
 	if (!error)
 		error = security_path_truncate(&f.file->f_path);
@@ -1038,16 +1053,23 @@ EXPORT_SYMBOL(filp_clone_open);
 long do_sys_open(int dfd, const char __user *filename, int flags, umode_t mode)
 {
 	struct open_flags op;
+	/* 
+	flags为用户层传递的参数, 内核会对flags进行合法性检查, 
+	并根据mode生成新的flags值赋给  lookup 
+	*/
 	int fd = build_open_flags(flags, mode, &op);
 	struct filename *tmp;
 
 	if (fd)
 		return fd;
 
+    /* 
+      将用户空间的文件名参数复制到内核空间 
+     */
 	tmp = getname(filename);
 	if (IS_ERR(tmp))
 		return PTR_ERR(tmp);
-	/*分配一个未使用的文件描述符*/
+	/* 未出错则申请 新的文件描述符 */
 	fd = get_unused_fd_flags(flags);
 	if (fd >= 0) {
 		struct file *f = do_filp_open(dfd, tmp, &op);
@@ -1055,7 +1077,9 @@ long do_sys_open(int dfd, const char __user *filename, int flags, umode_t mode)
 			put_unused_fd(fd);
 			fd = PTR_ERR(f);
 		} else {
+		    /* 产生文件打开的通知事件 */
 			fsnotify_open(f);
+			/* 将文件描述符fd与文件管理结构file对应起来, 即安装 */
 			fd_install(fd, f);
 		}
 	}

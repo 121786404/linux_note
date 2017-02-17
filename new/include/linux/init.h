@@ -39,6 +39,17 @@
 
 /* These are for everybody (although not all archs will actually
    discard it in modules) */
+/*
+不同的段代码有着不同的作用，比如初始化段的代码，
+当系统运行正常以后，这段代码就没有什么用了，
+聪明的做法就是回收这段代码占用的内存，
+让内核的代码占最少的内存。
+
+还有另外一个作用，比如同一段的代码都是编译在一起，
+让相关联的代码尽可能同在一片内存里，
+这样当CPU加载代码到缓存时，就可以一起命中，
+提高缓存的命中率，这样就大大提高代码的执行速度。
+*/
 #define __init		__section(.init.text) __cold notrace __latent_entropy
 #define __initdata	__section(.init.data)
 #define __initconst	__section(.init.rodata)

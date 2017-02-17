@@ -97,7 +97,9 @@ struct pid
 };
 
 extern struct pid init_struct_pid;
-
+/*
+pid的哈希表存储结构
+*/
 struct pid_link
 {
 	struct hlist_node node;

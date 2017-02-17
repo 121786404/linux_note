@@ -46,7 +46,10 @@ ret_fast_syscall:
 
 	/* perform architecture specific actions before user return */
 	arch_ret_to_user r1, lr
-
+/*
+__switch_to函数中已经恢复过一次当前线程的上下文了(struct cpu_context_save),
+接下来又调用restore_user_regs来恢复模式上下文(struct pt_regs).
+*/
 	restore_user_regs fast = 1, offset = S_OFF
  UNWIND(.fnend		)
 ENDPROC(ret_fast_syscall)
@@ -127,11 +130,20 @@ ENDPROC(ret_to_user)
 /*
  * This is how we return from a fork.
  */
+
 ENTRY(ret_from_fork)
 	bl	schedule_tail
+/*
+比较r5寄存器是否为空，如果不为空则表示为内核线程，则执行如下指令，        
+否则执行标号1处之后的指令调用ret_slow_syscall返回到用户态执行.
+*/
 	cmp	r5, #0
 	movne	r0, r4
 	badrne	lr, 1f
+/*
+retne r5：跳转到由r5目标寄存器指定的地址处。        
+r5寄存器在copy_thread函数中指定为内核线程的入口地址
+*/
 	retne	r5
 1:	get_thread_info tsk
 	b	ret_slow_syscall
@@ -147,15 +159,42 @@ ENTRY(vector_swi)
 #ifdef CONFIG_CPU_V7M
 	v7m_exception_entry
 #else
+/*
+这个栈帧大小正好是struct pt_regs的大小. struct pt_regs中保存的是　
+线程用户态的寄存器上下文(模式上下文).
+这里的sp已经是sp_svc了，也就是当前线程的内核栈了
+*/
 	sub	sp, sp, #PT_REGS_SIZE
+/*
+将r0-r12寄存器压入内核栈中
+*/
 	stmia	sp, {r0 - r12}			@ Calling r0 - r12
+/*
+将用户态的sp、lr压入内核栈中
+*/
  ARM(	add	r8, sp, #S_PC		)
+/*
+{sp, lr}^中的"^"表示这里的sp和lr是用户态的寄存器
+*/
  ARM(	stmdb	r8, {sp, lr}^		)	@ Calling sp, lr
  THUMB(	mov	r8, sp			)
  THUMB(	store_user_sp_lr r8, r10, S_SP	)	@ calling sp, lr
+/*
+sprs_svc中保存的是调用swi指令前的cpsr值，这里将它保存在寄存器r8中
+*/
 	mrs	r8, spsr			@ called from non-FIQ mode, so ok.
+/*
+lr中的值是swi指令的下一行，也就是系统调用的用户态返回地址。将其压入内核栈中
+*/
 	str	lr, [sp, #S_PC]			@ Save calling PC
+/*
+将调用swi指令前的cpsr值压入内核栈中
+*/
 	str	r8, [sp, #S_PSR]		@ Save CPSR
+/*
+将r0压入内核栈中
+这里r0会存两个位置，一个代表第一个参数，另一个代表返回值
+*/
 	str	r0, [sp, #S_OLD_R0]		@ Save OLD_R0
 #endif
 	zero_fp
@@ -200,7 +239,9 @@ ENTRY(vector_swi)
 #endif
 
 	uaccess_disable tbl
-
+/*
+会查询sys_call_table跳转表,这个表中存储的是一系列的函数指针,这些指针就是系统调用函数的指针.
+*/
 	adr	tbl, sys_call_table		@ load syscall table pointer
 
 #if defined(CONFIG_OABI_COMPAT)
@@ -226,7 +267,16 @@ local_restart:
 	bne	__sys_trace
 
 	cmp	scno, #NR_syscalls		@ check upper syscall limit
+/*
+这里先设置系统调用执行函数sys_xxx()的返回地址为ret_fast_syscall  
+这是设置的是当前线程lr_svc寄存器,当下次通过__switch_to恢复  
+当前线程的上下文(cpu_context)时首先调用ret_fast_syscall来恢复其用户态  
+的线程上下文(struct pt_regs).
+*/
 	badr	lr, ret_fast_syscall		@ return address
+/*
+以下就是根据系统调用号调用具体的执行函数。
+*/
 	ldrcc	pc, [tbl, scno, lsl #2]		@ call sys_* routine
 
 	add	r1, sp, #S_OFF

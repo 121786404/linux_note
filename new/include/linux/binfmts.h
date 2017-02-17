@@ -10,9 +10,13 @@
 
 /*
  * This structure is used to hold the arguments that are used when loading binaries.
- * 保存载入二进制文件的参数
+ 用来保存要要执行的文件相关的信息, 
+ 包括可执行程序的路径, 参数和环境变量的信息
  */
 struct linux_binprm {
+/*
+保存可执行文件的头128字节
+*/
 	char buf[BINPRM_BUF_SIZE];
 #ifdef CONFIG_MMU
 	struct vm_area_struct *vma;
@@ -22,6 +26,9 @@ struct linux_binprm {
 	struct page *page[MAX_ARG_PAGES];
 #endif
 	struct mm_struct *mm;
+/*
+	当前内存页最高地址
+*/
 	unsigned long p; /* current top of mem */
 	unsigned int
 		cred_prepared:1,/* true if creds already prepared (multiple
@@ -33,12 +40,20 @@ struct linux_binprm {
 	unsigned int taso:1;
 #endif
 	unsigned int recursion_depth; /* only for search_binary_handler() */
+	 /*  要执行的文件  */
 	struct file * file;
 	struct cred *cred;	/* new credentials */
 	int unsafe;		/* how unsafe this exec is (mask of LSM_UNSAFE_*) */
 	unsigned int per_clear;	/* bits to clear in current->personality */
+	/*  命令行参数和环境变量数目  */
 	int argc, envc;
+/*
+	要执行的文件的名称
+*/
 	const char * filename;	/* Name of binary as seen by procps */
+/*
+	要执行的文件的真实名称，通常和filename相同
+*/
 	const char * interp;	/* Name of the binary really executed. Most
 				   of the time same as filename, but could be
 				   different for binfmt_{misc,script} */
@@ -76,9 +91,18 @@ struct coredump_params {
 struct linux_binfmt {
 	struct list_head lh;
 	struct module *module;
-	int (*load_binary)(struct linux_binprm *);  /* 加载普通程序 */
-	int (*load_shlib)(struct file *);           /* 用于加载共享库 */
-	int (*core_dump)(struct coredump_params *cprm); /* 用于在程序出错的情况下输出内存转储*/
+/*
+	通过读存放在可执行文件中的信息为当前进程建立一个新的执行环境
+*/
+	int (*load_binary)(struct linux_binprm *);
+/*
+	用于动态的把一个共享库捆绑到一个已经在运行的进程, 这是由uselib()系统调用激活的
+*/
+	int (*load_shlib)(struct file *);
+/*
+    在名为core的文件中, 存放当前进程的执行上下文. 这个文件通常是在进程接收到一个缺省操作为”dump”的信号时被创建的, 其格式取决于被执行程序的可执行类型
+*/
+	int (*core_dump)(struct coredump_params *cprm); 
 	unsigned long min_coredump;	/* minimal dump size */
 };
 

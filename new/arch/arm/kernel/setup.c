@@ -599,6 +599,19 @@ u32 __cpu_logical_map[NR_CPUS] = { [0 ... NR_CPUS-1] = MPIDR_INVALID };
 
 /**
  * 设置boot阶段的主CPU
+ 这个函数主要作用是获取当前正在执行初始化的处理器ID。
+ smp_setup_processor_id()函数每次都要中断CPU去获取ID，这样效率比较低。
+ 在对称多处理器系统里，
+ 所有处理器只有在初始化阶段处理有主从之分，
+ 到系统初始化完成之后，大家是平等的关系，
+ 没有主从处理器之分了。在内核里所有以smp开头的函数都是
+ 处理对称多处理器相关内容的，对称多处理器与单处理器在
+ 操作系统里，主要区别是引导处理器与应用处理器，
+ 每个处理器不同的缓存，中断协作，锁的同步。
+ 因此，在内核初始化阶段需要区分，在与缓存同步数据需要处理，
+ 在中断方面需要多个处理协作执行，在多个进程之间要做同步和通讯。
+ 如果内核只是有单处理器系统，smp_setup_processor_id()函数是是空的，
+ 不必要做任保的处理。
  */
 void __init smp_setup_processor_id(void)
 {
@@ -707,6 +720,9 @@ static void __init setup_processor(void)
 	/**
 	 * 根据CPUID查找处理器类型
 	 * 还记得初始化过程中，汇编的查找过程么?
+	 * ead_cpuid_id从CP15的寄存器中读取CPU ID，
+	 * 后查找到CPU对应的proc_info_list结构体。      
+	 * 然后通过printk打印出CPU的相关信息。
 	 */
 	list = lookup_processor_type(read_cpuid_id());
 	if (!list) {//应该不可能找不到

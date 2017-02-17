@@ -2322,7 +2322,10 @@ static unsigned int get_rr_interval_rt(struct rq *rq, struct task_struct *task)
 		return 0;
 }
 /*
-RT，作用：实时线程
+采用提供 Roound-Robin算法或者FIFO算法调度实时进程
+具体调度策略由进程的task_struct->policy指定
+
+SCHED_FIFO, SCHED_RR
 */
 const struct sched_class rt_sched_class = {
 	.next			= &fair_sched_class,

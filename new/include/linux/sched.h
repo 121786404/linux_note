@@ -211,6 +211,42 @@ extern void proc_sched_set_task(struct task_struct *p);
 #define TASK_RUNNING		0
 
 /*
+Linux 内核提供了两种方法将进程置为睡眠状态。
+将进程置为睡眠状态的普通方法是
+将进程状态设置为 TASK_INTERRUPTIBLE 或 TASK_UNINTERRUPTIBLE 
+并调用调度程序的 schedule() 函数。这样会将进程从 CPU 运行队列中移除。
+
+如果进程处于可中断模式的睡眠状态
+（通过将其状态设置为 TASK_INTERRUPTIBLE），
+那么可以通过显式的唤醒呼叫（wakeup_process()）
+或需要处理的信号来唤醒它。
+
+但是，如果进程处于非可中断模式的睡眠状态
+（通过将其状态设置为 TASK_UNINTERRUPTIBLE），
+那么只能通过显式的唤醒呼叫将其唤醒。
+
+除非万不得已，否则我们建议您将进程置为可中断睡眠模式，
+而不是不可中断睡眠模式
+（比如说在设备 I/O 期间，处理信号非常困难时）。
+
+当处于可中断睡眠模式的任务接收到信号时，
+它需要处理该信号（除非它已被屏弊），
+离开之前正在处理的任务（此处需要清除代码），
+并将 -EINTR 返回给用户空间。
+再一次，检查这些返回代码和采取适当操作的工作将由程序员完成。
+
+因此，懒惰的程序员可能比较喜欢将进程置为
+不可中断模式的睡眠状态，因为信号不会唤醒这类任务。
+
+但需要注意的一种情况是，对不可中断睡眠模式的进程的
+唤醒呼叫可能会由于某些原因不会发生，这会使进程无法被终止，
+从而最终引发问题，因为惟一的解决方法就是重启系统。
+一方面，您需要考虑一些细节，
+因为不这样做会在内核端和用户端引入 bug。
+另一方面，您可能会生成永远不会停止的进程
+（被阻塞且无法终止的进程）。
+*/
+/*
 进程因为等待一些条件而被挂起（阻塞）而所处的状态。
 这些条件主要包括：硬中断、资源、一些信号……，
 一旦等待的条件成立，进程就会从该状态（阻塞）迅速转化成为就绪状态TASK_RUNNING
@@ -233,13 +269,21 @@ extern void proc_sched_set_task(struct task_struct *p);
 #define EXIT_DEAD		16
 
 /* 
-进程的执行被终止，但是其父进程还没有使用wait()等系统调用来获知它的终止信息，
+进程的执行被终止，但是其父进程还没有使用wait()
+等系统调用来获知它的终止信息，
 此时进程成为僵尸进程 
 */
 #define EXIT_ZOMBIE		32
 #define EXIT_TRACE		(EXIT_ZOMBIE | EXIT_DEAD)
 /* in tsk->state again */
 /* 进程的最终状态 */
+/*
+在设置了进程状态为TASK_DEAD后, 进程进入僵死状态, 
+进程已经无法被再次调度, 
+因为对应用程序或者用户空间来说此进程已经死了, 
+但是尽管进程已经不能再被调度，
+但系统还是保留了它的进程描述符，这样做是为了让系统有办法在进程终止后仍能获得它的信息。
+*/
 #define TASK_DEAD		64
 /* 用于在接收到致命信号时唤醒进程 */
 #define TASK_WAKEKILL		128
@@ -750,6 +794,7 @@ struct signal_struct {
 	struct sigpending	shared_pending;
 
 	/* thread group exit support */
+	/*  线程组终止代码  */
 	int			group_exit_code;
 	/* overloaded:
 	 * - notify group_exit_task when ->count is equal to notify_count
@@ -1592,11 +1637,16 @@ struct task_struct {
 	int on_rq;
     /*
         prio 动态优先级
-        static_prio  静态优先级，可以通过nice系统调用来进行修改
-        normal_prio 的值取决于静态优先级和调度策略
+        static_prio  用于保存静态优先级, 是进程启动时分配的优先级, 可以通过nice和sched_setscheduler系统调用来进行修改, 否则在进程运行期间会一直保持恒定
+        normal_prio 表示基于进程的静态优先级static_prio和调度策略计算出的优先级. 
+                          因此即使普通进程和实时进程具有相同的静态优先级, 
+                          其普通优先级也是不同的, 进程分叉(fork)时, 
+                          子进程会继承父进程的普通优先级
     */
 	int prio, static_prio, normal_prio;
-	/* 实时优先级 */
+	/* 
+	用于保存实时优先级, 实时进程的优先级用实时优先级rt_priority来表示 
+	*/
 	unsigned int rt_priority;
 	/* 调度类
           目前系統中,Scheduling Class的优先级顺序为StopTask > RealTime > Fair > IdleTask
@@ -1716,7 +1766,9 @@ struct task_struct {
 #endif
 #endif
 #ifdef CONFIG_COMPAT_BRK
-    /* 用来确定对随机堆内存的探测。参见LKML上的介绍 */
+    /* 用来确定对随机堆内存的探测。
+    http://lkml.indiana.edu/hypermail/linux/kernel/1104.1/00196.html
+    */
 	unsigned brk_randomized:1;
 #endif
 
@@ -1897,6 +1949,9 @@ struct task_struct {
     /* 进程审计*/
 	struct audit_context *audit_context;
 #ifdef CONFIG_AUDITSYSCALL
+/*
+进程审计 
+*/
 	kuid_t loginuid;
 	unsigned int sessionid;
 #endif
@@ -2479,6 +2534,9 @@ extern void thread_group_cputime_adjusted(struct task_struct *p, cputime_t *ut, 
  * Per process flags
  */
 #define PF_IDLE		0x00000002	/* I am an IDLE thread */
+/*
+进程正在被删除
+*/
 #define PF_EXITING	0x00000004	/* getting shut down */
 #define PF_EXITPIDONE	0x00000008	/* pi exit done on shut down */
 #define PF_VCPU		0x00000010	/* I'm a virtual CPU */
@@ -2867,13 +2925,31 @@ extern void ia64_set_curr_task(int cpu, struct task_struct *p);
 
 void yield(void);
 
-/*进 程的线程描述符和内核栈 
-对每个进程，Linux内核都把两个不同的数据结构紧凑的存放在一个单独为进程分配的内存区域中：
+/*
+将内核栈和进程控制块thread_info融合在一起, 组成一个联合体thread_union
+
+对每个进程，Linux内核都把两个不同的数据结构紧凑的存放在
+一个单独为进程分配的内存区域中：
 一个是内核态的进程堆栈stack
 另一个是紧挨着进程描述符的小数据结构thread_info，叫做线程描述符。
 这两个结构被紧凑的放在一个联合体中thread_union中,
-这块区域32位上通常是8K=8192（占两个页框），64位上通常是16K,其实地址必须是8192的整数倍。
-出于效率考虑，内核让这8K(或者16K)空间占据连续的两个页框并让第一个页框的起始地址是213的倍数。
+这块区域32位上通常是8K=8192（占两个页框），
+64位上通常是16K,其实地址必须是8192的整数倍。
+出于效率考虑，内核让这8K(或者16K)空间占据连续的两个页框
+并让第一个页框的起始地址是213的倍数。
+
+内核态的进程访问处于内核数据段的栈，
+这个栈不同于用户态的进程所用的栈。
+用户态进程所用的栈，是在进程线性地址空间中；
+而内核栈是当进程从用户空间进入内核空间时，
+特权级发生变化，需要切换堆栈，
+那么内核空间中使用的就是这个内核栈。
+
+因为内核控制路径使用很少的栈空间，
+所以只需要几千个字节的内核态堆栈。
+
+需要注意的是，内核态堆栈仅用于内核例程，
+Linux内核另外为中断提供了单独的硬中断栈和软中断栈
 
 由于内核栈的大小是有限的，就会有发生溢出的可能，
 比如调用嵌套太多、参数太多都会导致内核栈的使用超出设定的大小。
@@ -2892,6 +2968,11 @@ union thread_union {
 };
 
 #ifndef __HAVE_ARCH_KSTACK_END
+/*
+在内核的某个特定组建使用了较多的栈空间时, 
+内核栈会溢出到thread_info部分, 
+因此内核提供了kstack_end函数来判断给出的地址是否位于栈的有效部分
+*/
 static inline int kstack_end(void *addr)
 {
 	/* Reliable end of stack detection:
@@ -3189,6 +3270,10 @@ extern void mm_release(struct task_struct *, struct mm_struct *);
 extern int copy_thread_tls(unsigned long, unsigned long, unsigned long,
 			struct task_struct *, unsigned long);
 #else
+/*
+如果未定义CONFIG_HAVE_COPY_THREAD_TLS宏默认则使用copy_thread
+同时将定义copy_thread_tls为copy_thread
+*/
 extern int copy_thread(unsigned long, unsigned long, unsigned long,
 			struct task_struct *);
 
@@ -3414,8 +3499,16 @@ static inline unsigned long *end_of_stack(const struct task_struct *task)
 }
 
 #elif !defined(__HAVE_THREAD_FUNCTIONS)
-
+/*
+stack指向了内核栈的地址(其实也就是thread_info和thread_union的地址),
+因为联合体中stack和thread_info都在起始地址, 因此可以很方便的转型
+task_thread_info用于通过task_struct来查找其thread_info的信息, 
+只需要一次指针类型转换即可
+*/
 #define task_thread_info(task)	((struct thread_info *)(task)->stack)
+/*
+通过进程的task_struct来获取进程的内核栈
+*/
 #define task_stack_page(task)	((void *)(task)->stack)
 
 static inline void setup_thread_stack(struct task_struct *p, struct task_struct *org)

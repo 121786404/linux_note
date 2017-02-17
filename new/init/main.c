@@ -386,7 +386,14 @@ static __initdata DECLARE_COMPLETION(kthreadd_done);
 static noinline void __ref rest_init(void)
 {
 	int pid;
-
+/*
+启动Read-Copy Update,会调用num_online_cpus确认目前只有bootstrap处理器在运作,
+以及调用nr_context_switches确认在启动RCU前,没有进行过Contex-Switch,
+最后就是设定rcu_scheduler_active=1启动RCU机制. 
+RCU在多核心架构下,不同的行程要读取同一笔资料内容/结构,
+可以提供高效率的同步与正确性. 
+在这之后就可以使用 rcu_read_lock/rcu_read_unlock了
+*/
 	rcu_scheduler_starting();
 	/*
 	 * We need to spawn init first so that it obtains pid 1, however
@@ -431,14 +438,12 @@ static noinline void __ref rest_init(void)
       Linux系统中只有两个进程，即0号进程init_task和1号进程kernel_init，
       其中kernel_init进程也是刚刚被创建的。调用该函数后，
       1号进程kernel_init将会运行！
-      启动一次Linux Kernel Process的排成Context-Switch调度机制, 
-      从而使得kernel_init即1号进程获得处理机
      */
 	schedule_preempt_disabled();
 	/* Call into cpu_idle with preempt disabled */
-	//进入idle循环。
-    /* 调用cpu_idle()，0号线程进入idle函数的循环，
-        在该循环中会周期性地检查。*/
+/*
+    完成工作后, 调用cpu_idle_loop()使得idle进程进入自己的事件处理循环
+*/
 	cpu_startup_entry(CPUHP_ONLINE);
 }
 
@@ -1071,7 +1076,7 @@ static void __init do_basic_setup(void)
 	do_ctors();
 	//允许khelper workqueue生效，这个队列允许用户态为内核态执行一些辅助工作。
 	usermodehelper_enable();
-	//调用各子系统的初始化函数。
+	//执行介於Symbol __early_initcall_end与__initcall_end之间的函式呼叫
 	// call init functions in .initcall[0~9].init sections
 	do_initcalls();
 	random_int_secret_init();
@@ -1099,6 +1104,12 @@ void __init load_default_modules(void)
 static int run_init_process(const char *init_filename)
 {
 	argv_init[0] = init_filename;
+/*
+	1号进程调用do_execve运行可执行程序init，
+	并演变成用户态1号进程，即init进程
+	一号内核进程调用execve()从文件/etc/inittab中加载可执行程序init并执行，
+	这个过程并没有使用调用do_fork()，因此两个进程都是1号进程
+*/
 	return do_execve(getname_kernel(init_filename),
 		(const char __user *const __user *)argv_init,
 		(const char __user *const __user *)envp_init);
@@ -1145,7 +1156,10 @@ static inline void mark_readonly(void)
 #endif
 
 /**
- * 内核初始化，运行在线程上下文
+init进程应该是一个用户空间的进程, 但是这里却是通过
+kernel_thread的方式创建的, 哪岂不是式一个永远运行在内核态的
+内核线程么, 它是怎么演变为真正意义上用户空间的init进程的？
+ 
  1号kernel_init进程完成linux的各项配置(包括启动AP)后，
 就会在/sbin,/etc,/bin寻找init程序来运行。
 该init程序会替换kernel_init进程（注意：并不是创建一个新的进程来运行init程序，
@@ -1155,6 +1169,11 @@ static inline void mark_readonly(void)
 户进程init将根据/etc/inittab中提供的信息完成应用程序的初始化调用。
 然后init进程会执行/bin/sh产生shell界面提供给用户来与Linux系统进行交互
 调用init_post()创建用户模式1号进程
+
+主处理器上的idle由原始进程(pid=0)演变而来。
+从处理器上的idle由init进程fork得到，但是它们的pid都为0
+init进程为每个从处理器(运行队列)创建出一个idle进程(pid=0)，
+然后演化成/sbin/init。
 */
 static int __ref kernel_init(void *unused)
 {
@@ -1223,7 +1242,9 @@ static noinline void __init kernel_init_freeable(void)
 	wait_for_completion(&kthreadd_done);
 
 	/* Now the scheduler is fully set up and can do blocking allocations */
-    /* __GFP_BITS_MASK;设置bitmask, 使得init进程可以使用PM并且允许I/O阻塞操作 */
+    /*
+    __GFP_BITS_MASK;设置bitmask, 使得init进程可以使用PM并且允许I/O阻塞操作 
+    */
 	gfp_allowed_mask = __GFP_BITS_MASK;
 
 	/*
@@ -1235,28 +1256,28 @@ static noinline void __init kernel_init_freeable(void)
 	/*
 	 * init can run on any cpu.
 	 */
-	//允许进程运行在任何cpu中。
     /* 通过设置cpu_bit_mask, 可以限定task只能在特定的处理器上运行, 
           而initcurrent进程此时必然是init进程，
           设置其cpu_all_mask即使得init进程可以在任意的cpu上运行 */
 	set_cpus_allowed_ptr(current, cpu_all_mask);
 
-	//保存能执行cad的进程id,安全方面的考虑。
-    /* 设置到目前运行进程init的pid号给cad_pid
-        (cad_pid是用来接收ctrl-alt-del reboot signal的进程, 
-        如果设置C_A_D=1就表示可以处理来自ctl-alt-del的动作)， 
-        最后会调用 ctrl_alt_del(void)并确认C_A_D是否为1,
-        确认完成后将执行cad_work=deferred_cad,执行kernel_restart */
+    /* 
+      设置到目前运行进程init的pid号给cad_pid
+      */
 	cad_pid = task_pid(current);
 
 	//准备激活并使用其他CPU  设定支援的最大CPU数量
 	smp_prepare_cpus(setup_max_cpus);
 
 	workqueue_init();
-
+/*
+    会透过函式do_one_initcall,执行Symbol中 __initcall_start与__early_initcall_end之间的函数
+*/
 	do_pre_smp_initcalls();
 	lockup_detector_init();
-
+/*
+    由Bootstrap处理器,进行Active多核心架构下其它的处理器
+*/
 	smp_init();
 	//SMP调度初始化函数。
 	sched_init_smp();

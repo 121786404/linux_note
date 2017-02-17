@@ -29,7 +29,9 @@ struct task_struct;
 #include <asm/types.h>
 
 typedef unsigned long mm_segment_t;
-
+/*
+内核线程上下文，当有线程切换发生时会用到
+*/
 struct cpu_context_save {
 	__u32	r4;
 	__u32	r5;
@@ -48,11 +50,34 @@ struct cpu_context_save {
  * low level task data that entry.S needs immediate access to.
  * __switch_to() assumes cpu_context follows immediately after cpu_domain.
  */
+/*
+ thread_info就保存了特定体系结构的汇编代码段
+ 需要访问的那部分进程的数据
+*/
 struct thread_info {
+/*
+    保存各种特定于进程的标志
+*/
 	unsigned long		flags;		/* low level flags */
+/*
+	内核抢占计数器
+*/
 	int			preempt_count;	/* 0 => preemptable, <0 => bug */
+/*
+	指定了进程可以使用的虚拟地址的上限。
+	如前所述，该限制适用于普通进程，
+	但内核线程可以访问整个虚拟地址空间，
+	包括只有内核能访问的部分。
+	这并不意味着限制进程可以分配的内存数量。
+*/
 	mm_segment_t		addr_limit;	/* address limit */
+/*
+	便的通过thread_info来查找task_struct
+*/
 	struct task_struct	*task;		/* main task structure */
+/*
+	进程正在其上执行的CPU数目
+*/
 	__u32			cpu;		/* cpu */
 	__u32			cpu_domain;	/* cpu domain */
 	struct cpu_context_save	cpu_context;	/* cpu context */
@@ -151,7 +176,13 @@ extern int vfp_restore_user_hwstate(struct user_vfp __user *,
  *  TIF_USEDFPU		- FPU was used by this task this quantum (SMP)
  *  TIF_POLLING_NRFLAG	- true if poll_idle() is polling TIF_NEED_RESCHED
  */
+/*
+ 进程有待决信号
+*/
 #define TIF_SIGPENDING		0	/* signal pending */
+/*
+进程应该或想要调度器选择另一个进程替换本进程执行
+*/
 #define TIF_NEED_RESCHED	1	/* rescheduling necessary */
 #define TIF_NOTIFY_RESUME	2	/* callback before returning to user */
 #define TIF_UPROBE		3	/* breakpointed or singlestepping */

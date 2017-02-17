@@ -47,7 +47,18 @@
 #define PG_DIR_SIZE	0x4000
 #define PMD_ORDER	2
 #endif
+/*
+swapper_pg_dir被定义为PAGE_OFFSET向上偏移TEXT_OFFSET。T
+EXT_OFFSET代表内核代码段的相对于PAGE_OFFSET的偏移。
 
+KERNEL_RAM_VADDR的值与_stext的值相同，代表了内核代码的起始地址。
+swapper_pg_dir为KERNEL_RAM_VADDR - 0x4000，也即向低地址方向偏移了16K。
+ARM Linux中的主内存页表，使用段表。
+每个页表映射1M的内存大小，由于16K / 4 * 1M = 4G，这16K的主页表空间正好映射4G的虚拟空间。
+内核页表机制在系统启动过程中的paging_init函数中使能，
+其中对内核主页表的初始化等操作均是通过init_mm.pgd的引用来进行的。
+经过上述计算得到swapper_pg_dir的虚拟地址为0xc0004000.
+*/
 	.globl	swapper_pg_dir
 	.equ	swapper_pg_dir, KERNEL_RAM_VADDR - PG_DIR_SIZE
 
@@ -81,7 +92,9 @@
 	__HEAD
 ENTRY(stext)
  ARM_BE8(setend	be )			@ ensure we are in BE8 mode
-
+/*
+检查kernel是ARM模式还是thum模式
+*/
  THUMB(	badr	r9, 1f		)	@ Kernel is always entered in ARM.
  THUMB(	bx	r9		)	@ If this is a Thumb-2 kernel,
  THUMB(	.thumb			)	@ switch to Thumb now.
@@ -116,8 +129,17 @@ ENTRY(stext)
 #endif
 
 #ifndef CONFIG_XIP_KERNEL
+/*
+r3寄存器中保存标号2处的物理地址值
+*/
 	adr	r3, 2f
+/* 
+r4保存标号2处的虚拟地址值，r8保存PAGE_OFFSET值 
+*/
 	ldmia	r3, {r4, r8}
+/* 
+计算RAM物理地址和虚拟地址的偏移值 --> r4 
+*/
 	sub	r4, r3, r4			@ (PHYS_OFFSET - PAGE_OFFSET)
 	add	r8, r8, r4			@ PHYS_OFFSET
 #else
@@ -140,7 +162,13 @@ ENTRY(stext)
 创建临时页表，它所要做的工作就是将RAM基地址开始的4M空间的物理地址映射到0xC0000000开始的虚拟地址处
 */
 	bl	__create_page_tables
-
+/*
+保存__mmap_switched虚拟地址到sp寄存器建立初始化页表以后，
+会首先将__mmap_switched这个symbol的链接地址放在sp里面，
+然后会跳到__proc_info_list里面的INITFUNC执行.
+这个偏移是定义在arch/arm/kernel/asm-offset.c里面，
+实际上就是取得__proc_info_list里面的__cpu_flush这个函数执行。
+*/
 	/*
 	 * The following calls CPU specific code in a position independent
 	 * manner.  See arch/arm/mm/proc-*.S for details.  r10 = base of
@@ -162,7 +190,7 @@ ENTRY(stext)
 	 */
 /**
  * 启用MMU后，会调用__mmap_switched
- */
+/* r13中存下__mmap_switched地址，需要注意的是该地址是VMA(虚拟地址) */
 	ldr	r13, =__mmap_switched		@ address to jump to after
 						@ mmu has been enabled
 /**
@@ -173,6 +201,9 @@ ENTRY(stext)
 	mov	r5, #0				@ high TTBR0
 	mov	r8, r4, lsr #12			@ TTBR1 is swapper_pg_dir pfn
 #else
+/* 
+对于ARM指令(不是THUMB指令)，跳转到对应芯片结构的__cpu_flush执行 
+*/
 	mov	r8, r4				@ set TTBR1 to swapper_pg_dir
 #endif
 /**
@@ -185,6 +216,10 @@ ENTRY(stext)
  * 返回后，会执行lr中保存的返回地址，即1f，调用__enable_mmu
  */
 	ret	r12
+/*
+打开MMU以后我们就可以使用虚拟地址了，而不需要我们自己来进行地址的重定位，
+ARM硬件会完成这部分的工作。打开MMU以后，会将SP的值赋给PC，这样代码就会跳到__mmap_switched处执行的。
+*/
 1:	b	__enable_mmu
 ENDPROC(stext)
 	.ltorg
@@ -209,11 +244,36 @@ __create_page_tables:
 add r4,r8,#TEXT_OFFSET;sub r4,r4,#PG_DIR_SIZE
 设置r4为内核页表起始地址，物理地址:内核代码段起始位置TEXT_OFFSET(0x8000)前移PG_DIR_SIZE(0x4000)
 arch/arm/Makefile   textofs-y:= 0x00008000  TEXT_OFFSET := $(textofs-y)
+
+kernel编译链接时的入口地址在0xc0008000(PAGE_OFFSET + TEXT_OFFSET)，
+但其物理地址不等于其链接的虚拟地址，image的线性映射实现其运行地址等于链接地址。
+kernel的每一页表映射1M，所以入口处在(0x80200000-->0xc0000000)映射页表中完成映射。
+物理地址和虚拟地址的1M内偏移必须一致呀。kernel定义的TEXT_OFFSET = 0x8000.
+所以加载的物理地址必须为0x****8000. 这样，开启MMU后，访问0xc0008000附近指令，MMU根据TLB才能正确映射找到0x****8000附近的指令。
+
+为kernel建立临时页表, kernel里面的所有符号在链接时，都使用了虚拟地址值。
+在完成基本的初始化后，kernel代码将跳到第一个C语言函数start_kernl来执行，
+在哪个时候，这些虚拟地址必须能够对它所存放在真正内存位置，否则运行将为出错。
+为此，CPU必须开启MMU，但在开启 MMU前，必须为虚拟地址到物理地址的映射建立相应的页表。
+在开启MMU后，kernel指并不马上将PC值指向start_kernl，而是要做一些C语言运行期的设置，如堆栈，重定义等工作后才跳到start_kernel去执行。
+在此过程中，PC值还是物理地址，因此还需要为这段内存空间建立va = pa的内存映射关系。
+当然，本函数建立的所有页表都会在将来paging_init销毁再重建，这是临时过度性的映射关系和页表。
+计算页表起始物理地址保存到r4寄存器
+
+r8寄存器保存的是物理内存的起始地址(在这里我们是0x80200000),TEXT_OFFSET是0x8000, PG_DIR_SIZE是0x4000，
+根据宏pgtbl计算得到的页表起始地址为0x80204000,而kernel image起始地址为0x80208000,
+即页表是存放在kernel其实地址下16KB的地方(0x80204000 ~ 0x80208000 | 0xc0004000 ~ 0xc0008000).
+
+create_page_table完成了3种地址映射的页表空间填写：
+* turn_mmu_on所在1M空间的平映射
+* kernel image的线性映射
+* atags所在1M空间的线性映射
 */
 	pgtbl	r4, r8				@ page table address
 
 	/*
 	 * Clear the swapper page table
+     * 清空16KB页表空间
 	 */
 	mov	r0, r4
 	mov	r3, #0
@@ -254,23 +314,42 @@ arch/arm/Makefile   textofs-y:= 0x00008000  TEXT_OFFSET := $(textofs-y)
 #endif
 /*
 获得proc_info_list的__cpu_mm_mmu_flags的值，并存储到r7中
+r10 = proc_info_list类型结构体的基地址.
 */
 	ldr	r7, [r10, #PROCINFO_MM_MMUFLAGS] @ mm_mmuflags
 
 	/*
 	 * Create identity mapping to cater for __enable_mmu.
 	 * This identity mapping will be removed by paging_init().
+     * 首先建立包含__turn_mmu_on函数1M空间的平映射(virt addr = phy addr)
 	 */
 	adr	r0, __turn_mmu_on_loc
 	ldmia	r0, {r3, r5, r6}
+/* 
+计算函数__turn_mmu_on和__turn_mmu_on_end函数的物理地址. 
+*/
 	sub	r0, r0, r3			@ virt->phys offset
 	add	r5, r5, r0			@ phys __turn_mmu_on
 	add	r6, r6, r0			@ phys __turn_mmu_on_end
+/* 
+因1页(4KB)映射1M空间，所以SECTION_SHIFT为20, 右移20位后，     
+r5，r6代表该段地址空间的物理地址(页内偏移值)
+*/
 	mov	r5, r5, lsr #SECTION_SHIFT
 	mov	r6, r6, lsr #SECTION_SHIFT
 
+/* 
+r5左移20位，获取该页基地址，或上CPU的mmuflags，存在r3中 
+*/
 1:	orr	r3, r7, r5, lsl #SECTION_SHIFT	@ flags + kernel base
+/*
+将r3值存储在页目录表空间（r4起始）的（r5<<2）的页表中, 因一页用4bytes表示，所以PMD_ORDER=2 
+*/
 	str	r3, [r4, r5, lsl #PMD_ORDER]	@ identity mapping
+/* 
+r5与r6之前相距多个1M，则需要填写多个页表。     
+因turn_mmu_on函数很短，所以肯定在1M内，该处r5=r6 
+*/
 	cmp	r5, r6
 	addlo	r5, r5, #1			@ next section
 	blo	1b
@@ -293,8 +372,16 @@ arch/arm/Makefile   textofs-y:= 0x00008000  TEXT_OFFSET := $(textofs-y)
 	 */
 #define XIP_START XIP_VIRT_ADDR(CONFIG_XIP_PHYS_ADDR)
 	mov	r3, pc
+/* 
+计算当前kernel运行的物理地址所在物理页面的起始地址 
+*/
 	mov	r3, r3, lsr #SECTION_SHIFT
 	orr	r3, r7, r3, lsl #SECTION_SHIFT
+/* 
+因为KERNEL_START是内核的起始虚拟地址(0xC0008000)，KERNEL_END为内核的结束虚拟地址，     
+所以下面的代码实际上是将物理地址为kernel的起始地址(0x80208000)的一段内存空间     
+(大小为内核映像文件的大小)映射到虚拟地址0xC0008000。
+*/
 	add	r0, r4,  #(XIP_START & 0xff000000) >> (SECTION_SHIFT - PMD_ORDER)
 	str	r3, [r0, #((XIP_START & 0x00f00000) >> SECTION_SHIFT) << PMD_ORDER]!
 	ldr	r6, =(_edata_loc - 1)
@@ -310,6 +397,13 @@ arch/arm/Makefile   textofs-y:= 0x00008000  TEXT_OFFSET := $(textofs-y)
 	 * Then map boot params address in r2 if specified.
 	 * We map 2 sections in case the ATAGs/DTB crosses a section boundary.
 	 */
+/*
+将atags的1M地址空间做线性映射，方便start_kernel中对args进行分析
+kernel image可以加载到任何sdram地址空间的0x****8000即可。atags地址是有bootloader中指定，然后告诉kernel。
+那就有这样一种情况，加入sdram起始地址为0x80200000，atags起始地址为0x80200100。
+但kernel image我加载到0x81008000，可以看出，这时atags跟kernel image就在不同一1M空间啦
+atags单独的线性映射操作还是很有必要的。
+*/
 	mov	r0, r2, lsr #SECTION_SHIFT
 	movs	r0, r0, lsl #SECTION_SHIFT
 	subne	r3, r0, r8
@@ -519,10 +613,12 @@ __enable_mmu:
 	mov	r5, #DACR_INIT
 /**
  * 将域设置字段加载到CP15的C3寄存器
+ * 配置CP15 c3寄存器，配置ARM域的访问权限
  */
 	mcr	p15, 0, r5, c3, c0, 0		@ load domain access register
 /**
  * 加载页表转换表指针到CP15寄存器
+ * r4寄存器保存页表物理地址,配置CP15 c2寄存器，指定内存页表地址
  */
 	mcr	p15, 0, r4, c2, c0, 0		@ load page table pointer
 #endif
@@ -546,6 +642,15 @@ ENDPROC(__enable_mmu)
  *
  * other registers depend on the function called upon completion
  */
+/*
+turn_mmu_on，主要是完成开启MMU的操作。那为什么将turn_mmu_on处做一个平映射？
+可以想象，执行开启MMU指令之前，CPU取指是在0x80208000附近turn_mmu_on中。
+如果只是做kernel image的线性映射，执行开启MMU指令后，CPU所看到的地址就全变啦。
+turn_mmu_on对于CPU来说在0xc0008000附近，0x80208000附近对于CPU来说已经不可预知了。
+但是CPU不知道这些，它只管按照地址一条条取指令，执行指令。
+所以不做turn_mmu_on的平映射(virt addr = phy addr)，turn_mmu_on在开启MMU后的运行是完全不可知。
+完成turn_mmu_on的平映射，我们可以在turn_mmu_on末尾MMU已经开启稳定后，修改PC到0xc0008000附近，就可以解决从0x8xxxxxxx到0xcxxxxxxx的跳转。
+*/
 	.align	5
 	.pushsection	.idmap.text, "ax"
 ENTRY(__turn_mmu_on)
@@ -557,7 +662,16 @@ ENTRY(__turn_mmu_on)
 /**
  * 将其写入控制器寄存器c1，激活MMU
  */
+/* 
+* 将r0值写入CP15的c0寄存器，查看CP15说明，c0寄存器的第0位表征MMU的开启，     
+* 刚才__v7_setup中v7_crval给出的mmuset值已经将第0位置1了，因此写入c0后MMU就开启了 
+*/
 	mcr	p15, 0, r0, c1, c0, 0		@ write control reg
+/* 
+* 接下来CPU取指地址是当前pc+4,由于做了平映射，虽然接下来是虚拟地址，     
+* 但是该虚拟地址跟之前的物理地址是完全一致的，pc+4可以取到     
+* mrc p15, 0, r3, c0, c0, 0指令，并不会导致CPU取指上的问题 
+*/
 	mrc	p15, 0, r3, c0, c0, 0		@ read id reg
 	instr_sync
 /**
@@ -568,6 +682,7 @@ ENTRY(__turn_mmu_on)
  * r13中保存的是__mmap_switched函数的地址，跳过去执行吧。
  * 开启MMU之旅:)
  */
+/* 开启MMU后，修改PC值为r13执行，也就是__mmap_switched，该函数已经是运行在MMU之上的虚拟地址了 */
 	mov	r3, r13
 	ret	r3
 __turn_mmu_on_end:

@@ -1690,12 +1690,17 @@ static int do_execveat_common(int fd, struct filename *filename,
 	/* We're below the limit (still or again), so we don't want to make
 	 * further execve() calls fail. */
 	current->flags &= ~PF_NPROC_EXCEEDED;
-
+/*
+为进程复制一份文件表
+*/
 	retval = unshare_files(&displaced);
 	if (retval)
 		goto out_ret;
 
 	retval = -ENOMEM;
+/*
+	分配一份linux_binprm结构体
+*/
 	bprm = kzalloc(sizeof(*bprm), GFP_KERNEL);
 	if (!bprm)
 		goto out_files;
@@ -1716,6 +1721,9 @@ static int do_execveat_common(int fd, struct filename *filename,
     /* 选择最小负载的CPU，以执行新程序*/
 	sched_exec();
 
+/*
+    根据获取的信息，填充linux_binprm结构体中的file、filename、interp成员
+*/
 	bprm->file = file;
 	if (fd == AT_FDCWD || filename->name[0] == '/') {
 		bprm->filename = filename->name;
@@ -1739,11 +1747,18 @@ static int do_execveat_common(int fd, struct filename *filename,
 		bprm->filename = pathbuf;
 	}
 	bprm->interp = bprm->filename;
-
+/*
+    创建进程的内存地址空间，为新程序初始化内存管理.
+    并调用init_new_context()检查当前进程是否使用自定义的局部描述符表；
+    如果是，那么分配和准备一个新的LDT
+*/
 	retval = bprm_mm_init(bprm);
 	if (retval)
 		goto out_unmark;
 
+/*
+    填充linux_binprm结构体中的命令行参数argv,环境变量envp
+*/
 	bprm->argc = count(argv, MAX_ARG_STRINGS);
 	if ((retval = bprm->argc) < 0)
 		goto out;
@@ -1762,12 +1777,17 @@ static int do_execveat_common(int fd, struct filename *filename,
 	if (retval < 0)
 		goto out;
 
-    /* 复制环境变量和参数数组内容 */
+/*
+    从内核空间获取二进制文件的路径名称
+*/
 	retval = copy_strings_kernel(1, &bprm->filename, bprm);
 	if (retval < 0)
 		goto out;
 
 	bprm->exec = bprm->p;
+/*
+	从用户空间拷贝环境变量和命令行参数
+*/
 	retval = copy_strings(bprm->envc, envp, bprm);
 	if (retval < 0)
 		goto out;
@@ -1777,7 +1797,10 @@ static int do_execveat_common(int fd, struct filename *filename,
 		goto out;
 
 	would_dump(bprm, bprm->file);
-    /* 调用里面的 search_binary_handler */
+/*
+        至此，二进制文件已经被打开，linux_binprm结构体中也记录了重要信息；
+        下面需要识别该二进制文件的格式并最终运行该文件
+*/
 	retval = exec_binprm(bprm);
 	if (retval < 0)
 		goto out;

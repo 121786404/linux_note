@@ -145,7 +145,15 @@ static int padzero(unsigned long elf_bss)
  */
 #define ELF_BASE_PLATFORM NULL
 #endif
-
+/*
+在完成装入，启动用户空间的映像运行之前，
+还需要为目标映像和解释器准备好一些有关的信息，
+这些信息包括常规的argc、envc等等，
+还有一些“辅助向量（Auxiliary Vector）”。
+这些信息需要复制到用户空间，
+使它们在CPU进入解释器或目标映像的程序入口时出现
+在用户空间堆栈上
+*/
 static int
 create_elf_tables(struct linux_binprm *bprm, struct elfhdr *exec,
 		unsigned long load_addr, unsigned long interp_load_addr)
@@ -410,6 +418,10 @@ static struct elf_phdr *load_elf_phdrs(struct elfhdr *elf_ex,
 		goto out;
 
 	/* Sanity check the number of program headers... */
+/*
+      必须至少有一个段
+	所有段的大小之和不能超过64K
+*/
 	if (elf_ex->e_phnum < 1 ||
 		elf_ex->e_phnum > 65536U / sizeof(struct elf_phdr))
 		goto out;
@@ -665,16 +677,6 @@ static unsigned long randomize_stack_top(unsigned long stack_top)
 #endif
 }
 
-
-/*
-1 检查ELF的可执行文件的有效性，比如魔数，程序头表中段(segment)的数量
-2 寻找动态链接的.interp段,设置动态链接路径
-3 根据ELF可执行文件的程序头表的描述，对ELF文件进行映射，比如代码，数据，只读数据
-4 初始化ELF进程环境
-5 将系统调用的返回地址修改为ELF可执行程序的入口点，这个入口点取决于程序的连接方式，
-   对于静态链接的程序其入口就是e_entry,而动态链接的程序其入口是动态链接器
-6 最后调用start_thread,修改保存在内核堆栈，但属于用户态的eip和esp,该函数代码如下:
-*/
 static int load_elf_binary(struct linux_binprm *bprm)
 {
 	struct file *interpreter = NULL; /* to shut gcc up */
@@ -690,6 +692,10 @@ static int load_elf_binary(struct linux_binprm *bprm)
 	unsigned long start_code, end_code, start_data, end_data;
 	unsigned long reloc_func_desc __maybe_unused = 0;
 	int executable_stack = EXSTACK_DEFAULT;
+
+/*
+    填充并且检查目标程序ELF头部
+*/
 	struct pt_regs *regs = current_pt_regs();   // 获取当前进程的寄存器存储位置
 	struct {
 		struct elfhdr elf_ex;
@@ -720,6 +726,9 @@ static int load_elf_binary(struct linux_binprm *bprm)
 	if (!bprm->file->f_op->mmap)
 		goto out;
 
+/*
+    加载目标程序的程序头表
+*/
 	elf_phdata = load_elf_phdrs(&loc->elf_ex, bprm->file);
 	if (!elf_phdata)
 		goto out;
@@ -733,7 +742,7 @@ static int load_elf_binary(struct linux_binprm *bprm)
 	start_data = 0;
 	end_data = 0;
 
-    // 遍历elf的程序头
+    // 遍历elf的程序头 , 寻找和处理目标映像的”解释器”段
 	for (i = 0; i < loc->elf_ex.e_phnum; i++) {
 		if (elf_ppnt->p_type == PT_INTERP) {  // 如果存在解释器头部
 			/* This is the program interpreter used for
@@ -751,7 +760,11 @@ static int load_elf_binary(struct linux_binprm *bprm)
 			if (!elf_interpreter)
 				goto out_free_ph;
 
-            // 读入解释器名
+            /* 整个”解释器”段的内容读入缓冲区
+                   “解释器”段实际上只是一个字符串
+                   如”/lib/ld-linux.so.2”, \
+                   或者64位机器上对应的叫做”/lib64/ld-linux-x86-64.so.2”
+                 */
 			retval = kernel_read(bprm->file, elf_ppnt->p_offset,
 					     elf_interpreter,
 					     elf_ppnt->p_filesz);
@@ -778,6 +791,9 @@ static int load_elf_binary(struct linux_binprm *bprm)
 			would_dump(bprm, interpreter);
 
 			/* Get the exec headers */
+            /*
+			读入解释器的前128个字节，即解释器映像的头部
+                 */
 			retval = kernel_read(interpreter, 0,
 					     (void *)&loc->interp_elf_ex,
 					     sizeof(loc->interp_elf_ex));
@@ -789,6 +805,7 @@ static int load_elf_binary(struct linux_binprm *bprm)
 
 			break;
 		}
+		/* 循环检查所有的程序头看是否有动态连接器 */
 		elf_ppnt++;
 	}
 
@@ -828,6 +845,9 @@ static int load_elf_binary(struct linux_binprm *bprm)
 			goto out_free_dentry;
 
 		/* Load the interpreter program headers */
+/*
+		读入解释器的程序头
+*/
 		interp_elf_phdata = load_elf_phdrs(&loc->interp_elf_ex,
 						   interpreter);
 		if (!interp_elf_phdata)
@@ -859,13 +879,17 @@ static int load_elf_binary(struct linux_binprm *bprm)
 		goto out_free_dentry;
 
 	/* Flush all traces of the currently running executable */
-	/* 释放空间、删除信号、关闭带有CLOSE_ON_EXEC标志的文件*/
+	/* 
+      在此清除掉了父进程的所有相关代码
+	释放空间、删除信号、关闭带有CLOSE_ON_EXEC标志的文件
+	*/
 	retval = flush_old_exec(bprm);
 	if (retval)
 		goto out_free_dentry;
 
 	/* Do this immediately, since STACK_TOP as used in setup_arg_pages
 	   may depend on the personality.  */
+	/* 设置elf可执行文件的特性 */
 	SET_PERSONALITY2(loc->elf_ex, &arch_state);
 	if (elf_read_implies_exec(loc->elf_ex, executable_stack))
 		current->personality |= READ_IMPLIES_EXEC;
@@ -878,6 +902,7 @@ static int load_elf_binary(struct linux_binprm *bprm)
 
 	/* Do this so that we can load the interpreter, if need be.  We will
 	   change some of these later 
+	   为下面的动态连接器执行获取内核空间page
          为进程分配用户态堆栈，并塞入参数和环境变量
 	*/
 	retval = setup_arg_pages(bprm, randomize_stack_top(STACK_TOP),
@@ -888,14 +913,25 @@ static int load_elf_binary(struct linux_binprm *bprm)
 	current->mm->start_stack = bprm->p;
 
 	/* Now we do a little grungy work by mmapping the ELF image into
-	   the correct location in memory. */
-	/* 将elf文件映射进内存 */
+	   the correct location in memory. 
+
+	 装入目标程序的段segment 
+       这段代码从目标映像的程序头中搜索类型为PT_LOAD的段（Segment）。
+       在二进制映像中，只有类型为PT_LOAD的段才是需要装入的。
+       当然在装入之前，需要确定装入的地址，只要考虑的就是页面对齐，
+       还有该段的p_vaddr域的值（上面省略这部分内容）。
+       确定了装入地址后，就通过elf_map()建立用户空间虚拟地址空间
+       与目标映像文件中某个连续区间之间的映射，
+       其返回值就是实际映射的起始地址*/
+
+    /* 按照先前获取的程序头表，循环将所有的可执行文件加载到内存中 */
 	for(i = 0, elf_ppnt = elf_phdata;
 	    i < loc->elf_ex.e_phnum; i++, elf_ppnt++) {
 		int elf_prot = 0, elf_flags;
 		unsigned long k, vaddr;
 		unsigned long total_size = 0;
 
+        /*  搜索PT_LOAD的段, 这个是需要装入的 */
 		if (elf_ppnt->p_type != PT_LOAD)
 			continue;
 
@@ -906,6 +942,7 @@ static int load_elf_binary(struct linux_binprm *bprm)
 			   before this one. Map anonymous pages, if needed,
 			   and clear the area.  */
 			// 生成BSS
+			// 检查地址和页面的信息
 			retval = set_brk(elf_bss + load_bias,
 					 elf_brk + load_bias);
 			if (retval)
@@ -956,6 +993,11 @@ static int load_elf_binary(struct linux_binprm *bprm)
 			}
 		}
         /* 创建一个新线性区对可执行文件的数据段进行映射 */
+        /*  虚拟地址空间与目标映像文件的映射
+                 确定了装入地址后，
+                 就通过elf_map()建立用户空间虚拟地址空间
+                 与目标映像文件中某个连续区间之间的映射，
+                 其返回值就是实际映射的起始地址 */
 		error = elf_map(bprm->file, load_bias + vaddr, elf_ppnt,
 				elf_prot, elf_flags, total_size);
 		if (BAD_ADDR(error)) {
@@ -1006,6 +1048,7 @@ static int load_elf_binary(struct linux_binprm *bprm)
 			elf_brk = k;
 	}
     // 加上偏移量
+    /* 更新读入内存中相关信息的记录 */
 	loc->elf_ex.e_entry += load_bias;
 	elf_bss += load_bias;
 	elf_brk += load_bias;
@@ -1020,6 +1063,9 @@ static int load_elf_binary(struct linux_binprm *bprm)
 	 * up getting placed where the bss needs to go.
 	 */
 	// 创建一个新的匿名线性区，来映射程序的bss段
+/*
+	使用set_brk调整bss段的大小 
+*/
 	retval = set_brk(elf_bss, elf_brk);
 	if (retval)
 		goto out_free_dentry;
@@ -1027,7 +1073,14 @@ static int load_elf_binary(struct linux_binprm *bprm)
 		retval = -EFAULT; /* Nobody gets to see this, but.. */
 		goto out_free_dentry;
 	}
-    // 如果是动态链接
+/*
+     如果需要装入解释器，就通过load_elf_interp装入其映像, 
+     并把将来进入用户空间的入口地址设置成load_elf_interp()的返回值，
+     即解释器映像的入口地址。
+
+     而若不装入解释器，那么这个入口地址就是目标
+     映像本身的入口地址。
+*/
 	if (elf_interpreter) {
 		unsigned long interp_map_addr = 0;
         // 调用一个装入动态链接程序的函数 此时elf_entry指向一个动态链接程序的入口
@@ -1073,11 +1126,17 @@ static int load_elf_binary(struct linux_binprm *bprm)
 		goto out;
 #endif /* ARCH_HAS_SETUP_ADDITIONAL_PAGES */
 
+/*
+    填写目标文件的参数环境变量等必要信息
+*/
 	retval = create_elf_tables(bprm, &loc->elf_ex,
 			  load_addr, interp_load_addr);
 	if (retval < 0)
 		goto out;
 	/* N.B. passed_fileno might not be initialized? */
+/*
+	调整内存映射内容
+*/
 	current->mm->end_code = end_code;
 	current->mm->start_code = start_code;
 	current->mm->start_data = start_data;
@@ -1115,6 +1174,25 @@ static int load_elf_binary(struct linux_binprm *bprm)
 	ELF_PLAT_INIT(regs, reloc_func_desc);
 #endif
     // 修改保存在内核堆栈，但属于用户态的eip和esp
+/*
+      最后，start_thread()这个宏操作会将eip和esp改成新的地址，
+      就使得CPU在返回用户空间时就进入新的程序入口。
+      如果存在解释器映像，那么这就是解释器映像的程序入口，
+      否则就是目标映像的程序入口。
+      那么什么情况下有解释器映像存在，什么情况下没有呢？
+      如果目标映像与各种库的链接是静态链接，
+      因而无需依靠共享库、即动态链接库，那就不需要解释器映像；
+
+      否则就一定要有解释器映像存在。
+       对于一个目标程序, gcc在编译时，除非显示的使用static标签，
+       否则所有程序的链接都是动态链接的，
+       也就是说需要解释器。由此可见，
+       我们的程序在被内核加载到内存，
+       内核跳到用户空间后并不是执行我们程序的，
+       而是先把控制权交到用户空间的解释器，
+       由解释器加载运行用户程序所需要的动态库（比如libc等等），
+       然后控制权才会转移到用户程序。
+*/
 	start_thread(regs, elf_entry, bprm->p);
 	retval = 0;
 out:

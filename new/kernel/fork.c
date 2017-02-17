@@ -510,7 +510,9 @@ static struct task_struct *dup_task_struct(struct task_struct *orig, int node)
 	tsk = alloc_task_struct_node(node);
 	if (!tsk)
 		return NULL;
-
+/*
+    分配一个 thread_info 节点，包含进程的内核栈，ti 为栈底
+*/
 	stack = alloc_thread_stack_node(tsk, node);
 	if (!stack)
 		goto free_tsk;
@@ -1482,9 +1484,6 @@ init_task_pid(struct task_struct *task, enum pid_type type, struct pid *pid)
  * parts of the process environment (as per the clone
  * flags). The actual kick-off is left to the caller.
  
-1 dup_task_struct中为其分配了新的堆栈
-2 调用了sched_fork，将其置为TASK_RUNNING
-3 copy_thread(_tls)中将父进程的寄存器上下文复制给子进程，保证了父子进程的堆栈信息是一致的,
 4 将ret_from_fork的地址设置为eip寄存器的值
 5 为新进程分配并设置新的pid
 6 最终子进程从ret_from_fork开始执行
@@ -1612,13 +1611,17 @@ static __latent_entropy struct task_struct *copy_process(
 		goto fork_out;
 
 	retval = -ENOMEM;
-	/* 分配一个新的未初始化的 task_struct，此时的p与当前进程的task，仅仅是stack地址不同 */
+	/* 分配一个新的未初始化的 task_struct，此时的p与当前进程的task，
+	仅仅是stack地址不同 */
 	p = dup_task_struct(current, node);
 	if (!p)
 		goto fork_out;
 
 	ftrace_graph_init_task(p);
 
+/*
+初始化互斥变量
+*/
 	rt_mutex_init_task(p);
 
 #ifdef CONFIG_PROVE_LOCKING
@@ -1668,6 +1671,9 @@ static __latent_entropy struct task_struct *copy_process(
 	INIT_LIST_HEAD(&p->sibling);
 	rcu_copy_process(p);
 	p->vfork_done = NULL;
+/*
+	初始化自旋锁
+*/
 	spin_lock_init(&p->alloc_lock);
     /*  初始化挂起信号 */
 	init_sigpending(&p->pending);
@@ -1692,7 +1698,9 @@ static __latent_entropy struct task_struct *copy_process(
 
 	task_io_accounting_init(&p->ioac);
 	acct_clear_integrals(p);
-
+   /*
+    初始化 CPU 定时器
+    */
 	posix_cpu_timers_init(p);
 
 	p->start_time = ktime_get_ns();
@@ -1746,6 +1754,9 @@ static __latent_entropy struct task_struct *copy_process(
 #endif
 
 	/* Perform scheduler related setup. Assign this task to a CPU. */
+/*
+	置子进程调度相关的参数，即子进程的运行CPU、初始时间片长度和静态优先级等
+*/
 	/* 完成调度相关的设置，将这个task分配给CPU */
 	/* 完成对新进程调度程序数据结构的初始化，并把新进程的状态设置为TASK_RUNNING
           同时将thread_info中得preempt_count置为1，禁止内核抢占*/
@@ -1762,21 +1773,33 @@ static __latent_entropy struct task_struct *copy_process(
 	/* copy all the process information */
 	/* 复制所有的进程信息 */
 	shm_init_task(p);
+/*
+	复制父进程的semaphore undo_list到子进程
+*/
 	retval = copy_semundo(clone_flags, p);
 	if (retval)
 		goto bad_fork_cleanup_audit;
+/*
+	制父进程文件系统相关的环境到子进程
+*/
 	retval = copy_files(clone_flags, p);
 	if (retval)
 		goto bad_fork_cleanup_semundo;
 	retval = copy_fs(clone_flags, p);
 	if (retval)
 		goto bad_fork_cleanup_files;
+/*
+	复制父进程信号处理相关的环境到子进程
+*/
 	retval = copy_sighand(clone_flags, p);
 	if (retval)
 		goto bad_fork_cleanup_fs;
 	retval = copy_signal(clone_flags, p);
 	if (retval)
 		goto bad_fork_cleanup_sighand;
+/*
+	复制父进程内存管理相关的环境到子进程，包括页表、地址空间和代码数据
+*/
 	retval = copy_mm(clone_flags, p);
 	if (retval)
 		goto bad_fork_cleanup_signal;
@@ -1786,7 +1809,12 @@ static __latent_entropy struct task_struct *copy_process(
 	retval = copy_io(clone_flags, p);
 	if (retval)
 		goto bad_fork_cleanup_namespaces;
-	/* 初始化子进程的内核栈*/
+/*
+    将父进程的寄存器上下文复制给子进程，
+    保证了父子进程的堆栈信息是一致的,
+    设置子进程的执行环境，如子进程运行时各CPU寄存器的值、
+    子进程的kernel栈的起始地址
+*/
 	retval = copy_thread_tls(clone_flags, stack_start, stack_size, p, tls);
 	if (retval)
 		goto bad_fork_cleanup_io;
@@ -2037,11 +2065,25 @@ struct task_struct *fork_idle(int cpu)
  * It copies the process, and if successful kick-starts
  * it and waits for it to finish using the VM if required.
  */
+/*
+clone_flags :与clone()参数flags相同, 用来控制进程复制过的一些属性信息, 
+                 描述你需要从父进程继承那些资源。该标志位的4个字节分为两部分。
+                 最低的一个字节为子进程结束时发送给父进程的信号代码，
+                 通常为SIGCHLD；剩余的三个字节则是各种clone标志的组 ，
+                 也就是若干个标志之间的或运算。
+                 通过clone标志可以有选择的对父进程的资源进行复制；
+stack_start : 与clone()参数stack_start相同, 子进程用户态堆栈的地址
+stack_size : 用户状态下栈的大小, 该参数通常是不必要的, 总被设置为0
+parent_tidptr:与clone的ptid参数相同, 父进程在用户态下pid的地址，
+                   该参数在CLONE_PARENT_SETTID标志被设定时有意义
+child_tidptr: 与clone的ctid参数相同, 子进程在用户太下pid的地址，
+                  该参数在CLONE_CHILD_SETTID标志被设定时有意义
+*/
 long _do_fork(unsigned long clone_flags,
-	      unsigned long stack_start, // 与clone()参数stack_start相同, 子进程用户态堆栈的地址
-	      unsigned long stack_size, // 用户状态下栈的大小, 该参数通常是不必要的, 总被设置为0
-	      int __user *parent_tidptr, // 与clone的ptid参数相同, 父进程在用户态下pid的地址，该参数在CLONE_PARENT_SETTID标志被设定时有意义
-	      int __user *child_tidptr, // 与clone的ctid参数相同, 子进程在用户太下pid的地址，该参数在CLONE_CHILD_SETTID标志被设定时有意义
+	      unsigned long stack_start,
+	      unsigned long stack_size,
+	      int __user *parent_tidptr,
+	      int __user *child_tidptr,
 	      unsigned long tls)
 {
 	struct task_struct *p;
@@ -2154,6 +2196,7 @@ long _do_fork(unsigned long clone_flags,
 只有当系统不支持通过TLS参数通过参数传递而是使用pt_regs寄存器列表传递时
 未定义CONFIG_HAVE_COPY_THREAD_TLS宏
 */
+
 long do_fork(unsigned long clone_flags,
 	      unsigned long stack_start,
 	      unsigned long stack_size,

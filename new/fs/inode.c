@@ -1770,7 +1770,10 @@ int dentry_needs_remove_privs(struct dentry *dentry)
 
 	if (IS_NOSEC(inode))
 		return 0;
-
+    /*  
+        suid权限一定会被去掉  
+        同时设置sgid和xgrp时，sgid权限也会被去掉  
+        */  
 	mask = should_remove_suid(dentry);
 	ret = security_inode_need_killpriv(dentry);
 	if (ret < 0)

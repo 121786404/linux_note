@@ -29,7 +29,10 @@ pick_next_task_idle(struct rq *rq, struct task_struct *prev, struct pin_cookie c
 	put_prev_task(rq, prev);
 	update_idle_core(rq);
 	schedstat_inc(rq->sched_goidle);
-	return rq->idle;  //可以看到就是返回rq中idle进程
+/*
+    可以看到就是返回rq中idle进程
+*/
+	return rq->idle; 
 }
 
 /*
@@ -80,7 +83,8 @@ static void update_curr_idle(struct rq *rq)
 
 /*
  * Simple, special scheduling class for the per-CPU idle tasks:
- 每个cup的第一个pid=0线程：swapper，是一个静态线程。
+ 采用CFS算法调度idle进程, 每个cup的第一个pid=0线程：
+ swapper，是一个静态线程。
  调度类属于：idel_sched_class，所以在ps里面是看不到的。
  一般运行在开机过程和cpu异常的时候做dump
  */

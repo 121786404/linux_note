@@ -223,6 +223,26 @@ void release_thread(struct task_struct *dead_task)
 }
 
 asmlinkage void ret_from_fork(void) __asm__("ret_from_fork");
+/*
+copy_thread与这里讨论的所有其他复制操作都大不相同，
+这是一个特定于体系结构的函数，
+用于复制进程中特定于线程（thread-specific）的数据。
+这里的特定于线程并不是指某个CLONE标志，
+也不是指操作对线程而非整个进程执行。
+其语义无非是指复制执行上下文中特定于体系结构的所有数据
+（内核中名词线程通常用于多个含义）。
+重要的是填充task_struct->thread的各个成员。
+这是一个thread_struct类型的结构，其定义是体系结构相关的。
+它包含了所有寄存器（和其他信息），
+内核在进程之间切换时需要保存和恢复进程的内容，该结构可用于此。
+为理解各个thread_struct结构的布局，需要深入了解各种CPU的相关知识。
+
+这个函数前半部分设置子进程的返回值和用户态的栈地址，
+其他的用户态的寄存器值和和父进程一样；
+
+后半部分设置内核态的栈地址和pc指针,
+也就是设置子进程被schedule调度后,会ret_from_fork函数开始运行.
+*/
 
 int
 copy_thread(unsigned long clone_flags, unsigned long stack_start,
@@ -231,6 +251,12 @@ copy_thread(unsigned long clone_flags, unsigned long stack_start,
 	struct thread_info *thread = task_thread_info(p);
 	struct pt_regs *childregs = task_pt_regs(p); // 取出子进程的寄存器信息
 
+/*
+    这个函数前半部分设置子进程的返回值和用户态的栈地址，
+    其他的用户态的寄存器值和和父进程一样；
+    后半部分设置内核态的栈地址和pc指针,
+    也就是设置子进程被schedule调度后,会ret_from_fork函数开始运行.
+*/
 	memset(&thread->cpu_context, 0, sizeof(struct cpu_context_save));
 
 #ifdef CONFIG_CPU_USE_DOMAINS
@@ -242,19 +268,30 @@ copy_thread(unsigned long clone_flags, unsigned long stack_start,
 	 */
 	thread->cpu_domain = get_domain();
 #endif
-
+/*
+    如果不是内核线程则执行如下流程.
+*/
 	if (likely(!(p->flags & PF_KTHREAD))) {
 		*childregs = *current_pt_regs(); // 将父进程的regs参数赋值到子进程的内核堆栈
 		childregs->ARM_r0 = 0;
 		if (stack_start)
 			childregs->ARM_sp = stack_start;
 	} else {
+/*
+如果是内核线程则执行如下流程.
+*/
 		memset(childregs, 0, sizeof(struct pt_regs));
 		thread->cpu_context.r4 = stk_sz;
 		thread->cpu_context.r5 = stack_start;
 		childregs->ARM_cpsr = SVC_MODE;
 	}
+/*
+	子进程的内核态的pc地址
+*/
 	thread->cpu_context.pc = (unsigned long)ret_from_fork; // 将子进程的 ip 设置为 ret_form_fork 的首地址，因此子进程是从 ret_from_fork 开始执行的
+/*
+ 子进程内核态栈
+*/
 	thread->cpu_context.sp = (unsigned long)childregs; // 栈顶 空栈
 
 	clear_ptrace_hw_breakpoint(p);

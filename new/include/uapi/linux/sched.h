@@ -172,7 +172,8 @@ PID Namespace是层次性，新创建的Namespace将会是创建该Namespace的进程属于的Namespa
 SCHED_NORMAL普通进程策略的分化版本。采用分时策略，
 根据动态优先级(可用nice()API设置），分配 CPU 运算资源。
 注意：这类进程比上述两类实时进程优先级低，
-换言之，在有实时进程存在时，实时进程优先调度。但针对吞吐量优化
+换言之，在有实时进程存在时，实时进程优先调度。
+但针对吞吐量优化
 */
 #define SCHED_BATCH		3
 /* SCHED_ISO: reserved but not implemented yet */

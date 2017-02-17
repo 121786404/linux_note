@@ -108,6 +108,7 @@ __mmap_switched:
 /**
  * __data_loc指向二进制文件中初始化数据的起始位置，__data指向内存中初始化数据的起始位置
  * 二者一般相等，也许XIP方式下二者会不相等。
+ * 如果有必要则进行data段的拷贝搬移
  */
 	cmp	r4, r5				@ Copy data segment if needed
 /**
@@ -148,7 +149,9 @@ __mmap_switched:
 	cmp	r7, #0
 	strne	r0, [r7]			@ Save control register values
 /**
- * 跳转到C运行环境，是不是想深呼吸一下:)
+ * 跳转到C运行环境
+__mmap_switched最后跳转到start_kernel开始进入C函数运行环境，
+这时整个kernel image已经运行在虚拟地址之上，运行地址和链接地址保持了一致.
  */
 	b	start_kernel
 ENDPROC(__mmap_switched)
@@ -168,6 +171,11 @@ __mmap_switched_data:
 #else
 	.long	0				@ r7
 #endif
+/*
+sp = init_thread_union + THREAD_START_SP(8K-8)，设置栈指针，为接下来的C函数运行做准备。
+对于arm-linux来说，start_kernel之前全部都是汇编代码。
+init_thread_union代表的是内核第一个进程，pid = 0，该进程是内核人为造出来的，而不是fork出来的.
+*/
 	.long	init_thread_union + THREAD_START_SP @ sp
 	.size	__mmap_switched_data, . - __mmap_switched_data
 
@@ -198,19 +206,41 @@ ENDPROC(lookup_processor_type)
  *	r5 = proc_info pointer in physical address space
  *	r9 = cpuid (preserved)
  */
+/*
+Kernel 代码将所有CPU信息的定义都放到.proc.info.init段中，因此可以认为.proc.info.init段就是一个数组，
+每个元素都定义了一个或一种CPU的信息。目前__lookup_processor_type使用该元素的前两个字段cpuid和mask来匹配当前CPUID，
+如果满足 CPUID & mask == cpuid，则找到当前cpu的定义并返回。
+*/
 __lookup_processor_type:
-/* @ r3=(phys)__lookup_processor_type_data */
+/* 
+r3=(phys)__lookup_processor_type_data
+adr是相对寻址，它的寻计算结果是将当前PC值加上__lookup_processor_type_data符号与PC的偏移量，     
+而PC是物理地址，因此r3的结果也是符号__lookup_processor_type_data的物理地址
+*/
 	adr	r3, __lookup_processor_type_data  
 /*
 	@ r4=(virt). r5=(virt)__proc_info_begin r6=(virt)__proc_info_end
 */
+/*
+r5值为__proc_info_bein, r6值为__proc_ino_end，而r4值为.，     
+也即符号__lookup_processor_type_data的虚拟地址。
+请注意，在链接期间，__proc_info_begin和__proc_info_end以及.均是虚执地址
+*/
 	ldmia	r3, {r4 - r6}	
 /*
 	r3=(phys)r3-(virt)r4 (接下来两行把virt转换成phys的时候使用)
-*/                  
+*/      
+/* 
+r3为__lookup_processor_type_data的物理地址，      
+r4为__lookup_processor_type_data的虚拟地址.     
+结果是r3为物理地址与虚拟地址的差值，即PHYS_OFFSET - PAGE_OFFSET
+*/       
 	sub	r3, r3, r4			@ get offset between virt&phys
 /*
 	(phys)r5=(virt)r5+r3
+*/
+/* 
+将r5和r6转换为__proc_info_begin和__proc_info_end的物理地址 
 */
 	add	r5, r5, r3			@ convert virt addresses to
 /*
@@ -220,9 +250,16 @@ __lookup_processor_type:
 /*
 	r3=value r4=mask (参考struct proc_info_list)
 */
+/* 
+读取r5指向的__proc_info数组元素的CPUID和mask值分别保存到r3和r4寄存器 
+*/
 1:	ldmia	r5, {r3, r4}			@ value, mask
 /*
 对processor id进行mask
+*/
+/* 
+将当前CPUID和mask相与，并与数组元素中的CPUID比较是否相同     
+若相同，则找到当前CPU的__proc_info定义，r5指向访元素并返回 
 */                  
 	and	r4, r4, r9			@ mask wanted bits
 /*
@@ -236,9 +273,13 @@ __lookup_processor_type:
 /*
 	r5往后偏移sizeof(struct proc_info_list)
 */
+/* 
+r5指向下一个__proc_info元素 
+*/
 	add	r5, r5, #PROC_INFO_SZ		@ sizeof(proc_info_list)
 /*
 	r6是存放proc_info_list的末尾
+    是否遍历完所有__proc_info元素 
 */
 	cmp	r5, r6
 /*
@@ -247,6 +288,7 @@ __lookup_processor_type:
 	blo	1b
 /*
 	如果没有匹配成功结果是unknown processor(r5=0)
+    找不到则返回NULL
 */
 	mov	r5, #0				@ unknown processor
 /*

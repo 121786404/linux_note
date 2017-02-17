@@ -2367,9 +2367,6 @@ static inline void init_schedstats(void) {}
 
 /*
  * fork()/clone()-time setup:
- 我们可以看到sched_fork大致完成了两项重要工作，
- 一是将子进程状态设置为 TASK_RUNNING，
- 二是为其分配 CPU
  */
 int sched_fork(unsigned long clone_flags, struct task_struct *p)
 {
@@ -2564,6 +2561,11 @@ extern void init_dl_bw(struct dl_bw *dl_b);
  * that must be done for every newly created context, then puts the task
  * on the runqueue and wakes it.
  */
+/*
+ 计算此进程的优先级和其他调度参数，
+ 将新的进程加入到进程调度队列并设此进程为可被调度的，
+ 以后这个进程可以被进程调度模块调度执行
+*/
 void wake_up_new_task(struct task_struct *p)
 {
 	struct rq_flags rf;
@@ -3437,6 +3439,11 @@ void __noreturn do_task_dead(void)
 	/* causes final put_task_struct in finish_task_switch(). */
 	__set_current_state(TASK_DEAD);
 	current->flags |= PF_NOFREEZE;	/* tell freezer to ignore us */
+/*
+    重新调度，因为该进程已经被设置成了僵死状态，
+    因此永远都不会再把它调度回来运行了，
+    也就实现了do_exit不会有返回的目标
+*/
 	__schedule(false);
 	BUG();
 	/* Avoid "noreturn function does return".  */

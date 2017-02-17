@@ -2420,19 +2420,6 @@ struct vm_area_struct *find_vma(struct mm_struct *mm, unsigned long addr)
 	if (likely(vma))
 		return vma;
 
-	/*
-	 * 否则必须逐步搜索红黑树。rb_node是用于表示树中各个结点的数据结构。
-	 * rb_entry用于从结点取出"有用数据"(在这里是vm_area_struct实例)。
-	 * 树的根节点位于mm->mm_rb.rb_node。如果相关区域结束地址大于目标
-	 * 地址而起始地址小于目标地址，内核就找到一个适当的结点，可以退出
-	 * while循环，返回指向vm_area_struct实例的指针。否则，再继续搜索:
-	 *  1)如果当前区域结束地址大于目标地址，则从左子结点开始
-	 *  2)如果当前区域的结束地址小于等于目标地址，则从右子结点开始。
-	 * 如果树根结点的子结点为NULL指针，则内核很容易判断何时结束搜索并
-	 * 返回NULL指针作为错误信息。如果找到适当的区域，则将其指针保存在
-	 * mmap_cache中，因为下一次find_vma()调用搜索同一个区域中临近地址
-	 * 的可能性很高。 
-	 */
 	rb_node = mm->mm_rb.rb_node;
 
 	/* 遍历红黑树 */
@@ -2440,31 +2427,32 @@ struct vm_area_struct *find_vma(struct mm_struct *mm, unsigned long addr)
 		struct vm_area_struct *tmp;
 
 		/* 从红黑树的节点找到对应的VMA结构 */
-		/**
-		 * rb_entry从指向红黑树中一个节点的指针导出相应线性区描述符的指针。
-		 */
 		tmp = rb_entry(rb_node, struct vm_area_struct, vm_rb);
 
-		/**
-		 * 视情况在左右子树中查找。
-		 */
 		if (tmp->vm_end > addr) {
+/*
+		如果当前区域结束地址大于目标地址，则从左子结点开始
+*/
 			vma = tmp;
-			/* 符合条件，退出 */
+
+			if (tmp->vm_start <= addr)
 			/**
 			 * 当前线性区包含addr,退出循环并返回vma.
 			 */
-			if (tmp->vm_start <= addr)
 				break;
+				
 			/* 节点所在区域太多，移动到左边继续查找, 在左子树中继续 */
 			rb_node = rb_node->rb_left;
 		} else
-		/* 移动到右边查找,在右子树中继续 */
+/*
+		如果当前区域的结束地址小于等于目标地址，则从右子结点开始
+*/
 			rb_node = rb_node->rb_right;
 	}
 
 	/**
-	 * 如果有必要，记录下mmap_cache。这样，下次就从mmap_cache继续查找。
+	 * 因为下一次find_vma()调用搜索同一个区域中临近地址的可能性很高
+	 * 记录下mmap_cache。这样，下次就从mmap_cache继续查找。
 	 */
 	if (vma)
 		vmacache_update(addr, vma); //将结果保存在缓存中

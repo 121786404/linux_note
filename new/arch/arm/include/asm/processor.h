@@ -53,6 +53,15 @@ struct thread_struct {
 #define nommu_start_thread(regs) regs->ARM_r10 = current->mm->start_data
 #endif
 
+/*
+start_thread()这个宏操作会将eip和esp改成新的地址，
+就使得CPU在返回用户空间时就进入新的程序入口。
+如果存在解释器映像，那么这就是解释器映像的程序入口，
+否则就是目标映像的程序入口。那么什么情况下有解释器映像存在，
+什么情况下没有呢？如果目标映像与各种库的链接是静态链接，
+因而无需依靠共享库、即动态链接库，那就不需要解释器映像；
+否则就一定要有解释器映像存在
+*/
 #define start_thread(regs,pc,sp)					\
 ({									\
 	memset(regs->uregs, 0, sizeof(regs->uregs));			\
@@ -82,7 +91,9 @@ unsigned long get_wchan(struct task_struct *p);
 #else
 #define cpu_relax()			barrier()
 #endif
-
+/*
+获取stack中存放用户态寄存器组的偏移地址
+*/
 #define task_pt_regs(p) \
 	((struct pt_regs *)(THREAD_START_SP + task_stack_page(p)) - 1)
 

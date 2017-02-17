@@ -3120,6 +3120,7 @@ static inline bool is_sxid(umode_t mode)
 
 static inline int check_sticky(struct inode *dir, struct inode *inode)
 {
+    /* 判断上级目录是否设置了sticky标志位 */
 	if (!(dir->i_mode & S_ISVTX))
 		return 0;
 

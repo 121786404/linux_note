@@ -1306,7 +1306,10 @@ static inline void set_curr_task(struct rq *rq, struct task_struct *curr)
 #define sched_class_highest (&stop_sched_class)
 #define for_each_class(class) \
    for (class = sched_class_highest; class; class = class->next)
-
+/*
+前系統中,Scheduling Class的优先级顺序为StopTask > RealTime > Fair > IdleTask
+开发者可以根据己的设计需求,來把所属的Task配置到不同的Scheduling Class中
+*/
 extern const struct sched_class stop_sched_class;
 extern const struct sched_class dl_sched_class;
 extern const struct sched_class rt_sched_class;

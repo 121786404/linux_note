@@ -242,13 +242,16 @@ loff_t default_llseek(struct file *file, loff_t offset, int whence)
 	inode_lock(inode);
 	switch (whence) {
 		case SEEK_END:
+		    /* 最终偏移等于文件的大小加上指定的偏移量 */
 			offset += i_size_read(inode);
 			break;
 		case SEEK_CUR:
+		     /* offset为0时，并不改变当前的偏移量，而是直接返回当前偏移量 */  
 			if (offset == 0) {
 				retval = file->f_pos;
 				goto out;
 			}
+			/* 若offset不为0， 则最终偏移等于指定偏移加上当前偏移 */ 
 			offset += file->f_pos;
 			break;
 		case SEEK_DATA:
@@ -257,6 +260,8 @@ loff_t default_llseek(struct file *file, loff_t offset, int whence)
 			 * long as offset isn't at the end of the file then the
 			 * offset is data.
 			 */
+			 /* 对于一般文件，只要指定偏移不超过文件大小，那么指  
+                  定偏移的位置就是数据位置 */ 
 			if (offset >= inode->i_size) {
 				retval = -ENXIO;
 				goto out;
@@ -268,6 +273,8 @@ loff_t default_llseek(struct file *file, loff_t offset, int whence)
 			 * as long as offset isn't i_size or larger, return
 			 * i_size.
 			 */
+			 /* 只要指定偏移不超过文件大小，
+			 那么下一个空洞位置就是文件的末尾 */ 
 			if (offset >= inode->i_size) {
 				retval = -ENXIO;
 				goto out;
@@ -276,7 +283,11 @@ loff_t default_llseek(struct file *file, loff_t offset, int whence)
 			break;
 	}
 	retval = -EINVAL;
+	/* 对于一般文件来说，最终的offset必须大于或等于0，
+	或者该文件的模式要求只能产生无符号的偏移量。
+	否则就会报错 */
 	if (offset >= 0 || unsigned_offsets(file)) {
+	/* 当最终偏移不等于当前位置时，则更新文件的当前位置 */ 
 		if (offset != file->f_pos) {
 			file->f_pos = offset;
 			file->f_version = 0;
@@ -316,10 +327,20 @@ SYSCALL_DEFINE3(lseek, unsigned int, fd, off_t, offset, unsigned int, whence)
 		return -EBADF;
 
 	retval = -EINVAL;
-	/*应用程序调用lseek时,对于origin参数只有三个选择SEEK_SET,SEEK_CUR,SEEK_END,
-	 *这里的检查就是确保origin参数的有效性*/
+	/*
+	应用程序调用lseek时,对于origin参数只有三个选择SEEK_SET,SEEK_CUR,SEEK_END,
+	这里的检查就是确保origin参数的有效性
+	*/
 	if (whence <= SEEK_MAX) {
 		loff_t res = vfs_llseek(f.file, offset, whence);
+	/* 先使用res来给retval赋值，然后再次判断res  是否与retval相等。
+	    为什么会有这样的逻辑呢？什么时候两者会不相等呢？  
+          只有在retval与res的位数不相等的情况下。  
+          retval的类型是off_t->__kernel_off_t->long；  
+          而res的类型是loff_t->__kernel_off_t->long long;  
+          在32位机上，前者是32位，而后者是64位。当res的值超过了retval  
+          的范围时，两者将会不等。即实际偏移量超过了long类型的表示范围。  
+       */ 
 		retval = res;
 		if (res != (loff_t)retval)
 			retval = -EOVERFLOW;	/* LFS: should only happen on 32 bit platforms */
@@ -456,6 +477,10 @@ static ssize_t new_sync_read(struct file *filp, char __user *buf, size_t len, lo
 ssize_t __vfs_read(struct file *file, char __user *buf, size_t count,
 		   loff_t *pos)
 {
+    /*  
+            如果定义read操作，则执行定义的read操作  
+            如果没有定义read操作，则调用do_sync_read—其利用异步aio_read来完成同步的read操作。  
+      */  
 	if (file->f_op->read)
 		return file->f_op->read(file, buf, count, pos);
 	else if (file->f_op->read_iter)
@@ -468,23 +493,28 @@ EXPORT_SYMBOL(__vfs_read);
 ssize_t vfs_read(struct file *file, char __user *buf, size_t count, loff_t *pos)
 {
 	ssize_t ret;
-
+    /* 检查文件是否为读取打开 */
 	if (!(file->f_mode & FMODE_READ))
 		return -EBADF;
+	/* 检查文件是否支持读取操作 */
 	if (!(file->f_mode & FMODE_CAN_READ))
 		return -EINVAL;
+	/* 检查用户传递的参数buf的地址是否可写 */
 	if (unlikely(!access_ok(VERIFY_WRITE, buf, count)))
 		return -EFAULT;
-
+    /* 检查要读取的文件范围实际可读取的字节数 */
 	ret = rw_verify_area(READ, file, pos, count);
 	if (!ret) {
 		if (count > MAX_RW_COUNT)
 			count =  MAX_RW_COUNT;
 		ret = __vfs_read(file, buf, count, pos);
 		if (ret > 0) {
+		    /* 读取了一定的字节数， 进行通知操作 */
 			fsnotify_access(file);
+			/* 增加进程读取字节的统计计数 */
 			add_rchar(current, ret);
 		}
+		 /* 增加进程系统调用的统计计数 */
 		inc_syscr(current);
 	}
 
@@ -514,6 +544,12 @@ static ssize_t new_sync_write(struct file *filp, const char __user *buf, size_t 
 ssize_t __vfs_write(struct file *file, const char __user *p, size_t count,
 		    loff_t *pos)
 {
+    /*  
+           如果定义write操作，则执行定义的write操作  
+           如果没有定义write操作，则调用do_sync_write—其利用异步  
+           aio_write来完成同步的write操作  
+           */ 
+
 	if (file->f_op->write)
 		return file->f_op->write(file, p, count, pos);
 	else if (file->f_op->write_iter)
@@ -552,14 +588,18 @@ EXPORT_SYMBOL(__kernel_write);
 ssize_t vfs_write(struct file *file, const char __user *buf, size_t count, loff_t *pos)
 {
 	ssize_t ret;
-
+    /* 检查文件是否为写入打开 */ 
 	if (!(file->f_mode & FMODE_WRITE))
 		return -EBADF;
 	if (!(file->f_mode & FMODE_CAN_WRITE))
 		return -EINVAL;
+    /* 检查用户给定的地址范围是否可读取 */  
 	if (unlikely(!access_ok(VERIFY_READ, buf, count)))
 		return -EFAULT;
-
+    /*  
+        验证文件从pos起始是否可以写入count个字节数  
+        并返回可以写入的字节数  
+        */ 
 	ret = rw_verify_area(WRITE, file, pos, count);
 	if (!ret) {
 		if (count > MAX_RW_COUNT)
@@ -567,9 +607,12 @@ ssize_t vfs_write(struct file *file, const char __user *buf, size_t count, loff_
 		file_start_write(file);
 		ret = __vfs_write(file, buf, count, pos);
 		if (ret > 0) {
+		    /* 写入了一定的字节数， 进行通知操作 */ 
 			fsnotify_modify(file);
+			/* 增加进程读取字节的统计计数 */ 
 			add_wchar(current, ret);
 		}
+		/* 增加进程系统调用的统计计数 */ 
 		inc_syscw(current);
 		file_end_write(file);
 	}
@@ -593,11 +636,14 @@ SYSCALL_DEFINE3(read, unsigned int, fd, char __user *, buf, size_t, count)
 {
 	struct fd f = fdget_pos(fd);
 	ssize_t ret = -EBADF;
-
+    /* 通过文件描述符fd得到管理结构file */
 	if (f.file) {
+	/* 得到文件的当前偏移量 */  
 		loff_t pos = file_pos_read(f.file);
+    /* 利用vfs进行真正的read */
 		ret = vfs_read(f.file, buf, count, &pos);
 		if (ret >= 0)
+		/* 更新文件偏移量 */  
 			file_pos_write(f.file, pos);
 		fdput_pos(f);
 	}
@@ -611,9 +657,12 @@ SYSCALL_DEFINE3(write, unsigned int, fd, const char __user *, buf,
 	ssize_t ret = -EBADF;
 
 	if (f.file) {
+	    /* 得到当前的文件偏移 */  
 		loff_t pos = file_pos_read(f.file);
+		/* 利用VFS写入 */ 
 		ret = vfs_write(f.file, buf, count, &pos);
 		if (ret >= 0)
+		    /* 更新文件偏移量 */ 
 			file_pos_write(f.file, pos);
 		fdput_pos(f);
 	}
