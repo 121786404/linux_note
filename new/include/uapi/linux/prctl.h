@@ -152,7 +152,7 @@ struct prctl_mm_map {
  * A value of 0 mean "no process".
  */
 #define PR_SET_PTRACER 0x59616d61
-#define PR_SET_PTRACER_ANY ((unsigned long)-1)
+# define PR_SET_PTRACER_ANY ((unsigned long)-1)
 /*
 被标记为CHILD SUBREAPER的进程，它的所有子进程以及后续进程
 都会被标记为拥有subrepear，该进程充当init(1)
