@@ -1457,6 +1457,12 @@ EXPORT_SYMBOL_GPL(setup_irq);
  * Internal function to unregister an irqaction - used to free
  * regular and special interrupts that are part of the architecture.
  */
+/*
+如果不是共享中断线，则直接删除irq对应的中断线。
+如果是共享中断线，则判断此中断处理程序是否中断线上的最后一个中断处理程序， 
+是最后一个中断处理程序 -> 删除中断线和中断处理程序
+不是最后一个中断处理程序 -> 删除中断处理程序
+*/
 static struct irqaction *__free_irq(unsigned int irq, void *dev_id)
 {
 	struct irq_desc *desc = irq_to_desc(irq);
@@ -1636,7 +1642,14 @@ EXPORT_SYMBOL(free_irq);
  *	IRQF_TRIGGER_*		Specify active edge(s) or level
  *
  */
- /*这个函数被request_irq直接调用来安装ISR,用request_thread_irq函数来安装一个中断时，需要在struct irqaction对象中实现他的thread_fn成员，request_thread_irq函数内部会生成一个irq_thread的独立线程*/
+ /*这个函数被request_irq直接调用来安装ISR,
+ 用request_thread_irq函数来安装一个中断时，
+ 需要在struct irqaction对象中实现他的thread_fn成员，
+ request_thread_irq函数内部会生成一个irq_thread的独立线程
+
+ 函数调用了kmalloc()，kmalloc()是可以睡眠的，
+ 绝不能再中断上下文或其它不允许阻塞的代码中调用该函数。
+*/
 int request_threaded_irq(unsigned int irq, irq_handler_t handler,
 			 irq_handler_t thread_fn, unsigned long irqflags,
 			 const char *devname, void *dev_id)

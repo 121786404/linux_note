@@ -3570,7 +3570,7 @@ enqueue_entity(struct cfs_rq *cfs_rq, struct sched_entity *se, int flags)
 	 */
 	if (renorm && curr)
 		se->vruntime += cfs_rq->min_vruntime;
-
+    /* 更新当前进程运行时间和虚拟运行时间 */
 	update_curr(cfs_rq);
 
 	/*
@@ -3584,19 +3584,22 @@ enqueue_entity(struct cfs_rq *cfs_rq, struct sched_entity *se, int flags)
 
 	update_load_avg(se, UPDATE_TG);
 	enqueue_entity_load_avg(cfs_rq, se);
+    /* 更新cfs_rq队列总权重(就是在原有基础上加上se的权重) */
 	account_entity_enqueue(cfs_rq, se);
 	update_cfs_shares(cfs_rq);
-
+    /* 新建的进程flags为0，不会执行这里 */
 	if (flags & ENQUEUE_WAKEUP)
 		place_entity(cfs_rq, se, 0);
 
 	check_schedstat_required();
 	update_stats_enqueue(cfs_rq, se, flags);
 	check_spread(cfs_rq, se);
+    /* 将se插入到运行队列cfs_rq的红黑树中 */
 	if (!curr)
 		__enqueue_entity(cfs_rq, se);
+    /* 将se的on_rq标记为1 */
 	se->on_rq = 1;
-
+    /* 如果cfs_rq的队列中只有一个进程，这里做处理 */
 	if (cfs_rq->nr_running == 1) {
 		list_add_leaf_cfs_rq(cfs_rq);
 		check_enqueue_throttle(cfs_rq);
@@ -4733,11 +4736,17 @@ enqueue_task_fair(struct rq *rq, struct task_struct *p, int flags)
 	 */
 	if (p->in_iowait)
 		cpufreq_update_this_cpu(rq, SCHED_CPUFREQ_IOWAIT);
-
+    /* 这里是一个迭代，我们知道，进程有可能是处于一个进程组中的，
+          所以当这个处于进程组中的进程加入到该进程组的队列中时，
+          要对此队列向上迭代 */
 	for_each_sched_entity(se) {
 		if (se->on_rq)
 			break;
+         /* 如果不是CONFIG_FAIR_GROUP_SCHED，获取其所在CPU的rq运行队列的cfs_rq运行队列
+               * 如果是CONFIG_FAIR_GROUP_SCHED，获取其所在的cfs_rq运行队列
+            */
 		cfs_rq = cfs_rq_of(se);
+         /* 加入到队列中 */
 		enqueue_entity(cfs_rq, se, flags);
 
 		/*
@@ -4752,7 +4761,7 @@ enqueue_task_fair(struct rq *rq, struct task_struct *p, int flags)
 
 		flags = ENQUEUE_WAKEUP;
 	}
-
+    /* 只有se不处于队列中或者cfs_rq_throttled(cfs_rq)返回真才会运行这个循环 */
 	for_each_sched_entity(se) {
 		cfs_rq = cfs_rq_of(se);
 		cfs_rq->h_nr_running++;
@@ -4763,10 +4772,10 @@ enqueue_task_fair(struct rq *rq, struct task_struct *p, int flags)
 		update_load_avg(se, UPDATE_TG);
 		update_cfs_shares(cfs_rq);
 	}
-
+    /* 当前CPU运行队列活动进程数 + 1 */
 	if (!se)
 		add_nr_running(rq, 1);
-
+    /* 设置下次调度中断发生时间 */
 	hrtick_update(rq);
 }
 
@@ -8946,18 +8955,25 @@ static void task_tick_fair(struct rq *rq, struct task_struct *curr, int queued)
 static void task_fork_fair(struct task_struct *p)
 {
 	struct cfs_rq *cfs_rq;
+    /* 进程p的调度实体se */
 	struct sched_entity *se = &p->se, *curr;
+    /* 获取此CPU的运行队列 */
 	struct rq *rq = this_rq();
 
 	raw_spin_lock(&rq->lock);
+    /* 更新rq运行时间 */
 	update_rq_clock(rq);
 
 	cfs_rq = task_cfs_rq(current);
+    /* 设置当前进程所在队列为父进程所在队列 */
 	curr = cfs_rq->curr;
 	if (curr) {
+        /* 更新当前进程运行时间 */
 		update_curr(cfs_rq);
+        /* 将父进程的虚拟运行时间赋给了新进程的虚拟运行时间 */
 		se->vruntime = curr->vruntime;
 	}
+    /* 调整了se的虚拟运行时间 */
 	place_entity(cfs_rq, se, 1);
 
 	if (sysctl_sched_child_runs_first && curr && entity_before(curr, se)) {
@@ -8968,7 +8984,9 @@ static void task_fork_fair(struct task_struct *p)
 		swap(curr->vruntime, se->vruntime);
 		resched_curr(rq);
 	}
-
+    /* 保证了进程p的vruntime是运行队列中最小的
+          (这里占时不确定是不是这个用法，
+          不过确实是最小的了) */
 	se->vruntime -= cfs_rq->min_vruntime;
 	raw_spin_unlock(&rq->lock);
 }

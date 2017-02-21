@@ -87,6 +87,9 @@ void free_kthread_struct(struct task_struct *k)
  */
 bool kthread_should_stop(void)
 {
+/*
+    判断进程所在 kthread 结构中的 KTHREAD_SHOULD_STOP 是否被置位
+*/
 	return test_bit(KTHREAD_SHOULD_STOP, &to_kthread(current)->flags);
 }
 EXPORT_SYMBOL(kthread_should_stop);
@@ -104,6 +107,9 @@ EXPORT_SYMBOL(kthread_should_stop);
  */
 bool kthread_should_park(void)
 {
+/*
+判断进程所在 kthread 结构中的 KTHREAD_SHOULD_PARK 是否被置位
+*/
 	return test_bit(KTHREAD_SHOULD_PARK, &to_kthread(current)->flags);
 }
 EXPORT_SYMBOL_GPL(kthread_should_park);
@@ -166,6 +172,10 @@ void *kthread_probe_data(struct task_struct *task)
 
 static void __kthread_parkme(struct kthread *self)
 {
+    // 如果当前进程的 KTHREAD_SHOULD_PARK 标志被置位 ,
+    // 将当前进程进入 TASK_PARKED 的阻塞状态。
+    // 如果 KTHREAD_SHOULD_PARK 不清除，
+    // 就算被 wake_up 唤醒还是会循环进入 TASK_PARKED 的阻塞状态。
 	__set_current_state(TASK_PARKED);
 	while (test_bit(KTHREAD_SHOULD_PARK, &self->flags)) {
 		if (!test_and_set_bit(KTHREAD_IS_PARKED, &self->flags))
@@ -222,7 +232,7 @@ static int kthread(void *_create)
 	current->vfork_done = &self->exited;
 
 	/* OK, tell user we're spawned, wait for stop or wakeup */
-    /*  设置运行状态为 TASK_UNINTERRUPTIBLE */
+    /*  设置运行状态为 TASK_UNINTERRUPTIBLE 等待被wakeup唤醒*/
 	__set_current_state(TASK_UNINTERRUPTIBLE);
     /*  current 表示当前新创建的 thread 的 task_struct 结构  */
 	create->result = current;
@@ -234,8 +244,15 @@ static int kthread(void *_create)
           直到我们使用wake_up_process(p);唤醒新创建的线程
           线程被唤醒后, 会接着执行threadfn(data)*/
 	ret = -EINTR;
+	
 	if (!test_bit(KTHREAD_SHOULD_STOP, &self->flags)) {
+/*
+	如果是__smpboot_create_thread创建的线程还会进入park状态
+*/
 		__kthread_parkme(self);
+/*
+		调用实际的用户函数threadfn
+*/
 		ret = threadfn(data);
 	}
 	do_exit(ret);
@@ -262,11 +279,7 @@ static void create_kthread(struct kthread_create_info *create)
 	current->pref_node_fork = create->node;
 #endif
 	/* We want our own signal handler (we take no signals by default). */
-	/*
-    调用首先构造一个假的上下文执行环境，最后调用 do_fork()
-    返回进程 id, 创建后的线程执行 kthread 函数
-    任何一个内核线程入口都是 kthread
-    */
+
 	pid = kernel_thread(kthread, create, CLONE_FS | CLONE_FILES | SIGCHLD);
 	if (pid < 0) {
 		/* If user was SIGKILLed, I release the structure. */
@@ -299,16 +312,24 @@ struct task_struct *__kthread_create_on_node(int (*threadfn)(void *data),
 	create->node = node;
 	create->done = &done;
 
+/*
+将新建任务加入kthread_create_list 
+*/
 	spin_lock(&kthread_create_lock);
 	list_add_tail(&create->list, &kthread_create_list);
 	spin_unlock(&kthread_create_lock);
-
+/*
+    唤醒kthreadd_task来创建
+*/
 	wake_up_process(kthreadd_task);
 	/*
 	 * Wait for completion in killable state, for I might be chosen by
 	 * the OOM killer while kthreadd is trying to allocate memory for
 	 * new kernel thread.
 	 */
+/*
+	    等待创建任务完成
+*/
 	if (unlikely(wait_for_completion_killable(&done))) {
 		/*
 		 * If I was SIGKILLed before kthreadd (or new kernel thread)
@@ -326,7 +347,9 @@ struct task_struct *__kthread_create_on_node(int (*threadfn)(void *data),
 	task = create->result;
 	if (!IS_ERR(task)) {
 		static const struct sched_param param = { .sched_priority = 0 };
-
+/*
+    设置新进程的进程名
+*/
 		vsnprintf(task->comm, sizeof(task->comm), namefmt, args);
 		/*
 		 * root may have changed our (kthreadd's) priority or CPU mask.
@@ -435,7 +458,9 @@ struct task_struct *kthread_create_on_cpu(int (*threadfn)(void *data),
 					  const char *namefmt)
 {
 	struct task_struct *p;
-
+/*
+    创建进程
+*/
 	p = kthread_create_on_node(threadfn, data, cpu_to_node(cpu), namefmt,
 				   cpu);
 	if (IS_ERR(p))
@@ -458,7 +483,7 @@ struct task_struct *kthread_create_on_cpu(int (*threadfn)(void *data),
 void kthread_unpark(struct task_struct *k)
 {
 	struct kthread *kthread = to_kthread(k);
-
+    // (4) 清除 KTHREAD_IS_PARKED 标志位
 	clear_bit(KTHREAD_SHOULD_PARK, &kthread->flags);
 	/*
 	 * We clear the IS_PARKED bit here as we don't wait
@@ -466,11 +491,13 @@ void kthread_unpark(struct task_struct *k)
 	 * park before that happens we'd see the IS_PARKED bit
 	 * which might be about to be cleared.
 	 */
+    // 如果进程已经被 park，并且 wake_up 唤醒进程
 	if (test_and_clear_bit(KTHREAD_IS_PARKED, &kthread->flags)) {
 		/*
 		 * Newly created kthread was parked when the CPU was offline.
 		 * The binding was lost and we need to set it again.
 		 */
+        // 如果是 per_cpu 进程，重新绑定进程 cpu
 		if (test_bit(KTHREAD_IS_PER_CPU, &kthread->flags))
 			__kthread_bind(k, kthread->cpu, TASK_PARKED);
 		wake_up_state(k, TASK_PARKED);
@@ -496,7 +523,7 @@ int kthread_park(struct task_struct *k)
 
 	if (WARN_ON(k->flags & PF_EXITING))
 		return -ENOSYS;
-
+    // (3) 设置 KTHREAD_IS_PARKED 标志位，并且唤醒进程进入 park 状态
 	if (!test_bit(KTHREAD_IS_PARKED, &kthread->flags)) {
 		set_bit(KTHREAD_SHOULD_PARK, &kthread->flags);
 		if (k != current) {
@@ -533,7 +560,9 @@ int kthread_stop(struct task_struct *k)
 
 	get_task_struct(k);
 	kthread = to_kthread(k);
+	//  置位进程所在 kthread 结构中的 KTHREAD_SHOULD_STOP
 	set_bit(KTHREAD_SHOULD_STOP, &kthread->flags);
+	//  unpark & wake_up 进程来响应 stop 信号
 	kthread_unpark(k);
 	wake_up_process(k);
 	wait_for_completion(&kthread->exited);
@@ -566,25 +595,31 @@ int kthreadd(void *unused)
     // 允许在所有内存节点的分配内存。
 	set_mems_allowed(node_states[N_MEMORY]);
 
+/*
+    设置进程为不可freeze
+*/
 	current->flags |= PF_NOFREEZE;
 
 	for (;;) {
-        /*  首先将线程状态设置为 TASK_INTERRUPTIBLE, 如果当前
-                 没有要创建的线程则主动放弃 CPU 完成调度.此进程变为阻塞态*/
-
+        /*  首先将线程状态设置为 TASK_INTERRUPTIBLE, */
 		set_current_state(TASK_INTERRUPTIBLE);
-		if (list_empty(&kthread_create_list))//没有需要创建的内核线程，调度出去等待唤醒。
-			schedule();  //   什么也不做, 执行一次调度, 让出CPU
+/*
+		如果当前没有要创建的线程则主动放弃 CPU 完成调度.
+           此进程变为阻塞态
+           因为此前已经将该进程的状态设置为TASK_INTERRUPTIBLE，
+           所以schedule的调用将会使当前进程进入睡眠
+*/
+		if (list_empty(&kthread_create_list))
+			schedule(); 
        
         /*  运行到此表示 kthreadd 线程被唤醒(就是我们当前)
                     设置进程运行状态为 TASK_RUNNING */
 		__set_current_state(TASK_RUNNING);
 
-        /* 在for循环中，如果发现kthread_create_list是一空链表，
-                则调用schedule调度函数，因为此前已经将该进程的状态设置为
-                TASK_INTERRUPTIBLE，所以schedule的调用将会使当前进程进入睡眠*/
-		spin_lock(&kthread_create_lock);//获取自旋锁，可能有多个kthreadd线程在运行。
-		while (!list_empty(&kthread_create_list)) {//读取链表，找到所有需要创建的任务。
+        //获取自旋锁，可能有多个kthreadd线程在运行。
+		spin_lock(&kthread_create_lock);
+		while (!list_empty(&kthread_create_list)) {
+		    //读取链表，找到所有需要创建的任务。
 			struct kthread_create_info *create;
 
             /*  从链表中取得 kthread_create_info 结构的地址，在上文中已经完成插入操作(将
@@ -593,10 +628,7 @@ int kthreadd(void *unused)
 			create = list_entry(kthread_create_list.next,
 					    struct kthread_create_info, list);
             
-            /* 完成创建后将其从链表中删除 */
 			list_del_init(&create->list);
-
-            /* 完成真正线程的创建 */
 			spin_unlock(&kthread_create_lock);
 
 			//创建内核线程

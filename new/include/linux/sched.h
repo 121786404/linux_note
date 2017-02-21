@@ -1205,11 +1205,19 @@ struct sched_domain_shared {
 
 struct sched_domain {
 	/* These fields must be setup */
+/*
+    调用域可以被别的调用域所包含parent指向父调用域
+*/
 	struct sched_domain *parent;	/* top domain must be null terminated */
 	struct sched_domain *child;	/* bottom domain must be null terminated */
+    //该调用域所包含的组
 	struct sched_group *groups;	/* the balancing groups of the domain */
+    //最小的时间间隔，用于检查进行负载均衡操作的时机是否到了
 	unsigned long min_interval;	/* Minimum balance interval ms */
 	unsigned long max_interval;	/* Maximum balance interval ms */
+    //当处理器在不空闲的状态下时，
+    //进行负载均衡操作的时间间隔一般也长很多，
+    //该factor为其乘数银子
 	unsigned int busy_factor;	/* less balancing by factor if busy */
 	unsigned int imbalance_pct;	/* No balance until over watermark */
 	unsigned int cache_nice_tries;	/* Leave cache hot tasks for # tries */
@@ -1226,7 +1234,9 @@ struct sched_domain {
 
 	/* Runtime fields. */
 	unsigned long last_balance;	/* init to jiffies. units in jiffies */
+    //负载均衡进行的时间间隔
 	unsigned int balance_interval;	/* initialise to 1. units in ms. */
+    //负载均衡迁移进程失败的次数
 	unsigned int nr_balance_failed; /* initialise to 0 */
 
 	/* idle_balance() stats */
@@ -1463,29 +1473,78 @@ struct sched_statistics {
 };
 #endif
 
+/* 
+一个调度实体(红黑树的一个结点)，其包含一组或一个指定的进程，
+包含一个自己的运行队列，一个父亲指针，
+一个指向需要调度的运行队列指针 
+*/
 struct sched_entity {
+/* 
+    权重，在数组prio_to_weight[]包含优先级转权重的数值 
+    通过优先级转换而成，是vruntime计算的关键。
+*/
 	struct load_weight	load;		/* for load-balancing */
+/* 
+    实体在红黑树对应的结点信息 
+*/
 	struct rb_node		run_node;
+/* 
+    实体所在的进程组 
+*/
 	struct list_head	group_node;
+/* 
+实体是否处于红黑树运行队列中 
+表明是否处于CFS红黑树运行队列中，需要明确一个观点就是，
+CFS运行队列里面包含有一个红黑树，
+但这个红黑树并不是CFS运行队列的全部，
+因为红黑树仅仅是用于选择出下一个调度程序的算法。
+很简单的一个例子，普通程序运行时，其并不在红黑树中，
+但是还是处于CFS运行队列中，其on_rq为真。
+只有准备退出、即将睡眠等待和转为实时进程的进程其
+CFS运行队列的on_rq为假。
+*/
 	unsigned int		on_rq;
-
+/* 开始运行时间 */
 	u64			exec_start;
+/* 总运行时间 */
 	u64			sum_exec_runtime;
+/* 
+虚拟运行时间，调度的关键，其计算公式：
+一次调度间隔的虚拟运行时间 = 实际运行时间 * (NICE_0_LOAD / 权重)。
+可以看出跟实际运行时间和权重有关，
+红黑树就是以此作为排序的标准，
+优先级越高的进程在运行时其vruntime增长的越慢，
+其可运行时间相对就长，而且也越有可能处于红黑树的最左结点，
+调度器每次都选择最左边的结点为下一个调度进程。
+注意其值为单调递增，在每个调度器的时钟中断时当前进程的
+虚拟运行时间都会累加。单纯的说就是进程们都在比谁的vruntime最小，
+最小的将被调度
+*/
 	u64			vruntime;
+/* 进程在切换进CPU时的sum_exec_runtime值 */
 	u64			prev_sum_exec_runtime;
-
+/* 此调度实体中进程移到其他CPU组的数量 */
 	u64			nr_migrations;
 
 #ifdef CONFIG_SCHEDSTATS
+    /* 用于统计一些数据 */
 	struct sched_statistics statistics;
 #endif
 
 #ifdef CONFIG_FAIR_GROUP_SCHED
+    /* 代表此进程组的深度，每个进程组都比其parent调度组深度大1 */
 	int			depth;
+    /* 父亲调度实体指针，如果是进程则指向其运行队列的调度实体，
+       * 如果是进程组则指向其上一个进程组的调度实体
+       * 在 set_task_rq 函数中设置
+       */
 	struct sched_entity	*parent;
 	/* rq on which this entity is (to be) queued: */
+    /* 此调度实体所处于的CFS运行队列 */
 	struct cfs_rq		*cfs_rq;
 	/* rq "owned" by this entity/group: */
+    /* 实体的红黑树运行队列，如果为NULL表明其是一个进程，
+          若非NULL表明其是调度组 */
 	struct cfs_rq		*my_q;
 #endif
 
@@ -1634,10 +1693,12 @@ struct task_struct {
 
 	int wake_cpu;
 #endif
+    /* 是否在运行队列 */
 	int on_rq;
     /*
-        prio 动态优先级
-        static_prio  用于保存静态优先级, 是进程启动时分配的优先级, 可以通过nice和sched_setscheduler系统调用来进行修改, 否则在进程运行期间会一直保持恒定
+        prio: 动态优先级，范围为100~139，与静态优先级和补偿(bonus)有关
+        static_prio: 静态优先级，static_prio = 100 + nice + 20 (nice值为-20~19,所以static_prio值为100~139)
+                        是进程启动时分配的优先级, 可以通过nice和sched_setscheduler系统调用来进行修改, 否则在进程运行期间会一直保持恒定
         normal_prio 表示基于进程的静态优先级static_prio和调度策略计算出的优先级. 
                           因此即使普通进程和实时进程具有相同的静态优先级, 
                           其普通优先级也是不同的, 进程分叉(fork)时, 
@@ -1645,7 +1706,7 @@ struct task_struct {
     */
 	int prio, static_prio, normal_prio;
 	/* 
-	用于保存实时优先级, 实时进程的优先级用实时优先级rt_priority来表示 
+	实时优先级
 	*/
 	unsigned int rt_priority;
 	/* 调度类
@@ -1653,11 +1714,12 @@ struct task_struct {
           开发者可以根据己的设计需求,來把所属的Task配置到不同的Scheduling Class中.
 	*/
 	const struct sched_class *sched_class;
-	/* 普通进程的调用实体，每个进程都有其中之一的实体 */
+    /* 调度实体(红黑树的一个结点) */
 	struct sched_entity se;
-	/* 实时进程的调用实体，每个进程都有其中之一的实体 */
+    /* 调度实体(实时调度使用) */
 	struct sched_rt_entity rt;
 #ifdef CONFIG_CGROUP_SCHED
+    /* 指向其所在进程组 */
 	struct task_group *sched_task_group;
 #endif
 	struct sched_dl_entity dl;
@@ -1675,7 +1737,13 @@ struct task_struct {
     /* 调度策略 */
 	unsigned int policy;
 	int nr_cpus_allowed;
-	/* 用于控制进程可以在哪里处理器上运行 */
+	/*
+	掩码标志的每一位对应一个系统可用的处理器
+	默认情况下，所有的位都被设置，
+	进程可以在系统中所有可用的处理器上执行
+	1 指定某个CPU专门处理某个任务，提高次任务的实时性
+	2 保持高CPU缓存命中率
+	*/
 	cpumask_t cpus_allowed;
 
 #ifdef CONFIG_PREEMPT_RCU

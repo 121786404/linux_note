@@ -387,8 +387,6 @@ static noinline void __ref rest_init(void)
 {
 	int pid;
 /*
-启动Read-Copy Update,会调用num_online_cpus确认目前只有bootstrap处理器在运作,
-以及调用nr_context_switches确认在启动RCU前,没有进行过Contex-Switch,
 最后就是设定rcu_scheduler_active=1启动RCU机制. 
 RCU在多核心架构下,不同的行程要读取同一笔资料内容/结构,
 可以提供高效率的同步与正确性. 

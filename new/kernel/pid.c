@@ -41,6 +41,10 @@
 
 #define pid_hashfn(nr, ns)	\
 	hash_long((unsigned long)nr + (unsigned long)ns, pidhash_shift)
+/*
+在一些情况下，内核必须能从进程的PID得出对应的进程描述符指针。
+例如kill系统调用为了加速查找，引入了pid_hash散列表
+*/
 static struct hlist_head *pid_hash;
 static unsigned int pidhash_shift = 4;
 struct pid init_struct_pid = INIT_STRUCT_PID;

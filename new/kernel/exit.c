@@ -307,18 +307,37 @@ static int will_become_orphaned_pgrp(struct pid *pgrp,
 					struct task_struct *ignored_task)
 {
 	struct task_struct *p;
-
+/*
+循环查询线程组中的每一个线程
+*/
 	do_each_pid_task(pgrp, PIDTYPE_PGID, p) {
 		if ((p == ignored_task) ||
+/*
+		如果pgrp中的p进程正处于退出状态而且其所在的线程组是空的了  
+*/
 		    (p->exit_state && thread_group_empty(p)) ||
+/*
+		或者pgrp中p进程的父进程是init进程，
+		说明在该线程组中已经没有其他线程了（即list_empty(&p->thread_group) == 1;）
+*/
 		    is_global_init(p->real_parent))
 			continue;
-
+/*
+            如果p的父进程和p不再同一个组中
+*/
 		if (task_pgrp(p->real_parent) != pgrp &&
+/*
+		      但是p的父进程和p进程功属于一个会话
+*/
 		    task_session(p->real_parent) == task_session(p))
+/*
+		    返回0，不会变成孤儿  
+*/
 			return 0;
 	} while_each_pid_task(pgrp, PIDTYPE_PGID, p);
-
+/*
+    返回1，会变成孤儿。
+*/
 	return 1;
 }
 
@@ -367,10 +386,10 @@ kill_orphaned_pgrp(struct task_struct *tsk, struct task_struct *parent)
 		 */
 		ignored_task = NULL;
 
-	if (task_pgrp(parent) != pgrp &&
-	    task_session(parent) == task_session(tsk) &&
-	    will_become_orphaned_pgrp(pgrp, ignored_task) &&
-	    has_stopped_jobs(pgrp)) {
+	if (task_pgrp(parent) != pgrp && //进程tsk和其父进程不属于同一个组
+	    task_session(parent) == task_session(tsk) &&  //进程tsk和其父进程属于一个会话 
+	    will_become_orphaned_pgrp(pgrp, ignored_task) && //进程组将会成为孤
+	    has_stopped_jobs(pgrp)) {//是否有被停止的job，被停止的原因可能是因为debugger
 		__kill_pgrp_info(SIGHUP, SEND_SIG_PRIV, pgrp);
 		__kill_pgrp_info(SIGCONT, SEND_SIG_PRIV, pgrp);
 	}
@@ -528,6 +547,7 @@ static struct task_struct *find_alive_thread(struct task_struct *p)
 	struct task_struct *t;
 
 	for_each_thread(p, t) {
+	//如果得到的下一个进程被标记了 PF_EXITING ，就不符合要求，需要继续遍历  
 		if (!(t->flags & PF_EXITING))
 			return t;
 	}
@@ -568,6 +588,15 @@ static struct task_struct *find_child_reaper(struct task_struct *father)
  *    child_subreaper for its children (like a service manager)
  * 3. give it to the init process (PID 1) in our pid namespace
  */
+/*
+先在当前线程组中找一个线程作为父亲，如果找不到，
+就让init做父进程。(init进程是在linux启动时就一直存在的)
+
+而 init 进程通常第一个启动的进程，其他所有进程都是 init 的子进程，
+所以一般来说最后所有孤儿进程都将被 init 进程接管。
+可以人为创建一个进程，将它标记为 child_subreaper，
+使其接管其创建的所有孤儿进程，从而不必让 init 进程接管
+*/
 static struct task_struct *find_new_reaper(struct task_struct *father,
 					   struct task_struct *child_reaper)
 {
@@ -583,12 +612,22 @@ static struct task_struct *find_new_reaper(struct task_struct *father,
 		 * We start from father to ensure we can not look into another
 		 * namespace, this is safe because all its threads are dead.
 		 */
+/*
+		 当一个进程成为了孤儿进程，并且被标记为拥有一个 subreaper。
+		 那么会沿着它的进程树向祖先进程找一个最近的是 child_subreaper 
+		 并且运行着的进程，这个进程将会接管这个孤儿进程
+*/
 		for (reaper = father;
+            /* 找到相同线程组里其它可用线程 */
 		     !same_thread_group(reaper, child_reaper);
 		     reaper = reaper->real_parent) {
 			/* call_usermodehelper() descendants need this check */
 			if (reaper == &init_task)
 				break;
+            /*
+                沿着它的进程树向祖先进程找一个最近的child_subreaper
+                并且运行着的进程
+                */
 			if (!reaper->signal->is_child_subreaper)
 				continue;
 			thread = find_alive_thread(reaper);
@@ -613,8 +652,15 @@ static void reparent_leader(struct task_struct *father, struct task_struct *p,
 	p->exit_signal = SIGCHLD;
 
 	/* If it has exited notify the new parent about this child's death. */
+/*
+	如果将死进程的子进程没有被跟踪，
+	且其状态是僵死状态并且所在线程组已经是空的了  
+*/
 	if (!p->ptrace &&
 	    p->exit_state == EXIT_ZOMBIE && thread_group_empty(p)) {
+/*
+	向其父进程发送一个信号，让其知道子进程的生命已经结束，
+*/
 		if (do_notify_parent(p, p->exit_signal)) {
 			p->exit_state = EXIT_DEAD;
 			list_add(&p->ptrace_entry, dead);
@@ -632,6 +678,12 @@ static void reparent_leader(struct task_struct *father, struct task_struct *p,
  *	as a result of our exiting, and if they have any stopped
  *	jobs, send them a SIGHUP and then a SIGCONT.  (POSIX 3.2.2.2)
  */
+/*
+ A. 让init进程继承这个进程的所有子进程
+ B. 检查该进程所在的进程组在该进程死后是否会变为孤儿进程组，
+     如果他们已经停止了工作
+
+*/
 static void forget_original_parent(struct task_struct *father,
 					struct list_head *dead)
 {
@@ -644,15 +696,27 @@ static void forget_original_parent(struct task_struct *father,
 	reaper = find_child_reaper(father);
 	if (list_empty(&father->children))
 		return;
-
+/*
+    寻找新的父进程。 
+*/
 	reaper = find_new_reaper(father, reaper);
+/*
+	逐个处理将死进程的子进程的兄弟进程为他们设置新的父进程
+*/
 	list_for_each_entry(p, &father->children, sibling) {
 		for_each_thread(p, t) {
+/*
+		将将死进程的子进程的兄弟进程的real_parent指向reaper进程
+*/
 			t->real_parent = reaper;
 			BUG_ON((!t->ptrace) != (t->parent == father));
 			if (likely(!t->ptrace))
 				t->parent = t->real_parent;
 			if (t->pdeath_signal)
+/*
+			发送SEND_SIG_NOINFO信号，注意task_struct结构中的pdeath_dignal
+			就是当父进程死亡的时候才会被设置，也就是这个时候
+*/
 				group_send_sig_info(t->pdeath_signal,
 						    SEND_SIG_NOINFO, t);
 		}

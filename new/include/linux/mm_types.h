@@ -538,7 +538,9 @@ struct mm_struct {
 	unsigned long task_size;		/* size of task vm space */
 	unsigned long highest_vm_end;		/* highest vma end address */
 /*
-	进程的页目录
+     指向第一级页表即页全局目录的基址，
+     当内核运行这个进程时，它就将pgd存放在CR3寄存器内，
+     根据它来进行地址转换工作
 */
 	pgd_t * pgd;
 	atomic_t mm_users;			/* How many users with user space? */

@@ -1757,9 +1757,7 @@ static __latent_entropy struct task_struct *copy_process(
 /*
 	置子进程调度相关的参数，即子进程的运行CPU、初始时间片长度和静态优先级等
 */
-	/* 完成调度相关的设置，将这个task分配给CPU */
-	/* 完成对新进程调度程序数据结构的初始化，并把新进程的状态设置为TASK_RUNNING
-          同时将thread_info中得preempt_count置为1，禁止内核抢占*/
+	/* 进程调度的初始化 */
 	retval = sched_fork(clone_flags, p);
 	if (retval)
 		goto bad_fork_cleanup_policy;
@@ -1953,6 +1951,9 @@ static __latent_entropy struct task_struct *copy_process(
 			p->signal->leader_pid = pid;
 			p->signal->tty = tty_kref_get(current->signal->tty);
 			list_add_tail(&p->sibling, &p->real_parent->children);
+/*
+			新创建的进程插入init_task 链表尾部，
+*/
 			list_add_tail_rcu(&p->tasks, &init_task.tasks);
 			/* 将pid加入散列表 */
 			attach_pid(p, PIDTYPE_PGID);
@@ -2096,22 +2097,7 @@ long _do_fork(unsigned long clone_flags,
 	 * requested, no event is reported; otherwise, report if the event
 	 * for the type of forking is enabled.
 	 */
-	 /*
-        Linux的内核提供了ptrace这样的系统调用，
-        通过它，一个进程（我们称之 tracer，例如strace、gdb）
-        可以观测和控制另外一个进程（被trace的进程，我们称之tracee）的执行。
-        一旦Tracer和 tracee建立了跟踪关系，那么所有发送给tracee的信号(除SIGKILL)都会汇报给Tracer，
-        以便Tracer可以控制或者观测 tracee的执行。例如断点的操作。
-        Tracer程序一般会提供界面，以便用户可以设定一个断点（当tracee运行到断点时，会停下来）。
-        当用户设定 了断点后，tracer就会保存该位置的指令，
-        然后向该位置写入SWI __ARM_NR_breakpoint（这种断点是soft break point，可以设定无限多个，
-        对于hard break point是和CPU体系结构相关，一般支持2个）。
-        当执行到断点位置的时候，发生软中断，内核会给tracee进程发出SIGTRAP信号，
-        当然这个信号也会被tracer捕获。
-        对于tracee，当收到信号的时候，无论是什么信号，甚至是ignor的信号，
-        tracee进程都会停止运行。Tracer进程可以对tracee进行各种操作，
-        例如观察tracer的寄存器，观察变量等等
-	 */
+
 	 /*
         控制创建进程是否向tracer上报信号，
         如果需要上报，那么要上报哪些信号。
@@ -2120,6 +2106,9 @@ long _do_fork(unsigned long clone_flags,
         对于内核线程，在创建的时候都会携带该flag，
         这也就意味着，内核线程是无法被traced，
         也就不需要上报event给tracer。
+
+        检测子进程是否也要被跟踪。
+        如果trace为1，那么就将跟踪标志CLONE_PTRACE加入标志变量clone_flags中
 	 */
 	if (!(clone_flags & CLONE_UNTRACED)) {
 		if (clone_flags & CLONE_VFORK)
@@ -2182,6 +2171,10 @@ long _do_fork(unsigned long clone_flags,
 
 		put_pid(pid);
 	} else {
+/*
+根据PTR_ERR()的返回值得到错误代码，保存于pid中。 返回pid。
+这也就是为什么使用fork系统调用时父进程会返回子进程pid的原因。	
+*/
 		nr = PTR_ERR(p);
 	}
 	return nr;
@@ -2211,9 +2204,11 @@ long do_fork(unsigned long clone_flags,
 /*
  * Create a kernel thread.
  */
-/**
- * 创建内核线程
- */
+/*
+调用首先构造一个假的上下文执行环境，最后调用 do_fork()
+返回进程 id, 创建后的线程执行 kthread 函数
+任何一个内核线程入口都是 kthread
+*/
 pid_t kernel_thread(int (*fn)(void *), void *arg, unsigned long flags)
 {
 	return _do_fork(flags|CLONE_VM|CLONE_UNTRACED, (unsigned long)fn,

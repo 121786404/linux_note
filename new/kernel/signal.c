@@ -2412,6 +2412,9 @@ void exit_signals(struct task_struct *tsk)
 	 * From now this task is not visible for group-wide signals,
 	 * see wants_signal(), do_signal_stop().
 	 */
+/*
+	 ÉèÖÃÎªPF_EXITING
+*/
 	tsk->flags |= PF_EXITING;
 
 	threadgroup_change_end(tsk);

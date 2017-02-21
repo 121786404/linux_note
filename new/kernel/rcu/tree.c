@@ -3994,9 +3994,12 @@ early_initcall(rcu_spawn_gp_kthread);
  */
 void rcu_scheduler_starting(void)
 {
-	WARN_ON(num_online_cpus() != 1);  // 确认目前只有bootstrap处理器在运行
-	WARN_ON(nr_context_switches() > 0); // 确认在启动RCU前,没有进行过Contex-Switch
+    // 确认目前只有bootstrap处理器在运行
+	WARN_ON(num_online_cpus() != 1);  
+    // 确认在启动RCU前,没有进行过Contex-Switch
+	WARN_ON(nr_context_switches() > 0); 
 	rcu_test_sync_prims();
+    // 启动RCU机制. 
 	rcu_scheduler_active = RCU_SCHEDULER_INIT;
 	rcu_test_sync_prims();
 }

@@ -432,11 +432,19 @@ inline void raise_softirq_irqoff(unsigned int nr)
 		wakeup_softirqd();
 }
 
+/*
+    将一个软中断设置为挂起状态
+    让它在下次调用 do_softirq()函数时投入运行
+*/
 void raise_softirq(unsigned int nr)
 {
 	unsigned long flags;
 
 	local_irq_save(flags);
+/*
+	在触发软中断之前会禁用中断，触发后，再回复原来的状态，
+	如果中断本身已经被禁止了，可以直接调用raise_softirq_irqoff
+*/
 	raise_softirq_irqoff(nr);
 	local_irq_restore(flags);
 }
@@ -446,7 +454,7 @@ void __raise_softirq_irqoff(unsigned int nr)
 	trace_softirq_raise(nr);
 	or_softirq_pending(1UL << nr);
 }
-/*用来给TASKLET_SOFTIRQ和HI_SOFTIRQ安装对应的执行函数*/
+/*注册软中断处理程序*/
 void open_softirq(int nr, void (*action)(struct softirq_action *))
 {
 	softirq_vec[nr].action = action;
@@ -463,7 +471,14 @@ struct tasklet_head {
 
 static DEFINE_PER_CPU(struct tasklet_head, tasklet_vec);
 static DEFINE_PER_CPU(struct tasklet_head, tasklet_hi_vec);
+/*
+在 tasklet 被调度后，只要有机会它就会尽早的执行，
+如果它还没运行，又被调度了一次，那么它仍然只会运行一次。
 
+如果它正在执行，在另一个处理器上 tasklet 又被调度了一次，
+那么新的 tasklet 会被重新调度再运行一次
+（不是同时运行，再次调度，下次有机会运行时才运行）
+*/
 void __tasklet_schedule(struct tasklet_struct *t)
 {
 	unsigned long flags;

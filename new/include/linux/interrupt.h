@@ -157,7 +157,7 @@ request_threaded_irq(unsigned int irq, irq_handler_t handler,
 		     unsigned long flags, const char *name, void *dev);
 
 /* 把驱动程序实现的中断服务例程赋值给handler,驱动程序中安装中断服务例程
- * @irq:当前要安装的中断处理例程对应的中断号
+ * @irq:中断号
  * @handler:中断处理例程ISR,由设备驱动程序负责实现
  * @flags:是标志变量,可影响内核在安装ISR时的一些行为模式,信号触发类型
  * @name:当前安装中断ISR的设备名称，内核在proc文件系统生成name的一个入口点
@@ -466,7 +466,7 @@ extern bool force_irqthreads;
    tasklets are more than enough. F.e. all serial device BHs et
    al. should be converted to tasklets, not to softirqs.
  */
-/*softirq的类型,软件中断的类型*/
+/*softirq的类型*/
 enum
 {
 	HI_SOFTIRQ=0,	/*用来实现tasklet,优先级高于TASKLET_SOFTIRQ*/
@@ -497,7 +497,20 @@ extern const char * const softirq_to_name[NR_SOFTIRQS];
  * asm/hardirq.h to get better cache usage.  KAO
  */
 
-/*软中断处理函数原形*/
+/*
+软中断处理程序运行在中断上下文，允许中断响应，但它不能休眠。
+当一个处理程序运行的时候，当前处理器的软中断被禁止。
+但其它处理器仍可以执行别的软中断。
+
+实际上，如果同一个软中断在它被执行的同时再次触发了，
+那么另一个处理器可以同时运行其处理程序，
+这意味着任何的数据共享，都需要严格的锁保护。
+
+（tasklet更受青睐正是因此，tasklet处理程序正在执行时，
+在任何处理器都不会再执行） 一个软中断不会抢占另一个软中断。
+
+实际上，唯一可以抢占软中断的是中断处理程序。
+*/
 struct softirq_action
 {
 	void	(*action)(struct softirq_action *);
@@ -548,8 +561,15 @@ static inline struct task_struct *this_cpu_ksoftirqd(void)
      wrt another tasklets. If client needs some intertask synchronization,
      he makes it with spinlocks.
  */
- /*表示tasklet对象的数据结构
-  * 驱动程序为了实现基于tasklet机制的延迟操作,首先需要声明一个tasklet对象*/
+/*表示tasklet对象的数据结构
+  * 驱动程序为了实现基于tasklet机制的延迟操作,
+  首先需要声明一个tasklet对象
+
+  tasklet 是通过软中断实现的，因此它本质也是软中断。
+  与软中断最大的区别是，如果是多处理器系统，
+  tasklet在运行前会检查这个tasklet是否正在其它处理器上运行，
+  如果是则不运行
+*/
 struct tasklet_struct
 {
 	struct tasklet_struct *next;	/*将系统中的tasklet对象构建成链表*/
@@ -606,8 +626,10 @@ static inline void tasklet_unlock_wait(struct tasklet_struct *t)
 
 extern void __tasklet_schedule(struct tasklet_struct *t);
 
-/* 驱动程序项系统提交这个tasklet,即将tastlet对象加入到tasklet_vec管理的链表中
- * 对于HI_SOFTIRQ,提交tasklet对象的函数为tasklet_hi_schedule*/
+/* 
+* 驱动程序向系统提交这个tasklet,即将tastlet对象加入到tasklet_vec管理的链表中
+* 对于HI_SOFTIRQ,提交tasklet对象的函数为tasklet_hi_schedule
+*/
 static inline void tasklet_schedule(struct tasklet_struct *t)
 {
 	if (!test_and_set_bit(TASKLET_STATE_SCHED, &t->state))
