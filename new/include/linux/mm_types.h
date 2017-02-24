@@ -543,7 +543,13 @@ struct mm_struct {
      根据它来进行地址转换工作
 */
 	pgd_t * pgd;
+/*
+	共享mm_struct数据结构的轻量级进程的个数
+*/
 	atomic_t mm_users;			/* How many users with user space? */
+/*
+	内存描述符的主使计数器
+*/
 	atomic_t mm_count;			/* How many references to "struct mm_struct" (users count as 1) */
 	atomic_long_t nr_ptes;			/* PTE page table pages */
 #if CONFIG_PGTABLE_LEVELS > 2
@@ -598,7 +604,7 @@ start_data和end_data标记了包含已初始化数据的区域. 请注意,
 	struct mm_rss_stat rss_stat;
 
 	struct linux_binfmt *binfmt;
-
+    /*用于懒惰TLB交换的位掩码*/ 
 	cpumask_var_t cpu_vm_mask_var;
 
 	/* Architecture-specific MM context */

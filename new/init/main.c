@@ -12,6 +12,7 @@
 #define DEBUG		/* Enable initcall_debug */
 
 #include <linux/types.h>
+#include <linux/extable.h>
 #include <linux/module.h>
 #include <linux/proc_fs.h>
 #include <linux/kernel.h>
@@ -496,6 +497,7 @@ void __init parse_early_param(void)
 	parse_early_options(tmp_cmdline);
 	done = 1;
 }
+
 void __init __weak arch_post_acpi_subsys_init(void) { }
 
 void __init __weak smp_setup_processor_id(void)
@@ -671,7 +673,13 @@ init=/linuxrc earlyprintk console=ttyAMA0,115200 root=/dev/mmcblk0 rw rootwait
 	//idr用于管理整数ID，为POSIX计时器相关系统所用，生成特定计时器对象的ID.
 	idr_init_cache();
 	//初始化cpu相关的rcu数据结构。注册rcu回调。
+	/*
+	 * Allow workqueue creation and work item queueing/cancelling
+	 * early.  Work item execution depends on kthreads and starts after
+	 * workqueue_init().
+	 */
 	workqueue_init_early();
+
 	rcu_init();
 
 	/* trace_printk() and trace points may be used after this */
@@ -715,7 +723,7 @@ init=/linuxrc earlyprintk console=ttyAMA0,115200 root=/dev/mmcblk0 rw rootwait
 	//调度器使用的时间系统初始化。
 	// start the high-resolution timer to keep sched_clock() properly updated and sets the initial epoch
 	sched_clock_postinit();
-	printk_nmi_init();
+	printk_safe_init();
 	// perf is a profiler tool for Linux, https://perf.wiki.kernel.org/index.php/Tutorial
 	perf_event_init();
 	// initializes basic kernel profiler
@@ -779,8 +787,6 @@ init=/linuxrc earlyprintk console=ttyAMA0,115200 root=/dev/mmcblk0 rw rootwait
 	// default late_time_init is NULL. archs can override it
 	if (late_time_init)
 		late_time_init(); // architecture-specific
-	// set the time info for scheduler and make sched clock running
-	sched_clock_init();
 	//测试BogoMIPS值，计算每个jiffy内消耗掉多少CPU周期。
 	// calibrate the delay loop
 	calibrate_delay();
@@ -851,7 +857,6 @@ init=/linuxrc earlyprintk console=ttyAMA0,115200 root=/dev/mmcblk0 rw rootwait
 
     // Extensible Firmware Interface
 	if (efi_enabled(EFI_RUNTIME_SERVICES)) {
-		efi_late_init();
 		efi_free_boot_services();
 	}
 
@@ -1129,7 +1134,7 @@ static int try_to_run_init_process(const char *init_filename)
 
 static noinline void __init kernel_init_freeable(void);
 
-#if defined(CONFIG_DEBUG_RODATA) || defined(CONFIG_DEBUG_SET_MODULE_RONX)
+#if defined(CONFIG_STRICT_KERNEL_RWX) || defined(CONFIG_STRICT_MODULE_RWX)
 bool rodata_enabled __ro_after_init = true;
 static int __init set_debug_rodata(char *str)
 {
@@ -1138,7 +1143,7 @@ static int __init set_debug_rodata(char *str)
 __setup("rodata=", set_debug_rodata);
 #endif
 
-#ifdef CONFIG_DEBUG_RODATA
+#ifdef CONFIG_STRICT_KERNEL_RWX
 static void mark_readonly(void)
 {
 	if (rodata_enabled)
@@ -1254,14 +1259,18 @@ static noinline void __init kernel_init_freeable(void)
 	/*
 	 * init can run on any cpu.
 	 */
+	//允许进程运行在任何cpu中。
     /* 通过设置cpu_bit_mask, 可以限定task只能在特定的处理器上运行, 
           而initcurrent进程此时必然是init进程，
           设置其cpu_all_mask即使得init进程可以在任意的cpu上运行 */
 	set_cpus_allowed_ptr(current, cpu_all_mask);
 
-    /* 
-      设置到目前运行进程init的pid号给cad_pid
-      */
+	//保存能执行cad的进程id,安全方面的考虑。
+    /* 设置到目前运行进程init的pid号给cad_pid
+        (cad_pid是用来接收ctrl-alt-del reboot signal的进程, 
+        如果设置C_A_D=1就表示可以处理来自ctl-alt-del的动作)， 
+        最后会调用 ctrl_alt_del(void)并确认C_A_D是否为1,
+        确认完成后将执行cad_work=deferred_cad,执行kernel_restart */
 	cad_pid = task_pid(current);
 
 	//准备激活并使用其他CPU  设定支援的最大CPU数量

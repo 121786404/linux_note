@@ -600,7 +600,7 @@ void __init mem_init(void)
 	}
 }
 
-#ifdef CONFIG_DEBUG_RODATA
+#ifdef CONFIG_STRICT_KERNEL_RWX
 struct section_perm {
 	const char *name;
 	unsigned long start;

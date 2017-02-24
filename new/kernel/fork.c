@@ -55,6 +55,7 @@
 #include <linux/rmap.h>
 #include <linux/ksm.h>
 #include <linux/acct.h>
+#include <linux/userfaultfd_k.h>
 #include <linux/tsacct_kern.h>
 #include <linux/cn_proc.h>
 #include <linux/freezer.h>
@@ -435,12 +436,14 @@ void __init fork_init(void)
 	int i;
 #ifndef CONFIG_ARCH_TASK_STRUCT_ALLOCATOR
 #ifndef ARCH_MIN_TASKALIGN
-#define ARCH_MIN_TASKALIGN	L1_CACHE_BYTES
+#define ARCH_MIN_TASKALIGN	0
 #endif
+	int align = max_t(int, L1_CACHE_BYTES, ARCH_MIN_TASKALIGN);
+
 	/* create a slab on which task_structs can be allocated */
 	//task_struct分配控制器。
 	task_struct_cachep = kmem_cache_create("task_struct",
-			arch_task_struct_size, ARCH_MIN_TASKALIGN,
+			arch_task_struct_size, align,
 			SLAB_PANIC|SLAB_NOTRACK|SLAB_ACCOUNT, NULL);
 #endif
 
@@ -478,15 +481,12 @@ void set_task_stack_end_magic(struct task_struct *tsk)
 }
 
 /*
-每一个用户空间进程都有一个内核栈和一个用户空间的栈
-（对于多线程的进程，应该有多个用户空间栈和内核栈）。
-内核栈和thread_info数据结构共同占用了THREAD_SIZE（一般是2个page）的memory。
-thread_info数据结构和CPU architecture相关，
+内核栈和thread_info数据结构共同占用了THREAD_SIZE（一般是2个page）
 thread_info数据结构的task 成员指向进程描述符（也就是task struct数据结构）。
 进程描述符的stack成员指向对应的thread_info数据结构
-*/
-/* 最终执行完dup_task_struct之后，子进程除了tsk->stack指针不同之外，全部都一样 */
-/*
+
+最终执行完dup_task_struct之后，子进程除了tsk->stack指针不同之外，全部都一样 
+
 dup_task_struct这段代码主要动作序列包括：
 1、分配内核栈和thread_info数据结构所需要的memory（统一分配），
        分配task sturct需要的memory。
@@ -511,7 +511,7 @@ static struct task_struct *dup_task_struct(struct task_struct *orig, int node)
 	if (!tsk)
 		return NULL;
 /*
-    分配一个 thread_info 节点，包含进程的内核栈，ti 为栈底
+    ti指向thread_info的首地址，同时也是系统为新进程分配的两个连续的页面的首地址
 */
 	stack = alloc_thread_stack_node(tsk, node);
 	if (!stack)
@@ -591,6 +591,7 @@ static __latent_entropy int dup_mmap(struct mm_struct *mm,
 	struct rb_node **rb_link, *rb_parent;
 	int retval;
 	unsigned long charge;
+	LIST_HEAD(uf);
 
 	uprobe_start_dup_mmap();
 	if (down_write_killable(&oldmm->mmap_sem)) {
@@ -647,12 +648,13 @@ static __latent_entropy int dup_mmap(struct mm_struct *mm,
 		if (retval)
 			goto fail_nomem_policy;
 		tmp->vm_mm = mm;
+		retval = dup_userfaultfd(tmp, &uf);
+		if (retval)
+			goto fail_nomem_anon_vma_fork;
 		if (anon_vma_fork(tmp, mpnt))
 			goto fail_nomem_anon_vma_fork;
-		tmp->vm_flags &=
-			~(VM_LOCKED|VM_LOCKONFAULT|VM_UFFD_MISSING|VM_UFFD_WP);
+		tmp->vm_flags &= ~(VM_LOCKED | VM_LOCKONFAULT);
 		tmp->vm_next = tmp->vm_prev = NULL;
-		tmp->vm_userfaultfd_ctx = NULL_VM_UFFD_CTX;
 		file = tmp->vm_file;
 		if (file) {
 			struct inode *inode = file_inode(file);
@@ -708,6 +710,7 @@ out:
 	up_write(&mm->mmap_sem);
 	flush_tlb_mm(oldmm);
 	up_write(&oldmm->mmap_sem);
+	dup_userfaultfd_complete(&uf);
 fail_uprobe_end:
 	uprobe_end_dup_mmap();
 	return retval;
@@ -1336,6 +1339,7 @@ void __cleanup_sighand(struct sighand_struct *sighand)
 	}
 }
 
+#ifdef CONFIG_POSIX_TIMERS
 /*
  * Initialize POSIX timer handling for a thread group.
  */
@@ -1345,7 +1349,7 @@ static void posix_cpu_timers_init_group(struct signal_struct *sig)
 
 	cpu_limit = READ_ONCE(sig->rlim[RLIMIT_CPU].rlim_cur);
 	if (cpu_limit != RLIM_INFINITY) {
-		sig->cputime_expires.prof_exp = secs_to_cputime(cpu_limit);
+		sig->cputime_expires.prof_exp = cpu_limit * NSEC_PER_SEC;
 		sig->cputimer.running = true;
 	}
 
@@ -1354,6 +1358,9 @@ static void posix_cpu_timers_init_group(struct signal_struct *sig)
 	INIT_LIST_HEAD(&sig->cpu_timers[1]);
 	INIT_LIST_HEAD(&sig->cpu_timers[2]);
 }
+#else
+static inline void posix_cpu_timers_init_group(struct signal_struct *sig) { }
+#endif
 
 static int copy_signal(unsigned long clone_flags, struct task_struct *tsk)
 {
@@ -1378,11 +1385,11 @@ static int copy_signal(unsigned long clone_flags, struct task_struct *tsk)
 	init_waitqueue_head(&sig->wait_chldexit);
 	sig->curr_target = tsk;
 	init_sigpending(&sig->shared_pending);
-	INIT_LIST_HEAD(&sig->posix_timers);
 	seqlock_init(&sig->stats_lock);
 	prev_cputime_init(&sig->prev_cputime);
 
 #ifdef CONFIG_POSIX_TIMERS
+	INIT_LIST_HEAD(&sig->posix_timers);
 	hrtimer_init(&sig->real_timer, CLOCK_MONOTONIC, HRTIMER_MODE_REL);
 	sig->real_timer.function = it_real_fn;
 #endif
@@ -1457,6 +1464,7 @@ static void rt_mutex_init_task(struct task_struct *p)
 #endif
 }
 
+#ifdef CONFIG_POSIX_TIMERS
 /*
  * Initialize POSIX timer handling for a single task.
  */
@@ -1469,6 +1477,9 @@ static void posix_cpu_timers_init(struct task_struct *tsk)
 	INIT_LIST_HEAD(&tsk->cpu_timers[1]);
 	INIT_LIST_HEAD(&tsk->cpu_timers[2]);
 }
+#else
+static inline void posix_cpu_timers_init(struct task_struct *tsk) { }
+#endif
 
 static inline void
 init_task_pid(struct task_struct *task, enum pid_type type, struct pid *pid)
@@ -1611,8 +1622,7 @@ static __latent_entropy struct task_struct *copy_process(
 		goto fork_out;
 
 	retval = -ENOMEM;
-	/* 分配一个新的未初始化的 task_struct，此时的p与当前进程的task，
-	仅仅是stack地址不同 */
+	/* 为子进程分配一个内核栈、thread_info结构和task_struct结构 */
 	p = dup_task_struct(current, node);
 	if (!p)
 		goto fork_out;
@@ -1970,10 +1980,12 @@ static __latent_entropy struct task_struct *copy_process(
 		}
 		/* 将pid加入PIDTYPE_PID这个散列表 */
 		attach_pid(p, PIDTYPE_PID);
-		/* 递增 nr_threads的值 */
+		/* 将 nr_threads++，表明新进程已经被加入到进程集合中 */
 		nr_threads++;
 	}
-
+/*
+    记录被创建进程数量
+*/
 	total_forks++;
 	spin_unlock(&current->sighand->siglock);
 	syscall_tracepoint_update(p);
@@ -2099,11 +2111,7 @@ long _do_fork(unsigned long clone_flags,
 	 */
 
 	 /*
-        控制创建进程是否向tracer上报信号，
-        如果需要上报，那么要上报哪些信号。
-        如果用户进程 在创建的时候有携带CLONE_UNTRACED的flag，
-        那么该进程则不能被trace。
-        对于内核线程，在创建的时候都会携带该flag，
+        kernel_thread创建的内核线程在创建的时候都会携带CLONE_UNTRACED，
         这也就意味着，内核线程是无法被traced，
         也就不需要上报event给tracer。
 
@@ -2139,7 +2147,9 @@ long _do_fork(unsigned long clone_flags,
         // 取出task结构体内的pid
 		pid = get_task_pid(p, PIDTYPE_PID);
 		nr = pid_vnr(pid);  //总的pid数量
-
+/*
+    子进程的PID写入有ptid参数所指向的父进程的用户态变量
+*/
 		if (clone_flags & CLONE_PARENT_SETTID)
 			put_user(nr, parent_tidptr);
 

@@ -279,7 +279,11 @@ static void create_kthread(struct kthread_create_info *create)
 	current->pref_node_fork = create->node;
 #endif
 	/* We want our own signal handler (we take no signals by default). */
-
+	/*
+    调用首先构造一个假的上下文执行环境，最后调用 do_fork()
+    返回进程 id, 创建后的线程执行 kthread 函数
+    任何一个内核线程入口都是 kthread
+    */
 	pid = kernel_thread(kthread, create, CLONE_FS | CLONE_FILES | SIGCHLD);
 	if (pid < 0) {
 		/* If user was SIGKILLed, I release the structure. */
@@ -595,31 +599,25 @@ int kthreadd(void *unused)
     // 允许在所有内存节点的分配内存。
 	set_mems_allowed(node_states[N_MEMORY]);
 
-/*
-    设置进程为不可freeze
-*/
 	current->flags |= PF_NOFREEZE;
 
 	for (;;) {
-        /*  首先将线程状态设置为 TASK_INTERRUPTIBLE, */
+        /*  首先将线程状态设置为 TASK_INTERRUPTIBLE, 如果当前
+                 没有要创建的线程则主动放弃 CPU 完成调度.此进程变为阻塞态*/
+
 		set_current_state(TASK_INTERRUPTIBLE);
-/*
-		如果当前没有要创建的线程则主动放弃 CPU 完成调度.
-           此进程变为阻塞态
-           因为此前已经将该进程的状态设置为TASK_INTERRUPTIBLE，
-           所以schedule的调用将会使当前进程进入睡眠
-*/
-		if (list_empty(&kthread_create_list))
-			schedule(); 
+		if (list_empty(&kthread_create_list))//没有需要创建的内核线程，调度出去等待唤醒。
+			schedule();  //   什么也不做, 执行一次调度, 让出CPU
        
         /*  运行到此表示 kthreadd 线程被唤醒(就是我们当前)
                     设置进程运行状态为 TASK_RUNNING */
 		__set_current_state(TASK_RUNNING);
 
-        //获取自旋锁，可能有多个kthreadd线程在运行。
-		spin_lock(&kthread_create_lock);
-		while (!list_empty(&kthread_create_list)) {
-		    //读取链表，找到所有需要创建的任务。
+        /* 在for循环中，如果发现kthread_create_list是一空链表，
+                则调用schedule调度函数，因为此前已经将该进程的状态设置为
+                TASK_INTERRUPTIBLE，所以schedule的调用将会使当前进程进入睡眠*/
+		spin_lock(&kthread_create_lock);//获取自旋锁，可能有多个kthreadd线程在运行。
+		while (!list_empty(&kthread_create_list)) {//读取链表，找到所有需要创建的任务。
 			struct kthread_create_info *create;
 
             /*  从链表中取得 kthread_create_info 结构的地址，在上文中已经完成插入操作(将
@@ -628,7 +626,10 @@ int kthreadd(void *unused)
 			create = list_entry(kthread_create_list.next,
 					    struct kthread_create_info, list);
             
+            /* 完成创建后将其从链表中删除 */
 			list_del_init(&create->list);
+
+            /* 完成真正线程的创建 */
 			spin_unlock(&kthread_create_lock);
 
 			//创建内核线程
@@ -932,7 +933,6 @@ void __kthread_queue_delayed_work(struct kthread_worker *worker,
 
 	list_add(&work->node, &worker->delayed_work_list);
 	work->worker = worker;
-	timer_stats_timer_set_start_info(&dwork->timer);
 	timer->expires = jiffies + delay;
 	add_timer(timer);
 }

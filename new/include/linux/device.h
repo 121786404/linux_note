@@ -129,6 +129,8 @@ struct bus_type {
 	int (*suspend)(struct device *dev, pm_message_t state);
 	int (*resume)(struct device *dev);
 
+	int (*num_vf)(struct device *dev);
+
 	const struct dev_pm_ops *pm;/*总线上一组跟电源管理相关的操作集,
 				     *用来对总线上的设备进行电源管理*/
 	const struct iommu_ops *iommu_ops;
@@ -1159,6 +1161,13 @@ extern int device_offline(struct device *dev);
 extern int device_online(struct device *dev);
 extern void set_primary_fwnode(struct device *dev, struct fwnode_handle *fwnode);
 extern void set_secondary_fwnode(struct device *dev, struct fwnode_handle *fwnode);
+
+static inline int dev_num_vf(struct device *dev)
+{
+	if (dev->bus && dev->bus->num_vf)
+		return dev->bus->num_vf(dev);
+	return 0;
+}
 
 /*
  * Root device objects for grouping under /sys/devices

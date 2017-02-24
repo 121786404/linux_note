@@ -319,7 +319,12 @@ __out:	__ret;								\
  * change the result of the wait condition.
  */
 /**
- * 该函数使调用的进程进入等待队列,赋予睡眠进程的状态是TASK_UNINTERRUPTIBLE,与wait_event_interruptible的区别是他使睡眠的进程不可被中断,而且当进程被唤醒时也不会检查是否有等待的信号需要处理,与wake_up对应*/
+ * 
+ 该函数使调用的进程进入等待队列,
+ 赋予睡眠进程的状态是TASK_UNINTERRUPTIBLE,
+ 与wait_event_interruptible的区别是他使睡眠的进程不可被中断,
+ 而且当进程被唤醒时也不会检查是否有等待的信号需要处理,
+ 与wake_up对应*/
 #define wait_event(wq, condition)					\
 do {									\
 	might_sleep();							\
@@ -392,7 +397,11 @@ do {									\
  * or the remaining jiffies (at least 1) if the @condition evaluated
  * to %true before the @timeout elapsed.
  */
-/*调用该函数的进程将进入睡眠,其状态是TASK_UNINTERRUPTIBLE,不可被中断,而且当进程被唤醒时也不检查是否有等待的信号需要处理,该函数与wait_event的区别是,会指定一个时间期限,在指定的时间到达时将返回0*/
+/*调用该函数的进程将进入睡眠,其状态是TASK_UNINTERRUPTIBLE,
+不可被中断,而且当进程被唤醒时也不检查
+是否有等待的信号需要处理,
+该函数与wait_event的区别是,会指定一个时间期限,
+在指定的时间到达时将返回0*/
 #define wait_event_timeout(wq, condition, timeout)			\
 ({									\
 	long __ret = timeout;						\
@@ -478,8 +487,9 @@ do {									\
  * The function will return -ERESTARTSYS if it was interrupted by a
  * signal and 0 if @condition evaluated to true.
  */
-/*用来将当前调用它的进程睡眠等待在一个event上直到进程被唤醒并且需要的condition条件为真*/
-/*在condition条件不为真时将睡眠在一个等待队列wq上*/ 
+/*用来将当前调用它的进程睡眠等待在一个event上
+直到进程被唤醒并且需要的condition条件为真
+在condition条件不为真时将睡眠在一个等待队列wq上*/ 
 #define wait_event_interruptible(wq, condition)				\
 ({									\
 	int __ret = 0;							\

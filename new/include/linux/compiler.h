@@ -7,17 +7,50 @@
     Documentation/sparse.txt
 */
 #ifdef __CHECKER__
+/*
+指针地址必须在用户地址空间
+*/
 # define __user		__attribute__((noderef, address_space(1)))
+/*
+指针地址必须在内核地址空间
+*/
 # define __kernel	__attribute__((address_space(0)))
+/*
+变量可以为空
+*/
 # define __safe		__attribute__((safe))
+/*
+变量可以进行强制转换
+*/
 # define __force	__attribute__((force))
+/*
+参数类型与实际参数类型必须一致
+*/
 # define __nocast	__attribute__((nocast))
+/*
+指针地址必须在设备地址空间
+*/
 # define __iomem	__attribute__((noderef, address_space(2)))
 # define __must_hold(x)	__attribute__((context(x,1,1)))
+/*
+参数x 在执行前引用计数必须是0,执行后,引用计数必须为1
+*/
 # define __acquires(x)	__attribute__((context(x,0,1)))
+/*
+与 __acquires(x) 相反
+*/
 # define __releases(x)	__attribute__((context(x,1,0)))
+/*
+参数x 的引用计数 + 1
+*/
 # define __acquire(x)	__context__(x,1)
+/*
+与 __acquire(x) 相反
+*/
 # define __release(x)	__context__(x,-1)
+/*
+参数c 不为0时,引用计数 + 1, 并返回1
+*/
 # define __cond_lock(x,c)	((c) ? ({ __acquire(x); 1; }) : 0)
 # define __percpu	__attribute__((noderef, address_space(3)))
 #ifdef CONFIG_SPARSE_RCU_POINTER
@@ -30,7 +63,11 @@ extern void __chk_user_ptr(const volatile void __user *);
 extern void __chk_io_ptr(const volatile void __iomem *);
 # define ACCESS_PRIVATE(p, member) (*((typeof((p)->member) __force *) &(p)->member))
 #else /* __CHECKER__ */
+# ifdef STRUCTLEAK_PLUGIN
+#  define __user __attribute__((user))
+# else
 # define __user
+# endif
 # define __kernel
 # define __safe
 # define __force
@@ -111,7 +148,10 @@ struct ftrace_branch_data {
 #if defined(CONFIG_TRACE_BRANCH_PROFILING) \
     && !defined(DISABLE_BRANCH_PROFILING) && !defined(__CHECKER__)
 void ftrace_likely_update(struct ftrace_branch_data *f, int val, int expect);
-
+/*
+__builtin_expect 用于为编译器提供分支预测信息，
+其返回值是整数表达式EXP 的值，C 的值必须是编译时常数
+*/
 #define likely_notrace(x)	__builtin_expect(!!(x), 1)
 #define unlikely_notrace(x)	__builtin_expect(!!(x), 0)
 

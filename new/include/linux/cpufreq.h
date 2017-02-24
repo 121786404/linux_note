@@ -490,9 +490,6 @@ policy通知用于通知其它模块cpu的policy需要改变，
 真正切换policy前，该通知会发往所有的被通知者
 */
 #define CPUFREQ_NOTIFY			(1)
-#define CPUFREQ_START			(2)
-#define CPUFREQ_CREATE_POLICY		(3)
-#define CPUFREQ_REMOVE_POLICY		(4)
 
 #ifdef CONFIG_CPU_FREQ
 int cpufreq_register_notifier(struct notifier_block *nb, unsigned int list);

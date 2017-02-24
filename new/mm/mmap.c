@@ -1439,7 +1439,21 @@ static inline int mlock_future_check(struct mm_struct *mm,
 /*
  * The caller must hold down_write(&current->mm->mmap_sem).
  */
-/*完成后续的内存映射,根据用户空间进程调用mmap api时传入的参数构造一个struct vm_area_struct对象的实例,然后调用file->f_op->mmap()*/
+/*完成后续的内存映射,根据用户空间进程调用mmap api
+时传入的参数构造一个struct vm_area_struct对象的实例,
+然后调用file->f_op->mmap()
+
+创建并初始化一个新的线性地址区间， 
+不过，分配成功之后，可以把这个新的先行区间 
+与已有的其他线性区进行合并; 
+
+file和offset:如果新的线性区将把一个文件映射到内存 
+                   则使用文件描述符指针file和文件偏移量offset 
+addr:这个线性地址指定从何处开始查找一个空闲的区间； 
+len:线性区间的长度； 
+prot:指定这个线性区所包含页的访问权限，比如读写、执行； 
+flag:指定线性区间的其他标志 
+*/ 
 unsigned long do_mmap(struct file *file, unsigned long addr,
 			unsigned long len, unsigned long prot,
 			unsigned long flags, vm_flags_t vm_flags,
@@ -1527,7 +1541,7 @@ unsigned long do_mmap(struct file *file, unsigned long addr,
 	 * 系统调用，使用上述机制防止所有未来的映射被换出，即使在创建时没
 	 * 有显式指定VM_LOCK标志，也是如此。
 	 *
-	 * 通过prot和flag计算新线性区描述符的标志。
+	 * 通过把存放在prot和flags参数中的值进行组合来计算新线性区描述符的标志
 	 * mm->def_flags是线性区的默认标志。它只能由mlockall系统调用修改。
 	 * 这个调用可以设置VM_LOCKED标志。由此锁住以后申请的RAM中的有页。
 	 */
@@ -3279,11 +3293,11 @@ static inline void verify_mm_writelocked(struct mm_struct *mm)
  * 它其实是do_mmap的简化版，但是它比do_mmap快，因为它假定线性区不
  * 映射磁盘上的文件。从而避免了检查线性区对象上的几个字段。
  */
-static int do_brk(unsigned long addr, unsigned long request)
+static int do_brk_flags(unsigned long addr, unsigned long request, unsigned long flags)
 {
 	struct mm_struct *mm = current->mm;
 	struct vm_area_struct *vma, *prev;
-	unsigned long flags, len;
+	unsigned long len;
 	struct rb_node **rb_link, *rb_parent;
 	pgoff_t pgoff = addr >> PAGE_SHIFT;
 	int error;
@@ -3294,7 +3308,10 @@ static int do_brk(unsigned long addr, unsigned long request)
 	if (!len)
 		return 0;
 
-	flags = VM_DATA_DEFAULT_FLAGS | VM_ACCOUNT | mm->def_flags;
+	/* Until we need other flags, refuse anything except VM_EXEC. */
+	if ((flags & (~VM_EXEC)) != 0)
+		return -EINVAL;
+	flags |= VM_DATA_DEFAULT_FLAGS | VM_ACCOUNT | mm->def_flags;
 
 	error = get_unmapped_area(NULL, addr, len, 0, MAP_FIXED);
 	if (offset_in_page(error))
@@ -3362,7 +3379,12 @@ out:
 	return 0;
 }
 
-int vm_brk(unsigned long addr, unsigned long len)
+static int do_brk(unsigned long addr, unsigned long len)
+{
+	return do_brk_flags(addr, len, 0);
+}
+
+int vm_brk_flags(unsigned long addr, unsigned long len, unsigned long flags)
 {
 	struct mm_struct *mm = current->mm;
 	int ret;
@@ -3371,12 +3393,18 @@ int vm_brk(unsigned long addr, unsigned long len)
 	if (down_write_killable(&mm->mmap_sem))
 		return -EINTR;
 
-	ret = do_brk(addr, len);
+	ret = do_brk_flags(addr, len, flags);
 	populate = ((mm->def_flags & VM_LOCKED) != 0);
 	up_write(&mm->mmap_sem);
 	if (populate && !ret)
 		mm_populate(addr, len);
 	return ret;
+}
+EXPORT_SYMBOL(vm_brk_flags);
+
+int vm_brk(unsigned long addr, unsigned long len)
+{
+	return vm_brk_flags(addr, len, 0);
 }
 EXPORT_SYMBOL(vm_brk);
 

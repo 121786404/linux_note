@@ -1013,12 +1013,6 @@ void __init swap_setup(void)
 {
 	/*计算系统总共有多少M内存, totalram_pages单位为页, 所以需要从20中减去PAGE_SHIFT*/
 	unsigned long megs = totalram_pages >> (20 - PAGE_SHIFT);
-#ifdef CONFIG_SWAP
-	int i;
-
-	for (i = 0; i < MAX_SWAPFILES; i++)
-		spin_lock_init(&swapper_spaces[i].tree_lock);
-#endif
 
 	/* Use a smaller cluster for small-memory machines */
 	if (megs < 16)

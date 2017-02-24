@@ -15,6 +15,9 @@ CLONE_FS flag是用来控制父子进程是否共享文件系统信息
 之后，子进程调用chroot，chdir，umask来改变文件系统信息将不会影响到 父进程
 */
 #define CLONE_FS	0x00000200	/* set if fs info shared between processes */
+/*
+子进程与父进程共享相同的文件描述符（file descriptor）表
+*/
 #define CLONE_FILES	0x00000400	/* set if open files shared between processes */
 /* 如果设定CLONE_SIGHAND这个flag，
 则表示创建的子进程与父进程共享相同的信号处理（signal handler）表 
@@ -24,12 +27,11 @@ CLONE_FS flag是用来控制父子进程是否共享文件系统信息
 #define CLONE_PTRACE	0x00002000	/* set if we want to let tracing continue on the child too */
 /* 在发出vfork系统调用时设置*/
 #define CLONE_VFORK	0x00004000	/* set if the parent wants the child to wake it up on mm_release */
-/* 新fork的进程想要和创建该进程的cloner拥有同样的父进程 */
+/* 创建的子进程的父进程是调用者的父进程，
+     新进程与创建它的进程成了“兄弟”而不是“父子” */
 #define CLONE_PARENT	0x00008000	/* set if we want to have the same parent as the cloner */
 /*
-在一个进程中，如果以CLONE_THREAD标志来调用clone建立的进程
-就是该进程的一个线程（即轻量级进程，Linux其实没有严格的进程概念），
-它们处于一个线程组，必须同时设置CLONE_SIGHAND
+子进程与父进程处于一个线程组，必须同时设置CLONE_SIGHAND
 */
 #define CLONE_THREAD	0x00010000	/* Same thread group? */
 /*
@@ -61,6 +63,10 @@ mount Namespace为进程提供了一个文件层次视图。
 #define CLONE_PARENT_SETTID	0x00100000	/* set the TID in the parent */
 #define CLONE_CHILD_CLEARTID	0x00200000	/* clear the TID in the child */
 #define CLONE_DETACHED		0x00400000	/* Unused, ignored */
+/*
+如果用户进程 在创建的时候有携带CLONE_UNTRACED的flag，
+那么该进程则不能被trace。
+*/
 #define CLONE_UNTRACED		0x00800000	/* set if the tracing process can't force CLONE_PTRACE on this clone */
 #define CLONE_CHILD_SETTID	0x01000000	/* set the TID in the child */
 

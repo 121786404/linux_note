@@ -29,7 +29,6 @@ struct sched_param {
 
 #include <asm/page.h>
 #include <asm/ptrace.h>
-#include <linux/cputime.h>
 
 #include <linux/smp.h>
 #include <linux/sem.h>
@@ -216,13 +215,11 @@ Linux 内核提供了两种方法将进程置为睡眠状态。
 将进程状态设置为 TASK_INTERRUPTIBLE 或 TASK_UNINTERRUPTIBLE 
 并调用调度程序的 schedule() 函数。这样会将进程从 CPU 运行队列中移除。
 
-如果进程处于可中断模式的睡眠状态
-（通过将其状态设置为 TASK_INTERRUPTIBLE），
+如果进程处于可中断模式的睡眠状态(TASK_INTERRUPTIBLE)
 那么可以通过显式的唤醒呼叫（wakeup_process()）
 或需要处理的信号来唤醒它。
 
-但是，如果进程处于非可中断模式的睡眠状态
-（通过将其状态设置为 TASK_UNINTERRUPTIBLE），
+如果进程处于非可中断模式的睡眠状态(TASK_UNINTERRUPTIBLE)
 那么只能通过显式的唤醒呼叫将其唤醒。
 
 除非万不得已，否则我们建议您将进程置为可中断睡眠模式，
@@ -254,8 +251,7 @@ Linux 内核提供了两种方法将进程置为睡眠状态。
 #define TASK_INTERRUPTIBLE	1
 
 /*
-意义与TASK_INTERRUPTIBLE类似，除了不能通过接受一个信号来唤醒以外，
-对于处于TASK_UNINTERRUPIBLE状态的进程，哪怕我们传递一个信号或者有一个外部中断
+处于TASK_UNINTERRUPIBLE状态的进程，哪怕我们传递一个信号或者有一个外部中断
 都不能唤醒他们。只有它所等待的资源可用的时候，他才会被唤醒。
 这个标志很少用，但是并不代表没有任何用处，其实他的作用非常大，
 特别是对于驱动刺探相关的硬件过程很重要，
@@ -298,10 +294,11 @@ Linux 内核提供了两种方法将进程置为睡眠状态。
 extern char ___assert_task_state[1 - 2*!!(
 		sizeof(TASK_STATE_TO_CHAR_STR)-1 != ilog2(TASK_STATE_MAX)+1)];
 
-/* Convenience macros for the sake of set_task_state */
+/* Convenience macros for the sake of set_current_state */
 /*
-当进程处于这种可以终止的新睡眠状态中，
-它的运行原理类似于 TASK_UNINTERRUPTIBLE，只不过可以响应致命信号
+完全处于TASK_UNINTERRUPTIBLE 状态的进程甚至都无法被“杀死”，
+所以引入TASK_KILLABLE 的状态， 它等于“ TASK_WAKEKILL |TASK_UNINTERRUPTIBLE”，
+可以响应致命信号。
 */
 #define TASK_KILLABLE		(TASK_WAKEKILL | TASK_UNINTERRUPTIBLE)
 
@@ -339,17 +336,6 @@ extern char ___assert_task_state[1 - 2*!!(
 
 #ifdef CONFIG_DEBUG_ATOMIC_SLEEP
 
-#define __set_task_state(tsk, state_value)			\
-	do {							\
-		(tsk)->task_state_change = _THIS_IP_;		\
-		(tsk)->state = (state_value);			\
-	} while (0)
-#define set_task_state(tsk, state_value)			\
-	do {							\
-		(tsk)->task_state_change = _THIS_IP_;		\
-		smp_store_mb((tsk)->state, (state_value));	\
-	} while (0)
-
 #define __set_current_state(state_value)			\
 	do {							\
 		current->task_state_change = _THIS_IP_;		\
@@ -362,20 +348,6 @@ extern char ___assert_task_state[1 - 2*!!(
 	} while (0)
 
 #else
-
-/*
- * @tsk had better be current, or you get to keep the pieces.
- *
- * The only reason is that computing current can be more expensive than
- * using a pointer that's already available.
- *
- * Therefore, see set_current_state().
- */
-#define __set_task_state(tsk, state_value)		\
-	do { (tsk)->state = (state_value); } while (0)
-#define set_task_state(tsk, state_value)		\
-	smp_store_mb((tsk)->state, (state_value))
-
 /*
  * set_current_state() includes a barrier so that the write of current->state
  * is correctly serialised wrt the caller's subsequent test of whether to
@@ -546,12 +518,10 @@ extern signed long schedule_timeout_idle(signed long timeout);
 asmlinkage void schedule(void);
 extern void schedule_preempt_disabled(void);
 
+extern int __must_check io_schedule_prepare(void);
+extern void io_schedule_finish(int token);
 extern long io_schedule_timeout(long timeout);
-
-static inline void io_schedule(void)
-{
-	io_schedule_timeout(MAX_SCHEDULE_TIMEOUT);
-}
+extern void io_schedule(void);
 
 void __noreturn do_task_dead(void);
 
@@ -650,15 +620,13 @@ struct pacct_struct {
 	int			ac_flag;
 	long			ac_exitcode;
 	unsigned long		ac_mem;
-	cputime_t		ac_utime, ac_stime;
+	u64			ac_utime, ac_stime;
 	unsigned long		ac_minflt, ac_majflt;
 };
 
 struct cpu_itimer {
-	cputime_t expires;
-	cputime_t incr;
-	u32 error;
-	u32 incr_error;
+	u64 expires;
+	u64 incr;
 };
 
 /**
@@ -672,8 +640,8 @@ struct cpu_itimer {
  */
 struct prev_cputime {
 #ifndef CONFIG_VIRT_CPU_ACCOUNTING_NATIVE
-	cputime_t utime;
-	cputime_t stime;
+	u64 utime;
+	u64 stime;
 	raw_spinlock_t lock;
 #endif
 };
@@ -688,8 +656,8 @@ static inline void prev_cputime_init(struct prev_cputime *prev)
 
 /**
  * struct task_cputime - collected CPU time counts
- * @utime:		time spent in user mode, in &cputime_t units
- * @stime:		time spent in kernel mode, in &cputime_t units
+ * @utime:		time spent in user mode, in nanoseconds
+ * @stime:		time spent in kernel mode, in nanoseconds
  * @sum_exec_runtime:	total time spent on the CPU, in nanoseconds
  *
  * This structure groups together three kinds of CPU time that are tracked for
@@ -697,8 +665,8 @@ static inline void prev_cputime_init(struct prev_cputime *prev)
  * these counts together and treat all three of them in parallel.
  */
 struct task_cputime {
-	cputime_t utime;
-	cputime_t stime;
+	u64 utime;
+	u64 stime;
 	unsigned long long sum_exec_runtime;
 };
 
@@ -706,13 +674,6 @@ struct task_cputime {
 #define virt_exp	utime
 #define prof_exp	stime
 #define sched_exp	sum_exec_runtime
-
-#define INIT_CPUTIME	\
-	(struct task_cputime) {					\
-		.utime = 0,					\
-		.stime = 0,					\
-		.sum_exec_runtime = 0,				\
-	}
 
 /*
  * This is the atomic variant of task_cputime, which can be used for
@@ -820,13 +781,14 @@ struct signal_struct {
 	unsigned int		is_child_subreaper:1;
 	unsigned int		has_child_subreaper:1;
 
+#ifdef CONFIG_POSIX_TIMERS
+
 	/* POSIX.1b Interval Timers */
 	int			posix_timer_id;
 	struct list_head	posix_timers;
 
 	/* ITIMER_REAL timer for the process */
 	struct hrtimer real_timer;
-	struct pid *leader_pid;
 	ktime_t it_real_incr;
 
 	/*
@@ -845,11 +807,15 @@ struct signal_struct {
 	/* Earliest-expiration cache. */
 	struct task_cputime cputime_expires;
 
+	struct list_head cpu_timers[3];
+
+#endif
+
+	struct pid *leader_pid;
+
 #ifdef CONFIG_NO_HZ_FULL
 	atomic_t tick_dep_mask;
 #endif
-
-	struct list_head cpu_timers[3];
 
 	struct pid *tty_old_pgrp;
 
@@ -868,9 +834,9 @@ struct signal_struct {
 	 * in __exit_signal, except for the group leader.
 	 */
 	seqlock_t stats_lock;
-	cputime_t utime, stime, cutime, cstime;
-	cputime_t gtime;
-	cputime_t cgtime;
+	u64 utime, stime, cutime, cstime;
+	u64 gtime;
+	u64 cgtime;
 	struct prev_cputime prev_cputime;
 	unsigned long nvcsw, nivcsw, cnvcsw, cnivcsw;
 	unsigned long min_flt, maj_flt, cmin_flt, cmaj_flt;
@@ -1117,8 +1083,8 @@ enum cpu_idle_type {
  *
  * The DEFINE_WAKE_Q macro declares and initializes the list head.
  * wake_up_q() does NOT reinitialize the list; it's expected to be
- * called near the end of a function, where the fact that the queue is
- * not used again will be easy to see by inspection.
+ * called near the end of a function. Otherwise, the list can be
+ * re-initialized for later re-use by wake_q_init().
  *
  * Note that this can cause spurious wakeups. schedule() callers
  * must ensure the call is done inside a loop, confirming that the
@@ -1137,6 +1103,12 @@ struct wake_q_head {
 
 #define DEFINE_WAKE_Q(name)				\
 	struct wake_q_head name = { WAKE_Q_TAIL, &name.first }
+
+static inline void wake_q_init(struct wake_q_head *head)
+{
+	head->first = WAKE_Q_TAIL;
+	head->lastp = &head->first;
+}
 
 extern void wake_q_add(struct wake_q_head *head,
 		       struct task_struct *task);
@@ -1767,7 +1739,6 @@ struct task_struct {
 /* 用于构建进程链表*/
 	struct list_head tasks;
 #ifdef CONFIG_SMP
-/* to limit pushing to one attempt */
 	struct plist_node pushable_tasks;
 	struct rb_node pushable_dl_tasks;
 #endif
@@ -1855,13 +1826,8 @@ struct task_struct {
     系统中每个进程都对应了该命名空间的一个PID，叫全局ID，保证在整个系统中唯一。
     */
 	pid_t pid;
-	/* 当前进程所在线程组的线程组ID
-        在linux内核中对线程并没有做特殊的处理，还是由task_struct来管理。
-        所以从内核的角度看， 用户态的线程本质上还是一个进程。
-
-        对于同一个进程（用户态角度）中不同的线程其tgid是相同的，但是pid各不相同。 
-        主线程即group_leader（主线程会创建其他所有的子线程）。
-        如果是单线程进程（用户态角度），它的pid等于tgid
+	/* 
+	当前进程所在线程组的线程组ID
 	*/
 	pid_t tgid;
 
@@ -1884,7 +1850,7 @@ struct task_struct {
 	 */
 	 /* 表示链表的头部，链表中的所有元素都是它的子进程 */
 	struct list_head children;	/* list of my children */
-    /* 用于把当前进程插入到兄弟链表中 */
+    /* 兄弟进程链表*/
 	struct list_head sibling;	/* linkage in my parent's children list */
 	/* 
 	指向其所在进程组的领头进程 
@@ -1922,12 +1888,12 @@ struct task_struct {
     utime 用于记录进程在用户态/内核态下所经过的节拍数（定时器）
     utimescaled/stimescaled  用于记录进程在用户态/内核态的运行时间，但它们以处理器的频率为刻度
     */
-	cputime_t utime, stime;
+	u64 utime, stime;
 #ifdef CONFIG_ARCH_HAS_SCALED_CPUTIME
-	cputime_t utimescaled, stimescaled;
+	u64 utimescaled, stimescaled;
 #endif
 	/* 以节拍计数的虚拟机运行时间（guest time） */
-	cputime_t gtime;
+	u64 gtime;
 	struct prev_cputime prev_cputime;
 #ifdef CONFIG_VIRT_CPU_ACCOUNTING_GEN
 	seqcount_t vtime_seqcount;
@@ -1955,8 +1921,10 @@ struct task_struct {
 	unsigned long min_flt, maj_flt;
 /* 用来统计进程或进程组被跟踪的处理器时间，
 其中的三个成员对应着cpu_timers[3]的三个链表 */
+#ifdef CONFIG_POSIX_TIMERS
 	struct task_cputime cputime_expires;
 	struct list_head cpu_timers[3];
+#endif
 
 /* process credentials */
 	const struct cred __rcu *ptracer_cred; /* Tracer's credentials at attach */
@@ -2110,7 +2078,7 @@ struct task_struct {
 #if defined(CONFIG_TASK_XACCT)
 	u64 acct_rss_mem1;	/* accumulated rss usage */
 	u64 acct_vm_mem1;	/* accumulated virtual memory usage */
-	cputime_t acct_timexpd;	/* stime + utime since last update */
+	u64 acct_timexpd;	/* stime + utime since last update */
 #endif
 #ifdef CONFIG_CPUSETS
 	nodemask_t mems_allowed;	/* Protected by alloc_lock */
@@ -2562,17 +2530,17 @@ struct task_struct *try_get_task_struct(struct task_struct **ptask);
 
 #ifdef CONFIG_VIRT_CPU_ACCOUNTING_GEN
 extern void task_cputime(struct task_struct *t,
-			 cputime_t *utime, cputime_t *stime);
-extern cputime_t task_gtime(struct task_struct *t);
+			 u64 *utime, u64 *stime);
+extern u64 task_gtime(struct task_struct *t);
 #else
 static inline void task_cputime(struct task_struct *t,
-				cputime_t *utime, cputime_t *stime)
+				u64 *utime, u64 *stime)
 {
 	*utime = t->utime;
 	*stime = t->stime;
 }
 
-static inline cputime_t task_gtime(struct task_struct *t)
+static inline u64 task_gtime(struct task_struct *t)
 {
 	return t->gtime;
 }
@@ -2580,23 +2548,23 @@ static inline cputime_t task_gtime(struct task_struct *t)
 
 #ifdef CONFIG_ARCH_HAS_SCALED_CPUTIME
 static inline void task_cputime_scaled(struct task_struct *t,
-				       cputime_t *utimescaled,
-				       cputime_t *stimescaled)
+				       u64 *utimescaled,
+				       u64 *stimescaled)
 {
 	*utimescaled = t->utimescaled;
 	*stimescaled = t->stimescaled;
 }
 #else
 static inline void task_cputime_scaled(struct task_struct *t,
-				       cputime_t *utimescaled,
-				       cputime_t *stimescaled)
+				       u64 *utimescaled,
+				       u64 *stimescaled)
 {
 	task_cputime(t, utimescaled, stimescaled);
 }
 #endif
 
-extern void task_cputime_adjusted(struct task_struct *p, cputime_t *ut, cputime_t *st);
-extern void thread_group_cputime_adjusted(struct task_struct *p, cputime_t *ut, cputime_t *st);
+extern void task_cputime_adjusted(struct task_struct *p, u64 *ut, u64 *st);
+extern void thread_group_cputime_adjusted(struct task_struct *p, u64 *ut, u64 *st);
 
 /*
  * Per process flags
@@ -2838,7 +2806,15 @@ extern u64 sched_clock_cpu(int cpu);
 extern void sched_clock_init(void);
 
 #ifndef CONFIG_HAVE_UNSTABLE_SCHED_CLOCK
+static inline void sched_clock_init_late(void)
+{
+}
+
 static inline void sched_clock_tick(void)
+{
+}
+
+static inline void clear_sched_clock_stable(void)
 {
 }
 
@@ -2860,6 +2836,7 @@ static inline u64 local_clock(void)
 	return sched_clock();
 }
 #else
+extern void sched_clock_init_late(void);
 /*
  * Architectures can set this to 1 if they have specified
  * CONFIG_HAVE_UNSTABLE_SCHED_CLOCK in their arch Kconfig,
@@ -2867,7 +2844,6 @@ static inline u64 local_clock(void)
  * is reliable after all:
  */
 extern int sched_clock_stable(void);
-extern void set_sched_clock_stable(void);
 extern void clear_sched_clock_stable(void);
 
 extern void sched_clock_tick(void);

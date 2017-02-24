@@ -844,6 +844,9 @@ __switch_to函数用户切换线程上下文，而vector_swi用来切换模式上下文.
 ENTRY(__switch_to)
  UNWIND(.fnstart	)
  UNWIND(.cantunwind	)
+/*
+    ip就是上一个线程的thread_info里面的cpu_context的地址
+*/
 	add	ip, r1, #TI_CPU_SAVE
 /*
 r1是被切换出去的线程的thread_info, 
@@ -898,13 +901,22 @@ r5里面是上一个线程的task_struct
 r4就是下一个线程的thread_info里面的cpu_context的地址
 */
 	add	r4, r2, #TI_CPU_SAVE
+/*
+下面的thread_notify_head通知链，下面例子说明 
+*/
 	ldr	r0, =thread_notify_head
 	mov	r1, #THREAD_NOTIFY_SWITCH
 	bl	atomic_notifier_call_chain
 #if defined(CONFIG_CC_STACKPROTECTOR) && !defined(CONFIG_SMP)
 	str	r7, [r8]
 #endif
+/*
+ip指向线程的thread_info里面的cpu_context的地址 
+*/
  THUMB(	mov	ip, r4			   )
+/*
+r0从新指向上一个线程的task_struct
+*/
 	mov	r0, r5
 /*
 这里就是恢复现场,pc对应了下个进程的cpu_context->pc从上面看到这个cpu_context->pc就是 
