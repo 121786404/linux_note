@@ -21,16 +21,16 @@ struct old_utsname {
 	char machine[65];
 };
 
-/* UTSÃüÃû¿Õ¼äÊôĞÔ£¬¿ÉÓÃuname»ñÈ¡ÕâĞ©ÊôĞÔ£¬Ò²¿ÉÒÔÔÚ/proc/sys/kernelÖĞ¿´µ½ */
+/* UTSå‘½åç©ºé—´å±æ€§ï¼Œå¯ç”¨unameè·å–è¿™äº›å±æ€§ï¼Œä¹Ÿå¯ä»¥åœ¨/proc/sys/kernelä¸­çœ‹åˆ° */
 struct new_utsname {
-	/* ÏµÍ³Ãû³Æ */
+	/* ç³»ç»Ÿåç§° */
 	char sysname[65];
-	/* ½ÚµãÃû³Æ */
+	/* èŠ‚ç‚¹åç§° */
 	char nodename[65];
-	/* ·¢²¼°æ±¾ */
+	/* å‘å¸ƒç‰ˆæœ¬ */
 	char release[65];
 	char version[65];
-	/* »úÆ÷Ãû³Æ */
+	/* æœºå™¨åç§° */
 	char machine[65];
 	char domainname[65];
 };
@@ -43,12 +43,12 @@ struct new_utsname {
 #include <asm/atomic.h>
 
 /**
- * UTSÃüÃû¿Õ¼ä
+ * UTSå‘½åç©ºé—´
  */
 struct uts_namespace {
-	/* ÒıÓÃ¼ÆÊı */
+	/* å¼•ç”¨è®¡æ•° */
 	struct kref kref;
-	/* UTSÊôĞÔ */
+	/* UTSå±æ€§ */
 	struct new_utsname name;
 };
 extern struct uts_namespace init_uts_ns;

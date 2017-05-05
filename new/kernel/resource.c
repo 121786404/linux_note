@@ -215,7 +215,7 @@ static struct resource *alloc_resource(gfp_t flags)
 
 /* Return the conflict entry if you can't request it */
 /**
- * ´Ó×ÊÔ´¿Õ¼äÖĞÉêÇëÒ»¶Î¿ÉÓÃµØÖ·¿Õ¼ä¡£
+ * ä»èµ„æºç©ºé—´ä¸­ç”³è¯·ä¸€æ®µå¯ç”¨åœ°å€ç©ºé—´ã€‚
  */
 static struct resource * __request_resource(struct resource *root, struct resource *new)
 {
@@ -223,7 +223,7 @@ static struct resource * __request_resource(struct resource *root, struct resour
 	resource_size_t end = new->end;
 	struct resource *tmp, **p;
 
-	//¼ì²é²ÎÊıÓĞĞ§ĞÔ
+	//æ£€æŸ¥å‚æ•°æœ‰æ•ˆæ€§
 	if (end < start)
 		return root;
 	if (start < root->start)
@@ -231,22 +231,22 @@ static struct resource * __request_resource(struct resource *root, struct resour
 	if (end > root->end)
 		return root;
 
-	//´ıÉêÇëµÄ¿Õ¼äÈ·ÊµÎ»ÓÚ¿Õ¼äÄÚ¡£
+	//å¾…ç”³è¯·çš„ç©ºé—´ç¡®å®ä½äºç©ºé—´å†…ã€‚
 	p = &root->child;
-	for (;;) {//±éÀúËùÓĞ×Ó½Úµã
+	for (;;) {//éå†æ‰€æœ‰å­èŠ‚ç‚¹
 		tmp = *p;
-		//ÕÒµ½ºÏÊÊµÄÇø¼ä£¬½«Ëü²åÈëµ½×Ó½ÚµãÁ´±íÖĞ
+		//æ‰¾åˆ°åˆé€‚çš„åŒºé—´ï¼Œå°†å®ƒæ’å…¥åˆ°å­èŠ‚ç‚¹é“¾è¡¨ä¸­
 		if (!tmp || tmp->start > end) {
 			new->sibling = tmp;
 			*p = new;
 			new->parent = root;
 			return NULL;
 		}
-		//±È½ÏÏÂÒ»¸ö½Úµã¡£
+		//æ¯”è¾ƒä¸‹ä¸€ä¸ªèŠ‚ç‚¹ã€‚
 		p = &tmp->sibling;
 		if (tmp->end < start)
 			continue;
-		//ÔãÁË£¬³åÍ»ÁË¡£
+		//ç³Ÿäº†ï¼Œå†²çªäº†ã€‚
 		return tmp;
 	}
 }

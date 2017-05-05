@@ -5,12 +5,12 @@
 #include <linux/usb/ch9.h>
 
 /**
- * USBÉè±¸Ö÷Éè±¸ºÅ¡£¿ÉÒÔÔÚ/proc/devicesÏÂÃæ¿´µ½¡£
- * ¶ÔÓÚÒÆ¶¯Ó²ÅÌºÍÉãÏñÍ·ÕâÑùµÄUSBÉè±¸£¬Ö÷Éè±¸ºÅ²»Ê¹ÓÃ¸ÃÖµ¡£
+ * USBè®¾å¤‡ä¸»è®¾å¤‡å·ã€‚å¯ä»¥åœ¨/proc/devicesä¸‹é¢çœ‹åˆ°ã€‚
+ * å¯¹äºŽç§»åŠ¨ç¡¬ç›˜å’Œæ‘„åƒå¤´è¿™æ ·çš„USBè®¾å¤‡ï¼Œä¸»è®¾å¤‡å·ä¸ä½¿ç”¨è¯¥å€¼ã€‚
  */
 #define USB_MAJOR			180
 /**
- * ÎªÓÃ»§Ì¬³ÌÐò¿ØÖÆUSBÉè±¸¶øÊ¹ÓÃµÄÖ÷Éè±¸ºÅ¡£
+ * ä¸ºç”¨æˆ·æ€ç¨‹åºæŽ§åˆ¶USBè®¾å¤‡è€Œä½¿ç”¨çš„ä¸»è®¾å¤‡å·ã€‚
  */
 #define USB_DEVICE_MAJOR		189
 
@@ -65,28 +65,28 @@ struct ep_device;
  * descriptor within an active interface in a given USB configuration.
  */
 /**
- * USB¶Ëµã¡£ËüÊÇUSBÊý¾Ý´«ÊäµÄÖÕµã¡£
+ * USBç«¯ç‚¹ã€‚å®ƒæ˜¯USBæ•°æ®ä¼ è¾“çš„ç»ˆç‚¹ã€‚
  */
 struct usb_host_endpoint {
 	/**
-	 * ¶ËµãÃèÊö·û¡£0ºÅ¶ËµãÃ»ÓÐÃèÊö·û¡£
+	 * ç«¯ç‚¹æè¿°ç¬¦ã€‚0å·ç«¯ç‚¹æ²¡æœ‰æè¿°ç¬¦ã€‚
 	 */
 	struct usb_endpoint_descriptor	desc;
 	/**
-	 * ¶ËµãÒª´¦ÀíµÄURB¶ÓÁÐ¡£
+	 * ç«¯ç‚¹è¦å¤„ç†çš„URBé˜Ÿåˆ—ã€‚
 	 */
 	struct list_head		urb_list;
 	/**
-	 * ÓÉÖ÷»ú¿ØÖÆÆ÷Çý¶¯Ê¹ÓÃµÄË½ÓÐÊý¾Ý¡£
+	 * ç”±ä¸»æœºæŽ§åˆ¶å™¨é©±åŠ¨ä½¿ç”¨çš„ç§æœ‰æ•°æ®ã€‚
 	 */
 	void				*hcpriv;
 	/**
-	 * ÓÉsysfsÊ¹ÓÃ¡£
+	 * ç”±sysfsä½¿ç”¨ã€‚
 	 */
 	struct ep_device 		*ep_dev;	/* For sysfs info */
 
 	/**
-	 * ¶ËµãµÄÀ©Õ¹ÃèÊö·û¡£
+	 * ç«¯ç‚¹çš„æ‰©å±•æè¿°ç¬¦ã€‚
 	 */
 	unsigned char *extra;   /* Extra descriptors */
 	int extralen;
@@ -95,12 +95,12 @@ struct usb_host_endpoint {
 
 /* host-side wrapper for one interface setting's parsed descriptors */
 /**
- * ½Ó¿ÚÉèÖÃ¡£
+ * æŽ¥å£è®¾ç½®ã€‚
  */
 struct usb_host_interface {
 	/**
-	 * ½Ó¿ÚÃèÊö·û£¬ÊÇÒ»¸öÔ¤¶¨ÒåµÄÊý¾Ý½á¹¹£¬±£´æÁËUSBÉè±¸µÄ¸÷ÖÖÊôÐÔ¼°Ïà¹ØÐÅÏ¢:ÈçÃû³Æ¡¢Éú²úµØµÈ¡£
-	 * ´æ·ÅÔÚUSBÉè±¸µÄEEPROMÖÐ¡£
+	 * æŽ¥å£æè¿°ç¬¦ï¼Œæ˜¯ä¸€ä¸ªé¢„å®šä¹‰çš„æ•°æ®ç»“æž„ï¼Œä¿å­˜äº†USBè®¾å¤‡çš„å„ç§å±žæ€§åŠç›¸å…³ä¿¡æ¯:å¦‚åç§°ã€ç”Ÿäº§åœ°ç­‰ã€‚
+	 * å­˜æ”¾åœ¨USBè®¾å¤‡çš„EEPROMä¸­ã€‚
 	 */
 	struct usb_interface_descriptor	desc;
 
@@ -108,16 +108,16 @@ struct usb_host_interface {
 	 * interface setting.  these will be in no particular order.
 	 */
 	/**
-	 * ½Ó¿ÚÊ¹ÓÃµÄ¶Ëµã¡£
+	 * æŽ¥å£ä½¿ç”¨çš„ç«¯ç‚¹ã€‚
 	 */
 	struct usb_host_endpoint *endpoint;
 
 	/**
-	 * ´ÓÉè±¸ÖÐÈ¡³öµÄ×Ö·û´®ÃèÊö·û¡£¿ÉÄÜÎª¿Õ¡£
+	 * ä»Žè®¾å¤‡ä¸­å–å‡ºçš„å­—ç¬¦ä¸²æè¿°ç¬¦ã€‚å¯èƒ½ä¸ºç©ºã€‚
 	 */
 	char *string;		/* iInterface string, if present */
 	/**
-	 * ³§ÉÌÌØ±ð¶¨ÒåµÄÃèÊö·û¼°Æä³¤¶È¡£
+	 * åŽ‚å•†ç‰¹åˆ«å®šä¹‰çš„æè¿°ç¬¦åŠå…¶é•¿åº¦ã€‚
 	 */
 	unsigned char *extra;   /* Extra descriptors */
 	int extralen;
@@ -125,19 +125,19 @@ struct usb_host_interface {
 
 enum usb_interface_condition {
 	/**
-	 * ÉÐÎ´°ó¶¨
+	 * å°šæœªç»‘å®š
 	 */
 	USB_INTERFACE_UNBOUND = 0,
 	/**
-	 * ÕýÔÚ°ó¶¨
+	 * æ­£åœ¨ç»‘å®š
 	 */
 	USB_INTERFACE_BINDING,
 	/**
-	 * ÒÑ¾­°ó¶¨
+	 * å·²ç»ç»‘å®š
 	 */
 	USB_INTERFACE_BOUND,
 	/**
-	 * ÕýÔÚ½â³ý°ó¶¨
+	 * æ­£åœ¨è§£é™¤ç»‘å®š
 	 */
 	USB_INTERFACE_UNBINDING,
 };
@@ -195,56 +195,56 @@ enum usb_interface_condition {
  * look up an alternate setting in the altsetting array based on its number.
  */
 /**
- * USB½Ó¿Ú£¬´ú±íÒ»¸öUSBÉè±¸ÉÏµÄÄ³¸ö¹¦ÄÜ¡£
+ * USBæŽ¥å£ï¼Œä»£è¡¨ä¸€ä¸ªUSBè®¾å¤‡ä¸Šçš„æŸä¸ªåŠŸèƒ½ã€‚
  */
 struct usb_interface {
 	/* array of alternate settings for this interface,
 	 * stored in no particular order */
 	/**
-	 * ËùÓÐ¿ÉÑ¡ÉèÖÃ¡£±ÈÈçÊÖ»ú¿ÉÒÔ×÷ÎªÉãÏñ¹¤¾ß£¬Ò²¿ÉÒÔ×÷ÎªUÅÌ£¬·Ö±ð±íÊ¾Á½ÖÖÉèÖÃ¡£
+	 * æ‰€æœ‰å¯é€‰è®¾ç½®ã€‚æ¯”å¦‚æ‰‹æœºå¯ä»¥ä½œä¸ºæ‘„åƒå·¥å…·ï¼Œä¹Ÿå¯ä»¥ä½œä¸ºUç›˜ï¼Œåˆ†åˆ«è¡¨ç¤ºä¸¤ç§è®¾ç½®ã€‚
 	 */
 	struct usb_host_interface *altsetting;
 
 	/**
-	 * µ±Ç°Ê¹ÓÃµÄÉèÖÃ¡£
+	 * å½“å‰ä½¿ç”¨çš„è®¾ç½®ã€‚
 	 */
 	struct usb_host_interface *cur_altsetting;	/* the currently
 					 * active alternate setting */
 	/**
-	 * ¿ÉÑ¡ÉèÖÃµÄÊýÁ¿¡£
+	 * å¯é€‰è®¾ç½®çš„æ•°é‡ã€‚
 	 */
 	unsigned num_altsetting;	/* number of alternate settings */
 
 	/**
-	 * Éè±¸µÄ´ÎÉè±¸ºÅ¡£
-	 * µ±Ê¹ÓÃUSB_MAJORÊ±²ÅÓÐÐ§¡£
+	 * è®¾å¤‡çš„æ¬¡è®¾å¤‡å·ã€‚
+	 * å½“ä½¿ç”¨USB_MAJORæ—¶æ‰æœ‰æ•ˆã€‚
 	 */
 	int minor;			/* minor number this interface is
 					 * bound to */
 	/**
-	 * ½Ó¿ÚºÍÇý¶¯µÄ°ó¶¨×´Ì¬¡£
+	 * æŽ¥å£å’Œé©±åŠ¨çš„ç»‘å®šçŠ¶æ€ã€‚
 	 */
 	enum usb_interface_condition condition;		/* state of binding */
 	/**
-	 * ½Ó¿ÚÊÇ·ñ´¦ÓÚ¹ÒÆð×´Ì¬¡£ÔÚÖ¸¶¨Ê±¼äÄÚ(3ms)Ã»ÓÐ·¢Éú×ÜÏß´«Êä£¬¾Í»á½øÈë¹ÒÆð×´Ì¬¡£ÊÕµ½non-idleÐÅºÅÊ±¾Í»á±»»½ÐÑ¡£
+	 * æŽ¥å£æ˜¯å¦å¤„äºŽæŒ‚èµ·çŠ¶æ€ã€‚åœ¨æŒ‡å®šæ—¶é—´å†…(3ms)æ²¡æœ‰å‘ç”Ÿæ€»çº¿ä¼ è¾“ï¼Œå°±ä¼šè¿›å…¥æŒ‚èµ·çŠ¶æ€ã€‚æ”¶åˆ°non-idleä¿¡å·æ—¶å°±ä¼šè¢«å”¤é†’ã€‚
 	 */
 	unsigned is_active:1;		/* the interface is not suspended */
 	/**
-	 * ÊÇ·ñÐèÒª´ò¿ªÔ¶³Ì»½ÐÑ¹¦ÄÜ¡£ÔÊÐí·öÆðµÄÉè±¸¸øÖ÷»ú·¢ÐÅºÅ£¬Í¨ÖªÖ÷»úËü½«´Ó¹ÒÆð×´Ì¬»Ö¸´£¬Èç¹ûÖ÷»úÒ²±»¹ÒÆð£¬Ôò»á»½ÐÑÖ÷»ú¡£
+	 * æ˜¯å¦éœ€è¦æ‰“å¼€è¿œç¨‹å”¤é†’åŠŸèƒ½ã€‚å…è®¸æ‰¶èµ·çš„è®¾å¤‡ç»™ä¸»æœºå‘ä¿¡å·ï¼Œé€šçŸ¥ä¸»æœºå®ƒå°†ä»ŽæŒ‚èµ·çŠ¶æ€æ¢å¤ï¼Œå¦‚æžœä¸»æœºä¹Ÿè¢«æŒ‚èµ·ï¼Œåˆ™ä¼šå”¤é†’ä¸»æœºã€‚
 	 */
 	unsigned needs_remote_wakeup:1;	/* driver requires remote wakeup */
 
 	/**
-	 * Éè±¸Ä£ÐÍÖÐµÄÉè±¸¶ÔÏó¡£
+	 * è®¾å¤‡æ¨¡åž‹ä¸­çš„è®¾å¤‡å¯¹è±¡ã€‚
 	 */
 	struct device dev;		/* interface specific device info */
 	/**
-	 * Ö»ÓÐÊ¹ÓÃUSB_MAJORÊ±²ÅÊ¹ÓÃ¡£
-	 * Ö¸ÏòUSBÀàÉè±¸¡£
+	 * åªæœ‰ä½¿ç”¨USB_MAJORæ—¶æ‰ä½¿ç”¨ã€‚
+	 * æŒ‡å‘USBç±»è®¾å¤‡ã€‚
 	 */
 	struct device *usb_dev;		/* pointer to the usb class's device, if any */
 	/**
-	 * ×Ô¶¯¹ÒÆð¼ÆÊý¡£µ±Îª0Ê±£¬ÔÊÐí×Ô¶¯¹ÒÆð¡£
+	 * è‡ªåŠ¨æŒ‚èµ·è®¡æ•°ã€‚å½“ä¸º0æ—¶ï¼Œå…è®¸è‡ªåŠ¨æŒ‚èµ·ã€‚
 	 */
 	int pm_usage_cnt;		/* usage counter for autosuspend */
 };
@@ -284,7 +284,7 @@ void usb_put_intf(struct usb_interface *intf);
  * providing support for the /proc/bus/usb/devices pseudo-file.
  */
 /**
- * USB½Ó¿Ú»º´æ¡£
+ * USBæŽ¥å£ç¼“å­˜ã€‚
  */
 struct usb_interface_cache {
 	unsigned num_altsetting;	/* number of alternate settings */
@@ -293,7 +293,7 @@ struct usb_interface_cache {
 	/* variable-length array of alternate settings for this interface,
 	 * stored in no particular order */
 	/**
-	 * ¿É±äÊý×é£¬¸ù¾ÝGET_DESCRIPTOR·µ»ØµÄÃ¿¸ö½Ó¿Ú¿ÉÑ¡ÉèÖÃµÄÊýÄ¿·ÖÅä¸øintr_cacheÏàÓ¦µÄ¿Õ¼ä¡£
+	 * å¯å˜æ•°ç»„ï¼Œæ ¹æ®GET_DESCRIPTORè¿”å›žçš„æ¯ä¸ªæŽ¥å£å¯é€‰è®¾ç½®çš„æ•°ç›®åˆ†é…ç»™intr_cacheç›¸åº”çš„ç©ºé—´ã€‚
 	 */
 	struct usb_host_interface altsetting[0];
 };
@@ -342,16 +342,16 @@ struct usb_interface_cache {
  * all its interfaces.
  */
 /**
- * USBÖ÷»úÅäÖÃ
+ * USBä¸»æœºé…ç½®
  */
 struct usb_host_config {
 	/**
-	 * ÅäÖÃÃèÊö·û¡£
+	 * é…ç½®æè¿°ç¬¦ã€‚
 	 */
 	struct usb_config_descriptor	desc;
 
 	/**
-	 * ÅäÖÃÃèÊö·û¶ÔÓ¦µÄ×Ö·û´®ÃèÊö·ûÐÅÏ¢¡£
+	 * é…ç½®æè¿°ç¬¦å¯¹åº”çš„å­—ç¬¦ä¸²æè¿°ç¬¦ä¿¡æ¯ã€‚
 	 */
 	char *string;		/* iConfiguration string, if present */
 
@@ -362,20 +362,20 @@ struct usb_host_config {
 	/* the interfaces associated with this configuration,
 	 * stored in no particular order */
 	/**
-	 * ÅäÖÃ°üº¬µÄ½Ó¿Ú¡£Õâ¸öÊý×éµÄË³ÐòÎ´±ØÊÇ°´ÕÕÅäÖÃÀï½Ó¿ÚºÅµÄË³Ðò¡£
-	 * Çë²Î¼ûusb_ifnum_to_ifº¯Êý¡£
+	 * é…ç½®åŒ…å«çš„æŽ¥å£ã€‚è¿™ä¸ªæ•°ç»„çš„é¡ºåºæœªå¿…æ˜¯æŒ‰ç…§é…ç½®é‡ŒæŽ¥å£å·çš„é¡ºåºã€‚
+	 * è¯·å‚è§usb_ifnum_to_ifå‡½æ•°ã€‚
 	 */
 	struct usb_interface *interface[USB_MAXINTERFACES];
 
 	/* Interface information available even when this is not the
 	 * active configuration */
 	/**
-	 * USB½Ó¿Ú»º´æ¡£
+	 * USBæŽ¥å£ç¼“å­˜ã€‚
 	 */
 	struct usb_interface_cache *intf_cache[USB_MAXINTERFACES];
 
 	/**
-	 * ¶îÍâÀ©Õ¹µÄÃèÊö·û¡£
+	 * é¢å¤–æ‰©å±•çš„æè¿°ç¬¦ã€‚
 	 */
 	unsigned char *extra;   /* Extra descriptors */
 	int extralen;
@@ -398,24 +398,24 @@ struct usb_devmap {
  * Allocated per bus (tree of devices) we have:
  */
 /**
- * USB×ÜÏß
+ * USBæ€»çº¿
  */
 struct usb_bus {
 	/**
-	 * USBÖ÷»ú¿ØÖÆÆ÷±¾ÉíÊÇÒ»¸öPCIÉè±¸£¬Ëü±¾ÉíÒ²°üº¬Ò»ÌõUSB×ÜÏß¡£
-	 * Òò´ËÔÚ±¾½á¹¹µÄµÚÒ»¸ö³ÉÔ±£¬°üº¬Ò»¸ödevice½á¹¹£¬¾Í¿ÉÒÔ½«HCDÄÉÈëLINUXÉè±¸ÌåÏµÖÐÁË¡£
+	 * USBä¸»æœºæŽ§åˆ¶å™¨æœ¬èº«æ˜¯ä¸€ä¸ªPCIè®¾å¤‡ï¼Œå®ƒæœ¬èº«ä¹ŸåŒ…å«ä¸€æ¡USBæ€»çº¿ã€‚
+	 * å› æ­¤åœ¨æœ¬ç»“æž„çš„ç¬¬ä¸€ä¸ªæˆå‘˜ï¼ŒåŒ…å«ä¸€ä¸ªdeviceç»“æž„ï¼Œå°±å¯ä»¥å°†HCDçº³å…¥LINUXè®¾å¤‡ä½“ç³»ä¸­äº†ã€‚
 	 */
 	struct device *controller;	/* host/master side hardware */
 	/**
-	 * ×ÜÏß±àºÅ¡£×î´óÖµÊÇUSB_MAXBUS¡£
+	 * æ€»çº¿ç¼–å·ã€‚æœ€å¤§å€¼æ˜¯USB_MAXBUSã€‚
 	 */
 	int busnum;			/* Bus number (in order of reg) */
 	/**
-	 * ×ÜÏßÃû³Æ¡£¾ÍÊÇÖ÷»ú¿ØÖÆÆ÷ÔÚPCIÖÐµÄÃû³Æ¡£
+	 * æ€»çº¿åç§°ã€‚å°±æ˜¯ä¸»æœºæŽ§åˆ¶å™¨åœ¨PCIä¸­çš„åç§°ã€‚
 	 */
 	char *bus_name;			/* stable id (PCI slot_name etc) */
 	/**
-	 * ÊÇ·ñÖ§³ÖDMA¡£
+	 * æ˜¯å¦æ”¯æŒDMAã€‚
 	 */
 	u8 uses_dma;			/* Does the host controller use DMA? */
 	u8 otg_port;			/* 0, or number of OTG/HNP port */
@@ -423,24 +423,24 @@ struct usb_bus {
 	unsigned b_hnp_enable:1;	/* OTG: did A-Host enable HNP? */
 
 	/**
-	 * devmap±íÖÐ£¬ÏÂÒ»¸ö²»Îª0µÄÏî¡£
+	 * devmapè¡¨ä¸­ï¼Œä¸‹ä¸€ä¸ªä¸ä¸º0çš„é¡¹ã€‚
 	 */
 	int devnum_next;		/* Next open device number in
 					 * round-robin allocation */
 
 	struct usb_devmap devmap;	/* device address allocation map */
 	/**
-	 * ¸ùHUB£¬Ò»°ãÓëUSBÖ÷»ú¿ØÖÆÆ÷°ó¶¨ÔÚÒ»Æð¡£
+	 * æ ¹HUBï¼Œä¸€èˆ¬ä¸ŽUSBä¸»æœºæŽ§åˆ¶å™¨ç»‘å®šåœ¨ä¸€èµ·ã€‚
 	 */
 	struct usb_device *root_hub;	/* Root hub */
 	/**
-	 * Í¨¹ý´ËÖ¸Õë½«×ÜÏßÁ´½ÓÈëusb_bus_list¡£
+	 * é€šè¿‡æ­¤æŒ‡é’ˆå°†æ€»çº¿é“¾æŽ¥å…¥usb_bus_listã€‚
 	 */
 	struct list_head bus_list;	/* list of busses */
 
 	/**
-	 * ×ÜÏßÎªÖÐ¶Ï´«ÊäºÍµÈÊ±´«ÊäÔ¤ÁôÁË¶àÉÙ´ø¿í¡£¸ßËÙ´«Êä¿ÉÒÔÔ¤Áô80?µÄ´øÍê£¬µÍËÙ´«Êä¿ÉÒÔ´ïµ½90%¡£
-	 * µ¥Î»ÊÇms£¬±íÊ¾Ò»Ö¡»òÎ¢Ö¡ÄÚÓÐ¶àÉÙms¿ÉÒÔÁô¸øÖÐ¶Ï¡¢µÈÊ±´«Êä¡£
+	 * æ€»çº¿ä¸ºä¸­æ–­ä¼ è¾“å’Œç­‰æ—¶ä¼ è¾“é¢„ç•™äº†å¤šå°‘å¸¦å®½ã€‚é«˜é€Ÿä¼ è¾“å¯ä»¥é¢„ç•™80?çš„å¸¦å®Œï¼Œä½Žé€Ÿä¼ è¾“å¯ä»¥è¾¾åˆ°90%ã€‚
+	 * å•ä½æ˜¯msï¼Œè¡¨ç¤ºä¸€å¸§æˆ–å¾®å¸§å†…æœ‰å¤šå°‘mså¯ä»¥ç•™ç»™ä¸­æ–­ã€ç­‰æ—¶ä¼ è¾“ã€‚
 	 */
 	int bandwidth_allocated;	/* on this bus: how much of the time
 					 * reserved for periodic (intr/iso)
@@ -450,24 +450,24 @@ struct usb_bus {
 					 * while high speed reserves 80%.
 					 */
 	/**
-	 * µ±Ç°ÖÐ¶Ï´«ÊäºÍµÈÊ±´«ÊäµÄÊýÁ¿¡£
+	 * å½“å‰ä¸­æ–­ä¼ è¾“å’Œç­‰æ—¶ä¼ è¾“çš„æ•°é‡ã€‚
 	 */
 	int bandwidth_int_reqs;		/* number of Interrupt requests */
 	int bandwidth_isoc_reqs;	/* number of Isoc. requests */
 
 #ifdef CONFIG_USB_DEVICEFS
 	/**
-	 * ×ÜÏß¶ÔÓ¦µÄusbfs£¬Ã¿Ìõ×ÜÏß¶¼¶ÔÓ¦ÓÚ/proc/bus/usbÏÂµÄÒ»¸öÄ¿Â¼¡£
+	 * æ€»çº¿å¯¹åº”çš„usbfsï¼Œæ¯æ¡æ€»çº¿éƒ½å¯¹åº”äºŽ/proc/bus/usbä¸‹çš„ä¸€ä¸ªç›®å½•ã€‚
 	 */
 	struct dentry *usbfs_dentry;	/* usbfs dentry entry for the bus */
 #endif
 	/**
-	 * Éè±¸µÄÀà¡£¼´Ìá¹©ÁËÊ²Ã´¹¦ÄÜ£¬Èç²»¹ÜSCSI´ÅÅÌ»¹ÊÇATAÓ²ÅÌ£¬¶¼ÊôÓÚÓ²ÅÌ¡£
+	 * è®¾å¤‡çš„ç±»ã€‚å³æä¾›äº†ä»€ä¹ˆåŠŸèƒ½ï¼Œå¦‚ä¸ç®¡SCSIç£ç›˜è¿˜æ˜¯ATAç¡¬ç›˜ï¼Œéƒ½å±žäºŽç¡¬ç›˜ã€‚
 	 */
 	struct class_device *class_dev;	/* class device for this bus */
 
 	/**
-	 * ÓÃÓÚ¼à¿ØUSB×ÜÏßÉÏµÄµ×²ãÍ¨ÐÅÁ÷¡£
+	 * ç”¨äºŽç›‘æŽ§USBæ€»çº¿ä¸Šçš„åº•å±‚é€šä¿¡æµã€‚
 	 */
 #if defined(CONFIG_USB_MON)
 	struct mon_bus *mon_bus;	/* non-null when associated */
@@ -504,100 +504,100 @@ struct usb_tt;
  *              authorize them from user space. FIXME -- complete doc
  */
 /**
- * USBÉè±¸¡£
+ * USBè®¾å¤‡ã€‚
  */
 struct usb_device {
 	/**
-	 * Éè±¸µØÖ·£¬ÔÚUSB×ÜÏßÉÏµÄ±àºÅ¡£
-	 * µ±Éè±¸²åµ½×ÜÏßÉÏÊ±£¬µ÷ÓÃchoose_addressº¯ÊýÎªËü·ÖÅä¡£
+	 * è®¾å¤‡åœ°å€ï¼Œåœ¨USBæ€»çº¿ä¸Šçš„ç¼–å·ã€‚
+	 * å½“è®¾å¤‡æ’åˆ°æ€»çº¿ä¸Šæ—¶ï¼Œè°ƒç”¨choose_addresså‡½æ•°ä¸ºå®ƒåˆ†é…ã€‚
 	 */
 	int		devnum;		/* Address on USB bus */
 	/**
-	 * Èç4-0.3:1.0ÕâÑùµÄÂ·¾¶¡£
+	 * å¦‚4-0.3:1.0è¿™æ ·çš„è·¯å¾„ã€‚
 	 */
 	char		devpath [16];	/* Use in messages: /port/port/... */
 	/**
-	 * Éè±¸×´Ì¬¡£
+	 * è®¾å¤‡çŠ¶æ€ã€‚
 	 */
 	enum usb_device_state	state;	/* configured, not attached, etc */
 	/**
-	 * Éè±¸µÄËÙ¶È¡£
+	 * è®¾å¤‡çš„é€Ÿåº¦ã€‚
 	 */
 	enum usb_device_speed	speed;	/* high/full/low (or error) */
 
 	/**
-	 * ¸ßËÙHUBÓÃÀ´Á¬½ÓµÍËÙÉè±¸µÄ¶Ë¿Ú¡£
+	 * é«˜é€ŸHUBç”¨æ¥è¿žæŽ¥ä½Žé€Ÿè®¾å¤‡çš„ç«¯å£ã€‚
 	 */
 	struct usb_tt	*tt; 		/* low/full speed dev, highspeed hub */
 	int		ttport;		/* device port on that tt hub */
 
 	/**
-	 * µ±Ç°Ã¿¸ö¶Ëµã·¢ËÍ»òÕß½ÓÊÕµÄÊÇDATA0»¹ÊÇDATA1°ü¡£
+	 * å½“å‰æ¯ä¸ªç«¯ç‚¹å‘é€æˆ–è€…æŽ¥æ”¶çš„æ˜¯DATA0è¿˜æ˜¯DATA1åŒ…ã€‚
 	 */
 	unsigned int toggle[2];		/* one bit for each endpoint
 					 * ([0] = IN, [1] = OUT) */
 
 	/**
-	 * ¸¸HUB£¬¶Ôroot hubÀ´Ëµ£¬ÖµÎªNULL¡£
+	 * çˆ¶HUBï¼Œå¯¹root hubæ¥è¯´ï¼Œå€¼ä¸ºNULLã€‚
 	 */
 	struct usb_device *parent;	/* our hub, unless we're the root */
 	/**
-	 * Éè±¸ËùÔÚµÄ×ÜÏß¡£
+	 * è®¾å¤‡æ‰€åœ¨çš„æ€»çº¿ã€‚
 	 */
 	struct usb_bus *bus;		/* Bus we're part of */
 	/**
-	 * ¶Ëµã0.
+	 * ç«¯ç‚¹0.
 	 */
 	struct usb_host_endpoint ep0;
 
 	/**
-	 * Í¨ÓÃµÄdevice½á¹¹£¬ÓÃÓÚLINUXÉè±¸Ä£ÐÍ¹ÜÀí¡£
+	 * é€šç”¨çš„deviceç»“æž„ï¼Œç”¨äºŽLINUXè®¾å¤‡æ¨¡åž‹ç®¡ç†ã€‚
 	 */
 	struct device dev;		/* Generic device interface */
 
 	/**
-	 * Éè±¸ÃèÊö·û¡£
+	 * è®¾å¤‡æè¿°ç¬¦ã€‚
 	 */
 	struct usb_device_descriptor descriptor;/* Descriptor */
 	/**
-	 * Éè±¸µÄËùÓÐÅäÖÃ¡£
+	 * è®¾å¤‡çš„æ‰€æœ‰é…ç½®ã€‚
 	 */
 	struct usb_host_config *config;	/* All of the configs */
 
 	/**
-	 * Éè±¸µÄµ±Ç°ÅäÖÃ¡£
+	 * è®¾å¤‡çš„å½“å‰é…ç½®ã€‚
 	 */
 	struct usb_host_config *actconfig;/* the active configuration */
 	/**
-	 * Éè±¸¶ÔÓ¦µÄËùÓÐINºÍOUT¶Ëµã¡£
+	 * è®¾å¤‡å¯¹åº”çš„æ‰€æœ‰INå’ŒOUTç«¯ç‚¹ã€‚
 	 */
 	struct usb_host_endpoint *ep_in[16];
 	struct usb_host_endpoint *ep_out[16];
 
 	/**
-	 * ËùÓÐÅäÖÃÃèÊö·û½á¹û¡£²»½ö½ö°üº¬ÅäÖÃÃèÊö·û£¬»¹°üº¬½Ó¿ÚÃèÊö·ûºÍ¶ËµãÃèÊö·û¡£
+	 * æ‰€æœ‰é…ç½®æè¿°ç¬¦ç»“æžœã€‚ä¸ä»…ä»…åŒ…å«é…ç½®æè¿°ç¬¦ï¼Œè¿˜åŒ…å«æŽ¥å£æè¿°ç¬¦å’Œç«¯ç‚¹æè¿°ç¬¦ã€‚
 	 */
 	char **rawdescriptors;		/* Raw descriptors for each config */
 
 	/**
-	 * ÓÉÖ÷»ú¿ØÖÆÆ÷ÉèÖÃµÄ¡£Ò»°ãÎª500mA.
+	 * ç”±ä¸»æœºæŽ§åˆ¶å™¨è®¾ç½®çš„ã€‚ä¸€èˆ¬ä¸º500mA.
 	 */
 	unsigned short bus_mA;		/* Current available from the bus */
 	/**
-	 * ÔÚHUBÉÏµÄ¶Ë¿ÚºÅ¡£¶Ôroot hubÀ´Ëµ£¬ÆäÖµÎª0.
+	 * åœ¨HUBä¸Šçš„ç«¯å£å·ã€‚å¯¹root hubæ¥è¯´ï¼Œå…¶å€¼ä¸º0.
 	 */
 	u8 portnum;			/* Parent port number (origin 1) */
 	/**
-	 * ÔÚHUBÊ÷ÖÐµÄ¼¶±ð¡£root hubÎª0.
+	 * åœ¨HUBæ ‘ä¸­çš„çº§åˆ«ã€‚root hubä¸º0.
 	 */
 	u8 level;			/* Number of USB hub ancestors */
 
 	/**
-	 * ÊÇ·ñÔÚ¹ÒÆðÊ±¶Ï¿ªÁ¬½Ó¡£
+	 * æ˜¯å¦åœ¨æŒ‚èµ·æ—¶æ–­å¼€è¿žæŽ¥ã€‚
 	 */
 	unsigned discon_suspended:1;	/* Disconnected while suspended */
 	/**
-	 * ×Ö·û´®ÃèÊö·ûµÄÓïÑÔ¡£
+	 * å­—ç¬¦ä¸²æè¿°ç¬¦çš„è¯­è¨€ã€‚
 	 */
 	unsigned have_langid:1;		/* whether string_langid is valid */
 	unsigned authorized:1;		/* Policy has determined we can use it */
@@ -606,14 +606,14 @@ struct usb_device {
 
 	/* static strings from the device */
 	/**
-	 * ²ú¿Ú¡¢³§ÉÌ¡¢ÐòÁÐºÅ¡£
+	 * äº§å£ã€åŽ‚å•†ã€åºåˆ—å·ã€‚
 	 */
 	char *product;			/* iProduct string, if present */
 	char *manufacturer;		/* iManufacturer string, if present */
 	char *serial;			/* iSerialNumber string, if present */
 
 	/**
-	 * ÓÃÓÚusbfs¡£
+	 * ç”¨äºŽusbfsã€‚
 	 */
 	struct list_head filelist;
 #ifdef CONFIG_USB_DEVICE_CLASS
@@ -630,11 +630,11 @@ struct usb_device {
 	 * Each instance needs its own set of data structures.
 	 */
 	/**
-	 * HUBµÄ¶Ë¿ÚÊý£¬²»°üº¬ÉÏÐÐ¶Ë¿Ú¡£
+	 * HUBçš„ç«¯å£æ•°ï¼Œä¸åŒ…å«ä¸Šè¡Œç«¯å£ã€‚
 	 */
 	int maxchild;			/* Number of ports if hub */
 	/**
-	 * HUB×î¶à¿ÉÒÔÖ§³Ö255¸ö¶Ë¿Ú¡£²»¹ýÒ»°ã×î¶à10¸ö¡£
+	 * HUBæœ€å¤šå¯ä»¥æ”¯æŒ255ä¸ªç«¯å£ã€‚ä¸è¿‡ä¸€èˆ¬æœ€å¤š10ä¸ªã€‚
 	 */
 	struct usb_device *children[USB_MAXCHILDREN];
 
@@ -1070,7 +1070,7 @@ static inline int usb_endpoint_is_isoc_out(const struct usb_endpoint_descriptor 
 
 /* Stuff for dynamic usb ids */
 /**
- * ¶¯Ì¬USB IDÁ´±í¡£
+ * åŠ¨æ€USB IDé“¾è¡¨ã€‚
  */
 struct usb_dynids {
 	spinlock_t lock;
@@ -1078,7 +1078,7 @@ struct usb_dynids {
 };
 
 /**
- * ¶¯Ì¬USB ID½Úµã¡£
+ * åŠ¨æ€USB IDèŠ‚ç‚¹ã€‚
  */
 struct usb_dynid {
 	struct list_head node;
@@ -1095,9 +1095,9 @@ extern ssize_t usb_store_new_id(struct usb_dynids *dynids,
  * @for_devices: Non-zero for device drivers, 0 for interface drivers.
  */
 struct usbdrv_wrap {
-	/* Í¨ÓÃÇý¶¯Ä£ÐÍ */
+	/* é€šç”¨é©±åŠ¨æ¨¡åž‹ */
 	struct device_driver driver;
-	/* 0±íÊ¾½Ó¿ÚÇý¶¯³ÌÐò£¬ÆäËû±íÊ¾Éè±¸Çý¶¯³ÌÐò */
+	/* 0è¡¨ç¤ºæŽ¥å£é©±åŠ¨ç¨‹åºï¼Œå…¶ä»–è¡¨ç¤ºè®¾å¤‡é©±åŠ¨ç¨‹åº */
 	int for_devices;
 };
 
@@ -1157,59 +1157,59 @@ struct usbdrv_wrap {
  */
 struct usb_driver {
 	/**
-	 * USBÇý¶¯µÄÃû³Æ¡£
+	 * USBé©±åŠ¨çš„åç§°ã€‚
 	 */
 	const char *name;
 
 	/**
-	 * Ì½²âÒ»¸öÇý¶¯ÊÇ·ñÖ§³ÖÄ³¸öÉè±¸¡£
+	 * æŽ¢æµ‹ä¸€ä¸ªé©±åŠ¨æ˜¯å¦æ”¯æŒæŸä¸ªè®¾å¤‡ã€‚
 	 */
 	int (*probe) (struct usb_interface *intf,
 		      const struct usb_device_id *id);
 
 	/**
-	 * µ±½Ó¿Ú¶Ï¿ªÁª½Óºó¾Í½«µ÷ÓÃ¡£
+	 * å½“æŽ¥å£æ–­å¼€è”æŽ¥åŽå°±å°†è°ƒç”¨ã€‚
 	 */
 	void (*disconnect) (struct usb_interface *intf);
 
 	/**
-	 * ÓëIOCTRLÖ®¼äµÄ½Ó¿Ú¡£
+	 * ä¸ŽIOCTRLä¹‹é—´çš„æŽ¥å£ã€‚
 	 */
 	int (*ioctl) (struct usb_interface *intf, unsigned int code,
 			void *buf);
 
 	/**
-	 * Éè±¸±»¹ÒÆðºÍ»½ÐÑÊ±µ÷ÓÃ¡£
+	 * è®¾å¤‡è¢«æŒ‚èµ·å’Œå”¤é†’æ—¶è°ƒç”¨ã€‚
 	 */
 	int (*suspend) (struct usb_interface *intf, pm_message_t message);
 	int (*resume) (struct usb_interface *intf);
 	int (*reset_resume)(struct usb_interface *intf);
 
 	/**
-	 * Éè±¸½«Òª¸´Î»»òÕß¸´Î»Íê±ÏÊ±µ÷ÓÃ¡£
+	 * è®¾å¤‡å°†è¦å¤ä½æˆ–è€…å¤ä½å®Œæ¯•æ—¶è°ƒç”¨ã€‚
 	 */
 	void (*pre_reset) (struct usb_interface *intf);
 	void (*post_reset) (struct usb_interface *intf);
 
 	/**
-	 * Çý¶¯Ö§³ÖµÄËùÓÐÉè±¸ID¡£
+	 * é©±åŠ¨æ”¯æŒçš„æ‰€æœ‰è®¾å¤‡IDã€‚
 	 */
 	const struct usb_device_id *id_table;
 
 	/**
-	 * Çý¶¯Ö§³ÖµÄ¶¯Ì¬ID¡£ÔÚ/sys/bus/usb/driversÄ¿Â¼ÏÂµÄnew_idÎÄ¼þÖÐÐ´ÈëÒ»¸öÖµ¼´¿ÉÒÔ¼ÓÈëÐÂµÄID¡£
+	 * é©±åŠ¨æ”¯æŒçš„åŠ¨æ€IDã€‚åœ¨/sys/bus/usb/driversç›®å½•ä¸‹çš„new_idæ–‡ä»¶ä¸­å†™å…¥ä¸€ä¸ªå€¼å³å¯ä»¥åŠ å…¥æ–°çš„IDã€‚
 	 */
 	struct usb_dynids dynids;
 	/**
-	 * Ê¹ÓÃÕâ¸ö½á¹¹ÊÇÎªÁËÇý¶¯ÊÇÉè±¸Çý¶¯»¹ÊÇ½Ó¿ÚÇý¶¯¡£
+	 * ä½¿ç”¨è¿™ä¸ªç»“æž„æ˜¯ä¸ºäº†é©±åŠ¨æ˜¯è®¾å¤‡é©±åŠ¨è¿˜æ˜¯æŽ¥å£é©±åŠ¨ã€‚
 	 */
 	struct usbdrv_wrap drvwrap;
 	/**
-	 * ÊÇ·ñ½ûÖ¹¶¯Ì¬ID¡£
+	 * æ˜¯å¦ç¦æ­¢åŠ¨æ€IDã€‚
 	 */
 	unsigned int no_dynamic_id:1;
 	/**
-	 * ÊÇ·ñÖ§³Öautosuspend¡£
+	 * æ˜¯å¦æ”¯æŒautosuspendã€‚
 	 */
 	unsigned int supports_autosuspend:1;
 };
@@ -1235,7 +1235,7 @@ struct usb_driver {
  * USB drivers must provide all the fields listed above except drvwrap.
  */
 /**
- * USBÉè±¸Çý¶¯(·Ç½Ó¿ÚÇý¶¯),Ä¿Ç°Ö»ÓÐusb_generic_driverÕâÒ»¸öÇý¶¯¡£
+ * USBè®¾å¤‡é©±åŠ¨(éžæŽ¥å£é©±åŠ¨),ç›®å‰åªæœ‰usb_generic_driverè¿™ä¸€ä¸ªé©±åŠ¨ã€‚
  */
 struct usb_device_driver {
 	const char *name;
@@ -1276,7 +1276,7 @@ struct usb_class_driver {
 extern int usb_register_driver(struct usb_driver *, struct module *,
 			       const char *);
 /**
- * ×¢²áÒ»¸öUSBÇý¶¯¡£
+ * æ³¨å†Œä¸€ä¸ªUSBé©±åŠ¨ã€‚
  */
 static inline int usb_register(struct usb_driver *driver)
 {
@@ -1307,30 +1307,30 @@ extern int usb_disabled(void);
  * Note: URB_DIR_IN/OUT is automatically set in usb_submit_urb().
  */
 /**
- * Õâ¸ö±ê¼ÇÖ»¶ÔÓÃÀ´´ÓIN ¶Ëµã¶ÁÈ¡Êý¾ÝµÄurb ÓÐÐ§£¬ÒâË¼¾ÍÊÇËµÈç¹û´ÓÒ»¸öIN ¶ËµãÄÇÀï¶ÁÈ¡ÁËÒ»¸ö±È½Ï¶ÌµÄÊý¾Ý°ü£¬¾Í¿ÉÒÔÈÏÎªÊÇ´íÎóµÄ¡£
- * Õý³£Çé¿öÏÂ£¬Ò»¸ö´ó°ü¿ÉÒÔ·Ö³É¶à¸ö°ü£¬×îºóÒ»¸ö°üÐ¡ÓÚÕý³£°ü´óÐ¡±íÊ¾´«Êä½áÊø¡£Èç¹ûÉèÖÃÁË´Ë±êÖ¾£¬Ð¡ÓÚÕý³£°ü´óÐ¡Ôò²»ÊÇ±íÊ¾´«Êä½áÊø¶øÊÇ±íÊ¾·¢ÉúÁË´íÎó¡£
+ * è¿™ä¸ªæ ‡è®°åªå¯¹ç”¨æ¥ä»ŽIN ç«¯ç‚¹è¯»å–æ•°æ®çš„urb æœ‰æ•ˆï¼Œæ„æ€å°±æ˜¯è¯´å¦‚æžœä»Žä¸€ä¸ªIN ç«¯ç‚¹é‚£é‡Œè¯»å–äº†ä¸€ä¸ªæ¯”è¾ƒçŸ­çš„æ•°æ®åŒ…ï¼Œå°±å¯ä»¥è®¤ä¸ºæ˜¯é”™è¯¯çš„ã€‚
+ * æ­£å¸¸æƒ…å†µä¸‹ï¼Œä¸€ä¸ªå¤§åŒ…å¯ä»¥åˆ†æˆå¤šä¸ªåŒ…ï¼Œæœ€åŽä¸€ä¸ªåŒ…å°äºŽæ­£å¸¸åŒ…å¤§å°è¡¨ç¤ºä¼ è¾“ç»“æŸã€‚å¦‚æžœè®¾ç½®äº†æ­¤æ ‡å¿—ï¼Œå°äºŽæ­£å¸¸åŒ…å¤§å°åˆ™ä¸æ˜¯è¡¨ç¤ºä¼ è¾“ç»“æŸè€Œæ˜¯è¡¨ç¤ºå‘ç”Ÿäº†é”™è¯¯ã€‚
  */
 #define URB_SHORT_NOT_OK	0x0001	/* report short reads as errors */
 /**
- * ÓÃÓÚµÈÊ±´«Êä£¬Èç¹ûÉèÖÃ´Ë±êÖ¾£¬Ôò²»ÓÃÉèÖÃ¿ªÊ¼´«ÊäµÄÖ¡ºÅ£¬ÓÉHCD×ÔÐÐ¿ªÊ¼½øÐÐµÈÊ±´«Êä¡£
+ * ç”¨äºŽç­‰æ—¶ä¼ è¾“ï¼Œå¦‚æžœè®¾ç½®æ­¤æ ‡å¿—ï¼Œåˆ™ä¸ç”¨è®¾ç½®å¼€å§‹ä¼ è¾“çš„å¸§å·ï¼Œç”±HCDè‡ªè¡Œå¼€å§‹è¿›è¡Œç­‰æ—¶ä¼ è¾“ã€‚
  */
 #define URB_ISO_ASAP		0x0002	/* iso-only, urb->start_frame
 					 * ignored */
 /**
- * ÕâÁ½¸ö±êÖ¾¶¼ÊÇÓÐ¹ØDMA µÄ¡£Í¨ÖªHCD²»Òª×Ô¼º×öDMAÓ³Éä£¬Çý¶¯Ìá¹©µÄURBÀïÒÑ¾­ÓÐDMA»º³åÇøµØÖ·ÁË¡£
+ * è¿™ä¸¤ä¸ªæ ‡å¿—éƒ½æ˜¯æœ‰å…³DMA çš„ã€‚é€šçŸ¥HCDä¸è¦è‡ªå·±åšDMAæ˜ å°„ï¼Œé©±åŠ¨æä¾›çš„URBé‡Œå·²ç»æœ‰DMAç¼“å†²åŒºåœ°å€äº†ã€‚
  */
 #define URB_NO_TRANSFER_DMA_MAP	0x0004	/* urb->transfer_dma valid on submit */
 #define URB_NO_SETUP_DMA_MAP	0x0008	/* urb->setup_dma valid on submit */
 /**
- * UHCIÊ¹ÓÃµÄ±êÖ¾¡£
+ * UHCIä½¿ç”¨çš„æ ‡å¿—ã€‚
  */
 #define URB_NO_FSBR		0x0020	/* UHCI-specific */
 /**
- * Õâ¸ö±êÖ¾±íÊ¾ÅúÁ¿µÄOUT ´«Êä±ØÐëÊ¹ÓÃÒ»¸öshort packet À´½áÊø¡£
+ * è¿™ä¸ªæ ‡å¿—è¡¨ç¤ºæ‰¹é‡çš„OUT ä¼ è¾“å¿…é¡»ä½¿ç”¨ä¸€ä¸ªshort packet æ¥ç»“æŸã€‚
  */
 #define URB_ZERO_PACKET		0x0040	/* Finish bulk OUT with short packet */
 /**
- * ÓÃÓÚ¸æÖªHCD£¬ÔÚURBÍê³Éºó£¬²»ÒªÇëÇóÒ»¸öÓ²¼þÖÐ¶Ï¡£
+ * ç”¨äºŽå‘ŠçŸ¥HCDï¼Œåœ¨URBå®ŒæˆåŽï¼Œä¸è¦è¯·æ±‚ä¸€ä¸ªç¡¬ä»¶ä¸­æ–­ã€‚
  */
 #define URB_NO_INTERRUPT	0x0080	/* HINT: no non-error interrupt
 					 * needed */
@@ -1341,23 +1341,23 @@ extern int usb_disabled(void);
 #define URB_DIR_MASK		URB_DIR_IN
 
 /**
- * ÓÃÓÚµÈÊ±´«Êä£¬Ã¿¸ö°üµÄÃèÊö±í¡£
+ * ç”¨äºŽç­‰æ—¶ä¼ è¾“ï¼Œæ¯ä¸ªåŒ…çš„æè¿°è¡¨ã€‚
  */
 struct usb_iso_packet_descriptor {
 	/**
-	 * Õâ¸ö°üÔÚtransfer_bufferÀïµÄÆ«ÒÆÎ»ÖÃ
+	 * è¿™ä¸ªåŒ…åœ¨transfer_bufferé‡Œçš„åç§»ä½ç½®
 	 */
 	unsigned int offset;
 	/**
-	 * Ô¤ÆÚµÄÕâ´ÎµÈÊ±´«ÊäData°üÀïÊý¾ÝµÄ³¤¶È
+	 * é¢„æœŸçš„è¿™æ¬¡ç­‰æ—¶ä¼ è¾“DataåŒ…é‡Œæ•°æ®çš„é•¿åº¦
 	 */
 	unsigned int length;		/* expected length */
 	/**
-	 * ±íÊ¾ÁË¸÷´ÎµÈÊ±´«ÊäÊµ¼Ê´«ÊäµÄÊý¾Ý³¤¶È
+	 * è¡¨ç¤ºäº†å„æ¬¡ç­‰æ—¶ä¼ è¾“å®žé™…ä¼ è¾“çš„æ•°æ®é•¿åº¦
 	 */
 	unsigned int actual_length;
 	/**
-	 * ¼ÇÂ¼ÁËµÈÊ±´«ÊäµÄ×´Ì¬¡£
+	 * è®°å½•äº†ç­‰æ—¶ä¼ è¾“çš„çŠ¶æ€ã€‚
 	 */
 	int status;
 };
@@ -1550,106 +1550,106 @@ struct urb
 {
 	/* private: usb core and host controller only fields in the urb */
 	/** 
-	 * urb µÄÒýÓÃ¼ÆÊý¡£
+	 * urb çš„å¼•ç”¨è®¡æ•°ã€‚
 	 */
 	struct kref kref;		/* reference count of the URB */
 	/**
-	 * ±£»¤URBµÄ×ÔÐýËø¡£
+	 * ä¿æŠ¤URBçš„è‡ªæ—‹é”ã€‚
 	 */
 	spinlock_t lock;		/* lock for the URB */
 	/**
-	 * ÓëURB¹ØÁªµÄÖ÷»ú¿ØÖÆÆ÷Ë½ÓÐÊý¾Ý¡£
+	 * ä¸ŽURBå…³è”çš„ä¸»æœºæŽ§åˆ¶å™¨ç§æœ‰æ•°æ®ã€‚
 	 */
 	void *hcpriv;			/* private data for host controller */
 	/**
-	 * µ±USB CORE½«URBÒÆ½»¸øÖ÷»ú¿ØÖÆÆ÷Ê±£¬½«ÆäÖµ¼Ó1£¬Ö÷»ú¿ØÖÆÆ÷½«URB½»¸øUSB COREÊ±£¬¼õ1.
-	 * µ±use_countÖµÎª0µÄÊ±ºò£¬ËµÃ÷URBÒÑ¾­Àë¿ªÖ÷»ú¿ØÖÆÆ÷ÁË¡£usb_kill_urb¾Í¿ÉÒÔÍË³ö¡£
+	 * å½“USB COREå°†URBç§»äº¤ç»™ä¸»æœºæŽ§åˆ¶å™¨æ—¶ï¼Œå°†å…¶å€¼åŠ 1ï¼Œä¸»æœºæŽ§åˆ¶å™¨å°†URBäº¤ç»™USB COREæ—¶ï¼Œå‡1.
+	 * å½“use_countå€¼ä¸º0çš„æ—¶å€™ï¼Œè¯´æ˜ŽURBå·²ç»ç¦»å¼€ä¸»æœºæŽ§åˆ¶å™¨äº†ã€‚usb_kill_urbå°±å¯ä»¥é€€å‡ºã€‚
 	 */
 	atomic_t use_count;		/* concurrent submissions counter */
 	/**
-	 * Ö»ÓÐusb_kill_urb²ÅÄÜÐÞ¸ÄËü¡£
+	 * åªæœ‰usb_kill_urbæ‰èƒ½ä¿®æ”¹å®ƒã€‚
 	 */
 	u8 reject;			/* submissions will fail */
 	int unlinked;			/* unlink error code */
 
 	/* public: documented fields in the urb that can be used by drivers */
 	/**
-	 * ½«URBÁ¬½Óµ½Ã¿¸ö¶ËµãµÄURBÁ´±íÖÐ¡£
+	 * å°†URBè¿žæŽ¥åˆ°æ¯ä¸ªç«¯ç‚¹çš„URBé“¾è¡¨ä¸­ã€‚
 	 */
 	struct list_head urb_list;	/* list head for use by the urb's
 					 * current owner */
 	/**
-	 * URB¹ØÁªµÄUSBÉè±¸¡£
+	 * URBå…³è”çš„USBè®¾å¤‡ã€‚
 	 */
 	struct usb_device *dev; 	/* (in) pointer to associated device */
 	/**
-	 * URBµ½´ï¶ËµãÇ°¾­¹ýµÄ¹ÜµÀ¡£
-	 * bit7±íÊ¾¹ÜµÀµÄ·½Ïò£¬bit8-14±íÊ¾Éè±¸µØÖ·£¬bit15-18±íÊ¾¶ËµãºÅ¡£bit30-31±íÊ¾¹ÜµÀµÄÀàÐÍ¡£
+	 * URBåˆ°è¾¾ç«¯ç‚¹å‰ç»è¿‡çš„ç®¡é“ã€‚
+	 * bit7è¡¨ç¤ºç®¡é“çš„æ–¹å‘ï¼Œbit8-14è¡¨ç¤ºè®¾å¤‡åœ°å€ï¼Œbit15-18è¡¨ç¤ºç«¯ç‚¹å·ã€‚bit30-31è¡¨ç¤ºç®¡é“çš„ç±»åž‹ã€‚
 	 */
 	unsigned int pipe;		/* (in) pipe information */
 	/**
-	 * urb µÄµ±Ç°×´Ì¬¡£
+	 * urb çš„å½“å‰çŠ¶æ€ã€‚
 	 */
 	int status;			/* (return) non-ISO status */
 	/**
-	 * Ò»Ð©±ê¼Ç£¬¿ÉÓÃµÄÖµ¶¼ÔÚinclude/linux/usb.h ÀïÓÐ¶¨Òå¡£ÈçURB_SHORT_NOT_OK¡£
+	 * ä¸€äº›æ ‡è®°ï¼Œå¯ç”¨çš„å€¼éƒ½åœ¨include/linux/usb.h é‡Œæœ‰å®šä¹‰ã€‚å¦‚URB_SHORT_NOT_OKã€‚
 	 */
 	unsigned int transfer_flags;	/* (in) URB_SHORT_NOT_OK | ...*/
 	/**
-	 * Ö÷»úÓë¶ËµãÍ¨ÐÅµÄ»º³åÇø¡£
-	 * transfer_buffer ÊÇÊ¹ÓÃkmalloc ·ÖÅäµÄ»º³åÇø.
-	 * transfer_dma ÊÇÊ¹ÓÃusb_buffer_alloc ·ÖÅäµÄdma »º³åÇø
+	 * ä¸»æœºä¸Žç«¯ç‚¹é€šä¿¡çš„ç¼“å†²åŒºã€‚
+	 * transfer_buffer æ˜¯ä½¿ç”¨kmalloc åˆ†é…çš„ç¼“å†²åŒº.
+	 * transfer_dma æ˜¯ä½¿ç”¨usb_buffer_alloc åˆ†é…çš„dma ç¼“å†²åŒº
 	 */
 	void *transfer_buffer;		/* (in) associated data buffer */
 	/**
-	 * Èç¹ûurb ×Ô´øÁËtransfer_dma£¬¾ÍÒªÍ¬Ê±ÉèÖÃURB_NO_TRANSFER_DMA_MAP À´¸æËßHCD Ò»Éù£¬²»ÓÃËüÔÙ·ÑÐÄ×öDMA Ó³ÉäÁË
+	 * å¦‚æžœurb è‡ªå¸¦äº†transfer_dmaï¼Œå°±è¦åŒæ—¶è®¾ç½®URB_NO_TRANSFER_DMA_MAP æ¥å‘Šè¯‰HCD ä¸€å£°ï¼Œä¸ç”¨å®ƒå†è´¹å¿ƒåšDMA æ˜ å°„äº†
 	 */
 	dma_addr_t transfer_dma;	/* (in) dma addr for transfer_buffer */
 	/**
-	 * transfer_buffer_lengthÖ¸µÄ¾ÍÊÇtransfer_buffer »òtransfer_dma µÄ³¤¶È¡£
+	 * transfer_buffer_lengthæŒ‡çš„å°±æ˜¯transfer_buffer æˆ–transfer_dma çš„é•¿åº¦ã€‚
 	 */
 	int transfer_buffer_length;	/* (in) data buffer length */
 	/**
-	 * urb ½áÊøÖ®ºó£¬»áÓÃÕâ¸ö×Ö¶Î¸æËßÄãÊµ¼ÊÉÏ´«ÊäÁË¶àÉÙÊý¾Ý¡£
+	 * urb ç»“æŸä¹‹åŽï¼Œä¼šç”¨è¿™ä¸ªå­—æ®µå‘Šè¯‰ä½ å®žé™…ä¸Šä¼ è¾“äº†å¤šå°‘æ•°æ®ã€‚
 	 */
 	int actual_length;		/* (return) actual transfer length */
 	/**
-	 * Á½¸ö»º³åÇø£¬Ò»¸öÊÇkmalloc·ÖÅäµÄ£¬Ò»¸öÊÇÓÃusb_buffer_alloc·ÖÅäµÄ£¬²»¹ý£¬ÕâÁ½¸ö»º³åÇøÊÇ¿ØÖÆ´«Êä×¨ÓÃµÄ
+	 * ä¸¤ä¸ªç¼“å†²åŒºï¼Œä¸€ä¸ªæ˜¯kmallocåˆ†é…çš„ï¼Œä¸€ä¸ªæ˜¯ç”¨usb_buffer_allocåˆ†é…çš„ï¼Œä¸è¿‡ï¼Œè¿™ä¸¤ä¸ªç¼“å†²åŒºæ˜¯æŽ§åˆ¶ä¼ è¾“ä¸“ç”¨çš„
 	 */
 	unsigned char *setup_packet;	/* (in) setup packet (control only) */
 	/**
-	 * Èç¹ûÄãµÄurbÉèÖÃÁËsetup_dma£¬Í¬ÑùÒªÉèÖÃURB_NO_SETUP_DMA_MAP±êÖ¾À´¸æËßHCD¡£
+	 * å¦‚æžœä½ çš„urbè®¾ç½®äº†setup_dmaï¼ŒåŒæ ·è¦è®¾ç½®URB_NO_SETUP_DMA_MAPæ ‡å¿—æ¥å‘Šè¯‰HCDã€‚
 	 */
 	dma_addr_t setup_dma;		/* (in) dma addr for setup_packet */
 	/**
-	 * Èç¹ûÃ»ÓÐÖ¸¶¨URB_ISO_ASAP ±êÖ¾£¬¾Í±ØÐë×Ô¼ºÉèÖÃstart_frame£¬Ö¸¶¨µÈÊ±´«ÊäÔÚÄÄÖ¡»òÎ¢Ö¡¿ªÊ¼¡£
-	 * Èç¹ûÖ¸¶¨ÁËURB_ISO_ASAP£¬urb ½áÊøÊ±»áÊ¹ÓÃÕâ¸öÖµ·µ»ØÊµ¼ÊµÄ¿ªÊ¼Ö¡ºÅ¡£
+	 * å¦‚æžœæ²¡æœ‰æŒ‡å®šURB_ISO_ASAP æ ‡å¿—ï¼Œå°±å¿…é¡»è‡ªå·±è®¾ç½®start_frameï¼ŒæŒ‡å®šç­‰æ—¶ä¼ è¾“åœ¨å“ªå¸§æˆ–å¾®å¸§å¼€å§‹ã€‚
+	 * å¦‚æžœæŒ‡å®šäº†URB_ISO_ASAPï¼Œurb ç»“æŸæ—¶ä¼šä½¿ç”¨è¿™ä¸ªå€¼è¿”å›žå®žé™…çš„å¼€å§‹å¸§å·ã€‚
 	 */
 	int start_frame;		/* (modify) start frame (ISO) */
 	/**
-	 * iso_frame_desc±ä³¤Êý×éµÄ³¤¶È¡£
+	 * iso_frame_descå˜é•¿æ•°ç»„çš„é•¿åº¦ã€‚
 	 */
 	int number_of_packets;		/* (in) number of ISO packets */
 	/**
-	 * µÈÊ±ºÍÖÐ¶Ï´«Êä×¨ÓÃ¡£¶ËµãÏ£ÍûÖ÷»úÂÖÑ¯×Ô¼ºµÄÊ±¼ä¼ä¸ô¡£
+	 * ç­‰æ—¶å’Œä¸­æ–­ä¼ è¾“ä¸“ç”¨ã€‚ç«¯ç‚¹å¸Œæœ›ä¸»æœºè½®è¯¢è‡ªå·±çš„æ—¶é—´é—´éš”ã€‚
 	 */
 	int interval;			/* (modify) transfer interval
 					 * (INT/ISO) */
 	/**
-	 * ¶ÔµÈÊ±´«ÊäÀ´Ëµ£¬¼ÇÂ¼ÁËÒ»´ÎµÈÊ±´«ÊäÖÐ£¬´íÎóµÄ´ÎÊý¡£
+	 * å¯¹ç­‰æ—¶ä¼ è¾“æ¥è¯´ï¼Œè®°å½•äº†ä¸€æ¬¡ç­‰æ—¶ä¼ è¾“ä¸­ï¼Œé”™è¯¯çš„æ¬¡æ•°ã€‚
 	 */
 	int error_count;		/* (return) number of ISO errors */
 	/**
-	 * ÓÉÇý¶¯ÉèÖÃµÄ£¬±»½áÊø´¦Àíº¯ÊýÊ¹ÓÃ¡£
+	 * ç”±é©±åŠ¨è®¾ç½®çš„ï¼Œè¢«ç»“æŸå¤„ç†å‡½æ•°ä½¿ç”¨ã€‚
 	 */
 	void *context;			/* (in) context for completion */
 	/**
-	 * ½áÊø´¦Àíº¯ÊýÖ¸Õë¡£
+	 * ç»“æŸå¤„ç†å‡½æ•°æŒ‡é’ˆã€‚
 	 */
 	usb_complete_t complete;	/* (in) completion routine */
 	/**
-	 * ±íÊ¾ÁËÒ»¸ö±ä³¤µÄstruct usb_iso_packet_descriptor½á¹¹ÌåÊý×é
-	 * ÓÃÓÚµÈÊ±´«Êä¡£
+	 * è¡¨ç¤ºäº†ä¸€ä¸ªå˜é•¿çš„struct usb_iso_packet_descriptorç»“æž„ä½“æ•°ç»„
+	 * ç”¨äºŽç­‰æ—¶ä¼ è¾“ã€‚
 	 */
 	struct usb_iso_packet_descriptor iso_frame_desc[0];
 					/* (in) ISO ONLY */
@@ -1672,7 +1672,7 @@ struct urb
  * it to a device.
  */
 /**
- * ³õÊ¼»¯¿ØÖÆURB¡£
+ * åˆå§‹åŒ–æŽ§åˆ¶URBã€‚
  */
 static inline void usb_fill_control_urb (struct urb *urb,
 					 struct usb_device *dev,
@@ -1706,7 +1706,7 @@ static inline void usb_fill_control_urb (struct urb *urb,
  * to a device.
  */
 /**
- * ³õÊ¼»¯ÅúÁ¿´«ÊäURB¡£
+ * åˆå§‹åŒ–æ‰¹é‡ä¼ è¾“URBã€‚
  */
 static inline void usb_fill_bulk_urb (struct urb *urb,
 				      struct usb_device *dev,
@@ -1743,7 +1743,7 @@ static inline void usb_fill_bulk_urb (struct urb *urb,
  * (eight per millisecond) rather than in frames (one per millisecond).
  */
 /**
- * ³õÊ¼»¯ÖÐ¶ÏURB¡£
+ * åˆå§‹åŒ–ä¸­æ–­URBã€‚
  */
 static inline void usb_fill_int_urb (struct urb *urb,
 				     struct usb_device *dev,
@@ -1761,7 +1761,7 @@ static inline void usb_fill_int_urb (struct urb *urb,
 	urb->complete = complete_fn;
 	urb->context = context;
 	/**
-	 * ¶Ô¸ßËÙUSBÀ´Ëµ£¬Ê±¼ä¼ä¸ôµÄµ¥Î»²»Ò»Ñù£¬ÕâÀï×öÒ»ÏÂ×ª»»¡£
+	 * å¯¹é«˜é€ŸUSBæ¥è¯´ï¼Œæ—¶é—´é—´éš”çš„å•ä½ä¸ä¸€æ ·ï¼Œè¿™é‡Œåšä¸€ä¸‹è½¬æ¢ã€‚
 	 */
 	if (dev->speed == USB_SPEED_HIGH)
 		urb->interval = 1 << (interval - 1);
@@ -1993,19 +1993,19 @@ static inline unsigned int __create_pipe(struct usb_device *dev,
 /*-------------------------------------------------------------------------*/
 
 /**
- * »ñµÃ¶ËµãµÄ×î´ó°ü³¤¡£
+ * èŽ·å¾—ç«¯ç‚¹çš„æœ€å¤§åŒ…é•¿ã€‚
  */
 static inline __u16
 usb_maxpacket(struct usb_device *udev, int pipe, int is_out)
 {
 	struct usb_host_endpoint	*ep;
 	/**
-	 * ¶ËµãºÅ¡£
+	 * ç«¯ç‚¹å·ã€‚
 	 */
 	unsigned			epnum = usb_pipeendpoint(pipe);
 
 	/**
-	 * ¸ù¾Ý¹ÜµÀ·½ÏòºÍ¶ËµãºÅµÃµ½¶ËµãÃèÊö·û¡£
+	 * æ ¹æ®ç®¡é“æ–¹å‘å’Œç«¯ç‚¹å·å¾—åˆ°ç«¯ç‚¹æè¿°ç¬¦ã€‚
 	 */
 	if (is_out) {
 		WARN_ON(usb_pipein(pipe));
@@ -2019,7 +2019,7 @@ usb_maxpacket(struct usb_device *udev, int pipe, int is_out)
 
 	/* NOTE:  only 0x07ff bits are for packet size... */
 	/**
-	 * ·µ»Ø¶ËµãµÄ°ü³¤¡£
+	 * è¿”å›žç«¯ç‚¹çš„åŒ…é•¿ã€‚
 	 */
 	return le16_to_cpu(ep->desc.wMaxPacketSize);
 }

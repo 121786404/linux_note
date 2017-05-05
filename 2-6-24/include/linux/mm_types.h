@@ -34,31 +34,31 @@ typedef unsigned long mm_counter_t;
  * who is mapping it.
  */
 struct page {
-	/* ÌåÏµ½á¹¹ÎŞ¹ØµÄ±êÖ¾£¬ÓÃÓÚÃèÊöÒ³µÄÊôĞÔ¡£ÈçPG_locked */
+	/* ä½“ç³»ç»“æ„æ— å…³çš„æ ‡å¿—ï¼Œç”¨äºæè¿°é¡µçš„å±æ€§ã€‚å¦‚PG_locked */
 	unsigned long flags;		/* Atomic flags, some possibly
 					 * updated asynchronously */
-	/* Ê¹ÓÃ¼ÆÊı£¬±íÊ¾ÄÚºËÖĞÒıÓÃ¸ÃÒ³µÄ´ÎÊı */
+	/* ä½¿ç”¨è®¡æ•°ï¼Œè¡¨ç¤ºå†…æ ¸ä¸­å¼•ç”¨è¯¥é¡µçš„æ¬¡æ•° */
 	atomic_t _count;		/* Usage count, see below. */
 	union {
 		/**
-		 * Èç¹ûÓ³Éäµ½ÓÃ»§Ì¬£¬Ôò±íÊ¾Ó³Éäµ½pteµÄ´ÎÊı 
-		 * ³õÊ¼Îª-1£¬Ìí¼Óµ½·´ÏòÓ³ÉäÊ±£¬ÖµÎª0¡£
-		 * Ã¿Ôö¼ÓÒ»¸öÊ¹ÓÃÕß£¬¼ÆÊıÆ÷¼Ó1.ÕâÑùÄÚºË¿ÉÒÔ¿ìËÙµÄ¼ì²éËùÓĞÕßÖ®ÍâÓĞ»¹ÄÄĞ©Ê¹ÓÃÕß¡£
+		 * å¦‚æœæ˜ å°„åˆ°ç”¨æˆ·æ€ï¼Œåˆ™è¡¨ç¤ºæ˜ å°„åˆ°pteçš„æ¬¡æ•° 
+		 * åˆå§‹ä¸º-1ï¼Œæ·»åŠ åˆ°åå‘æ˜ å°„æ—¶ï¼Œå€¼ä¸º0ã€‚
+		 * æ¯å¢åŠ ä¸€ä¸ªä½¿ç”¨è€…ï¼Œè®¡æ•°å™¨åŠ 1.è¿™æ ·å†…æ ¸å¯ä»¥å¿«é€Ÿçš„æ£€æŸ¥æ‰€æœ‰è€…ä¹‹å¤–æœ‰è¿˜å“ªäº›ä½¿ç”¨è€…ã€‚
 		 */
 		atomic_t _mapcount;	/* Count of ptes mapped in mms,
 					 * to show when page is mapped
 					 * & limit reverse map searches.
 					 */
-		/* Èç¹ûÊÇÄÚºËslabÊ¹ÓÃµÄÒ³£¬Ôò±íÊ¾ÆäÖĞµÄslab¶ÔÏóÊıÄ¿ */
+		/* å¦‚æœæ˜¯å†…æ ¸slabä½¿ç”¨çš„é¡µï¼Œåˆ™è¡¨ç¤ºå…¶ä¸­çš„slabå¯¹è±¡æ•°ç›® */
 		unsigned int inuse;	/* SLUB: Nr of objects */
 	};
 	union {
 	    struct {
 		/**
-		 * Ë½ÓĞÊı¾İÖ¸Õë¡£Ò»°ãÓÃÓÚÊı¾İ»º³åÇø¹ÜÀí
-		 * Èç¹ûÓÃÓÚÒ³»º´æ£¬ÔòÖ¸ÏòµÚÒ»¸ö¿é»º³å
-		 * Èç¹ûÒ³Î»ÓÚ½»»»»º´æ£¬ÔòÖ¸Ïò´æ´¢swp_entry_t½á¹¹
-		 * Èç¹ûÒ³ÃæÎ»ÓÚ»ï°éÏµÍ³ÖĞ£¬ÔòÊÇÆäÇ¨ÒÆÀàĞÍ
+		 * ç§æœ‰æ•°æ®æŒ‡é’ˆã€‚ä¸€èˆ¬ç”¨äºæ•°æ®ç¼“å†²åŒºç®¡ç†
+		 * å¦‚æœç”¨äºé¡µç¼“å­˜ï¼Œåˆ™æŒ‡å‘ç¬¬ä¸€ä¸ªå—ç¼“å†²
+		 * å¦‚æœé¡µä½äºäº¤æ¢ç¼“å­˜ï¼Œåˆ™æŒ‡å‘å­˜å‚¨swp_entry_tç»“æ„
+		 * å¦‚æœé¡µé¢ä½äºä¼™ä¼´ç³»ç»Ÿä¸­ï¼Œåˆ™æ˜¯å…¶è¿ç§»ç±»å‹
 		 */
 		unsigned long private;		/* Mapping-private opaque data:
 					 	 * usually used for buffer_heads
@@ -68,8 +68,8 @@ struct page {
 						 * system if PG_buddy is set.
 						 */
 		/**
-		 * Ò³Ö¡ËùÔÚµÄµØÖ·¿Õ¼ä 
-		 * Èç¹û×îºóÒ»Î»Îª1£¬±íÊ¾¸ÃÖ¸ÕëÖ¸ÏòÒ»¸öanon_vmaÄäÃûÇø£¬ÓÃÓÚÄæÏòÓ³Éä¡£
+		 * é¡µå¸§æ‰€åœ¨çš„åœ°å€ç©ºé—´ 
+		 * å¦‚æœæœ€åä¸€ä½ä¸º1ï¼Œè¡¨ç¤ºè¯¥æŒ‡é’ˆæŒ‡å‘ä¸€ä¸ªanon_vmaåŒ¿ååŒºï¼Œç”¨äºé€†å‘æ˜ å°„ã€‚
 		 */
 		struct address_space *mapping;	/* If low bit clear, points to
 						 * inode address_space, or NULL.
@@ -83,15 +83,15 @@ struct page {
 	    spinlock_t ptl;
 #endif
 	    struct kmem_cache *slab;	/* SLUB: Pointer to slab */
-		/* Èç¹ûÓëÆäËûÒ³×éºÏ³ÉÒ»¸ö¸´ºÏÒ³£¬ÔòÖ¸Ïò¸´ºÏÒ³µÄµÚÒ»¸öÒ³ */
+		/* å¦‚æœä¸å…¶ä»–é¡µç»„åˆæˆä¸€ä¸ªå¤åˆé¡µï¼Œåˆ™æŒ‡å‘å¤åˆé¡µçš„ç¬¬ä¸€ä¸ªé¡µ */
 	    struct page *first_page;	/* Compound tail pages */
 	};
 	union {
-		/* ¸ÃÒ³ÔÚÄ³¸öÓ³ÉäÄÚµÄÆ«ÒÆÁ¿ */
+		/* è¯¥é¡µåœ¨æŸä¸ªæ˜ å°„å†…çš„åç§»é‡ */
 		pgoff_t index;		/* Our offset within mapping. */
 		void *freelist;		/* SLUB: freelist req. slab lock */
 	};
-	/* ÓÃÓÚÒ³Ãæ»»³öµÄÁ´±í£¬¿ÉÄÜÁ´½Óµ½»î¶¯Ò³Á´±íºÍ²»»î¶¯Ò³Á´±í */
+	/* ç”¨äºé¡µé¢æ¢å‡ºçš„é“¾è¡¨ï¼Œå¯èƒ½é“¾æ¥åˆ°æ´»åŠ¨é¡µé“¾è¡¨å’Œä¸æ´»åŠ¨é¡µé“¾è¡¨ */
 	struct list_head lru;		/* Pageout list, eg. active_list
 					 * protected by zone->lru_lock !
 					 */
@@ -106,7 +106,7 @@ struct page {
 	 * WANT_PAGE_VIRTUAL in asm/page.h
 	 */
 #if defined(WANT_PAGE_VIRTUAL)
-	/* kmapÓ³ÉäµÄÄÚºËĞéÄâµØÖ·£¬Èç¹ûÃ»ÓĞÓ³Éä£¬ÔòÎªNULL¡£Ö»ÓĞ¸ö±ğÔËĞĞ½ÏÂıµÄÌåÏµ½á¹¹Ê¹ÓÃÁË´Ë×Ö¶Î */
+	/* kmapæ˜ å°„çš„å†…æ ¸è™šæ‹Ÿåœ°å€ï¼Œå¦‚æœæ²¡æœ‰æ˜ å°„ï¼Œåˆ™ä¸ºNULLã€‚åªæœ‰ä¸ªåˆ«è¿è¡Œè¾ƒæ…¢çš„ä½“ç³»ç»“æ„ä½¿ç”¨äº†æ­¤å­—æ®µ */
 	void *virtual;			/* Kernel virtual address (NULL if
 					   not kmapped, ie. highmem) */
 #endif /* WANT_PAGE_VIRTUAL */
@@ -119,26 +119,26 @@ struct page {
  * library, the executable area etc).
  */
 /**
- * ½ø³ÌĞéÄâµØÖ·¿Õ¼äÖĞµÄÒ»¶ÎÇøÓò
+ * è¿›ç¨‹è™šæ‹Ÿåœ°å€ç©ºé—´ä¸­çš„ä¸€æ®µåŒºåŸŸ
  */
 struct vm_area_struct {
-	/* ÇøÓòËùÊô½ø³ÌµØÖ·¿Õ¼ä */
+	/* åŒºåŸŸæ‰€å±è¿›ç¨‹åœ°å€ç©ºé—´ */
 	struct mm_struct * vm_mm;	/* The address space we belong to. */
-	/* ÇøÓòµÄÆğÊ¼µØÖ·ºÍ½áÊøµØÖ· */
+	/* åŒºåŸŸçš„èµ·å§‹åœ°å€å’Œç»“æŸåœ°å€ */
 	unsigned long vm_start;		/* Our start address within vm_mm. */
 	unsigned long vm_end;		/* The first byte after our end address
 					   within vm_mm. */
 
 	/* linked list of VM areas per task, sorted by address */
-	/* Í¨¹ı´ËÖ¸Õë½«½ø³ÌĞéÄâµØÖ·¿Õ¼äÁ´½Ó³Éµ¥Á´±í */
+	/* é€šè¿‡æ­¤æŒ‡é’ˆå°†è¿›ç¨‹è™šæ‹Ÿåœ°å€ç©ºé—´é“¾æ¥æˆå•é“¾è¡¨ */
 	struct vm_area_struct *vm_next;
 
-	/* ¸ÃÇøÓòµÄ·ÃÎÊÈ¨ÏŞ */
+	/* è¯¥åŒºåŸŸçš„è®¿é—®æƒé™ */
 	pgprot_t vm_page_prot;		/* Access permissions of this VMA. */
-	/* ÇøÓò±êÖ¾£¬ÈçVM_GROWSDOWN */
+	/* åŒºåŸŸæ ‡å¿—ï¼Œå¦‚VM_GROWSDOWN */
 	unsigned long vm_flags;		/* Flags, listed below. */
 
-	/* Í¨¹ı´Ë×Ö¶Î½«µØÖ·¿Õ¼ä¼ÓÈëµ½ºìºÚÊ÷ÖĞ */
+	/* é€šè¿‡æ­¤å­—æ®µå°†åœ°å€ç©ºé—´åŠ å…¥åˆ°çº¢é»‘æ ‘ä¸­ */
 	struct rb_node vm_rb;
 
 	/*
@@ -147,16 +147,16 @@ struct vm_area_struct {
 	 * linkage to the list of like vmas hanging off its node, or
 	 * linkage of vma in the address_space->i_mmap_nonlinear list.
 	 */
-	/* ÓÃÓÚ·´ÏòÓ³Éä¡¢ÓÅÏÈÊ÷¹ÜÀíµÄ×Ö¶Î */
+	/* ç”¨äºåå‘æ˜ å°„ã€ä¼˜å…ˆæ ‘ç®¡ç†çš„å­—æ®µ */
 	union {
 		struct {
-			/* Èç¹ûvmaÊÇ·ÇÏßĞÔÓ³Éä£¬ÄÇÃ´Í¨¹ı´Ë×Ö¶ÎÁ´Èëaddress_space.i_mmap_nonlinear */
+			/* å¦‚æœvmaæ˜¯éçº¿æ€§æ˜ å°„ï¼Œé‚£ä¹ˆé€šè¿‡æ­¤å­—æ®µé“¾å…¥address_space.i_mmap_nonlinear */
 			struct list_head list;
 			void *parent;	/* aligns with prio_tree_node parent */
 			struct vm_area_struct *head;
 		} vm_set;
 
-		/* Í¨¹ı´Ë×Ö¶Î½«VMA¼ÓÈëµ½ÓÅÏÈÊ÷ÖĞ£¬ÓÅÏÈÊ÷²»´¦Àí·ÇÏßĞÔÓ³Éä */
+		/* é€šè¿‡æ­¤å­—æ®µå°†VMAåŠ å…¥åˆ°ä¼˜å…ˆæ ‘ä¸­ï¼Œä¼˜å…ˆæ ‘ä¸å¤„ç†éçº¿æ€§æ˜ å°„ */
 		struct raw_prio_tree_node prio_tree_node;
 	} shared;
 
@@ -167,20 +167,20 @@ struct vm_area_struct {
 	 * or brk vma (with NULL file) can only be in an anon_vma list.
 	 */
 	struct list_head anon_vma_node;	/* Serialized by anon_vma->lock */
-	/* Èç¹ûVMAÊÇÄäÃûµÄ£¬ÔòÍ¨¹ı´Ë×Ö¶ÎÁ´½ÓËùÓĞÄäÃûÒ³ */
+	/* å¦‚æœVMAæ˜¯åŒ¿åçš„ï¼Œåˆ™é€šè¿‡æ­¤å­—æ®µé“¾æ¥æ‰€æœ‰åŒ¿åé¡µ */
 	struct anon_vma *anon_vma;	/* Serialized by page_table_lock */
 
 	/* Function pointers to deal with this struct. */
-	/* ´¦Àí¸Ã½á¹¹µÄ·½·¨¼¯ºÏ£¬ÓÃÓÚÔÚ¸Ã½á¹¹ÉÏÖ´ĞĞÒ»Ğ©±ê×¼²Ù×÷ */
+	/* å¤„ç†è¯¥ç»“æ„çš„æ–¹æ³•é›†åˆï¼Œç”¨äºåœ¨è¯¥ç»“æ„ä¸Šæ‰§è¡Œä¸€äº›æ ‡å‡†æ“ä½œ */
 	struct vm_operations_struct * vm_ops;
 
 	/* Information about our backing store: */
-	/* Ó³Éäµ½ÎÄ¼şÊ±£¬´ÓÎÄ¼şµÄÄÄÒ»²¿·Ö¿ªÊ¼Ó³Éä */
+	/* æ˜ å°„åˆ°æ–‡ä»¶æ—¶ï¼Œä»æ–‡ä»¶çš„å“ªä¸€éƒ¨åˆ†å¼€å§‹æ˜ å°„ */
 	unsigned long vm_pgoff;		/* Offset (within vm_file) in PAGE_SIZE
 					   units, *not* PAGE_CACHE_SIZE */
-	/* Ó³ÉäµÄÎÄ¼ş¶ÔÏó */
+	/* æ˜ å°„çš„æ–‡ä»¶å¯¹è±¡ */
 	struct file * vm_file;		/* File we map to (can be NULL). */
-	/* Ë½ÓĞÊı¾İ */
+	/* ç§æœ‰æ•°æ® */
 	void * vm_private_data;		/* was vm_pte (shared mem) */
 	unsigned long vm_truncate_count;/* truncate_count or restart_addr */
 
@@ -193,29 +193,29 @@ struct vm_area_struct {
 };
 
 /**
- * ½ø³ÌµÄÄÚ´æ¹ÜÀíÃèÊö·û
+ * è¿›ç¨‹çš„å†…å­˜ç®¡ç†æè¿°ç¬¦
  */
 struct mm_struct {
-	/* ½ø³ÌĞéÄâµØÖ·¿Õ¼ä£¬µ¥Á´±íµÄµÚÒ»¸ö½áµã */
+	/* è¿›ç¨‹è™šæ‹Ÿåœ°å€ç©ºé—´ï¼Œå•é“¾è¡¨çš„ç¬¬ä¸€ä¸ªç»“ç‚¹ */
 	struct vm_area_struct * mmap;		/* list of VMAs */
-	/* ½ø³ÌĞéÄâµØÖ·¿Õ¼ä£¬ºìºÚÊ÷ĞÎÊ½ */
+	/* è¿›ç¨‹è™šæ‹Ÿåœ°å€ç©ºé—´ï¼Œçº¢é»‘æ ‘å½¢å¼ */
 	struct rb_root mm_rb;
-	/* ÉÏÒ»´Îfind_vmaµ÷ÓÃ²éÕÒµ½µÄÇøÓò */
+	/* ä¸Šä¸€æ¬¡find_vmaè°ƒç”¨æŸ¥æ‰¾åˆ°çš„åŒºåŸŸ */
 	struct vm_area_struct * mmap_cache;	/* last find_vma result */
 	/**
-	 * Îª½ø³Ì²éÕÒ¿ÉÓÃĞéÄâµØÖ·¿Õ¼äµÄ»Øµ÷º¯Êı
+	 * ä¸ºè¿›ç¨‹æŸ¥æ‰¾å¯ç”¨è™šæ‹Ÿåœ°å€ç©ºé—´çš„å›è°ƒå‡½æ•°
 	 */
 	unsigned long (*get_unmapped_area) (struct file *filp,
 				unsigned long addr, unsigned long len,
 				unsigned long pgoff, unsigned long flags);
 	void (*unmap_area) (struct mm_struct *mm, unsigned long addr);
 	/**
-	 * ĞéÄâµØÖ·¿Õ¼äÖĞÓÃÓÚÄÚ´æÓ³ÉäµÄÆğÊ¼µØÖ·¡£¿ÉÄÜÊÇËæ»úµÄ¡£
+	 * è™šæ‹Ÿåœ°å€ç©ºé—´ä¸­ç”¨äºå†…å­˜æ˜ å°„çš„èµ·å§‹åœ°å€ã€‚å¯èƒ½æ˜¯éšæœºçš„ã€‚
 	 */
 	unsigned long mmap_base;		/* base of mmap area */
 	/**
-	 * ½ø³ÌµÄµØÖ·¿Õ¼ä³¤¶È¡£Í¨³£ÊÇTASK_SIZE¡£
-	 * µ«ÊÇÔÚ64Î»ÏµÍ³ÉÏÖ§³Ö32Î»Ó¦ÓÃÊ±£¬ÓĞËù²»Í¬¡£
+	 * è¿›ç¨‹çš„åœ°å€ç©ºé—´é•¿åº¦ã€‚é€šå¸¸æ˜¯TASK_SIZEã€‚
+	 * ä½†æ˜¯åœ¨64ä½ç³»ç»Ÿä¸Šæ”¯æŒ32ä½åº”ç”¨æ—¶ï¼Œæœ‰æ‰€ä¸åŒã€‚
 	 */
 	unsigned long task_size;		/* size of task vm space */
 	unsigned long cached_hole_size; 	/* if non-zero, the largest hole below free_area_cache */
@@ -243,11 +243,11 @@ struct mm_struct {
 
 	unsigned long total_vm, locked_vm, shared_vm, exec_vm;
 	unsigned long stack_vm, reserved_vm, def_flags, nr_ptes;
-	/* ´úÂë¶Î¡¢Êı¾İ¶ÎµÄÆğÊ¼¡¢½áÊøµØÖ· */
+	/* ä»£ç æ®µã€æ•°æ®æ®µçš„èµ·å§‹ã€ç»“æŸåœ°å€ */
 	unsigned long start_code, end_code, start_data, end_data;
-	/* ¶ÑµÄ±ß½ç£¬Õ»µÄÎ»ÖÃ */
+	/* å †çš„è¾¹ç•Œï¼Œæ ˆçš„ä½ç½® */
 	unsigned long start_brk, brk, start_stack;
-	/* ³ÌĞòµÄ²ÎÊıºÍ»·¾³±äÁ¿£¬Î»ÓÚÕ»µÄ¸ßÎ» */
+	/* ç¨‹åºçš„å‚æ•°å’Œç¯å¢ƒå˜é‡ï¼Œä½äºæ ˆçš„é«˜ä½ */
 	unsigned long arg_start, arg_end, env_start, env_end;
 
 	unsigned long saved_auxv[AT_VECTOR_SIZE]; /* for /proc/PID/auxv */
@@ -264,11 +264,11 @@ struct mm_struct {
 	 * it has been since this task got the token.
 	 * Look at mm/thrash.c
 	 */
-	/* ÉÏÒ»´ÎÊÔÍ¼»ñÈ¡½»»»ÁîÅÆÊ±µÄglobal_faultsÖµ */
+	/* ä¸Šä¸€æ¬¡è¯•å›¾è·å–äº¤æ¢ä»¤ç‰Œæ—¶çš„global_faultså€¼ */
 	unsigned int faultstamp;
-	/* Óë½»»»ÁîÅÆÏà¹ØµÄÓÅÏÈ¼¶£¬¿ØÖÆ½»»»ÁîÅÆµÄ·ÃÎÊ */
+	/* ä¸äº¤æ¢ä»¤ç‰Œç›¸å…³çš„ä¼˜å…ˆçº§ï¼Œæ§åˆ¶äº¤æ¢ä»¤ç‰Œçš„è®¿é—® */
 	unsigned int token_priority;
-	/* µÈ´ı½»»»ÁîÅÆµÄÊ±¼ä³¤¶È */
+	/* ç­‰å¾…äº¤æ¢ä»¤ç‰Œçš„æ—¶é—´é•¿åº¦ */
 	unsigned int last_interval;
 
 	unsigned long flags; /* Must use atomic bitops to access the bits */

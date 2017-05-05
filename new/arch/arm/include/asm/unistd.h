@@ -39,13 +39,13 @@
 #endif
 #define __ARCH_WANT_SYS_FORK
 /*
-POSIX±ê×¼ÖĞ¶ÔvforkÃèÊöÈçÏÂ£º
-Applications are recommended to use the fork( ) function instead of this function¡£
-Ò²¾ÍÊÇËµ£¬±ê×¼²»½¨ÒéÊµÏÖvfork£¬
-µ«ÊÇlinux kernel»¹ÊÇ±£ÁôÁË¸ÃÏµÍ³µ÷ÓÃ£¬
-Ò»·½ÃæÊÇÓĞĞ©Ó¦ÓÃ¶ÔperformanceÌØ±ğÃô¸Ğ£¬
-vfork¿ÉÒÔ»ñµÃÒ»Ğ©µÄĞÔÄÜÓÅÊÆ¡£´ËÍâ£¬ÔÚÃ»ÓĞMMUÖ§³ÖµÄCPUÉÏ£¬
-vfork£«execÀ´¿ÉÒÔÓÃÀ´ÊµÏÖfork
+POSIXæ ‡å‡†ä¸­å¯¹vforkæè¿°å¦‚ä¸‹ï¼š
+Applications are recommended to use the fork( ) function instead of this functionã€‚
+ä¹Ÿå°±æ˜¯è¯´ï¼Œæ ‡å‡†ä¸å»ºè®®å®ç°vforkï¼Œ
+ä½†æ˜¯linux kernelè¿˜æ˜¯ä¿ç•™äº†è¯¥ç³»ç»Ÿè°ƒç”¨ï¼Œ
+ä¸€æ–¹é¢æ˜¯æœ‰äº›åº”ç”¨å¯¹performanceç‰¹åˆ«æ•æ„Ÿï¼Œ
+vforkå¯ä»¥è·å¾—ä¸€äº›çš„æ€§èƒ½ä¼˜åŠ¿ã€‚æ­¤å¤–ï¼Œåœ¨æ²¡æœ‰MMUæ”¯æŒçš„CPUä¸Šï¼Œ
+vforkï¼‹execæ¥å¯ä»¥ç”¨æ¥å®ç°fork
 */
 #define __ARCH_WANT_SYS_VFORK
 #define __ARCH_WANT_SYS_CLONE

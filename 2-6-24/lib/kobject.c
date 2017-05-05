@@ -128,7 +128,7 @@ EXPORT_SYMBOL_GPL(kobject_get_path);
  *	@kobj:	object in question.
  */
 /**
- * ³õÊ¼»¯kobject
+ * åˆå§‹åŒ–kobject
  */
 void kobject_init(struct kobject * kobj)
 {
@@ -223,7 +223,7 @@ int kobject_add(struct kobject * kobj)
  *	@kobj:	object in question.
  */
 /**
- * ÔÚsysfsÖĞ×¢²á¶ÔÏó
+ * åœ¨sysfsä¸­æ³¨å†Œå¯¹è±¡
  */
 int kobject_register(struct kobject * kobj)
 {
@@ -443,7 +443,7 @@ void kobject_unregister(struct kobject * kobj)
  *	@kobj:	object.
  */
 /**
- * µİÔöÒıÓÃ¼ÆÊı
+ * é€’å¢å¼•ç”¨è®¡æ•°
  */
 struct kobject * kobject_get(struct kobject * kobj)
 {
@@ -457,7 +457,7 @@ struct kobject * kobject_get(struct kobject * kobj)
  *	@kobj:	object.
  */
 /**
- * ÔÚ²»ĞèÒªkobject¶ÔÏóÊ±£¬ÊÍ·Å·ÖÅäµÄ×ÊÔ´
+ * åœ¨ä¸éœ€è¦kobjectå¯¹è±¡æ—¶ï¼Œé‡Šæ”¾åˆ†é…çš„èµ„æº
  */
 void kobject_cleanup(struct kobject * kobj)
 {
@@ -491,7 +491,7 @@ static void kobject_release(struct kref *kref)
  *	Decrement the refcount, and if 0, call kobject_cleanup().
  */
 /**
- * µİ¼õÒıÓÃ¼ÆÊı
+ * é€’å‡å¼•ç”¨è®¡æ•°
  */
 void kobject_put(struct kobject * kobj)
 {

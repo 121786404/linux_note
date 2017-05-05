@@ -1439,7 +1439,7 @@ static struct elv_fs_entry as_attrs[] = {
 };
 
 /**
- * Ô¤²âµ÷¶ÈÆ÷¡£
+ * é¢„æµ‹è°ƒåº¦å™¨ã€‚
  */
 static struct elevator_type iosched_as = {
 	.ops = {

@@ -97,7 +97,7 @@ struct cgroup_file {
  * directly without synchronization.
  */
 /**
- * ¸÷×ÓÏµÍ³µÄCGROUP×´Ì¬
+ * å„å­ç³»ç»Ÿçš„CGROUPçŠ¶æ€
  */
 struct cgroup_subsys_state {
 	/* PI: the cgroup that this css is attached to */
@@ -151,7 +151,7 @@ struct cgroup_subsys_state {
  * set for a task.
  */
 /**
- * cgroup_subsys_state×´Ì¬¼¯ºÏ£¬Ã¿¸ö½ø³ÌÓĞÕâÑùÒ»¸ö¼¯ºÏ¡£
+ * cgroup_subsys_stateçŠ¶æ€é›†åˆï¼Œæ¯ä¸ªè¿›ç¨‹æœ‰è¿™æ ·ä¸€ä¸ªé›†åˆã€‚
  */
 struct css_set {
 	/* Reference count */

@@ -135,7 +135,7 @@ static void finish_reset(struct uhci_hcd *uhci)
 	 * We have to clear them by hand.
 	 */
 	/**
-	 * ¸´Î»¿ØÖÆÆ÷ºó£¬ÔÙ¸´Î»¶Ë¿Ú¡£
+	 * å¤ä½æ§åˆ¶å™¨åï¼Œå†å¤ä½ç«¯å£ã€‚
 	 */
 	for (port = 0; port < uhci->rh_numports; ++port)
 		outw(0, uhci->io_addr + USBPORTSC1 + (port * 2));
@@ -182,19 +182,19 @@ static void configure_hc(struct uhci_hcd *uhci)
 {
 	/* Set the frame length to the default: 1 ms exactly */
 	/**
-	 * Ö¡ÖÜÆÚ£¬Í¨³£Îª1ms¡£
+	 * å¸§å‘¨æœŸï¼Œé€šå¸¸ä¸º1msã€‚
 	 */
 	outb(USBSOF_DEFAULT, uhci->io_addr + USBSOF);
 
 	/* Store the frame list base address */
 	/**
-	 * Frame ListÔÚÄÚ´æÖĞµÄÎ»ÖÃ¡£bit11-bit0±ØĞëÎªÈ«0£¬±íÊ¾ÄÚ´æ±ØĞë4K¶ÔÆë¡£
+	 * Frame Liståœ¨å†…å­˜ä¸­çš„ä½ç½®ã€‚bit11-bit0å¿…é¡»ä¸ºå…¨0ï¼Œè¡¨ç¤ºå†…å­˜å¿…é¡»4Kå¯¹é½ã€‚
 	 */
 	outl(uhci->frame_dma_handle, uhci->io_addr + USBFLBASEADD);
 
 	/* Set the current frame number */
 	/**
-	 * Ö¡ÊıÄ¿¡£
+	 * å¸§æ•°ç›®ã€‚
 	 */
 	outw(uhci->frame_number & UHCI_MAX_SOF_NUMBER,
 			uhci->io_addr + USBFRNUM);
@@ -205,7 +205,7 @@ static void configure_hc(struct uhci_hcd *uhci)
 
 	/* Enable PIRQ */
 	/**
-	 * ÔÊĞíÉè±¸²úÉúÖĞ¶Ï¡£
+	 * å…è®¸è®¾å¤‡äº§ç”Ÿä¸­æ–­ã€‚
 	 */
 	pci_write_config_word(to_pci_dev(uhci_dev(uhci)), USBLEGSUP,
 			USBLEGSUP_DEFAULT);
@@ -345,11 +345,11 @@ static void start_rh(struct uhci_hcd *uhci)
 	 * All interrupts are enabled, even though RESUME won't do anything.
 	 */
 	/**
-	 * Í¨¹ıCMD¼Ä´æÆ÷ÅäÖÃÉè±¸¡£
+	 * é€šè¿‡CMDå¯„å­˜å™¨é…ç½®è®¾å¤‡ã€‚
 	 */
 	outw(USBCMD_RS | USBCMD_CF | USBCMD_MAXP, uhci->io_addr + USBCMD);
 	/**
-	 * ´ò¿ªËÄÖÖÖĞ¶Ï¿ª¹Ø¡£
+	 * æ‰“å¼€å››ç§ä¸­æ–­å¼€å…³ã€‚
 	 */
 	outw(USBINTR_TIMEOUT | USBINTR_RESUME | USBINTR_IOC | USBINTR_SP,
 			uhci->io_addr + USBINTR);
@@ -406,18 +406,18 @@ static irqreturn_t uhci_irq(struct usb_hcd *hcd)
 	 * "HC Halted" status bit is persistent: it is RO, not R/WC.
 	 */
 	/**
-	 * ¶ÁÈ¡×´Ì¬¼Ä´æÆ÷£¬È·¶¨²úÉúÖĞ¶ÏµÄÔ­Òò¡£
+	 * è¯»å–çŠ¶æ€å¯„å­˜å™¨ï¼Œç¡®å®šäº§ç”Ÿä¸­æ–­çš„åŸå› ã€‚
 	 */
 	status = inw(uhci->io_addr + USBSTS);
 	/**
-	 * Ã»ÓĞ²úÉúÖĞ¶Ï£¬Ö±½ÓÍË³ö¡£
+	 * æ²¡æœ‰äº§ç”Ÿä¸­æ–­ï¼Œç›´æ¥é€€å‡ºã€‚
 	 */
 	if (!(status & ~USBSTS_HCH))	/* shared interrupt, not mine */
 		return IRQ_NONE;
 	outw(status, uhci->io_addr + USBSTS);		/* Clear it */
 
 	/**
-	 * ÈıÖÖÖĞ¶Ï±êÖ¾Î»:IOC¡¢´íÎó¡¢Resume Detect
+	 * ä¸‰ç§ä¸­æ–­æ ‡å¿—ä½:IOCã€é”™è¯¯ã€Resume Detect
 	 */
 	if (status & ~(USBSTS_USBINT | USBSTS_ERROR | USBSTS_RD)) {
 		if (status & USBSTS_HSE)
@@ -526,17 +526,17 @@ static int uhci_init(struct usb_hcd *hcd)
 	 * we test for that also.
 	 */
 	/**
-	 * ×î¶àÓĞ8¸ö¶Ë¿Ú¡£
+	 * æœ€å¤šæœ‰8ä¸ªç«¯å£ã€‚
 	 */
 	for (port = 0; port < (io_size - USBPORTSC1) / 2; port++) {
 		unsigned int portstatus;
 
 		/**
-		 * ¶ÁÈ¡¶Ë¿Ú×´Ì¬ºÍ¿ØÖÆ¼Ä´æÆ÷¡£Ã¿¸ö¼Ä´æÆ÷Õ¼ÓÃ16Î»¡£
+		 * è¯»å–ç«¯å£çŠ¶æ€å’Œæ§åˆ¶å¯„å­˜å™¨ã€‚æ¯ä¸ªå¯„å­˜å™¨å ç”¨16ä½ã€‚
 		 */
 		portstatus = inw(uhci->io_addr + USBPORTSC1 + (port * 2));
 		/**
-		 * µÚÆßÎ»ÊÇ±£ÁôÎ»£¬ÓÀÔ¶Îª1£¬Èç¹û²»Îª1£¬ËµÃ÷Ã»ÓĞ¸ü¶à¶Ë¿Ú¡£
+		 * ç¬¬ä¸ƒä½æ˜¯ä¿ç•™ä½ï¼Œæ°¸è¿œä¸º1ï¼Œå¦‚æœä¸ä¸º1ï¼Œè¯´æ˜æ²¡æœ‰æ›´å¤šç«¯å£ã€‚
 		 */
 		if (!(portstatus & 0x0080) || portstatus == 0xffff)
 			break;
@@ -546,7 +546,7 @@ static int uhci_init(struct usb_hcd *hcd)
 
 	/* Anything greater than 7 is weird so we'll ignore it. */
 	/**
-	 * ¶Ë¿Ú²»ÄÜ´óÓÚ8¸ö£¬Èç¹û´óÓÚ8¸ö£¬±íÊ¾³ö´í¡£µ«ÊÇ¹æ·¶¹æ¶¨×îÉÙÓĞ2¸ö¶Ë¿Ú¡£
+	 * ç«¯å£ä¸èƒ½å¤§äº8ä¸ªï¼Œå¦‚æœå¤§äº8ä¸ªï¼Œè¡¨ç¤ºå‡ºé”™ã€‚ä½†æ˜¯è§„èŒƒè§„å®šæœ€å°‘æœ‰2ä¸ªç«¯å£ã€‚
 	 */
 	if (port > UHCI_RH_MAXCHILD) {
 		dev_info(uhci_dev(uhci), "port count misdetected? "
@@ -554,7 +554,7 @@ static int uhci_init(struct usb_hcd *hcd)
 		port = 2;
 	}
 	/**
-	 * ¼ÇÂ¼¶Ë¿ÚÊı¡£
+	 * è®°å½•ç«¯å£æ•°ã€‚
 	 */
 	uhci->rh_numports = port;
 
@@ -562,7 +562,7 @@ static int uhci_init(struct usb_hcd *hcd)
 	 * isn't already safely quiescent.
 	 */
 	/**
-	 * ¸´Î»Ò»ÏÂ¿ØÖÆÆ÷¡£±È½Ï¸´ÔÓ¡£
+	 * å¤ä½ä¸€ä¸‹æ§åˆ¶å™¨ã€‚æ¯”è¾ƒå¤æ‚ã€‚
 	 */
 	check_and_reset_hc(uhci);
 	return 0;
@@ -601,7 +601,7 @@ static void uhci_shutdown(struct pci_dev *pdev)
  *    only when FSBR is on and there are no full-speed control or bulk QHs.
  */
 /**
- * ¸´Î»UHCIºó£¬µ÷ÓÃµÄ»Øµ÷º¯Êı¡£
+ * å¤ä½UHCIåï¼Œè°ƒç”¨çš„å›è°ƒå‡½æ•°ã€‚
  */
 static int uhci_start(struct usb_hcd *hcd)
 {
@@ -620,7 +620,7 @@ static int uhci_start(struct usb_hcd *hcd)
 
 	if (DEBUG_CONFIGURED) {
 		/**
-		 * ÔÚ/sys/kernel/debug/uhciÏÂÃæ½¨Á¢ÎÄ¼ş
+		 * åœ¨/sys/kernel/debug/uhciä¸‹é¢å»ºç«‹æ–‡ä»¶
 		 */
 		dentry = debugfs_create_file(hcd->self.bus_name,
 				S_IFREG|S_IRUGO|S_IWUSR, uhci_debugfs_root,
@@ -635,7 +635,7 @@ static int uhci_start(struct usb_hcd *hcd)
 	}
 
 	/**
-	 * ·ÖÅä1024¸öÒ»ÖÂĞÔ»º´æÓÃÓÚDMA¡£
+	 * åˆ†é…1024ä¸ªä¸€è‡´æ€§ç¼“å­˜ç”¨äºDMAã€‚
 	 */
 	uhci->frame = dma_alloc_coherent(uhci_dev(uhci),
 			UHCI_NUMFRAMES * sizeof(*uhci->frame),
@@ -648,7 +648,7 @@ static int uhci_start(struct usb_hcd *hcd)
 	memset(uhci->frame, 0, UHCI_NUMFRAMES * sizeof(*uhci->frame));
 
 	/**
-	 * frame_cpuÊÇÈí¼şÒâÒåÉÏµÄframe_list¡£
+	 * frame_cpuæ˜¯è½¯ä»¶æ„ä¹‰ä¸Šçš„frame_listã€‚
 	 */
 	uhci->frame_cpu = kcalloc(UHCI_NUMFRAMES, sizeof(*uhci->frame_cpu),
 			GFP_KERNEL);
@@ -659,7 +659,7 @@ static int uhci_start(struct usb_hcd *hcd)
 	}
 
 	/**
-	 * ÎªTDÉêÇëÄÚ´æ³Ø¡£
+	 * ä¸ºTDç”³è¯·å†…å­˜æ± ã€‚
 	 */
 	uhci->td_pool = dma_pool_create("uhci_td", uhci_dev(uhci),
 			sizeof(struct uhci_td), 16, 0);
@@ -669,7 +669,7 @@ static int uhci_start(struct usb_hcd *hcd)
 	}
 
 	/**
-	 * ÎªQHÉêÇëÄÚ´æ³Ø¡£
+	 * ä¸ºQHç”³è¯·å†…å­˜æ± ã€‚
 	 */
 	uhci->qh_pool = dma_pool_create("uhci_qh", uhci_dev(uhci),
 			sizeof(struct uhci_qh), 16, 0);
@@ -685,7 +685,7 @@ static int uhci_start(struct usb_hcd *hcd)
 	}
 
 	/**
-	 * 11¸öqhÖĞ£¬ÓĞ8¸öÓÃÓÚµÈÊ±´«Êä¡£ÁíÍâÈı¸öÓÃÓÚÆäËûÄ¿µÄ¡£
+	 * 11ä¸ªqhä¸­ï¼Œæœ‰8ä¸ªç”¨äºç­‰æ—¶ä¼ è¾“ã€‚å¦å¤–ä¸‰ä¸ªç”¨äºå…¶ä»–ç›®çš„ã€‚
 	 */
 	for (i = 0; i < UHCI_NUM_SKELQH; i++) {
 		uhci->skelqh[i] = uhci_alloc_qh(uhci, NULL, NULL);
@@ -699,7 +699,7 @@ static int uhci_start(struct usb_hcd *hcd)
 	 * 8 Interrupt queues; link all higher int queues to int1 = async
 	 */
 	/**
-	 * ½«8¸öÖĞ¶Ï´«Êä¶ÓÁĞÁ´½Óµ½Òì²½¶ÓÁĞ¡£
+	 * å°†8ä¸ªä¸­æ–­ä¼ è¾“é˜Ÿåˆ—é“¾æ¥åˆ°å¼‚æ­¥é˜Ÿåˆ—ã€‚
 	 */
 	for (i = SKEL_ISO + 1; i < SKEL_ASYNC; ++i)
 		uhci->skelqh[i]->link = LINK_TO_QH(uhci->skel_async_qh);
@@ -708,12 +708,12 @@ static int uhci_start(struct usb_hcd *hcd)
 
 	/* This dummy TD is to work around a bug in Intel PIIX controllers */
 	/**
-	 * ×¢ÒâTD TOKEN:bit32-21:	±íÊ¾´«ÊäµÄ×î´ó×Ö½ÚÊı¡£
-	 *				bit20:		±£Áô¡£
+	 * æ³¨æ„TD TOKEN:bit32-21:	è¡¨ç¤ºä¼ è¾“çš„æœ€å¤§å­—èŠ‚æ•°ã€‚
+	 *				bit20:		ä¿ç•™ã€‚
 	 *				bit19:		Toggle
-	 *				bit18-15:	¶ËµãºÅ¡£
-	 *				bit14-8:	Éè±¸µØÖ·¡£
-	 *				bit7-0:		PID£¬¼´packet ID¡£
+	 *				bit18-15:	ç«¯ç‚¹å·ã€‚
+	 *				bit14-8:	è®¾å¤‡åœ°å€ã€‚
+	 *				bit7-0:		PIDï¼Œå³packet IDã€‚
 	 */
 	uhci_fill_td(uhci->term_td, 0, uhci_explen(0) |
 			(0x7f << TD_TOKEN_DEVADDR_SHIFT) | USB_PID_IN, 0);
@@ -726,7 +726,7 @@ static int uhci_start(struct usb_hcd *hcd)
 	 * interrupt queue.
 	 */
 	/**
-	 * ÕâÀïÊµ¼ÊÉÏÊÇÎª1024¸ö¶ÓÁĞÕÒµ½¶ÓÁĞµÄµÈÊ±´«Êä¶Ëµã¡£Îª¶şÕß½¨Á¢Ó³Éä¹ØÏµ¡£
+	 * è¿™é‡Œå®é™…ä¸Šæ˜¯ä¸º1024ä¸ªé˜Ÿåˆ—æ‰¾åˆ°é˜Ÿåˆ—çš„ç­‰æ—¶ä¼ è¾“ç«¯ç‚¹ã€‚ä¸ºäºŒè€…å»ºç«‹æ˜ å°„å…³ç³»ã€‚
 	 */
 	for (i = 0; i < UHCI_NUMFRAMES; i++) {
 
@@ -741,12 +741,12 @@ static int uhci_start(struct usb_hcd *hcd)
 	mb();
 
 	/**
-	 * ÅäÖÃÓ²¼ş¼Ä´æÆ÷µÄÖµ¡£
+	 * é…ç½®ç¡¬ä»¶å¯„å­˜å™¨çš„å€¼ã€‚
 	 */
 	configure_hc(uhci);
 	uhci->is_initialized = 1;
 	/**
-	 * ÆôÓÃROOT HUB¡£
+	 * å¯ç”¨ROOT HUBã€‚
 	 */
 	start_rh(uhci);
 	return 0;
@@ -1002,7 +1002,7 @@ static struct pci_driver uhci_pci_driver = {
 };
  
 /**
- * UHCIÖ÷»ú¿ØÖÆÆ÷³õÊ¼»¯º¯Êı
+ * UHCIä¸»æœºæ§åˆ¶å™¨åˆå§‹åŒ–å‡½æ•°
  */
 static int __init uhci_hcd_init(void)
 {
@@ -1012,7 +1012,7 @@ static int __init uhci_hcd_init(void)
 			ignore_oc ? ", overcurrent ignored" : "");
 
 	/**
-	 * ÄÚºË²ÎÊı½ûÖ¹ÁËUSB¡£
+	 * å†…æ ¸å‚æ•°ç¦æ­¢äº†USBã€‚
 	 */
 	if (usb_disabled())
 		return -ENODEV;
@@ -1022,7 +1022,7 @@ static int __init uhci_hcd_init(void)
 		if (!errbuf)
 			goto errbuf_failed;
 		/**
-		 * ÔÚ/sys/kernel/debugÏÂÃæ´´½¨uhciÄ¿Â¼¡£
+		 * åœ¨/sys/kernel/debugä¸‹é¢åˆ›å»ºuhciç›®å½•ã€‚
 		 */
 		uhci_debugfs_root = debugfs_create_dir("uhci", NULL);
 		if (!uhci_debugfs_root)
@@ -1030,7 +1030,7 @@ static int __init uhci_hcd_init(void)
 	}
 
 	/**
-	 * ´´½¨´æ´¢»º³åÇø¡£
+	 * åˆ›å»ºå­˜å‚¨ç¼“å†²åŒºã€‚
 	 */
 	uhci_up_cachep = kmem_cache_create("uhci_urb_priv",
 		sizeof(struct urb_priv), 0, 0, NULL);
@@ -1038,7 +1038,7 @@ static int __init uhci_hcd_init(void)
 		goto up_failed;
 
 	/**
-	 * ×¢²á¿ØÖÆÆ÷Çı¶¯¡£
+	 * æ³¨å†Œæ§åˆ¶å™¨é©±åŠ¨ã€‚
 	 */
 	retval = pci_register_driver(&uhci_pci_driver);
 	if (retval)

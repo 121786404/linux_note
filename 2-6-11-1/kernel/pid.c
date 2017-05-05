@@ -28,32 +28,32 @@
 #include <linux/hash.h>
 
 #define pid_hashfn(nr) hash_long((unsigned long)nr, pidhash_shift)
-/* pid��hash����,�ܹ������PIDTYPE_MAX��Ԫ��,
-  * pid_hash������һ����ά����PIDTYPE_MAX��ʾ�ж����� 
-  * pidhash_shift��ʾ��2��pidhash_shift�η��У�Ҳ�����ж��ٸ�Ԫ�أ���Ԫ�صĸ��� 
-  * ��ͨ��2��n�η�����ʾ�ģ�n����pidhash_shift 
+/* pid的hash链表,总共最多有PIDTYPE_MAX个元素,
+  * pid_hash就像是一个二维表，PIDTYPE_MAX表示有多少行 
+  * pidhash_shift表示有2的pidhash_shift次方列，也就是有多少个元素，而元素的个数 
+  * 是通过2的n次方来表示的，n就是pidhash_shift 
   */
 static struct hlist_head *pid_hash[PIDTYPE_MAX];
 static int pidhash_shift;
 
 int pid_max = PID_MAX_DEFAULT;
-/* ��ǰ���һ�����̵�pid���������pid_max�������ѭ�� */
+/* 当前最后一个进程的pid，如果遇到pid_max则会重新循环 */
 int last_pid;
 
 
-/* ���ڷ������idʱ��������������id�ţ������·��ص�����ط� */
+/* 当在分配进程id时，如果超过了最大id号，则重新返回到这个地方 */
 #define RESERVED_PIDS		300
 
 int pid_max_min = RESERVED_PIDS + 1;
 int pid_max_max = PID_MAX_LIMIT;
 
-/* ȡ��ҳ�ڴ棬��Ҫ�ܹ�����ҳ�ڴ�����ǽ���pid  */
+/* 取整页内存，需要总共多少页内存来标记进程pid  */
 #define PIDMAP_ENTRIES		((PID_MAX_LIMIT + 8*PAGE_SIZE - 1)/PAGE_SIZE/8)
-/* ��ȡÿҳ�ڴ��ж�����λ������ */
+/* 获取每页内存中二进制位的数量 */
 #define BITS_PER_PAGE		(PAGE_SIZE*8)
-/* һҳ�ڴ��ж��ٸ�������λ */
+/* 一页内存有多少个二进制位 */
 #define BITS_PER_PAGE_MASK	(BITS_PER_PAGE-1)
-/* ����ҳ�ĵ�ַ��ҳ�ڵ�ƫ�������ɽ��̵�pid */
+/* 根据页的地址和页内的偏移来生成进程的pid */
 #define mk_pid(map, off)	(((map) - pidmap_array)*BITS_PER_PAGE + (off))
 #define find_next_offset(map, off)					\
 		find_next_zero_bit((map)->page, BITS_PER_PAGE, off)
@@ -65,17 +65,17 @@ int pid_max_max = PID_MAX_LIMIT;
  * the scheme scales to up to 4 million PIDs, runtime.
  */
 typedef struct pidmap {
-	atomic_t nr_free;  /* һҳ�����ڴ浱�еĶ�����λ�Ŀ��и��� */
-	void *page;       /* һҳ�����ڴ�ĵ�ַ */
+	atomic_t nr_free;  /* 一页物理内存当中的二进制位的空闲个数 */
+	void *page;       /* 一页物理内存的地址 */
 } pidmap_t;
 
-/* ȫ����ʼ��û�з������pid */
+/* 全部初始化没有分配进程pid */
 static pidmap_t pidmap_array[PIDMAP_ENTRIES] =
 	 { [ 0 ... PIDMAP_ENTRIES-1 ] = { ATOMIC_INIT(BITS_PER_PAGE), NULL } };
 
 static  __cacheline_aligned_in_smp DEFINE_SPINLOCK(pidmap_lock);
 
-/* �ͷž���pid��Ӧ���ڴ�λͼ */
+/* 释放经常pid对应的内存位图 */
 fastcall void free_pidmap(int pid)
 {
 	pidmap_t *map = pidmap_array + pid / BITS_PER_PAGE;
@@ -85,7 +85,7 @@ fastcall void free_pidmap(int pid)
 	atomic_inc(&map->nr_free);
 }
 
-/* ����һ�����̵�pid */
+/* 分配一个进程的pid */
 int alloc_pidmap(void)
 {
 	int i, offset, max_scan, pid, last = last_pid;
@@ -94,15 +94,15 @@ int alloc_pidmap(void)
 	pid = last + 1;
 	if (pid >= pid_max)
 		pid = RESERVED_PIDS;
-        /* ȥpid���ڴ�ҳ�е�ƫ�� */
+        /* 去pid在内存页中的偏移 */
 	offset = pid & BITS_PER_PAGE_MASK;
 	map = &pidmap_array[pid/BITS_PER_PAGE];
-        /* ȷ����Ҫɨ�����ҳ���ڴ� */
+        /* 确定需要扫描多少页的内存 */
 	max_scan = (pid_max + BITS_PER_PAGE - 1)/BITS_PER_PAGE - !offset;
 	for (i = 0; i <= max_scan; ++i) {
-		/* �˴���unlikely��û�����ر���������ã�������һ���� */
+		/* 此处的unlikely并没有起特别特殊的作用，仅仅是一个宏 */
 		if (unlikely(!map->page)) {
-			/* ��ȡһҳ�ڴ� */
+			/* 获取一页内存 */
 			unsigned long page = get_zeroed_page(GFP_KERNEL);
 			/*
 			 * Free the page if someone raced with us
@@ -117,21 +117,21 @@ int alloc_pidmap(void)
 			if (unlikely(!map->page))
 				break;
 		}
-                /* �ж��ڴ�ҳ���Ƿ��п��ж�����λ */
+                /* 判断内存页中是否还有空闲二进制位 */
 		if (likely(atomic_read(&map->nr_free))) {
 			do {
-                                /* ���ƫ�Ƶ�λû�б�ʹ�ã������ֱ��ʹ�� */
+                                /* 如果偏移的位没有被使用，则可以直接使用 */
 				if (!test_and_set_bit(offset, map->page)) {
-                                        /* ����ҳ����λ������ */
+                                        /* 减少页空闲位的数量 */
 					atomic_dec(&map->nr_free);
-                                        /* �������һ�����̵�pid */
+                                        /* 设置最后一个进程的pid */
 					last_pid = pid;
 					return pid;
 				}
-                                /* ��ƫ��λ�õ���һ��λ�ÿ�ʼѰ�ң����û���ҵ�
-                                  * ��һֱƫ����ȥ�������ǰҳƫ���꣬��Ȼû���ҵ� 
-                                  * �����������һҳ�����鵽���һҳ�����һλʱ 
-                                  * ����û�ҵ�����ӵ�һҳ�ĵ�һλ��������  
+                                /* 从偏移位置的下一个位置开始寻找，如果没有找到
+                                  * 则一直偏移下去，如果当前页偏移完，仍然没有找到 
+                                  * 则继续查找下一页，当查到最后一页的最后一位时 
+                                  * 还是没找到，则从第一页的第一位继续查找  
                                   */
 				offset = find_next_offset(map, offset);
 				pid = mk_pid(map, offset);
@@ -159,10 +159,10 @@ int alloc_pidmap(void)
 	return -1;
 }
 
-/* ͨ��nr��hash��һ����pid_hash��ά������
-  * �е�λ�ã�type��ʾ�е�λ�õ�struct hlist_head 
-  * Ȼ��Ӹ�hash�����в���nr��ͬ���Ǹ�struct pid�ṹ 
-  * �Ҳ����򷵻�ΪNULL  
+/* 通过nr来hash处一个在pid_hash二维数组中
+  * 列的位置，type表示行的位置的struct hlist_head 
+  * 然后从该hash链表中查找nr相同的那个struct pid结构 
+  * 找不到则返回为NULL  
   */
 struct pid * fastcall find_pid(enum pid_type type, int nr)
 {
@@ -184,28 +184,28 @@ int fastcall attach_pid(task_t *task, enum pid_type type, int nr)
 
 	task_pid = &task->pids[type];
 	pid = find_pid(type, nr);
-	/* ����Ҳ������򽫶�Ӧ��struct pid���뵽��Ӧ��hash�������� */
+	/* 如果找不到，则将对应的struct pid加入到对应的hash链表当中 */
 	if (pid == NULL) {
 		hlist_add_head(&task_pid->pid_chain,
 				&pid_hash[type][pid_hashfn(nr)]);
-		/* ��ʼ��struct pid��pid_list˫������ */
+		/* 初始化struct pid的pid_list双向链表 */
 		INIT_LIST_HEAD(&task_pid->pid_list);
 	} else {
-		/* ���struct pid��pid_chain��Ӧ��hash���� */
+		/* 清空struct pid的pid_chain对应的hash链表 */
 		INIT_HLIST_NODE(&task_pid->pid_chain);
-		/* ���ӵ�pid_list˫��������β�� */
+		/* 添加到pid_list双向链表的尾部 */
 		list_add_tail(&task_pid->pid_list, &pid->pid_list);
 	}
-	/* ����struct pid��nr���� */
+	/* 设置struct pid的nr变量 */
 	task_pid->nr = nr;
 
 	return 0;
 }
 
-/* ������type���͵�struct pid��hash�������Ƴ�
-  * ͬʱ����type��Ӧ��nr 
-  * ����nr>0��ʾstruct pid��hash�������� 
-  * ������  
+/* 将进程type类型的struct pid从hash链表中移除
+  * 同时返回type对应的nr 
+  * 返回nr>0表示struct pid在hash链表当中 
+  * 否则不在  
   */
 static fastcall int __detach_pid(task_t *task, enum pid_type type)
 {
@@ -213,7 +213,7 @@ static fastcall int __detach_pid(task_t *task, enum pid_type type)
 	int nr = 0;
 
 	pid = &task->pids[type];
-	/* �����������hash�������У�����ɾ��  */
+	/* 如果进程是在hash链表当中，则将其删除  */
 	if (!hlist_unhashed(&pid->pid_chain)) {
 		hlist_del(&pid->pid_chain);
 
@@ -246,11 +246,11 @@ void fastcall detach_pid(task_t *task, enum pid_type type)
 		if (tmp != type && find_pid(tmp, nr))
 			return;
 
-	/* �ͷ�nr���̺�ռ�õ�λ */
+	/* 释放nr进程号占用的位 */
 	free_pidmap(nr);
 }
 
-/* �������������ҽ��̵�pcb */
+/* 根据条件来查找进程的pcb */
 task_t *find_task_by_pid_type(int type, int nr)
 {
 	struct pid *pid;
@@ -259,7 +259,7 @@ task_t *find_task_by_pid_type(int type, int nr)
 	if (!pid)
 		return NULL;
 
-	/* ���ض�Ӧ���̵�pid  */
+	/* 返回对应进程的pid  */
 	return pid_task(&pid->pid_list, type);
 }
 
@@ -300,7 +300,7 @@ void switch_exec_pids(task_t *leader, task_t *thread)
  * machine.  From a minimum of 16 slots up to 4096 slots at one gigabyte or
  * more.
  */
-/* ��ʼ������pid_hash */
+/* 初始化整个pid_hash */
 void __init pidhash_init(void)
 {
 	int i, j, pidhash_size;
@@ -324,12 +324,12 @@ void __init pidhash_init(void)
 	}
 }
 
-/* ��ʼ��pid��map���� */
+/* 初始化pid的map数组 */
 void __init pidmap_init(void)
 {
 	int i;
 
-	/* ʹ�õ�һҳ�ĵ�һ��λ */
+	/* 使用第一页的第一个位 */
 	pidmap_array->page = (void *)get_zeroed_page(GFP_KERNEL);
 	set_bit(0, pidmap_array->page);
 	atomic_dec(&pidmap_array->nr_free);

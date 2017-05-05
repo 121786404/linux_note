@@ -102,17 +102,17 @@ enum sock_type {
  *  @type - socket type (%SOCK_STREAM, etc)
  *  @passcred - credentials (used only in Unix Sockets (aka PF_LOCAL))
  */
-/* ×¢ÒâÕâÀï²¢Ã»ÓĞÖ¸ÕëÖ¸ÏòinodeÖ¸Õë£¬È»ÊÇÓÃÈİÆ÷¼ÆÊıÀ´ÊµÏÖµÄ£¬
-  * Èç¹ûÏëÒª»ñÈ¡inode¿ÉÒÔÍ¨¹ıÁíÍâÒ»ÖÖ·½Ê½£¬socket->file->dentry->inode
+/* æ³¨æ„è¿™é‡Œå¹¶æ²¡æœ‰æŒ‡é’ˆæŒ‡å‘inodeæŒ‡é’ˆï¼Œç„¶æ˜¯ç”¨å®¹å™¨è®¡æ•°æ¥å®ç°çš„ï¼Œ
+  * å¦‚æœæƒ³è¦è·å–inodeå¯ä»¥é€šè¿‡å¦å¤–ä¸€ç§æ–¹å¼ï¼Œsocket->file->dentry->inode
   */
 struct socket {
-	socket_state		state;              /* socketµÄ×´Ì¬ */
+	socket_state		state;              /* socketçš„çŠ¶æ€ */
 	unsigned long		flags;
-	struct proto_ops	*ops;            /* Ğ­Òé×åµÄ²Ù×÷¼¯ºÏ */
+	struct proto_ops	*ops;            /* åè®®æ—çš„æ“ä½œé›†åˆ */
 	struct fasync_struct	*fasync_list;
-	struct file		*file;                 /* Ö¸Ïò¶ÔÓ¦µÄÎÄ¼şÃèÊö·û */
-	struct sock		*sk;                  /*  socket¶ÔÓ¦µÄstruct sock½á¹û */
-	wait_queue_head_t	wait;       /* ½ø³ÌµÄµÈ´ı¶ÓÁĞ */
+	struct file		*file;                 /* æŒ‡å‘å¯¹åº”çš„æ–‡ä»¶æè¿°ç¬¦ */
+	struct sock		*sk;                  /*  socketå¯¹åº”çš„struct sockç»“æœ */
+	wait_queue_head_t	wait;       /* è¿›ç¨‹çš„ç­‰å¾…é˜Ÿåˆ— */
 	short			type;
 	unsigned char		passcred;
 };
@@ -124,7 +124,7 @@ struct sockaddr;
 struct msghdr;
 struct module;
 
-/* Ğ­Òé×å²Ù×÷º¯Êı¼¯ºÏ */
+/* åè®®æ—æ“ä½œå‡½æ•°é›†åˆ */
 struct proto_ops {
 	int		family;
 	struct module	*owner;
@@ -163,9 +163,9 @@ struct proto_ops {
 				      int offset, size_t size, int flags);
 };
 
-/* ÍøÂçĞ­Òé×å½á¹¹ */
+/* ç½‘ç»œåè®®æ—ç»“æ„ */
 struct net_proto_family {
-	int		family;                /* Ğ­Òé×åµÄÃû³Æ */
+	int		family;                /* åè®®æ—çš„åç§° */
 	int		(*create)(struct socket *sock, int protocol);
 	/* These are counters for the number of different methods of
 	   each we support */

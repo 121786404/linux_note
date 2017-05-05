@@ -501,29 +501,29 @@ int __alloc_fd(struct files_struct *files,
 	int error;
 	struct fdtable *fdt;
     /* 
-      filesÎª½ø³ÌµÄÎÄ¼ş±í, ÏÂÃæĞèÒª¸ü¸ÄÎÄ¼ş±í, ËùÒÔĞèÒªÏÈËøÎÄ¼ş±í 
+      filesä¸ºè¿›ç¨‹çš„æ–‡ä»¶è¡¨, ä¸‹é¢éœ€è¦æ›´æ”¹æ–‡ä»¶è¡¨, æ‰€ä»¥éœ€è¦å…ˆé”æ–‡ä»¶è¡¨ 
       */
 	spin_lock(&files->file_lock);
 repeat:
     /* 
-      µÃµ½ÎÄ¼şÃèÊö·û±í 
+      å¾—åˆ°æ–‡ä»¶æè¿°ç¬¦è¡¨ 
      */
 	fdt = files_fdtable(files);
 	/* 
-	´Óstart¿ªÊ¼, ²éÕÒÎ´ÓÃµÄÎÄ¼şÃèÊö·û¡£ÔÚ´ò¿ªÎÄ¼şÊ±, startÎª0 
+	ä»startå¼€å§‹, æŸ¥æ‰¾æœªç”¨çš„æ–‡ä»¶æè¿°ç¬¦ã€‚åœ¨æ‰“å¼€æ–‡ä»¶æ—¶, startä¸º0 
 	*/
 	fd = start;
 	/* 
-	files->next_fdÎªÉÏÒ»´Î³É¹¦ÕÒµ½µÄfdµÄÏÂÒ»¸öÃèÊö·û¡£
-	Ê¹ÓÃnext_fd, ¿ÉÒÔ¿ìËÙÕÒµ½Î´ÓÃµÄÎÄ¼şÃèÊö·û£»
+	files->next_fdä¸ºä¸Šä¸€æ¬¡æˆåŠŸæ‰¾åˆ°çš„fdçš„ä¸‹ä¸€ä¸ªæè¿°ç¬¦ã€‚
+	ä½¿ç”¨next_fd, å¯ä»¥å¿«é€Ÿæ‰¾åˆ°æœªç”¨çš„æ–‡ä»¶æè¿°ç¬¦ï¼›
 	*/
 	if (fd < files->next_fd)
 		fd = files->next_fd;
     /*
-        µ±Ğ¡ÓÚµ±Ç°ÎÄ¼ş±íÖ§³ÖµÄ×î´óÎÄ¼şÃèÊö·û¸öÊıÊ±, 
-        ÀûÓÃÎ»Í¼ÕÒµ½Î´ÓÃµÄÎÄ¼şÃèÊö·û¡£
-        Èç¹û´óÓÚmax_fdsÔõÃ´°ìÄØ?Èç¹û´óÓÚµ±Ç°Ö§³ÖµÄ×î´óÎÄ¼şÃèÊö·û, 
-        ÄÇËü¿Ï¶¨ÊÇÎ´ÓÃµÄ, ¾Í²»ĞèÒªÓÃÎ»Í¼À´È·ÈÏÁË¡£
+        å½“å°äºå½“å‰æ–‡ä»¶è¡¨æ”¯æŒçš„æœ€å¤§æ–‡ä»¶æè¿°ç¬¦ä¸ªæ•°æ—¶, 
+        åˆ©ç”¨ä½å›¾æ‰¾åˆ°æœªç”¨çš„æ–‡ä»¶æè¿°ç¬¦ã€‚
+        å¦‚æœå¤§äºmax_fdsæ€ä¹ˆåŠå‘¢?å¦‚æœå¤§äºå½“å‰æ”¯æŒçš„æœ€å¤§æ–‡ä»¶æè¿°ç¬¦, 
+        é‚£å®ƒè‚¯å®šæ˜¯æœªç”¨çš„, å°±ä¸éœ€è¦ç”¨ä½å›¾æ¥ç¡®è®¤äº†ã€‚
       */
 	if (fd < fdt->max_fds)
 		fd = find_next_fd(fdt, fd);
@@ -536,8 +536,8 @@ repeat:
 	if (fd >= end)
 		goto out;
     /* 
-        expand_filesÓÃÓÚÔÚ±ØÒªÊ±À©Õ¹ÎÄ¼ş±í¡£ºÎÊ±ÊÇ±ØÒªµÄÊ±ºòÄØ?±ÈÈçµ±Ç°ÎÄ¼şÃèÊö·ûÒÑ¾­³¬¹ıÁËµ±
-        Ç°ÎÄ¼ş±íÖ§³ÖµÄ×î´óÖµµÄÊ±ºò¡£ 
+        expand_filesç”¨äºåœ¨å¿…è¦æ—¶æ‰©å±•æ–‡ä»¶è¡¨ã€‚ä½•æ—¶æ˜¯å¿…è¦çš„æ—¶å€™å‘¢?æ¯”å¦‚å½“å‰æ–‡ä»¶æè¿°ç¬¦å·²ç»è¶…è¿‡äº†å½“
+        å‰æ–‡ä»¶è¡¨æ”¯æŒçš„æœ€å¤§å€¼çš„æ—¶å€™ã€‚ 
       */
 	error = expand_files(files, fd);
 	if (error < 0)
@@ -551,15 +551,15 @@ repeat:
 		goto repeat;
 
     /* 
-      Ö»ÓĞÔÚstartĞ¡ÓÚnext_fdÊ±, ²ÅĞèÒª¸üĞÂnext_fd, 
-      ÒÔ¾¡Á¿±£Ö¤ÎÄ¼şÃèÊö·ûµÄÁ¬ĞøĞÔ¡£*/
+      åªæœ‰åœ¨startå°äºnext_fdæ—¶, æ‰éœ€è¦æ›´æ–°next_fd, 
+      ä»¥å°½é‡ä¿è¯æ–‡ä»¶æè¿°ç¬¦çš„è¿ç»­æ€§ã€‚*/
 	if (start <= files->next_fd)
 		files->next_fd = fd + 1;
 
-    /* ½«´ò¿ªÎÄ¼şÎ»Í¼open_fds¶ÔÓ¦fdµÄÎ»ÖÃÖÃÎ» */
+    /* å°†æ‰“å¼€æ–‡ä»¶ä½å›¾open_fdså¯¹åº”fdçš„ä½ç½®ç½®ä½ */
 	__set_open_fd(fd, fdt);
 
-	/* ¸ù¾İflagsÊÇ·ñÉèÖÃÁËO_CLOEXEC, ÉèÖÃ»òÇå³ıfdt->close_on_exec */
+	/* æ ¹æ®flagsæ˜¯å¦è®¾ç½®äº†O_CLOEXEC, è®¾ç½®æˆ–æ¸…é™¤fdt->close_on_exec */
 	if (flags & O_CLOEXEC)
 		__set_close_on_exec(fd, fdt);
 	else
@@ -591,11 +591,11 @@ EXPORT_SYMBOL(get_unused_fd_flags);
 
 static void __put_unused_fd(struct files_struct *files, unsigned int fd)
 {
-    /* È¡µÃÎÄ¼şÃèÊö·û±í */
+    /* å–å¾—æ–‡ä»¶æè¿°ç¬¦è¡¨ */
 	struct fdtable *fdt = files_fdtable(files);
-	/* Çå³ıfdÔÚopen_fdsÎ»Í¼µÄÎ» */
+	/* æ¸…é™¤fdåœ¨open_fdsä½å›¾çš„ä½ */
 	__clear_open_fd(fd, fdt);
-	/* Èç¹ûfdĞ¡ÓÚnext_fd, ÖØÖÃnext_fdÎªÊÍ·ÅµÄfd */
+	/* å¦‚æœfdå°äºnext_fd, é‡ç½®next_fdä¸ºé‡Šæ”¾çš„fd */
 	if (fd < files->next_fd)
 		files->next_fd = fd;
 }
@@ -648,8 +648,8 @@ void __fd_install(struct files_struct *files, unsigned int fd,
 	fdt = rcu_dereference_sched(files->fdt);
 	BUG_ON(fdt->fd[fd] != NULL);
 	/*
-    ½«ÎÄ¼şÃèÊö·û±íÖĞµÄfileÀàĞÍµÄÖ¸ÕëÊı×éÖĞ¶ÔÓ¦fdµÄÏîÖ¸Ïòfile¡£
-    ÕâÑùÎÄ¼şÃèÊö·ûfdÓëfile¾Í½¨Á¢ÁË¶ÔÓ¦¹ØÏµ
+    å°†æ–‡ä»¶æè¿°ç¬¦è¡¨ä¸­çš„fileç±»å‹çš„æŒ‡é’ˆæ•°ç»„ä¸­å¯¹åº”fdçš„é¡¹æŒ‡å‘fileã€‚
+    è¿™æ ·æ–‡ä»¶æè¿°ç¬¦fdä¸fileå°±å»ºç«‹äº†å¯¹åº”å…³ç³»
     */
 	rcu_assign_pointer(fdt->fd[fd], file);
 	rcu_read_unlock_sched();
@@ -671,25 +671,25 @@ int __close_fd(struct files_struct *files, unsigned fd)
 	struct fdtable *fdt;
 
 	spin_lock(&files->file_lock);
-	/* Í¨¹ıÎÄ¼ş±í, È¡µÃÎÄ¼şÃèÊö·û±í */
+	/* é€šè¿‡æ–‡ä»¶è¡¨, å–å¾—æ–‡ä»¶æè¿°ç¬¦è¡¨ */
 	fdt = files_fdtable(files);
-	/* ²ÎÊıfd´óÓÚÎÄ¼şÃèÊö·û±í¼ÇÂ¼µÄ×î´óÃèÊö·û, ÄÇÃ´ËüÒ»¶¨ÊÇ·Ç·¨µÄÃèÊö·û */
+	/* å‚æ•°fdå¤§äºæ–‡ä»¶æè¿°ç¬¦è¡¨è®°å½•çš„æœ€å¤§æè¿°ç¬¦, é‚£ä¹ˆå®ƒä¸€å®šæ˜¯éæ³•çš„æè¿°ç¬¦ */
 	if (fd >= fdt->max_fds)
 		goto out_unlock;
-    /* ÀûÓÃfd×÷ÎªË÷Òı, µÃµ½file½á¹¹Ö¸Õë */
+    /* åˆ©ç”¨fdä½œä¸ºç´¢å¼•, å¾—åˆ°fileç»“æ„æŒ‡é’ˆ */
 	file = fdt->fd[fd];
 	/*
-      ¼ì²éfileÊÇ·ñÎªNULL¡£Õı³£Çé¿öÏÂ, fileÒ»¶¨²»ÎªNULL¡£
+      æ£€æŸ¥fileæ˜¯å¦ä¸ºNULLã€‚æ­£å¸¸æƒ…å†µä¸‹, fileä¸€å®šä¸ä¸ºNULLã€‚
       */
 	if (!file)
 		goto out_unlock;
-	/* ½«¶ÔÓ¦µÄfilpÖÃÎª0*/
+	/* å°†å¯¹åº”çš„filpç½®ä¸º0*/
 	rcu_assign_pointer(fdt->fd[fd], NULL);
 	__clear_close_on_exec(fd, fdt);
-	/* ÊÍ·Å¸Ãfd, »òÕßËµ½«ÆäÖÃÎªunused¡£*/
+	/* é‡Šæ”¾è¯¥fd, æˆ–è€…è¯´å°†å…¶ç½®ä¸ºunusedã€‚*/
 	__put_unused_fd(files, fd);
 	spin_unlock(&files->file_lock);
-	/* ¹Ø±Õfile½á¹¹ */
+	/* å…³é—­fileç»“æ„ */
 	return filp_close(file, files);
 
 out_unlock:
@@ -883,36 +883,36 @@ __releases(&files->file_lock)
 	 * scope of POSIX or SUS, since neither considers shared descriptor
 	 * tables and this condition does not arise without those.
 	 */
-        /* µÃµ½ÎÄ¼ş±í */
+        /* å¾—åˆ°æ–‡ä»¶è¡¨ */
 	fdt = files_fdtable(files);
-    /* Í¨¹ınewfdµÃµ½¶ÔÓ¦µÄfile½á¹¹ */
+    /* é€šè¿‡newfdå¾—åˆ°å¯¹åº”çš„fileç»“æ„ */
 	tofree = fdt->fd[fd];
     /*  
-        tofreeÊÇNULL£¬µ«ÊÇnewfdÒÑ¾­·ÖÅäµÄÇé¿ö  
+        tofreeæ˜¯NULLï¼Œä½†æ˜¯newfdå·²ç»åˆ†é…çš„æƒ…å†µ  
         */  
 	if (!tofree && fd_is_open(fd, fdt))
 		goto Ebusy;
-    /*  Ôö¼ÓfileµÄÒıÓÃ¼ÆÊı */
+    /*  å¢åŠ fileçš„å¼•ç”¨è®¡æ•° */
 	get_file(file);
-    /* ½«ÎÄ¼ş±ínewfd¶ÔÓ¦µÄÖ¸ÕëÖ¸Ïòfile */  
+    /* å°†æ–‡ä»¶è¡¨newfdå¯¹åº”çš„æŒ‡é’ˆæŒ‡å‘file */  
 	rcu_assign_pointer(fdt->fd[fd], file);
     /*  
-        ½«newfd¼Óµ½´ò¿ªÎÄ¼şµÄÎ»Í¼ÖĞ  
-        Èç¹ûnewfdÒÑ¾­ÊÇÒ»¸öºÏ·¨µÄfd£¬ÖØ¸´ÉèÖÃÎ»Í¼ÔòÃ»ÓĞÓ°Ïì£»  
-        Èç¹ûnewfdÃ»ÓĞ´ò¿ª£¬Ôò±ØĞë½«Æä¼ÓÈëÎ»Í¼ÖĞ  
-        ÄÇÃ´ÎªÊ²Ã´²»¶Ônewfd½øĞĞ¼ì²éÄØ£¿ÒòÎª¼ì²é±ÈÉèÖÃÎ»Í¼¸üÏûºÄCPU  
+        å°†newfdåŠ åˆ°æ‰“å¼€æ–‡ä»¶çš„ä½å›¾ä¸­  
+        å¦‚æœnewfdå·²ç»æ˜¯ä¸€ä¸ªåˆæ³•çš„fdï¼Œé‡å¤è®¾ç½®ä½å›¾åˆ™æ²¡æœ‰å½±å“ï¼›  
+        å¦‚æœnewfdæ²¡æœ‰æ‰“å¼€ï¼Œåˆ™å¿…é¡»å°†å…¶åŠ å…¥ä½å›¾ä¸­  
+        é‚£ä¹ˆä¸ºä»€ä¹ˆä¸å¯¹newfdè¿›è¡Œæ£€æŸ¥å‘¢ï¼Ÿå› ä¸ºæ£€æŸ¥æ¯”è®¾ç½®ä½å›¾æ›´æ¶ˆè€—CPU  
         */ 
 	__set_open_fd(fd, fdt);
     /*  
-        Èç¹ûflagsÉèÖÃÁËO_CLOEXEC£¬Ôò½«newfd¼Óµ½close_on_execÎ»Í¼£»  
-        Èç¹ûÃ»ÓĞÉèÖÃ£¬ÔòÇå³ıclose_on_execÎ»Í¼ÖĞ¶ÔÓ¦µÄÎ»  
+        å¦‚æœflagsè®¾ç½®äº†O_CLOEXECï¼Œåˆ™å°†newfdåŠ åˆ°close_on_execä½å›¾ï¼›  
+        å¦‚æœæ²¡æœ‰è®¾ç½®ï¼Œåˆ™æ¸…é™¤close_on_execä½å›¾ä¸­å¯¹åº”çš„ä½  
         */ 
 	if (flags & O_CLOEXEC)
 		__set_close_on_exec(fd, fdt);
 	else
 		__clear_close_on_exec(fd, fdt);
 	spin_unlock(&files->file_lock);
-    /* Èç¹ûtofree²»Îª¿Õ£¬ÔòĞèÒª¹Ø±ÕnewfdÖ®Ç°µÄÎÄ¼ş */ 
+    /* å¦‚æœtofreeä¸ä¸ºç©ºï¼Œåˆ™éœ€è¦å…³é—­newfdä¹‹å‰çš„æ–‡ä»¶ */ 
 	if (tofree)
 		filp_close(tofree, files);
 
@@ -950,10 +950,10 @@ SYSCALL_DEFINE3(dup3, unsigned int, oldfd, unsigned int, newfd, int, flags)
 	int err = -EBADF;
 	struct file *file;
 	struct files_struct *files = current->files;
-    /* ¶Ô±êÖ¾flags½øĞĞ¼ì²é£¬Ö§³ÖO_CLOEXEC */
+    /* å¯¹æ ‡å¿—flagsè¿›è¡Œæ£€æŸ¥ï¼Œæ”¯æŒO_CLOEXEC */
 	if ((flags & ~O_CLOEXEC) != 0)
 		return -EINVAL;
-    /* Óëdup2²»Í¬£¬µ±oldfdÓënewfdÏàÍ¬µÄÊ±ºò£¬dup3·µ»Ø´íÎó */
+    /* ä¸dup2ä¸åŒï¼Œå½“oldfdä¸newfdç›¸åŒçš„æ—¶å€™ï¼Œdup3è¿”å›é”™è¯¯ */
 	if (unlikely(oldfd == newfd))
 		return -EINVAL;
 
@@ -961,11 +961,11 @@ SYSCALL_DEFINE3(dup3, unsigned int, oldfd, unsigned int, newfd, int, flags)
 		return -EBADF;
 
 	spin_lock(&files->file_lock);
-    /* ¸ù¾İnewfd¾ö¶¨ÊÇ·ñĞèÒªÀ©Õ¹ÎÄ¼ş±íµÄ´óĞ¡ */
+    /* æ ¹æ®newfdå†³å®šæ˜¯å¦éœ€è¦æ‰©å±•æ–‡ä»¶è¡¨çš„å¤§å° */
 	err = expand_files(files, newfd);
     /*  
-        ¼ì²éoldfd£¬Èç¹ûÊÇ·Ç·¨µÄ£¬¾ÍÖ±½Ó·µ»Ø  
-        ²»¹ıÎÒ¸üÇãÏòÓÚÏÈ¼ì²éoldfdºóÀ©Õ¹ÎÄ¼ş±í£¬Èç¹ûÊÇ·Ç·¨µÄ£¬¾Í²»ĞèÒªÀ©Õ¹ÎÄ¼ş±íÁË  
+        æ£€æŸ¥oldfdï¼Œå¦‚æœæ˜¯éæ³•çš„ï¼Œå°±ç›´æ¥è¿”å›  
+        ä¸è¿‡æˆ‘æ›´å€¾å‘äºå…ˆæ£€æŸ¥oldfdåæ‰©å±•æ–‡ä»¶è¡¨ï¼Œå¦‚æœæ˜¯éæ³•çš„ï¼Œå°±ä¸éœ€è¦æ‰©å±•æ–‡ä»¶è¡¨äº†  
         */
 	file = fcheck(oldfd);
 	if (unlikely(!file))
@@ -986,13 +986,13 @@ out_unlock:
 
 SYSCALL_DEFINE2(dup2, unsigned int, oldfd, unsigned int, newfd)
 {
-    /* Èç¹ûoldfdÓënewfdÏàµÈ£¬ÕâÊÇÒ»ÖÖÌØÊâµÄÇé¿ö */
+    /* å¦‚æœoldfdä¸newfdç›¸ç­‰ï¼Œè¿™æ˜¯ä¸€ç§ç‰¹æ®Šçš„æƒ…å†µ */
 	if (unlikely(newfd == oldfd)) { /* corner case */
 		struct files_struct *files = current->files;
 		int retval = oldfd;
         /*  
-                 ¼ì²éoldfdµÄºÏ·¨ĞÔ£¬Èç¹ûÊÇºÏ·¨µÄfd£¬ÔòÖ±½Ó·µ»ØoldfdµÄÖµ£»  
-                 Èç¹ûÊÇ²»ºÏ·¨µÄ£¬Ôò·µ»ØEBADF  
+                 æ£€æŸ¥oldfdçš„åˆæ³•æ€§ï¼Œå¦‚æœæ˜¯åˆæ³•çš„fdï¼Œåˆ™ç›´æ¥è¿”å›oldfdçš„å€¼ï¼›  
+                 å¦‚æœæ˜¯ä¸åˆæ³•çš„ï¼Œåˆ™è¿”å›EBADF  
             */  
 		rcu_read_lock();
 		if (!fcheck_files(files, oldfd))
@@ -1000,21 +1000,21 @@ SYSCALL_DEFINE2(dup2, unsigned int, oldfd, unsigned int, newfd)
 		rcu_read_unlock();
 		return retval;
 	}
-	/* Èç¹ûoldfdÓënewfd²»Í¬£¬ÔòÀûÓÃsys_dup3À´ÊµÏÖdup2 */  
+	/* å¦‚æœoldfdä¸newfdä¸åŒï¼Œåˆ™åˆ©ç”¨sys_dup3æ¥å®ç°dup2 */  
 	return sys_dup3(oldfd, newfd, 0);
 }
 
 SYSCALL_DEFINE1(dup, unsigned int, fildes)
 {
 	int ret = -EBADF;
-	/* ±ØĞëÏÈµÃµ½ÎÄ¼ş¹ÜÀí½á¹¹file£¬Í¬Ê±Ò²ÊÇ¶ÔÃèÊö·ûfildesµÄ¼ì²é */ 
+	/* å¿…é¡»å…ˆå¾—åˆ°æ–‡ä»¶ç®¡ç†ç»“æ„fileï¼ŒåŒæ—¶ä¹Ÿæ˜¯å¯¹æè¿°ç¬¦fildesçš„æ£€æŸ¥ */ 
 	struct file *file = fget_raw(fildes);
 
 	if (file) {
-	 /* µÃµ½Ò»¸öÎ´Ê¹ÓÃµÄÎÄ¼şÃèÊö·û */
+	 /* å¾—åˆ°ä¸€ä¸ªæœªä½¿ç”¨çš„æ–‡ä»¶æè¿°ç¬¦ */
 		ret = get_unused_fd_flags(0);
 		if (ret >= 0)
-		/* ½«ÎÄ¼şÃèÊö·ûÓëfileÖ¸Õë¹ØÁªÆğÀ´ */  
+		/* å°†æ–‡ä»¶æè¿°ç¬¦ä¸fileæŒ‡é’ˆå…³è”èµ·æ¥ */  
 			fd_install(ret, file);
 		else
 			fput(file);

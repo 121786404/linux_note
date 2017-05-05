@@ -156,7 +156,7 @@ ext3_iset_acl(struct inode *inode, struct posix_acl **i_acl,
  * inode->i_mutex: don't care
  */
 /**
- * »ñµÃaclÁĞ±í
+ * è·å¾—aclåˆ—è¡¨
  */
 static struct posix_acl *
 ext3_get_acl(struct inode *inode, int type)
@@ -167,12 +167,12 @@ ext3_get_acl(struct inode *inode, int type)
 	struct posix_acl *acl;
 	int retval;
 
-	if (!test_opt(inode->i_sb, POSIX_ACL))/* ²»Ö§³ÖACL */
+	if (!test_opt(inode->i_sb, POSIX_ACL))/* ä¸æ”¯æŒACL */
 		return NULL;
 
 	switch(type) {
 		case ACL_TYPE_ACCESS:
-			/* ´ÓinodeµÄaclÖĞ»ñÈ¡ */
+			/* ä»inodeçš„aclä¸­è·å– */
 			acl = ext3_iget_acl(inode, &ei->i_acl);
 			if (acl != EXT3_ACL_NOT_CACHED)
 				return acl;
@@ -180,7 +180,7 @@ ext3_get_acl(struct inode *inode, int type)
 			break;
 
 		case ACL_TYPE_DEFAULT:
-			/* ´ÓÄ¬ÈÏACLÖĞ»ñÈ¡ */
+			/* ä»é»˜è®¤ACLä¸­è·å– */
 			acl = ext3_iget_acl(inode, &ei->i_default_acl);
 			if (acl != EXT3_ACL_NOT_CACHED)
 				return acl;
@@ -190,16 +190,16 @@ ext3_get_acl(struct inode *inode, int type)
 		default:
 			return ERR_PTR(-EINVAL);
 	}
-	/* ACL»¹Ã»ÓĞ»º´æÔÚÄÚ´æÖĞ£¬»ñÈ¡ACL³¤¶È */
+	/* ACLè¿˜æ²¡æœ‰ç¼“å­˜åœ¨å†…å­˜ä¸­ï¼Œè·å–ACLé•¿åº¦ */
 	retval = ext3_xattr_get(inode, name_index, "", NULL, 0);
-	if (retval > 0) {/* ·ÖÅäÄÚ´æÒÔ±£´æACL */
+	if (retval > 0) {/* åˆ†é…å†…å­˜ä»¥ä¿å­˜ACL */
 		value = kmalloc(retval, GFP_KERNEL);
 		if (!value)
 			return ERR_PTR(-ENOMEM);
-		/* ¶ÁÈ¡´ÅÅÌÉÏµÄACLµ½ÄÚ´æÖĞ */
+		/* è¯»å–ç£ç›˜ä¸Šçš„ACLåˆ°å†…å­˜ä¸­ */
 		retval = ext3_xattr_get(inode, name_index, "", value, retval);
 	}
-	if (retval > 0)/* ×ª»»ACLÎªÄÚ´æ¸ñÊ½ */
+	if (retval > 0)/* è½¬æ¢ACLä¸ºå†…å­˜æ ¼å¼ */
 		acl = ext3_acl_from_disk(value, retval);
 	else if (retval == -ENODATA || retval == -ENOSYS)
 		acl = NULL;
@@ -207,7 +207,7 @@ ext3_get_acl(struct inode *inode, int type)
 		acl = ERR_PTR(retval);
 	kfree(value);
 
- 	if (!IS_ERR(acl)) {/* ½«ACLÊı¾İ»º´æµ½inodeÖĞ */
+ 	if (!IS_ERR(acl)) {/* å°†ACLæ•°æ®ç¼“å­˜åˆ°inodeä¸­ */
 		switch(type) {
 			case ACL_TYPE_ACCESS:
 				ext3_iset_acl(inode, &ei->i_acl, acl);
@@ -318,7 +318,7 @@ ext3_permission(struct inode *inode, int mask, struct nameidata *nd)
  * inode->i_mutex: up (access to inode is still exclusive)
  */
 /**
- * ³õÊ¼»¯ĞÂinodeµÄACL
+ * åˆå§‹åŒ–æ–°inodeçš„ACL
  */
 int
 ext3_init_acl(handle_t *handle, struct inode *inode, struct inode *dir)
@@ -326,39 +326,39 @@ ext3_init_acl(handle_t *handle, struct inode *inode, struct inode *dir)
 	struct posix_acl *acl = NULL;
 	int error = 0;
 
-	if (!S_ISLNK(inode->i_mode)) {/* Ä¿Â¼»òÎÄ¼ş */
-		if (test_opt(dir->i_sb, POSIX_ACL)) {/* ÏµÍ³Ö§³ÖACL */
-			/* ¼Ì³ĞÉÏ¼¶Ä¿Â¼µÄACL */
+	if (!S_ISLNK(inode->i_mode)) {/* ç›®å½•æˆ–æ–‡ä»¶ */
+		if (test_opt(dir->i_sb, POSIX_ACL)) {/* ç³»ç»Ÿæ”¯æŒACL */
+			/* ç»§æ‰¿ä¸Šçº§ç›®å½•çš„ACL */
 			acl = ext3_get_acl(dir, ACL_TYPE_DEFAULT);
 			if (IS_ERR(acl))
 				return PTR_ERR(acl);
 		}
-		if (!acl)/* Ã»ÓĞ¼Ì³ĞµÄACL£¬ÔòÓ¦ÓÃ½ø³ÌµÄÄ¬ÈÏÈ¨ÏŞµ½½Úµã */
+		if (!acl)/* æ²¡æœ‰ç»§æ‰¿çš„ACLï¼Œåˆ™åº”ç”¨è¿›ç¨‹çš„é»˜è®¤æƒé™åˆ°èŠ‚ç‚¹ */
 			inode->i_mode &= ~current->fs->umask;
 	}
-	if (test_opt(inode->i_sb, POSIX_ACL) && acl) {/* ÓĞ¼Ì³ĞµÄACL */
+	if (test_opt(inode->i_sb, POSIX_ACL) && acl) {/* æœ‰ç»§æ‰¿çš„ACL */
 		struct posix_acl *clone;
 		mode_t mode;
 
-		if (S_ISDIR(inode->i_mode)) {/* Ä¿Â¼ */
-			/* ÉèÖÃÄ¬ÈÏµÄACL */
+		if (S_ISDIR(inode->i_mode)) {/* ç›®å½• */
+			/* è®¾ç½®é»˜è®¤çš„ACL */
 			error = ext3_set_acl(handle, inode,
 					     ACL_TYPE_DEFAULT, acl);
 			if (error)
 				goto cleanup;
 		}
-		/* ´´½¨Ä¬ÈÏaclµÄÄÚ´æ¸±±¾ */
+		/* åˆ›å»ºé»˜è®¤aclçš„å†…å­˜å‰¯æœ¬ */
 		clone = posix_acl_clone(acl, GFP_KERNEL);
 		error = -ENOMEM;
 		if (!clone)
 			goto cleanup;
 
 		mode = inode->i_mode;
-		/* ´Ó´´½¨²ÎÊıÖĞÖ¸¶¨µÄ·ÃÎÊÈ¨ÏŞÖĞ£¬É¾³ıACL²»ÔÊĞíµÄÈ¨ÏŞ */
+		/* ä»åˆ›å»ºå‚æ•°ä¸­æŒ‡å®šçš„è®¿é—®æƒé™ä¸­ï¼Œåˆ é™¤ACLä¸å…è®¸çš„æƒé™ */
 		error = posix_acl_create_masq(clone, &mode);
-		if (error >= 0) {/* ĞŞ¸Ä½ÚµãÈ¨ÏŞ */
+		if (error >= 0) {/* ä¿®æ”¹èŠ‚ç‚¹æƒé™ */
 			inode->i_mode = mode;
-			if (error > 0) {/* Ä¬ÈÏACL»¹°üº¬²»ÄÜÓÃmode²ÎÊı±íÊ¾µÄÈ¨ÏŞ£¬´´½¨ACLÀ´±íÊ¾Ëü */
+			if (error > 0) {/* é»˜è®¤ACLè¿˜åŒ…å«ä¸èƒ½ç”¨modeå‚æ•°è¡¨ç¤ºçš„æƒé™ï¼Œåˆ›å»ºACLæ¥è¡¨ç¤ºå®ƒ */
 				/* This is an extended ACL */
 				error = ext3_set_acl(handle, inode,
 						     ACL_TYPE_ACCESS, clone);

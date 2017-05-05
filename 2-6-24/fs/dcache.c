@@ -172,7 +172,7 @@ static struct dentry *d_kill(struct dentry *dentry)
  */
 
 /**
- * µİ¼õÄ¿Â¼Ïî»º´æµÄÒıÓÃ¼ÆÊı
+ * é€’å‡ç›®å½•é¡¹ç¼“å­˜çš„å¼•ç”¨è®¡æ•°
  */
 void dput(struct dentry *dentry)
 {
@@ -182,13 +182,13 @@ void dput(struct dentry *dentry)
 repeat:
 	if (atomic_read(&dentry->d_count) == 1)
 		might_sleep();
-	/* µİ¼õÒıÓÃ¼ÆÊı£¬Èç¹ûÒıÓÃ¼ÆÊı²»Îª1£¬ÔòÖ±½ÓÍË³ö */
+	/* é€’å‡å¼•ç”¨è®¡æ•°ï¼Œå¦‚æœå¼•ç”¨è®¡æ•°ä¸ä¸º1ï¼Œåˆ™ç›´æ¥é€€å‡º */
 	if (!atomic_dec_and_lock(&dentry->d_count, &dcache_lock))
 		return;
 
-	/* »ñÈ¡Ä¿Â¼ÏîµÄËø */
+	/* è·å–ç›®å½•é¡¹çš„é” */
 	spin_lock(&dentry->d_lock);
-	if (atomic_read(&dentry->d_count)) {/* ÔÙ´Î¶ÁÈ¡ÒıÓÃ¼ÆÊı? */
+	if (atomic_read(&dentry->d_count)) {/* å†æ¬¡è¯»å–å¼•ç”¨è®¡æ•°? */
 		spin_unlock(&dentry->d_lock);
 		spin_unlock(&dcache_lock);
 		return;
@@ -197,16 +197,16 @@ repeat:
 	/*
 	 * AV: ->d_delete() is _NOT_ allowed to block now.
 	 */
-	if (dentry->d_op && dentry->d_op->d_delete) {/* »Øµ÷ÎÄ¼şÏµÍ³µÄÉ¾³ıº¯Êı */
+	if (dentry->d_op && dentry->d_op->d_delete) {/* å›è°ƒæ–‡ä»¶ç³»ç»Ÿçš„åˆ é™¤å‡½æ•° */
 		if (dentry->d_op->d_delete(dentry))
 			goto unhash_it;
 	}
 	/* Unreachable? Get rid of it */
- 	if (d_unhashed(dentry))/* ²»ÔÚÈÎºÎ¹şÏ£±íÖĞ£¬ÍË³ö */
+ 	if (d_unhashed(dentry))/* ä¸åœ¨ä»»ä½•å“ˆå¸Œè¡¨ä¸­ï¼Œé€€å‡º */
 		goto kill_it;
-	/* Ä¿Ç°Ã»ÓĞÔÚlruÁ´±íÖĞ */
+	/* ç›®å‰æ²¡æœ‰åœ¨lrué“¾è¡¨ä¸­ */
   	if (list_empty(&dentry->d_lru)) {
-		/* Ìí¼Óµ½Î´ÓÃlruÁ´±íÖĞ */
+		/* æ·»åŠ åˆ°æœªç”¨lrué“¾è¡¨ä¸­ */
   		dentry->d_flags |= DCACHE_REFERENCED;
   		list_add(&dentry->d_lru, &dentry_unused);
   		dentry_stat.nr_unused++;
@@ -216,7 +216,7 @@ repeat:
 	return;
 
 unhash_it:
-	/* ½«»º´æ¶ÔÏó´ÓÉ¢ÁĞ±íÖĞÒÆ³ı */
+	/* å°†ç¼“å­˜å¯¹è±¡ä»æ•£åˆ—è¡¨ä¸­ç§»é™¤ */
 	__d_drop(dentry);
 kill_it:
 	/* If dentry was on d_lru list
@@ -438,7 +438,7 @@ static void prune_one_dentry(struct dentry * dentry)
  */
 
 /**
- * ÔÚunmount»òÕßÊÕËõÄÚ´æÊ±£¬µ÷ÓÃ´Ëº¯ÊıÊÍ·ÅLRUÖĞ¹ıÆÚµÄdentry.
+ * åœ¨unmountæˆ–è€…æ”¶ç¼©å†…å­˜æ—¶ï¼Œè°ƒç”¨æ­¤å‡½æ•°é‡Šæ”¾LRUä¸­è¿‡æœŸçš„dentry.
  */
 static void prune_dcache(int count, struct super_block *sb)
 {
@@ -905,7 +905,7 @@ static struct shrinker dcache_shrinker = {
  * copied and the copy passed in may be reused after this call.
  */
  
-/* ·ÖÅäÒ»¸öĞÂµÄÄ¿Â¼Ïî»º´æ£¬²¢³õÊ¼»¯ËüµÄ×Ö¶Î */
+/* åˆ†é…ä¸€ä¸ªæ–°çš„ç›®å½•é¡¹ç¼“å­˜ï¼Œå¹¶åˆå§‹åŒ–å®ƒçš„å­—æ®µ */
 struct dentry *d_alloc(struct dentry * parent, const struct qstr *name)
 {
 	struct dentry *dentry;
@@ -990,15 +990,15 @@ struct dentry *d_alloc_name(struct dentry *parent, const char *name)
  */
 
 /**
- * ½«dentryÊµÀıÓëinode¹ØÁªÆğÀ´¡£
+ * å°†dentryå®ä¾‹ä¸inodeå…³è”èµ·æ¥ã€‚
  */
 void d_instantiate(struct dentry *entry, struct inode * inode)
 {
 	BUG_ON(!list_empty(&entry->d_alias));
 	spin_lock(&dcache_lock);
-	if (inode)/* ½«»º´æÏîÌí¼Óµ½inode½ÚµãµÄd_aliasÁ´±íÖĞ */
+	if (inode)/* å°†ç¼“å­˜é¡¹æ·»åŠ åˆ°inodeèŠ‚ç‚¹çš„d_aliasé“¾è¡¨ä¸­ */
 		list_add(&entry->d_alias, &inode->i_dentry);
-	/* ÉèÖÃ»º´æÏîµÄinode½ÚµãÊôĞÔ */
+	/* è®¾ç½®ç¼“å­˜é¡¹çš„inodeèŠ‚ç‚¹å±æ€§ */
 	entry->d_inode = inode;
 	fsnotify_d_instantiate(entry, inode);
 	spin_unlock(&dcache_lock);
@@ -1131,7 +1131,7 @@ static inline struct hlist_head *d_hash(struct dentry *parent,
  * the reference on the inode has not been released.
  */
 
-/* ·ÖÅäÒ»¸öÄ¿Â¼Ïî»º´æ£¬µ«ÊÇ²»Ö¸¶¨ËüµÄ¸¸½Úµã */
+/* åˆ†é…ä¸€ä¸ªç›®å½•é¡¹ç¼“å­˜ï¼Œä½†æ˜¯ä¸æŒ‡å®šå®ƒçš„çˆ¶èŠ‚ç‚¹ */
 struct dentry * d_alloc_anon(struct inode *inode)
 {
 	static const struct qstr anonstring = { .name = "" };
@@ -1252,7 +1252,7 @@ struct dentry *d_splice_alias(struct inode *inode, struct dentry *dentry)
  * directory using the seqlockt_t rename_lock.
  */
 
-/* ÔÚ¸¸Ä¿Â¼»º´æÖĞ£¬ËÑË÷ÌØ¶¨Ãû³ÆµÄ»º´æÏî */
+/* åœ¨çˆ¶ç›®å½•ç¼“å­˜ä¸­ï¼Œæœç´¢ç‰¹å®šåç§°çš„ç¼“å­˜é¡¹ */
 struct dentry * d_lookup(struct dentry * parent, struct qstr * name)
 {
 	struct dentry * dentry = NULL;
@@ -1415,7 +1415,7 @@ out:
  */
 
 /**
- * ÔÚÈ·ÈÏdentry¶ÔÏóÈÔÈ»°üº¬ÔÚÈ«¾ÖÉ¢ÁĞ±íÖĞÒÔºó£¬µ÷ÓÃ__d_drop½«ÆäÒÆ³ı¡£
+ * åœ¨ç¡®è®¤dentryå¯¹è±¡ä»ç„¶åŒ…å«åœ¨å…¨å±€æ•£åˆ—è¡¨ä¸­ä»¥åï¼Œè°ƒç”¨__d_dropå°†å…¶ç§»é™¤ã€‚
  */
 void d_delete(struct dentry * dentry)
 {

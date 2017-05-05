@@ -4,20 +4,20 @@
 enum pid_type
 {
 	PIDTYPE_PID,
-	PIDTYPE_TGID,    /* ´ú±íÒ»×éÏß³Ì×é */
-	PIDTYPE_PGID,     /* ´ú±íÒ»×é½ø³ÌÃèÊö·û */
-	PIDTYPE_SID,        /* ´ú±íÒ»¸ö»á»°µÄÃèÊö·û */
+	PIDTYPE_TGID,    /* ä»£è¡¨ä¸€ç»„çº¿ç¨‹ç»„ */
+	PIDTYPE_PGID,     /* ä»£è¡¨ä¸€ç»„è¿›ç¨‹æè¿°ç¬¦ */
+	PIDTYPE_SID,        /* ä»£è¡¨ä¸€ä¸ªä¼šè¯çš„æè¿°ç¬¦ */
 	PIDTYPE_MAX
 };
 
-/* ½ø³ÌµÄpid½á¹¹ */
+/* è¿›ç¨‹çš„pidç»“æ„ */
 struct pid
 {
 	/* Try to keep pid_chain in the same cacheline as nr for find_pid */
-	int nr;           /* ¶ÔÓ¦½ø³ÌºÅ */
-	struct hlist_node pid_chain;              /* pid¶ÔÓ¦µÄhashÁ´ */
+	int nr;           /* å¯¹åº”è¿›ç¨‹å· */
+	struct hlist_node pid_chain;              /* pidå¯¹åº”çš„hashé“¾ */
 	/* list of pids with the same nr, only one of them is in the hash */
-         /* ½«Í¨¹ıtypeºÍnrÓ³Éäµ½pid_hashÖĞÍ¬Ò»¸öÎ»ÖÃµÄstruct pidÓÃpid_listÁ¬½ÓÆğÀ´ */
+         /* å°†é€šè¿‡typeå’Œnræ˜ å°„åˆ°pid_hashä¸­åŒä¸€ä¸ªä½ç½®çš„struct pidç”¨pid_listè¿æ¥èµ·æ¥ */
 	struct list_head pid_list;       
 };
 

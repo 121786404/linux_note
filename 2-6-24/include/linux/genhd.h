@@ -81,12 +81,12 @@ struct partition {
 	__le32 nr_sects;		/* nr of sectors in partition */
 } __attribute__((packed));
 
-/* ´ÅÅÌ·ÖÇø¶ÔÏó */
+/* ç£ç›˜åˆ†åŒºå¯¹è±¡ */
 struct hd_struct {
-	/* ÆğÊ¼ÉÈÇøºÍ³¤¶È */
+	/* èµ·å§‹æ‰‡åŒºå’Œé•¿åº¦ */
 	sector_t start_sect;
 	sector_t nr_sects;
-	/* Í¨¹ı´Ë×Ö¶Î¼ÓÈëµ½Í¨ÓÃÇı¶¯Ä£ĞÍÖĞ */
+	/* é€šè¿‡æ­¤å­—æ®µåŠ å…¥åˆ°é€šç”¨é©±åŠ¨æ¨¡å‹ä¸­ */
 	struct kobject kobj;
 	struct kobject *holder_dir;
 	unsigned ios[2], sectors[2];	/* READs and WRITEs */
@@ -114,34 +114,34 @@ struct disk_stats {
 };
 
 /**
- * ´ÅÅÌ·ÖÇøÊı¾İ½á¹¹
+ * ç£ç›˜åˆ†åŒºæ•°æ®ç»“æ„
  */
 struct gendisk {
-	/* Ö÷Éè±¸ºÅ */
+	/* ä¸»è®¾å¤‡å· */
 	int major;			/* major number of driver */
-	/* ´ÎÉè±¸ºÅ·¶Î§ */
+	/* æ¬¡è®¾å¤‡å·èŒƒå›´ */
 	int first_minor;
 	int minors;                     /* maximum number of minors, =1 for
                                          * disks that can't be partitioned. */
-	/* ´ÅÅÌµÄÃû³Æ */
+	/* ç£ç›˜çš„åç§° */
 	char disk_name[32];		/* name of major driver */
-	/* ´ÅÅÌÉÏµÄ·ÖÇøÊı×é */
+	/* ç£ç›˜ä¸Šçš„åˆ†åŒºæ•°ç»„ */
 	struct hd_struct **part;	/* [indexed by minor] */
-	/* Èç¹ûÎªÕı£¬Ôò²»ÏòÓÃ»§Ì¬·¢ËÍ·ÖÇøÈÈ²å²¦ÊÂ¼ş */
+	/* å¦‚æœä¸ºæ­£ï¼Œåˆ™ä¸å‘ç”¨æˆ·æ€å‘é€åˆ†åŒºçƒ­æ’æ‹¨äº‹ä»¶ */
 	int part_uevent_suppress;
-	/* Éè±¸»Øµ÷º¯Êı */
+	/* è®¾å¤‡å›è°ƒå‡½æ•° */
 	struct block_device_operations *fops;
-	/* Éè±¸ÉÏµÄÇëÇó¶ÓÁĞ */
+	/* è®¾å¤‡ä¸Šçš„è¯·æ±‚é˜Ÿåˆ— */
 	struct request_queue *queue;
-	/* Ë½ÓĞÊı¾İ */
+	/* ç§æœ‰æ•°æ® */
 	void *private_data;
-	/* ´ÅÅÌÈİÁ¿£¬ÒÔÉÈÇøÎªµ¥Î» */
+	/* ç£ç›˜å®¹é‡ï¼Œä»¥æ‰‡åŒºä¸ºå•ä½ */
 	sector_t capacity;
 
 	int flags;
-	/* ´ÅÅÌËùÊôµÄÉè±¸ */
+	/* ç£ç›˜æ‰€å±çš„è®¾å¤‡ */
 	struct device *driverfs_dev;
-	/* ÄÚÇ¶Éè±¸Ä£ĞÍ¶ÔÏó£¬Í¨¹ı´Ë¶ÔÏó½«Éè±¸¼Óµ½sysÎÄ¼şÏµÍ³ÖĞ */
+	/* å†…åµŒè®¾å¤‡æ¨¡å‹å¯¹è±¡ï¼Œé€šè¿‡æ­¤å¯¹è±¡å°†è®¾å¤‡åŠ åˆ°sysæ–‡ä»¶ç³»ç»Ÿä¸­ */
 	struct kobject kobj;
 	struct kobject *holder_dir;
 	struct kobject *slave_dir;

@@ -40,15 +40,15 @@
 /* These are for everybody (although not all archs will actually
    discard it in modules) */
 /*
-²»Í¬µÄ¶Î´úÂëÓĞ×Å²»Í¬µÄ×÷ÓÃ£¬±ÈÈç³õÊ¼»¯¶ÎµÄ´úÂë£¬
-µ±ÏµÍ³ÔËĞĞÕı³£ÒÔºó£¬Õâ¶Î´úÂë¾ÍÃ»ÓĞÊ²Ã´ÓÃÁË£¬
-´ÏÃ÷µÄ×ö·¨¾ÍÊÇ»ØÊÕÕâ¶Î´úÂëÕ¼ÓÃµÄÄÚ´æ£¬
-ÈÃÄÚºËµÄ´úÂëÕ¼×îÉÙµÄÄÚ´æ¡£
+ä¸åŒçš„æ®µä»£ç æœ‰ç€ä¸åŒçš„ä½œç”¨ï¼Œæ¯”å¦‚åˆå§‹åŒ–æ®µçš„ä»£ç ï¼Œ
+å½“ç³»ç»Ÿè¿è¡Œæ­£å¸¸ä»¥åï¼Œè¿™æ®µä»£ç å°±æ²¡æœ‰ä»€ä¹ˆç”¨äº†ï¼Œ
+èªæ˜çš„åšæ³•å°±æ˜¯å›æ”¶è¿™æ®µä»£ç å ç”¨çš„å†…å­˜ï¼Œ
+è®©å†…æ ¸çš„ä»£ç å æœ€å°‘çš„å†…å­˜ã€‚
 
-»¹ÓĞÁíÍâÒ»¸ö×÷ÓÃ£¬±ÈÈçÍ¬Ò»¶ÎµÄ´úÂë¶¼ÊÇ±àÒëÔÚÒ»Æğ£¬
-ÈÃÏà¹ØÁªµÄ´úÂë¾¡¿ÉÄÜÍ¬ÔÚÒ»Æ¬ÄÚ´æÀï£¬
-ÕâÑùµ±CPU¼ÓÔØ´úÂëµ½»º´æÊ±£¬¾Í¿ÉÒÔÒ»ÆğÃüÖĞ£¬
-Ìá¸ß»º´æµÄÃüÖĞÂÊ£¬ÕâÑù¾Í´ó´óÌá¸ß´úÂëµÄÖ´ĞĞËÙ¶È¡£
+è¿˜æœ‰å¦å¤–ä¸€ä¸ªä½œç”¨ï¼Œæ¯”å¦‚åŒä¸€æ®µçš„ä»£ç éƒ½æ˜¯ç¼–è¯‘åœ¨ä¸€èµ·ï¼Œ
+è®©ç›¸å…³è”çš„ä»£ç å°½å¯èƒ½åŒåœ¨ä¸€ç‰‡å†…å­˜é‡Œï¼Œ
+è¿™æ ·å½“CPUåŠ è½½ä»£ç åˆ°ç¼“å­˜æ—¶ï¼Œå°±å¯ä»¥ä¸€èµ·å‘½ä¸­ï¼Œ
+æé«˜ç¼“å­˜çš„å‘½ä¸­ç‡ï¼Œè¿™æ ·å°±å¤§å¤§æé«˜ä»£ç çš„æ‰§è¡Œé€Ÿåº¦ã€‚
 */
 #define __init		__section(.init.text) __cold notrace __latent_entropy
 #define __initdata	__section(.init.data)
@@ -230,8 +230,8 @@ struct obs_kernel_param {
  *
  * Force the alignment so the compiler doesn't space elements of the
  * obs_kernel_param "array" too far apart in .init.setup.
- * __setup_param() •şŒ¦ struct obs_kernel_param ¸½¼Ó __section(.init.setup) ŒÙĞÔ£¬
- * Í¸ß^ß@‚€ macro ¶¨ÁxµÄÙYÁÏ•ş±»·ÅÔÚ .init.setup section Ö®ÖĞ
+ * __setup_param() æœƒå° struct obs_kernel_param é™„åŠ  __section(.init.setup) å±¬æ€§ï¼Œ
+ * é€éé€™å€‹ macro å®šç¾©çš„è³‡æ–™æœƒè¢«æ”¾åœ¨ .init.setup section ä¹‹ä¸­
  */
 #define __setup_param(str, unique_id, fn, early)			\
 	static const char __setup_str_##unique_id[] __initconst		\

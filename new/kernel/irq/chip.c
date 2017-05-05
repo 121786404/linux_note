@@ -276,8 +276,8 @@ void irq_percpu_disable(struct irq_desc *desc, unsigned int cpu)
 		desc->irq_data.chip->irq_mask(&desc->irq_data);
 	cpumask_clear_cpu(cpu, desc->percpu_enabled);
 }
-/* mask_ack_irqÀûÓÃPIC¶ÔÏóµÄirq_maskÀı³Ì½«¸ÃÌõÖĞ¶ÏÏßÔÚPICÖĞÆÁ±Îµô£¬
- * È»ºó½«IRQD_IRQ_MASKEDÎ»ÖÃ£±*/
+/* mask_ack_irqåˆ©ç”¨PICå¯¹è±¡çš„irq_maskä¾‹ç¨‹å°†è¯¥æ¡ä¸­æ–­çº¿åœ¨PICä¸­å±è”½æ‰ï¼Œ
+ * ç„¶åå°†IRQD_IRQ_MASKEDä½ç½®ï¼‘*/
 static inline void mask_ack_irq(struct irq_desc *desc)
 {
 	if (desc->irq_data.chip->irq_mask_ack)
@@ -497,7 +497,7 @@ static void cond_unmask_irq(struct irq_desc *desc)
  *	interrupt line is back to inactive.
  */
 /**
- * ´ó¶àÊıÖĞ¶Ï¶¼ÊÇ±ßÔµ´¥·¢£¬ĞèÒªÔÚ¿ªÊ¼Ê±ÆÁ±ÎÍâÉè£¬´¦ÀíÍêÒÔºóÔÙÓ¦´ğ£¬½â³ıÆÁ±Î¡£
+ * å¤§å¤šæ•°ä¸­æ–­éƒ½æ˜¯è¾¹ç¼˜è§¦å‘ï¼Œéœ€è¦åœ¨å¼€å§‹æ—¶å±è”½å¤–è®¾ï¼Œå¤„ç†å®Œä»¥åå†åº”ç­”ï¼Œè§£é™¤å±è”½ã€‚
  */
 void handle_level_irq(struct irq_desc *desc)
 {

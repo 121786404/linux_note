@@ -68,14 +68,14 @@ struct ext3_sb_info {
 	struct ext3_reserve_window_node s_rsv_window_head;
 
 	/* Journaling */
-	/* ±£´æÈÕÖ¾µÄinode½Úµã */
+	/* ä¿å­˜æ—¥å¿—çš„inodeèŠ‚ç‚¹ */
 	struct inode * s_journal_inode;
-	/* ÈÕÖ¾½á¹¹ */
+	/* æ—¥å¿—ç»“æ„ */
 	struct journal_s * s_journal;
 	struct list_head s_orphan;
-	/* Êı¾İ´ÓÄÚ´æĞ´»Øµ½ÈÕÖ¾µÄÆµÂÊ */
+	/* æ•°æ®ä»å†…å­˜å†™å›åˆ°æ—¥å¿—çš„é¢‘ç‡ */
 	unsigned long s_commit_interval;
-	/* ±£´æÈÕÖ¾µÄ·ÖÇøÉè±¸£¬Óës_journal_inode»¥³â */
+	/* ä¿å­˜æ—¥å¿—çš„åˆ†åŒºè®¾å¤‡ï¼Œä¸s_journal_inodeäº’æ–¥ */
 	struct block_device *journal_bdev;
 #ifdef CONFIG_JBD_DEBUG
 	struct timer_list turn_ro_timer;	/* For turning read-only (crash simulation) */

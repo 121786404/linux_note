@@ -1065,7 +1065,7 @@ NORET_TYPE void complete_and_exit(struct completion *comp, long code)
 
 EXPORT_SYMBOL(complete_and_exit);
 
-/* 系统调用exit */
+/* 绯荤粺璋冪敤exit */
 asmlinkage long sys_exit(int error_code)
 {
 	do_exit((error_code&0xff)<<8);

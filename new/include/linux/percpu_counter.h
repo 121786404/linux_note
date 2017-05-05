@@ -53,7 +53,7 @@ static inline void percpu_counter_add(struct percpu_counter *fbc, s64 amount)
 /*
 
 
-ÏëÁË½âÕâ¸ö¼ÆÊıÊÖ¶ÎµÄÏêÏ¸ĞÅÏ¢£¬¿ÉÒÔÔÄ¶Ápercpu_counter_addµÄÏà¹Ø´úÂë¡£
+æƒ³äº†è§£è¿™ä¸ªè®¡æ•°æ‰‹æ®µçš„è¯¦ç»†ä¿¡æ¯ï¼Œå¯ä»¥é˜…è¯»percpu_counter_addçš„ç›¸å…³ä»£ç ã€‚
 
 */
 	__percpu_counter_add(fbc, amount, percpu_counter_batch);

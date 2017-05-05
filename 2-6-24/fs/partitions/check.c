@@ -369,13 +369,13 @@ void delete_partition(struct gendisk *disk, int part)
 }
 
 /**
- * ÏòÍ¨ÓÃÓ²ÅÌÊı¾İ½á¹¹Ìí¼ÓÒ»¸öĞÂµÄ·ÖÇø¡£
+ * å‘é€šç”¨ç¡¬ç›˜æ•°æ®ç»“æ„æ·»åŠ ä¸€ä¸ªæ–°çš„åˆ†åŒºã€‚
  */
 void add_partition(struct gendisk *disk, int part, sector_t start, sector_t len, int flags)
 {
 	struct hd_struct *p;
 
-	/* ·ÖÅäÒ»¸ö·ÖÇø½á¹¹ */
+	/* åˆ†é…ä¸€ä¸ªåˆ†åŒºç»“æ„ */
 	p = kzalloc(sizeof(*p), GFP_KERNEL);
 	if (!p)
 		return;
@@ -385,17 +385,17 @@ void add_partition(struct gendisk *disk, int part, sector_t start, sector_t len,
 	p->partno = part;
 	p->policy = disk->policy;
 
-	/* Ö¸¶¨¶ÔÏóÔÚsysfsÖĞµÄÃû×Ö */
+	/* æŒ‡å®šå¯¹è±¡åœ¨sysfsä¸­çš„åå­— */
 	if (isdigit(disk->kobj.k_name[strlen(disk->kobj.k_name)-1]))
 		kobject_set_name(&p->kobj, "%sp%d",
 				 kobject_name(&disk->kobj), part);
 	else
 		kobject_set_name(&p->kobj, "%s%d",
 				 kobject_name(&disk->kobj),part);
-	/* ½«·ÖÇø¸¸¶ÔÏóÉèÖÃÎª´ÅÅÌ¶ÔÏó */
+	/* å°†åˆ†åŒºçˆ¶å¯¹è±¡è®¾ç½®ä¸ºç£ç›˜å¯¹è±¡ */
 	p->kobj.parent = &disk->kobj;
 	p->kobj.ktype = &ktype_part;
-	/* Ìí¼Ó·ÖÇøµ½sysfsÍ¨ÓÃÎÄ¼şÏµÍ³ÖĞ */
+	/* æ·»åŠ åˆ†åŒºåˆ°sysfsé€šç”¨æ–‡ä»¶ç³»ç»Ÿä¸­ */
 	kobject_init(&p->kobj);
 	kobject_add(&p->kobj);
 	if (!disk->part_uevent_suppress)
@@ -410,7 +410,7 @@ void add_partition(struct gendisk *disk, int part, sector_t start, sector_t len,
 		sysfs_create_file(&p->kobj, &addpartattr);
 	}
 	partition_sysfs_add_subdir(p);
-	/* ½«·ÖÇøÌí¼Óµ½´ÅÅÌ¶ÔÏóµÄ·ÖÇøÖĞ */
+	/* å°†åˆ†åŒºæ·»åŠ åˆ°ç£ç›˜å¯¹è±¡çš„åˆ†åŒºä¸­ */
 	disk->part[part-1] = p;
 }
 

@@ -61,7 +61,7 @@ struct unix_skb_parms {
 /* The AF_UNIX socket */
 struct unix_sock {
 	/* WARNING: sk has to be the first member */
-        /* ÒòÎª½øĞĞÁËÄÚ´æ¶ÔÆë£¬ËùÒÔ±ØĞëÔÚµÚÒ»¸ö³ÉÔ± */
+        /* å› ä¸ºè¿›è¡Œäº†å†…å­˜å¯¹é½ï¼Œæ‰€ä»¥å¿…é¡»åœ¨ç¬¬ä¸€ä¸ªæˆå‘˜ */
 	struct sock		sk;
         struct unix_address     *addr;
         struct dentry		*dentry;

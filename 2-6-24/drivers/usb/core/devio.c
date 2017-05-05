@@ -86,7 +86,7 @@ MODULE_PARM_DESC (usbfs_snoop, "true to log all usbfs traffic");
 	} while (0)
 
 /**
- * ÎªÓÃ»§Ì¬³ÌĞò¿ØÖÆUSBÉè±¸¶øÊ¹ÓÃµÄÖ÷Éè±¸ºÅ¡£
+ * ä¸ºç”¨æˆ·æ€ç¨‹åºæ§åˆ¶USBè®¾å¤‡è€Œä½¿ç”¨çš„ä¸»è®¾å¤‡å·ã€‚
  */
 #define USB_DEVICE_DEV		MKDEV(USB_DEVICE_MAJOR, 0)
 
@@ -1664,7 +1664,7 @@ int __init usb_devio_init(void)
 	}
 #ifdef CONFIG_USB_DEVICE_CLASS
 	/**
-	 * ÔÚ/sys/classÄ¿Â¼ÏÂ½¨Á¢usb_deviceÄ¿Â¼¡£
+	 * åœ¨/sys/classç›®å½•ä¸‹å»ºç«‹usb_deviceç›®å½•ã€‚
 	 */
 	usb_classdev_class = class_create(THIS_MODULE, "usb_device");
 	if (IS_ERR(usb_classdev_class)) {

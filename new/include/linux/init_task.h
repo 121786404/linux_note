@@ -213,9 +213,9 @@ extern struct task_group root_task_group;
 /*
  *  INIT_TASK is used to set up the first task table, touch at
  * your own risk!. Base=0, limit=0x1fffff (=2MB)
- * ÓÉÓÚinit_taskÊÇÒ»¸öÔËĞĞÔÚÄÚºË¿Õ¼äµÄÄÚºËÏß³Ì, 
- * Òò´ËÆäĞéµØÖ·¶ÎmmÎªNULL, µ«ÊÇ±ØÒªÊ±Ëû»¹ÊÇĞèÒªÊ¹ÓÃĞéÄâµØÖ·µÄ£¬
- * Òò´Ëavtive_mm±»ÉèÖÃÎªinit_mm
+ * ç”±äºinit_taskæ˜¯ä¸€ä¸ªè¿è¡Œåœ¨å†…æ ¸ç©ºé—´çš„å†…æ ¸çº¿ç¨‹, 
+ * å› æ­¤å…¶è™šåœ°å€æ®µmmä¸ºNULL, ä½†æ˜¯å¿…è¦æ—¶ä»–è¿˜æ˜¯éœ€è¦ä½¿ç”¨è™šæ‹Ÿåœ°å€çš„ï¼Œ
+ * å› æ­¤avtive_mmè¢«è®¾ç½®ä¸ºinit_mm
  */
 #define INIT_TASK(tsk)	\
 {									\

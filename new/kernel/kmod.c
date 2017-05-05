@@ -526,9 +526,9 @@ struct subprocess_info *call_usermodehelper_setup(const char *path, char **argv,
 	sub_info = kzalloc(sizeof(struct subprocess_info), gfp_mask);
 	if (!sub_info)
 		goto out;
-	/*³õÊ¼»¯Ò»¸ö¹¤×÷¶ÓÁĞ½Úµã,ÆäÖĞsub_infoÊÇÒ»struct subprocess_infoÀàĞÍµÄ±äÁ¿,¹¤×÷
-	 *¶ÓÁĞ½Úµã×÷ÎªËüµÄÒ»¸öÄÚÇ¶¶ÔÏó,sub_infoÆäËû³ÉÔ±ÓÃÀ´´æ´¢ÔËĞĞÓÃ»§Ì¬½ø³ÌµÄÒ»Ğ©ĞÅÏ¢,
-	 *Ö÷ÒªÊÇ»·¾³±äÁ¿,__call_usermodehelperÊÇ¹¤×÷¶ÓÁĞ½ÚµãÉÏµÄÑÓ³ÙÖ´ĞĞµÄº¯Êı*/
+	/*åˆå§‹åŒ–ä¸€ä¸ªå·¥ä½œé˜Ÿåˆ—èŠ‚ç‚¹,å…¶ä¸­sub_infoæ˜¯ä¸€struct subprocess_infoç±»å‹çš„å˜é‡,å·¥ä½œ
+	 *é˜Ÿåˆ—èŠ‚ç‚¹ä½œä¸ºå®ƒçš„ä¸€ä¸ªå†…åµŒå¯¹è±¡,sub_infoå…¶ä»–æˆå‘˜ç”¨æ¥å­˜å‚¨è¿è¡Œç”¨æˆ·æ€è¿›ç¨‹çš„ä¸€äº›ä¿¡æ¯,
+	 *ä¸»è¦æ˜¯ç¯å¢ƒå˜é‡,__call_usermodehelperæ˜¯å·¥ä½œé˜Ÿåˆ—èŠ‚ç‚¹ä¸Šçš„å»¶è¿Ÿæ‰§è¡Œçš„å‡½æ•°*/
 	INIT_WORK(&sub_info->work, call_usermodehelper_exec_work);
 
 #ifdef CONFIG_STATIC_USERMODEHELPER
@@ -561,8 +561,8 @@ EXPORT_SYMBOL(call_usermodehelper_setup);
  */
 int call_usermodehelper_exec(struct subprocess_info *sub_info, int wait)
 {
-	/*Í¨¹ıÒıÈëÒ»¸öcompletion±äÁ¿doneÀ´ÊµÏÖºÍ¹¤×÷½Úµãsub_info->workÉÏµÄÑÓ³Ùº¯Êı
-	 *__call_usermodehelperµÄÍ¬²½*/
+	/*é€šè¿‡å¼•å…¥ä¸€ä¸ªcompletionå˜é‡doneæ¥å®ç°å’Œå·¥ä½œèŠ‚ç‚¹sub_info->workä¸Šçš„å»¶è¿Ÿå‡½æ•°
+	 *__call_usermodehelperçš„åŒæ­¥*/
 	DECLARE_COMPLETION_ONSTACK(done);
 	int retval = 0;
 
@@ -592,9 +592,9 @@ int call_usermodehelper_exec(struct subprocess_info *sub_info, int wait)
 	sub_info->complete = (wait == UMH_NO_WAIT) ? NULL : &done;
 	sub_info->wait = wait;
 
-	/*Ìá½»¹¤×÷¹¤×÷½Úµãµ½khelper_wq,½«µÈ´ıÔÚwait_for_completion(&done)Óï¾äÉÏ,µ±
-__call_usermodehelperÖ´ĞĞÍê±Ï,»áÍ¨¹ıcompleteº¯ÊıÀ´»½ĞÑË¯ÃßµÄcall_usermodehelper_execº¯Êı,
-	 *khelper_wqÕâÊÇÒ»¸ö¹¤×÷¶ÓÁĞ,Æä´´½¨·¢ÉúÔÚlinuxÏµÍ³µÄ³õÊ¼»¯½×¶Î*/
+	/*æäº¤å·¥ä½œå·¥ä½œèŠ‚ç‚¹åˆ°khelper_wq,å°†ç­‰å¾…åœ¨wait_for_completion(&done)è¯­å¥ä¸Š,å½“
+__call_usermodehelperæ‰§è¡Œå®Œæ¯•,ä¼šé€šè¿‡completeå‡½æ•°æ¥å”¤é†’ç¡çœ çš„call_usermodehelper_execå‡½æ•°,
+	 *khelper_wqè¿™æ˜¯ä¸€ä¸ªå·¥ä½œé˜Ÿåˆ—,å…¶åˆ›å»ºå‘ç”Ÿåœ¨linuxç³»ç»Ÿçš„åˆå§‹åŒ–é˜¶æ®µ*/
 	queue_work(system_unbound_wq, &sub_info->work);
 	if (wait == UMH_NO_WAIT)	/* task has freed sub_info */
 		goto unlock;
@@ -634,10 +634,10 @@ EXPORT_SYMBOL(call_usermodehelper_exec);
  * This function is the equivalent to use call_usermodehelper_setup() and
  * call_usermodehelper_exec().
  */
- /*Í¨¹ıµ÷ÓÃcall_usermodehelperÀ´´ïµ½´ÓÄÚºË¿Õ¼äÔËĞĞÒ»¸öÓÃ»§¿Õ¼ä½ø³ÌµÄÄ¿µÄ,
- *ÓÃ»§¿Õ¼ä½ø³ÌµÄ¶ş½øÖÆÎÄ¼şÓÉuevent_helperÌá¹©,¸Ã±äÁ¿ÊÇÒ»×Ö·ûÊı×é*/
-/*º¯ÊıµÄÉè¼ÆË¼Ïë²ÉÓÃ¹¤×÷¶ÓÁĞµÄ·½Ê½,ÔÚcall_usermodehelper_setupº¯ÊıÄÚ²¿»á³õÊ¼»¯Ò»¸ö¹¤×÷
- *¶ÓÁĞµÄ½Úµã*/
+ /*é€šè¿‡è°ƒç”¨call_usermodehelperæ¥è¾¾åˆ°ä»å†…æ ¸ç©ºé—´è¿è¡Œä¸€ä¸ªç”¨æˆ·ç©ºé—´è¿›ç¨‹çš„ç›®çš„,
+ *ç”¨æˆ·ç©ºé—´è¿›ç¨‹çš„äºŒè¿›åˆ¶æ–‡ä»¶ç”±uevent_helperæä¾›,è¯¥å˜é‡æ˜¯ä¸€å­—ç¬¦æ•°ç»„*/
+/*å‡½æ•°çš„è®¾è®¡æ€æƒ³é‡‡ç”¨å·¥ä½œé˜Ÿåˆ—çš„æ–¹å¼,åœ¨call_usermodehelper_setupå‡½æ•°å†…éƒ¨ä¼šåˆå§‹åŒ–ä¸€ä¸ªå·¥ä½œ
+ *é˜Ÿåˆ—çš„èŠ‚ç‚¹*/
 int call_usermodehelper(const char *path, char **argv, char **envp, int wait)
 {
 	struct subprocess_info *info;

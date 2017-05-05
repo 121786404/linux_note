@@ -176,7 +176,7 @@ static void tick_do_periodic_broadcast(void)
  * Event handler for periodic broadcast ticks
  */
 /**
- * ÔÚÊ±ÖÓÉè±¸Ë¯Ãßºó£¬ÓÉ´Ëº¯Êı·¢ËÍ¹ã²¥ÊÂ¼ş£¬´¥·¢ÆäËûCPUÉÏµÄÊ±ÖÓÊÂ¼ş¡£
+ * åœ¨æ—¶é’Ÿè®¾å¤‡ç¡çœ åï¼Œç”±æ­¤å‡½æ•°å‘é€å¹¿æ’­äº‹ä»¶ï¼Œè§¦å‘å…¶ä»–CPUä¸Šçš„æ—¶é’Ÿäº‹ä»¶ã€‚
  */
 static void tick_handle_periodic_broadcast(struct clock_event_device *dev)
 {

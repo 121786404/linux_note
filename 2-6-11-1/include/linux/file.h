@@ -19,7 +19,7 @@
 /*
  * Open file table structure
  */
-/* ½ø³Ì´ò¿ªµÄÎÄ¼ş½á¹¹ */
+/* è¿›ç¨‹æ‰“å¼€çš„æ–‡ä»¶ç»“æ„ */
 struct files_struct {
         atomic_t count;
         spinlock_t file_lock;     /* Protects all the below members.  Nests inside tsk->alloc_lock */
@@ -61,7 +61,7 @@ extern void free_fdset(fd_set *, int);
 
 extern int expand_files(struct files_struct *, int nr);
 
-/* ÒÔfd×÷ÎªË÷ÒıÖ±½Ó´ÓfdÊı×éÖĞ»ñÈ¡ */
+/* ä»¥fdä½œä¸ºç´¢å¼•ç›´æ¥ä»fdæ•°ç»„ä¸­è·å– */
 static inline struct file * fcheck_files(struct files_struct *files, unsigned int fd)
 {
 	struct file * file = NULL;

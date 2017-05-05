@@ -82,18 +82,18 @@ static unsigned long last_empty_jifs;
  * state information between pdflush threads.  Protected by pdflush_lock.
  */
 /**
- * pdflushÏß³Ì´ıÍê³ÉµÄ¹¤×÷ÃèÊö·û
+ * pdflushçº¿ç¨‹å¾…å®Œæˆçš„å·¥ä½œæè¿°ç¬¦
  */
 struct pdflush_work {
-	/* Íê³É¸ÃÈÎÎñµÄpdflushÏß³Ì */
+	/* å®Œæˆè¯¥ä»»åŠ¡çš„pdflushçº¿ç¨‹ */
 	struct task_struct *who;	/* The thread */
-	/* ÒªÍê³ÉµÄÈÎÎñ */
+	/* è¦å®Œæˆçš„ä»»åŠ¡ */
 	void (*fn)(unsigned long);	/* A callback function */
-	/* ÈÎÎñ²ÎÊı */
+	/* ä»»åŠ¡å‚æ•° */
 	unsigned long arg0;		/* An argument to the callback */
-	/* Í¨¹ı´Ë×Ö¶Î½«ÈÎÎñÁ´½Óµ½È«¾ÖÁ´±íÖĞ */
+	/* é€šè¿‡æ­¤å­—æ®µå°†ä»»åŠ¡é“¾æ¥åˆ°å…¨å±€é“¾è¡¨ä¸­ */
 	struct list_head list;		/* On pdflush_list, when idle */
-	/* ÉÏÒ»´Î½øÈëË¯ÃßµÄÊ±¼ä£¬¿ÉÓÃÓÚÉ¾³ı¶àÓàµÄÏß³Ì */
+	/* ä¸Šä¸€æ¬¡è¿›å…¥ç¡çœ çš„æ—¶é—´ï¼Œå¯ç”¨äºåˆ é™¤å¤šä½™çš„çº¿ç¨‹ */
 	unsigned long when_i_went_to_sleep;
 };
 
@@ -111,15 +111,15 @@ static int __pdflush(struct pdflush_work *my_work)
 		struct pdflush_work *pdf;
 
 		set_current_state(TASK_INTERRUPTIBLE);
-		/* ½«ÈÎÎñÌí¼Óµ½È«¾ÖÁ´±íÖĞ£¬µÈ´ı»½ĞÑ */
+		/* å°†ä»»åŠ¡æ·»åŠ åˆ°å…¨å±€é“¾è¡¨ä¸­ï¼Œç­‰å¾…å”¤é†’ */
 		list_move(&my_work->list, &pdflush_list);
-		/* ¼ÇÂ¼Ë¯ÃßÊ±¼ä */
+		/* è®°å½•ç¡çœ æ—¶é—´ */
 		my_work->when_i_went_to_sleep = jiffies;
 		spin_unlock_irq(&pdflush_lock);
 		schedule();
 		try_to_freeze();
 		spin_lock_irq(&pdflush_lock);
-		/* ÔÚ»ñÈ¡ËøÒÔºó£¬ÅĞ¶ÏÌØÊâµÄ»½ĞÑÇé¿ö */
+		/* åœ¨è·å–é”ä»¥åï¼Œåˆ¤æ–­ç‰¹æ®Šçš„å”¤é†’æƒ…å†µ */
 		if (!list_empty(&my_work->list)) {
 			/*
 			 * Someone woke us up, but without removing our control
@@ -129,27 +129,27 @@ static int __pdflush(struct pdflush_work *my_work)
 			my_work->fn = NULL;
 			continue;
 		}
-		/* Ã»ÓĞÖ¸¶¨»Øµ÷£¬ÏÔÈ»ÊÇÒ»ÖÖ²»ºÏÀíµÄÇé¿ö */
+		/* æ²¡æœ‰æŒ‡å®šå›è°ƒï¼Œæ˜¾ç„¶æ˜¯ä¸€ç§ä¸åˆç†çš„æƒ…å†µ */
 		if (my_work->fn == NULL) {
 			printk("pdflush: bogus wakeup\n");
 			continue;
 		}
 		spin_unlock_irq(&pdflush_lock);
 
-		/* »Øµ÷´¦Àíº¯Êı£¬»ØĞ´´ÅÅÌÊı¾İ */
+		/* å›è°ƒå¤„ç†å‡½æ•°ï¼Œå›å†™ç£ç›˜æ•°æ® */
 		(*my_work->fn)(my_work->arg0);
 
 		/*
 		 * Thread creation: For how long have there been zero
 		 * available threads?
 		 */
-		if (jiffies - last_empty_jifs > 1 * HZ) {/* ÔËĞĞÊ±¼ä³¬¹ıÁË1Ãë£¬ËµÃ÷»ØĞ´ÊıÁ¿¶à£¬ÏµÍ³Ã¦ */
+		if (jiffies - last_empty_jifs > 1 * HZ) {/* è¿è¡Œæ—¶é—´è¶…è¿‡äº†1ç§’ï¼Œè¯´æ˜å›å†™æ•°é‡å¤šï¼Œç³»ç»Ÿå¿™ */
 			/* unlocked list_empty() test is OK here */
-			if (list_empty(&pdflush_list)) {/* ËùÓĞpdflush½ø³Ì¶¼ÔÚÔËĞĞ */
+			if (list_empty(&pdflush_list)) {/* æ‰€æœ‰pdflushè¿›ç¨‹éƒ½åœ¨è¿è¡Œ */
 				/* unlocked test is OK here */
-				/* ½ø³ÌÊıÁ¿Ã»ÓĞ³¬¹ıÏŞÖÆ */
+				/* è¿›ç¨‹æ•°é‡æ²¡æœ‰è¶…è¿‡é™åˆ¶ */
 				if (nr_pdflush_threads < MAX_PDFLUSH_THREADS)
-					start_one_pdflush_thread();/* Æô¶¯ĞÂÏß³Ì */
+					start_one_pdflush_thread();/* å¯åŠ¨æ–°çº¿ç¨‹ */
 			}
 		}
 
@@ -165,12 +165,12 @@ static int __pdflush(struct pdflush_work *my_work)
 		if (nr_pdflush_threads <= MIN_PDFLUSH_THREADS)
 			continue;
 		pdf = list_entry(pdflush_list.prev, struct pdflush_work, list);
-		/* È«¾ÖÁ´±íÖĞ£¬µÚÒ»¸ö½ø³ÌË¯Ãß³¬¹ı1Ãë£¬ÏµÍ³¿ÕÏĞ */
+		/* å…¨å±€é“¾è¡¨ä¸­ï¼Œç¬¬ä¸€ä¸ªè¿›ç¨‹ç¡çœ è¶…è¿‡1ç§’ï¼Œç³»ç»Ÿç©ºé—² */
 		if (jiffies - pdf->when_i_went_to_sleep > 1 * HZ) {
 			/* Limit exit rate */
-			/* ĞŞ¸ÄµÚÒ»¸öÏß³ÌµÄË¯ÃßÊ±¼ä */
+			/* ä¿®æ”¹ç¬¬ä¸€ä¸ªçº¿ç¨‹çš„ç¡çœ æ—¶é—´ */
 			pdf->when_i_went_to_sleep = jiffies;
-			/* ±¾Ïß³ÌÍË³ö */
+			/* æœ¬çº¿ç¨‹é€€å‡º */
 			break;					/* exeunt */
 		}
 	}
@@ -187,7 +187,7 @@ static int __pdflush(struct pdflush_work *my_work)
  * been observed.  This is just paranoia).
  */
 /**
- * pdflush½ø³ÌÖ÷º¯Êı
+ * pdflushè¿›ç¨‹ä¸»å‡½æ•°
  */
 static int pdflush(void *dummy)
 {
@@ -219,7 +219,7 @@ static int pdflush(void *dummy)
  * payload to it.
  */
 /**
- * Ïòpdflush·ÖÅÉ¹¤×÷
+ * å‘pdflushåˆ†æ´¾å·¥ä½œ
  */
 int pdflush_operation(void (*fn)(unsigned long), unsigned long arg0)
 {
@@ -229,20 +229,20 @@ int pdflush_operation(void (*fn)(unsigned long), unsigned long arg0)
 	BUG_ON(fn == NULL);	/* Hard to diagnose if it's deferred */
 
 	spin_lock_irqsave(&pdflush_lock, flags);
-	if (list_empty(&pdflush_list)) {/* Ã»ÓĞ¿É»½ĞÑµÄÏß³Ì£¬ÍË³ö */
+	if (list_empty(&pdflush_list)) {/* æ²¡æœ‰å¯å”¤é†’çš„çº¿ç¨‹ï¼Œé€€å‡º */
 		spin_unlock_irqrestore(&pdflush_lock, flags);
 		ret = -1;
 	} else {
 		struct pdflush_work *pdf;
 
-		/* ½«µÚÒ»¸öÏß³Ì´ÓÁ´±íÖĞÒÆ³ı */
+		/* å°†ç¬¬ä¸€ä¸ªçº¿ç¨‹ä»é“¾è¡¨ä¸­ç§»é™¤ */
 		pdf = list_entry(pdflush_list.next, struct pdflush_work, list);
 		list_del_init(&pdf->list);
 		if (list_empty(&pdflush_list))
 			last_empty_jifs = jiffies;
 		pdf->fn = fn;
 		pdf->arg0 = arg0;
-		/* »½ĞÑ¸ÃÏß³Ì */
+		/* å”¤é†’è¯¥çº¿ç¨‹ */
 		wake_up_process(pdf->who);
 		spin_unlock_irqrestore(&pdflush_lock, flags);
 	}
@@ -250,7 +250,7 @@ int pdflush_operation(void (*fn)(unsigned long), unsigned long arg0)
 }
 
 /**
- * ´´½¨ÔËĞĞÒ»¸öpdflushÏß³Ì¡£²»Í¬Ïß³Ì»ØĞ´²»Í¬Éè±¸µÄÒ³Ãæ¡£
+ * åˆ›å»ºè¿è¡Œä¸€ä¸ªpdflushçº¿ç¨‹ã€‚ä¸åŒçº¿ç¨‹å›å†™ä¸åŒè®¾å¤‡çš„é¡µé¢ã€‚
  */
 static void start_one_pdflush_thread(void)
 {

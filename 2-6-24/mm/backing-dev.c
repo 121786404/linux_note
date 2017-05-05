@@ -41,8 +41,8 @@ void bdi_destroy(struct backing_dev_info *bdi)
 EXPORT_SYMBOL(bdi_destroy);
 
 /**
- * ÓµÈûµÈ´ý¶ÓÁÐ
- * ·Ö±ðÓÃÓÚ¶ÁºÍÐ´
+ * æ‹¥å¡žç­‰å¾…é˜Ÿåˆ—
+ * åˆ†åˆ«ç”¨äºŽè¯»å’Œå†™
  */
 static wait_queue_head_t congestion_wqh[2] = {
 		__WAIT_QUEUE_HEAD_INITIALIZER(congestion_wqh[0]),

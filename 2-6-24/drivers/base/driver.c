@@ -151,7 +151,7 @@ void put_driver(struct device_driver * drv)
  *	structures.
  */
 /**
- * ×¢²áÇı¶¯
+ * æ³¨å†Œé©±åŠ¨
  */
 int driver_register(struct device_driver * drv)
 {

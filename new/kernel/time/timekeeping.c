@@ -1449,14 +1449,14 @@ void __weak read_boot_clock64(struct timespec64 *ts)
 static bool sleeptime_injected;
 
 /* Flag for if there is a persistent clock on this platform */
-//ÊÇ·ñÓĞ³Ö¾ÃµÄÊ±ÖÓÔ´
+//æ˜¯å¦æœ‰æŒä¹…çš„æ—¶é’Ÿæº
 static bool persistent_clock_exists;
 
 /*
  * timekeeping_init - Initializes the clocksource and common timekeeping values
  */
 /**
- * ³õÊ¼»¯Ê±ÖÓÔ´¼°timekeepingÏà¹ØµÄ±äÁ¿
+ * åˆå§‹åŒ–æ—¶é’ŸæºåŠtimekeepingç›¸å…³çš„å˜é‡
  */
 void __init timekeeping_init(void)
 {
@@ -1465,17 +1465,17 @@ void __init timekeeping_init(void)
 	unsigned long flags;
 	struct timespec64 now, boot, tmp;
 
-	//¶ÁÈëÊ±ÖÓÖµ£¬µ±Ç°Ö»ÓĞomap¼Ü¹¹ÊµÏÖÁË¡£
+	//è¯»å…¥æ—¶é’Ÿå€¼ï¼Œå½“å‰åªæœ‰omapæ¶æ„å®ç°äº†ã€‚
 	read_persistent_clock64(&now);
-	if (!timespec64_valid_strict(&now)) {//Ã»ÓĞÊµÏÖ³Ö¾ÃµÄÊ±ÖÓ
+	if (!timespec64_valid_strict(&now)) {//æ²¡æœ‰å®ç°æŒä¹…çš„æ—¶é’Ÿ
 		pr_warn("WARNING: Persistent clock returned invalid value!\n"
 			"         Check your CMOS/BIOS settings.\n");
 		now.tv_sec = 0;
 		now.tv_nsec = 0;
-	} else if (now.tv_sec || now.tv_nsec)//ÊµÏÖÁË£¬¼ÇÂ¼ÏÂÀ´
+	} else if (now.tv_sec || now.tv_nsec)//å®ç°äº†ï¼Œè®°å½•ä¸‹æ¥
 		persistent_clock_exists = true;
 
-	//Í¬ÑùÖ»ÓĞomapÊµÏÖÁË¡£
+	//åŒæ ·åªæœ‰omapå®ç°äº†ã€‚
 	read_boot_clock64(&boot);
 	if (!timespec64_valid_strict(&boot)) {
 		pr_warn("WARNING: Boot clock returned invalid value!\n"
@@ -1484,10 +1484,10 @@ void __init timekeeping_init(void)
 		boot.tv_nsec = 0;
 	}
 
-	//»ñµÃË³ĞòËø¼°×ÔĞıËø
+	//è·å¾—é¡ºåºé”åŠè‡ªæ—‹é”
 	raw_spin_lock_irqsave(&timekeeper_lock, flags);
 	write_seqcount_begin(&tk_core.seq);
-	//ntp³õÊ¼»¯
+	//ntpåˆå§‹åŒ–
 	ntp_init();
 
 	clock = clocksource_default_clock();

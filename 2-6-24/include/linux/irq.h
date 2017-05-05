@@ -46,21 +46,21 @@ typedef	void fastcall (*irq_flow_handler_t)(unsigned int irq,
 #define IRQ_TYPE_PROBE		0x00000010	/* Probing in progress */
 
 /* Internal flags */
-/* ÖĞ¶ÏÕıÔÚ±»´¦Àí£¬½ûÖ¹´ÓÆäËûºË½øÈë´ËÖĞ¶Ï */
+/* ä¸­æ–­æ­£åœ¨è¢«å¤„ç†ï¼Œç¦æ­¢ä»å…¶ä»–æ ¸è¿›å…¥æ­¤ä¸­æ–­ */
 #define IRQ_INPROGRESS		0x00000100	/* IRQ handler active - do not enter! */
-/* ±»½ûÓÃµÄÖĞ¶Ï */
+/* è¢«ç¦ç”¨çš„ä¸­æ–­ */
 #define IRQ_DISABLED		0x00000200	/* IRQ disabled - do not enter! */
-/* ÖĞ¶Ï±»CPU·¢ÏÖ£¬µ«ÊÇÃ»ÓĞ±»´¦Àí£¬Õâ¿ÉÄÜÊÇÓÉÓÚÆäËûºËÔÚ´¦Àí´ËÖĞ¶Ï */
+/* ä¸­æ–­è¢«CPUå‘ç°ï¼Œä½†æ˜¯æ²¡æœ‰è¢«å¤„ç†ï¼Œè¿™å¯èƒ½æ˜¯ç”±äºå…¶ä»–æ ¸åœ¨å¤„ç†æ­¤ä¸­æ–­ */
 #define IRQ_PENDING		0x00000400	/* IRQ pending - replay on enable */
-/* ÖĞ¶ÏËäÈ»ÒÑ¾­±»½ûÓÃ£¬µ«ÊÇÔÚ½ûÓÃÇ°£¬ÒÑ¾­ÓĞÒ»¸öÖĞ¶ÏÎ´±»È·ÈÏ£¬Òò´ËĞèÒªÔÚ´ò¿ªÖĞ¶Ïºó²¹»ØÒ»´Î */
+/* ä¸­æ–­è™½ç„¶å·²ç»è¢«ç¦ç”¨ï¼Œä½†æ˜¯åœ¨ç¦ç”¨å‰ï¼Œå·²ç»æœ‰ä¸€ä¸ªä¸­æ–­æœªè¢«ç¡®è®¤ï¼Œå› æ­¤éœ€è¦åœ¨æ‰“å¼€ä¸­æ–­åè¡¥å›ä¸€æ¬¡ */
 #define IRQ_REPLAY		0x00000800	/* IRQ has been replayed but not acked yet */
-/* ÓÃÓÚ×Ô¶¯¼ì²âºÍÅäÖÃÖĞ¶Ï£¬³õÊ¼»¯½×¶ÎÊ¹ÓÃ */
+/* ç”¨äºè‡ªåŠ¨æ£€æµ‹å’Œé…ç½®ä¸­æ–­ï¼Œåˆå§‹åŒ–é˜¶æ®µä½¿ç”¨ */
 #define IRQ_AUTODETECT		0x00001000	/* IRQ is being autodetected */
 #define IRQ_WAITING		0x00002000	/* IRQ not yet seen - for autodetection */
-/* ÓÃÓÚÇø·ÖÖĞ¶ÏÊÇµçÆ½´¥·¢»¹ÊÇ±ßÑØ´¥·¢ */
+/* ç”¨äºåŒºåˆ†ä¸­æ–­æ˜¯ç”µå¹³è§¦å‘è¿˜æ˜¯è¾¹æ²¿è§¦å‘ */
 #define IRQ_LEVEL		0x00004000	/* IRQ level triggered */
 #define IRQ_MASKED		0x00008000	/* IRQ masked - shouldn't be seen again */
-/* Ã¿CPUµÄÖĞ¶Ï£¬ÓĞÕâ¸ö±êÖ¾µÄÖĞ¶Ï£¬²»±Ø½øĞĞ²¢·¢±£»¤¡£ÒòÎª¸ÃÖĞ¶ÏÖ»ÄÜÔÚÄ³¸öCPUÉÏ·¢Éú¡£ */
+/* æ¯CPUçš„ä¸­æ–­ï¼Œæœ‰è¿™ä¸ªæ ‡å¿—çš„ä¸­æ–­ï¼Œä¸å¿…è¿›è¡Œå¹¶å‘ä¿æŠ¤ã€‚å› ä¸ºè¯¥ä¸­æ–­åªèƒ½åœ¨æŸä¸ªCPUä¸Šå‘ç”Ÿã€‚ */
 #define IRQ_PER_CPU		0x00010000	/* IRQ is per CPU */
 #define IRQ_NOPROBE		0x00020000	/* IRQ is not valid for probing */
 #define IRQ_NOREQUEST		0x00040000	/* IRQ cannot be requested */
@@ -103,32 +103,32 @@ struct msi_desc;
  * @typename:		obsoleted by name, kept as migration helper
  */
 /**
- * ÖĞ¶Ï¿ØÖÆÆ÷ÃèÊö·û
+ * ä¸­æ–­æ§åˆ¶å™¨æè¿°ç¬¦
  */
 struct irq_chip {
-	/* ¿ØÖÆÆ÷Ãû³Æ£¬ÈçXTPIC»òÕßIO-APIC */
+	/* æ§åˆ¶å™¨åç§°ï¼Œå¦‚XTPICæˆ–è€…IO-APIC */
 	const char	*name;
-	/* µÚÒ»´Î³õÊ¼»¯Ä³¸öIRQ£¬Ò»°ãÊÇ½«¹¤×÷×ª¸øenable */
+	/* ç¬¬ä¸€æ¬¡åˆå§‹åŒ–æŸä¸ªIRQï¼Œä¸€èˆ¬æ˜¯å°†å·¥ä½œè½¬ç»™enable */
 	unsigned int	(*startup)(unsigned int irq);
 	void		(*shutdown)(unsigned int irq);
-	/* ´ò¿ªÒ»¸öÖĞ¶Ï£¬ÏòIOÄÚ´æ»òÕßIO¶Ë¿ÚÖĞĞ´ÈëÌØ¶¨µÄÖµ */
+	/* æ‰“å¼€ä¸€ä¸ªä¸­æ–­ï¼Œå‘IOå†…å­˜æˆ–è€…IOç«¯å£ä¸­å†™å…¥ç‰¹å®šçš„å€¼ */
 	void		(*enable)(unsigned int irq);
 	void		(*disable)(unsigned int irq);
 
-	/* Ó¦´ğIRQ¡£Èç¹ûĞ¾Æ¬×éÃ»ÓĞÓ¦´ğÒªÇó£¬¿ÉÒÔÎª¿Õ»òNULL */
+	/* åº”ç­”IRQã€‚å¦‚æœèŠ¯ç‰‡ç»„æ²¡æœ‰åº”ç­”è¦æ±‚ï¼Œå¯ä»¥ä¸ºç©ºæˆ–NULL */
 	void		(*ack)(unsigned int irq);
 	void		(*mask)(unsigned int irq);
-	/* Ó¦´ğ²¢½ûÓÃÒ»¸öIRQ */
+	/* åº”ç­”å¹¶ç¦ç”¨ä¸€ä¸ªIRQ */
 	void		(*mask_ack)(unsigned int irq);
 	void		(*unmask)(unsigned int irq);
 	void		(*eoi)(unsigned int irq);
 
-	/* ÔÚµçÁ÷²ã½áÊø´¦Àí¹ı³Ì¡£Èç¹ûÔÚÖĞ¶Ï´¦Àí¹ı³ÌÖĞ½ûÓÃÁËÖĞ¶Ï£¬´Ë´¦Ó¦½«Ëü´ò¿ª */
+	/* åœ¨ç”µæµå±‚ç»“æŸå¤„ç†è¿‡ç¨‹ã€‚å¦‚æœåœ¨ä¸­æ–­å¤„ç†è¿‡ç¨‹ä¸­ç¦ç”¨äº†ä¸­æ–­ï¼Œæ­¤å¤„åº”å°†å®ƒæ‰“å¼€ */
 	void		(*end)(unsigned int irq);
-	/* ÉèÖÃÖĞ¶ÏÔÚCPUÉÏµÄÇ×ºÍĞÔ */
+	/* è®¾ç½®ä¸­æ–­åœ¨CPUä¸Šçš„äº²å’Œæ€§ */
 	void		(*set_affinity)(unsigned int irq, cpumask_t dest);
 	int		(*retrigger)(unsigned int irq);
-	/* ÉèÖÃÖĞ¶ÏµÄµçÁ÷ÀàĞÍ£¬ÔÚARM¡¢POWERPCµÈÌåÏµÉÏÊ¹ÓÃ */
+	/* è®¾ç½®ä¸­æ–­çš„ç”µæµç±»å‹ï¼Œåœ¨ARMã€POWERPCç­‰ä½“ç³»ä¸Šä½¿ç”¨ */
 	int		(*set_type)(unsigned int irq, unsigned int flow_type);
 	int		(*set_wake)(unsigned int irq, unsigned int on);
 
@@ -168,26 +168,26 @@ struct irq_chip {
  * @name:		flow handler name for /proc/interrupts output
  */
 /**
- * ÖĞ¶ÏÃèÊö·û
+ * ä¸­æ–­æè¿°ç¬¦
  */
 struct irq_desc {
-	/* ´¦ÀíÖĞ¶ÏµçÁ÷ÌØĞÔµÄ»Øµ÷ */
+	/* å¤„ç†ä¸­æ–­ç”µæµç‰¹æ€§çš„å›è°ƒ */
 	irq_flow_handler_t	handle_irq;
-	/* µçÁ÷´¦ÀíºÍĞ¾Æ¬Ïà¹Ø²Ù×÷ */
+	/* ç”µæµå¤„ç†å’ŒèŠ¯ç‰‡ç›¸å…³æ“ä½œ */
 	struct irq_chip		*chip;
 	struct msi_desc		*msi_desc;
-	/* ´«µİ¸øhandle_irqµÄË½ÓĞÊı¾İ */
+	/* ä¼ é€’ç»™handle_irqçš„ç§æœ‰æ•°æ® */
 	void			*handler_data;
 	void			*chip_data;
-	/* µÚÒ»¸öirqÖ¸Õë£¬ĞÎ³ÉÒ»¸öISR´¦ÀíÁ´±í */
+	/* ç¬¬ä¸€ä¸ªirqæŒ‡é’ˆï¼Œå½¢æˆä¸€ä¸ªISRå¤„ç†é“¾è¡¨ */
 	struct irqaction	*action;	/* IRQ action list */
-	/* IRQ×´Ì¬£¬ÈçIRQ_DISABLED */
+	/* IRQçŠ¶æ€ï¼Œå¦‚IRQ_DISABLED */
 	unsigned int		status;		/* IRQ status */
 
-	/* ¸ÃÖĞ¶Ï±»½ûÓÃµÄ´ÎÊı */
+	/* è¯¥ä¸­æ–­è¢«ç¦ç”¨çš„æ¬¡æ•° */
 	unsigned int		depth;		/* nested irq disables */
 	unsigned int		wake_depth;	/* nested wake enables */
-	/* Õâ¸öÖµÓÃÓÚ¼ì²â¼ÙÖĞ¶Ï */
+	/* è¿™ä¸ªå€¼ç”¨äºæ£€æµ‹å‡ä¸­æ–­ */
 	unsigned int		irq_count;	/* For detecting broken IRQs */
 	unsigned int		irqs_unhandled;
 	unsigned long		last_unhandled;	/* Aging timer for unhandled count */
@@ -202,7 +202,7 @@ struct irq_desc {
 #ifdef CONFIG_PROC_FS
 	struct proc_dir_entry	*dir;
 #endif
-	/* µçÁ÷²ã´¦Àí³ÌĞòµÄÃû³Æ£¬Èçedge»òlevel */
+	/* ç”µæµå±‚å¤„ç†ç¨‹åºçš„åç§°ï¼Œå¦‚edgeæˆ–level */
 	const char		*name;
 } ____cacheline_internodealigned_in_smp;
 
@@ -331,7 +331,7 @@ static inline void generic_handle_irq(unsigned int irq)
 	struct irq_desc *desc = irq_desc + irq;
 
 #ifdef CONFIG_GENERIC_HARDIRQS_NO__DO_IRQ
-	/* Ò»°ãÆôÓÃ´Ëºê£¬»Øµ÷handle_irqº¯Êı£¬Èçhandle_level_irq */
+	/* ä¸€èˆ¬å¯ç”¨æ­¤å®ï¼Œå›è°ƒhandle_irqå‡½æ•°ï¼Œå¦‚handle_level_irq */
 	desc->handle_irq(irq, desc);
 #else
 	if (likely(desc->handle_irq))
@@ -380,7 +380,7 @@ static inline void __set_irq_handler_unlocked(int irq,
  * Set a highlevel flow handler for a given IRQ:
  */
 /**
- * ÉèÖÃÄ³¸öÖĞ¶ÏµÄµçÁ÷´¦Àí³ÌĞò
+ * è®¾ç½®æŸä¸ªä¸­æ–­çš„ç”µæµå¤„ç†ç¨‹åº
  */
 static inline void
 set_irq_handler(unsigned int irq, irq_flow_handler_t handle)

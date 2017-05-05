@@ -4,12 +4,12 @@
 struct dentry;
 struct vfsmount;
 
-/* ½ø³ÌµÄÎÄ¼şÏµÍ³½á¹¹ */
+/* è¿›ç¨‹çš„æ–‡ä»¶ç³»ç»Ÿç»“æ„ */
 struct fs_struct {
 	atomic_t count;
 	rwlock_t lock;
 	int umask;
-        /* root£¬pwd¶ÔÓ¦µÄÄ¿Â¼Ö¸ÕëºÍÄ¿Â¼ËùÔÚÎÄ¼şÏµÍ³µÄ¹ÒÔØµã */
+        /* rootï¼Œpwdå¯¹åº”çš„ç›®å½•æŒ‡é’ˆå’Œç›®å½•æ‰€åœ¨æ–‡ä»¶ç³»ç»Ÿçš„æŒ‚è½½ç‚¹ */
 	struct dentry * root, * pwd, * altroot;
 	struct vfsmount * rootmnt, * pwdmnt, * altrootmnt;
 };

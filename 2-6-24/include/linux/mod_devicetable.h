@@ -97,11 +97,11 @@ struct ieee1394_device_id {
  */
 struct usb_device_id {
 	/* which fields to match against? */
-	/* 通过本结构中哪些字段与设备数据进行比较。例如USB_DEVICE_ID_MATCH_VENDOR */
+	/* 閫氳繃鏈粨鏋勪腑鍝簺瀛楁涓庤澶囨暟鎹繘琛屾瘮杈冦�備緥濡俇SB_DEVICE_ID_MATCH_VENDOR */
 	__u16		match_flags;
 
 	/* Used for product specific matches; range is inclusive */
-	/* 设备标识符，厂商、产品、设备ID */
+	/* 璁惧鏍囪瘑绗︼紝鍘傚晢銆佷骇鍝併�佽澶嘔D */
 	__u16		idVendor;
 	__u16		idProduct;
 	__u16		bcdDevice_lo;

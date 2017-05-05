@@ -9,12 +9,12 @@
 #include <asm/current.h>
 #include <uapi/linux/wait.h>
 
-/*µÈ´ı¶ÓÁĞÊÇÄÚºË¶¨ÒåµÄÒ»ÖÖÊı¾İ½á¹¹,ÓÃÀ´ÊµÏÖÆäËûµÄÄÚºË»úÖÆ,±ÈÈçÍê³É½è¿Ú
-completionÒÔ¼°¹¤×÷¶ÓÁĞµÈ*/
-/*µÈ´ı¶ÓÁĞ±¾ÖÊÉÏÊÇÒ»Ë«ÏòÁ´±í,ÓĞµÈ´ı¶ÓÁĞÍ·ºÍµÈ´ı¶ÓÁĞ½Úµã¹¹³É*/
+/*ç­‰å¾…é˜Ÿåˆ—æ˜¯å†…æ ¸å®šä¹‰çš„ä¸€ç§æ•°æ®ç»“æ„,ç”¨æ¥å®ç°å…¶ä»–çš„å†…æ ¸æœºåˆ¶,æ¯”å¦‚å®Œæˆå€Ÿå£
+completionä»¥åŠå·¥ä½œé˜Ÿåˆ—ç­‰*/
+/*ç­‰å¾…é˜Ÿåˆ—æœ¬è´¨ä¸Šæ˜¯ä¸€åŒå‘é“¾è¡¨,æœ‰ç­‰å¾…é˜Ÿåˆ—å¤´å’Œç­‰å¾…é˜Ÿåˆ—èŠ‚ç‚¹æ„æˆ*/
 
 
-/*µÈ´ı¶ÓÁĞ½ÚµãÊı¾İ½á¹¹*/
+/*ç­‰å¾…é˜Ÿåˆ—èŠ‚ç‚¹æ•°æ®ç»“æ„*/
 typedef struct __wait_queue wait_queue_t;
 typedef int (*wait_queue_func_t)(wait_queue_t *wait, unsigned mode, int flags, void *key);
 int default_wake_function(wait_queue_t *wait, unsigned mode, int flags, void *key);
@@ -22,15 +22,15 @@ int default_wake_function(wait_queue_t *wait, unsigned mode, int flags, void *ke
 /* __wait_queue::flags */
 #define WQ_FLAG_EXCLUSIVE	0x01
 #define WQ_FLAG_WOKEN		0x02
-/*µÈ´ı¶ÓÁĞ½ÚµãÊı¾İ½á¹¹*/
+/*ç­‰å¾…é˜Ÿåˆ—èŠ‚ç‚¹æ•°æ®ç»“æ„*/
 struct __wait_queue {
-	unsigned int flags;	/* »½ĞÑµÈ´ı¶ÓÁĞÉÏµÄ½ø³ÌÊ±,¸Ã±êÖ¾»áÓ°Ïì»½ĞÑ²Ù×÷µÄĞĞÎªÄ£Ê½,
-				 * ÄÚºËÎª´Ë¶¨ÒåÁËWQ_FLAG_EXCLUSIVE,Èç¹ûÒ»¸öµÈ´ı½ÚµãÉèÖÃÁË
-				 * ¸Ã±êÖ¾Î»,±íÃ÷Ë¯ÃßÔÚÆäÉÏµÄ½ø³ÌÔÚ±»»½ĞÑÊ±¾ßÓĞÅÅËûĞÔ*/
-	void *private;		/* µÈ´ı¶ÓÁĞµÄË½ÓĞÊı¾İ,Êµ¼ÊÊ¹ÓÃÖĞÓÃÀ´Ö¸ÏòË¯ÃßÔÚ¸Ã½ÚµãÉÏµÄ
-				 * ½ø³ÌµÄtask_struct½á¹¹*/
-	wait_queue_func_t func;	/*µ±¸Ã½ÚµãÉÏµÄË¯Ãß½ø³ÌĞèÒª±»»½ĞÑÊ±Ö´ĞĞµÄ»½ĞÑº¯Êı*/
-	struct list_head task_list;/*ÓÃÀ´½«¸÷¶ÀÁ¢µÄµÈ´ı¶ÓÁĞ½ÚµãÁ´½ÓÆğÀ´ĞÎ³ÉÁ´±í*/
+	unsigned int flags;	/* å”¤é†’ç­‰å¾…é˜Ÿåˆ—ä¸Šçš„è¿›ç¨‹æ—¶,è¯¥æ ‡å¿—ä¼šå½±å“å”¤é†’æ“ä½œçš„è¡Œä¸ºæ¨¡å¼,
+				 * å†…æ ¸ä¸ºæ­¤å®šä¹‰äº†WQ_FLAG_EXCLUSIVE,å¦‚æœä¸€ä¸ªç­‰å¾…èŠ‚ç‚¹è®¾ç½®äº†
+				 * è¯¥æ ‡å¿—ä½,è¡¨æ˜ç¡çœ åœ¨å…¶ä¸Šçš„è¿›ç¨‹åœ¨è¢«å”¤é†’æ—¶å…·æœ‰æ’ä»–æ€§*/
+	void *private;		/* ç­‰å¾…é˜Ÿåˆ—çš„ç§æœ‰æ•°æ®,å®é™…ä½¿ç”¨ä¸­ç”¨æ¥æŒ‡å‘ç¡çœ åœ¨è¯¥èŠ‚ç‚¹ä¸Šçš„
+				 * è¿›ç¨‹çš„task_structç»“æ„*/
+	wait_queue_func_t func;	/*å½“è¯¥èŠ‚ç‚¹ä¸Šçš„ç¡çœ è¿›ç¨‹éœ€è¦è¢«å”¤é†’æ—¶æ‰§è¡Œçš„å”¤é†’å‡½æ•°*/
+	struct list_head task_list;/*ç”¨æ¥å°†å„ç‹¬ç«‹çš„ç­‰å¾…é˜Ÿåˆ—èŠ‚ç‚¹é“¾æ¥èµ·æ¥å½¢æˆé“¾è¡¨*/
 };
 
 struct wait_bit_key {
@@ -45,10 +45,10 @@ struct wait_bit_queue {
 	wait_queue_t		wait;
 };
 
-/*µÈ´ı¶ÓÁĞÊı¾İ½á¹¹*/
+/*ç­‰å¾…é˜Ÿåˆ—æ•°æ®ç»“æ„*/
 struct __wait_queue_head {
-	spinlock_t lock;	/*µÈ´ı¶ÓÁĞµÄ×ÔĞıËø,ÓÃ×÷µÈ´ı¶ÓÁĞ±»²¢·¢·ÃÎÊÊ±µÄ»¥³â»úÖÆ*/
-	struct list_head task_list;/*Ë«ÏòÁ´±í½á¹¹Ìå,ÓÃÀ´½«µÈ´ı¶ÓÁĞ¹¹³ÉÁ´±í*/
+	spinlock_t lock;	/*ç­‰å¾…é˜Ÿåˆ—çš„è‡ªæ—‹é”,ç”¨ä½œç­‰å¾…é˜Ÿåˆ—è¢«å¹¶å‘è®¿é—®æ—¶çš„äº’æ–¥æœºåˆ¶*/
+	struct list_head task_list;/*åŒå‘é“¾è¡¨ç»“æ„ä½“,ç”¨æ¥å°†ç­‰å¾…é˜Ÿåˆ—æ„æˆé“¾è¡¨*/
 };
 typedef struct __wait_queue_head wait_queue_head_t;
 
@@ -57,13 +57,13 @@ struct task_struct;
 /*
  * Macros for declaration and initialisaton of the datatypes
  */
-/*³õÊ¼»¯µÈ´ı¶ÓÁĞ½Úµã*/
+/*åˆå§‹åŒ–ç­‰å¾…é˜Ÿåˆ—èŠ‚ç‚¹*/
 #define __WAITQUEUE_INITIALIZER(name, tsk) {				\
 	.private	= tsk,						\
 	.func		= default_wake_function,			\
 	.task_list	= { NULL, NULL } }
 
-/*¶¨Òå²¢³õÊ¼»¯Ò»¸öµÈ´ı¶ÓÁĞµÄ½Úµã*/
+/*å®šä¹‰å¹¶åˆå§‹åŒ–ä¸€ä¸ªç­‰å¾…é˜Ÿåˆ—çš„èŠ‚ç‚¹*/
 #define DECLARE_WAITQUEUE(name, tsk)					\
 	wait_queue_t name = __WAITQUEUE_INITIALIZER(name, tsk)
 
@@ -71,7 +71,7 @@ struct task_struct;
 	.lock		= __SPIN_LOCK_UNLOCKED(name.lock),		\
 	.task_list	= { &(name).task_list, &(name).task_list } }
 
-/*µÈ´ı¶ÓÁĞµÄ¾²Ì¬¶¨ÒåºÍ³õÊ¼»¯*/
+/*ç­‰å¾…é˜Ÿåˆ—çš„é™æ€å®šä¹‰å’Œåˆå§‹åŒ–*/
 #define DECLARE_WAIT_QUEUE_HEAD(name) \
 	wait_queue_head_t name = __WAIT_QUEUE_HEAD_INITIALIZER(name)
 
@@ -83,7 +83,7 @@ struct task_struct;
 
 extern void __init_waitqueue_head(wait_queue_head_t *q, const char *name, struct lock_class_key *);
 
-/*µÈ´ı¶ÓÁĞµÄ¶¨ÒåºÍ³õÊ¼»¯*/
+/*ç­‰å¾…é˜Ÿåˆ—çš„å®šä¹‰å’Œåˆå§‹åŒ–*/
 #define init_waitqueue_head(q)				\
 	do {						\
 		static struct lock_class_key __key;	\
@@ -99,7 +99,7 @@ extern void __init_waitqueue_head(wait_queue_head_t *q, const char *name, struct
 #else
 # define DECLARE_WAIT_QUEUE_HEAD_ONSTACK(name) DECLARE_WAIT_QUEUE_HEAD(name)
 #endif
-/*¶¯Ì¬³õÊ¼»¯µÈ´ı¶ÓÁĞ½Úµã¶ÔÏó*/
+/*åŠ¨æ€åˆå§‹åŒ–ç­‰å¾…é˜Ÿåˆ—èŠ‚ç‚¹å¯¹è±¡*/
 static inline void init_waitqueue_entry(wait_queue_t *q, struct task_struct *p)
 {
 	q->flags	= 0;
@@ -226,15 +226,15 @@ int out_of_line_wait_on_bit_lock(void *, int, wait_bit_action_f *, unsigned);
 int out_of_line_wait_on_atomic_t(atomic_t *, int (*)(atomic_t *), unsigned);
 wait_queue_head_t *bit_waitqueue(void *, int);
 
-/*¶ÔÓ¦wake_event*/
+/*å¯¹åº”wake_event*/
 #define wake_up(x)			__wake_up(x, TASK_NORMAL, 1, NULL)
-/*wake_up_nrºÍwake_up_all±íÊ¾¿ÉÒÔ»½ĞÑµÄÅÅËûĞÔ½ø³ÌµÄÊıÁ¿,wake_up_nr¿É»½ĞÑnr¸öÕâÑùµÄ½ø³Ì,
- * wake_up_all¿ÉÒÔ»½ĞÑ¶ÓÁĞÖĞËùÓĞµÄÅÅËûĞÔ½ø³Ì,wake_upÔòÖ»ÄÜ»½ĞÑÒ»¸ö*/
+/*wake_up_nrå’Œwake_up_allè¡¨ç¤ºå¯ä»¥å”¤é†’çš„æ’ä»–æ€§è¿›ç¨‹çš„æ•°é‡,wake_up_nrå¯å”¤é†’nrä¸ªè¿™æ ·çš„è¿›ç¨‹,
+ * wake_up_allå¯ä»¥å”¤é†’é˜Ÿåˆ—ä¸­æ‰€æœ‰çš„æ’ä»–æ€§è¿›ç¨‹,wake_upåˆ™åªèƒ½å”¤é†’ä¸€ä¸ª*/
 #define wake_up_nr(x, nr)		__wake_up(x, TASK_NORMAL, nr, NULL)
 #define wake_up_all(x)			__wake_up(x, TASK_NORMAL, 0, NULL)
 #define wake_up_locked(x)		__wake_up_locked((x), TASK_NORMAL, 1)
 #define wake_up_all_locked(x)		__wake_up_locked((x), TASK_NORMAL, 0)
-/*ÓÃÀ´»½ĞÑÒ»¸öµÈ´ı¶ÓÁĞÉÏµÄË¯Ãß½ø³Ì*/
+/*ç”¨æ¥å”¤é†’ä¸€ä¸ªç­‰å¾…é˜Ÿåˆ—ä¸Šçš„ç¡çœ è¿›ç¨‹*/
 #define wake_up_interruptible(x)	__wake_up(x, TASK_INTERRUPTIBLE, 1, NULL)
 #define wake_up_interruptible_nr(x, nr)	__wake_up(x, TASK_INTERRUPTIBLE, nr, NULL)
 #define wake_up_interruptible_all(x)	__wake_up(x, TASK_INTERRUPTIBLE, 0, NULL)
@@ -320,11 +320,11 @@ __out:	__ret;								\
  */
 /**
  * 
- ¸Ãº¯ÊıÊ¹µ÷ÓÃµÄ½ø³Ì½øÈëµÈ´ı¶ÓÁĞ,
- ¸³ÓèË¯Ãß½ø³ÌµÄ×´Ì¬ÊÇTASK_UNINTERRUPTIBLE,
- Óëwait_event_interruptibleµÄÇø±ğÊÇËûÊ¹Ë¯ÃßµÄ½ø³Ì²»¿É±»ÖĞ¶Ï,
- ¶øÇÒµ±½ø³Ì±»»½ĞÑÊ±Ò²²»»á¼ì²éÊÇ·ñÓĞµÈ´ıµÄĞÅºÅĞèÒª´¦Àí,
- Óëwake_up¶ÔÓ¦*/
+ è¯¥å‡½æ•°ä½¿è°ƒç”¨çš„è¿›ç¨‹è¿›å…¥ç­‰å¾…é˜Ÿåˆ—,
+ èµ‹äºˆç¡çœ è¿›ç¨‹çš„çŠ¶æ€æ˜¯TASK_UNINTERRUPTIBLE,
+ ä¸wait_event_interruptibleçš„åŒºåˆ«æ˜¯ä»–ä½¿ç¡çœ çš„è¿›ç¨‹ä¸å¯è¢«ä¸­æ–­,
+ è€Œä¸”å½“è¿›ç¨‹è¢«å”¤é†’æ—¶ä¹Ÿä¸ä¼šæ£€æŸ¥æ˜¯å¦æœ‰ç­‰å¾…çš„ä¿¡å·éœ€è¦å¤„ç†,
+ ä¸wake_upå¯¹åº”*/
 #define wait_event(wq, condition)					\
 do {									\
 	might_sleep();							\
@@ -397,11 +397,11 @@ do {									\
  * or the remaining jiffies (at least 1) if the @condition evaluated
  * to %true before the @timeout elapsed.
  */
-/*µ÷ÓÃ¸Ãº¯ÊıµÄ½ø³Ì½«½øÈëË¯Ãß,Æä×´Ì¬ÊÇTASK_UNINTERRUPTIBLE,
-²»¿É±»ÖĞ¶Ï,¶øÇÒµ±½ø³Ì±»»½ĞÑÊ±Ò²²»¼ì²é
-ÊÇ·ñÓĞµÈ´ıµÄĞÅºÅĞèÒª´¦Àí,
-¸Ãº¯ÊıÓëwait_eventµÄÇø±ğÊÇ,»áÖ¸¶¨Ò»¸öÊ±¼äÆÚÏŞ,
-ÔÚÖ¸¶¨µÄÊ±¼äµ½´ïÊ±½«·µ»Ø0*/
+/*è°ƒç”¨è¯¥å‡½æ•°çš„è¿›ç¨‹å°†è¿›å…¥ç¡çœ ,å…¶çŠ¶æ€æ˜¯TASK_UNINTERRUPTIBLE,
+ä¸å¯è¢«ä¸­æ–­,è€Œä¸”å½“è¿›ç¨‹è¢«å”¤é†’æ—¶ä¹Ÿä¸æ£€æŸ¥
+æ˜¯å¦æœ‰ç­‰å¾…çš„ä¿¡å·éœ€è¦å¤„ç†,
+è¯¥å‡½æ•°ä¸wait_eventçš„åŒºåˆ«æ˜¯,ä¼šæŒ‡å®šä¸€ä¸ªæ—¶é—´æœŸé™,
+åœ¨æŒ‡å®šçš„æ—¶é—´åˆ°è¾¾æ—¶å°†è¿”å›0*/
 #define wait_event_timeout(wq, condition, timeout)			\
 ({									\
 	long __ret = timeout;						\
@@ -435,7 +435,7 @@ do {									\
 /*
  * Just like wait_event_cmd(), except it sets exclusive flag
  */
-/*Èç¹ûconditionÌõ¼şÒÀÈ»Îª¼Ù,²¢ÇÒµ±Ç°½ø³ÌÒ²Ã»ÓĞµÈ´ıµÄĞÅºÅĞèÒª´¦Àí,scheduleº¯Êı½«±»µ÷ÓÃ,ÔÚÄÇÀïµ÷¶ÈÆ÷½«°Ñµ±Ç°½ø³Ì´ÓËûµÄÔËĞĞ¶ÓÁĞÖĞÒÆ³ı,wait_event_interruptµÄ±íÏÖĞÎÊ½ÊÇ×èÈûÔÚÁËscheduleº¯ÊıÉÏÖªµÀ½ø³ÌÏÂ´Î±»ÔÙ´Î»½ĞÑ²¢±»µ÷¶ÈÖ´ĞĞ*/		
+/*å¦‚æœconditionæ¡ä»¶ä¾ç„¶ä¸ºå‡,å¹¶ä¸”å½“å‰è¿›ç¨‹ä¹Ÿæ²¡æœ‰ç­‰å¾…çš„ä¿¡å·éœ€è¦å¤„ç†,scheduleå‡½æ•°å°†è¢«è°ƒç”¨,åœ¨é‚£é‡Œè°ƒåº¦å™¨å°†æŠŠå½“å‰è¿›ç¨‹ä»ä»–çš„è¿è¡Œé˜Ÿåˆ—ä¸­ç§»é™¤,wait_event_interruptçš„è¡¨ç°å½¢å¼æ˜¯é˜»å¡åœ¨äº†scheduleå‡½æ•°ä¸ŠçŸ¥é“è¿›ç¨‹ä¸‹æ¬¡è¢«å†æ¬¡å”¤é†’å¹¶è¢«è°ƒåº¦æ‰§è¡Œ*/		
 #define wait_event_exclusive_cmd(wq, condition, cmd1, cmd2)		\
 do {									\
 	if (condition)							\
@@ -487,9 +487,9 @@ do {									\
  * The function will return -ERESTARTSYS if it was interrupted by a
  * signal and 0 if @condition evaluated to true.
  */
-/*ÓÃÀ´½«µ±Ç°µ÷ÓÃËüµÄ½ø³ÌË¯ÃßµÈ´ıÔÚÒ»¸öeventÉÏ
-Ö±µ½½ø³Ì±»»½ĞÑ²¢ÇÒĞèÒªµÄconditionÌõ¼şÎªÕæ
-ÔÚconditionÌõ¼ş²»ÎªÕæÊ±½«Ë¯ÃßÔÚÒ»¸öµÈ´ı¶ÓÁĞwqÉÏ*/ 
+/*ç”¨æ¥å°†å½“å‰è°ƒç”¨å®ƒçš„è¿›ç¨‹ç¡çœ ç­‰å¾…åœ¨ä¸€ä¸ªeventä¸Š
+ç›´åˆ°è¿›ç¨‹è¢«å”¤é†’å¹¶ä¸”éœ€è¦çš„conditionæ¡ä»¶ä¸ºçœŸ
+åœ¨conditionæ¡ä»¶ä¸ä¸ºçœŸæ—¶å°†ç¡çœ åœ¨ä¸€ä¸ªç­‰å¾…é˜Ÿåˆ—wqä¸Š*/ 
 #define wait_event_interruptible(wq, condition)				\
 ({									\
 	int __ret = 0;							\
@@ -524,7 +524,7 @@ do {									\
  * to %true before the @timeout elapsed, or -%ERESTARTSYS if it was
  * interrupted by a signal.
  */
-/*ÔÚwait_event_interruptibleº¯ÊıµÄ»ù´¡ÉÏ¼ÓÈëÁËÊ±¼äÆÚÏŞ,ÔÚÖ¸¶¨µÄÊ±¼äµ½´ïÊ±º¯Êı½«·µ»Ø0*/
+/*åœ¨wait_event_interruptibleå‡½æ•°çš„åŸºç¡€ä¸ŠåŠ å…¥äº†æ—¶é—´æœŸé™,åœ¨æŒ‡å®šçš„æ—¶é—´åˆ°è¾¾æ—¶å‡½æ•°å°†è¿”å›0*/
 #define wait_event_interruptible_timeout(wq, condition, timeout)	\
 ({									\
 	long __ret = timeout;						\
@@ -1019,7 +1019,7 @@ int woken_wake_function(wait_queue_t *wait, unsigned mode, int sync, void *key);
 int autoremove_wake_function(wait_queue_t *wait, unsigned mode, int sync, void *key);
 int wake_bit_function(wait_queue_t *wait, unsigned mode, int sync, void *key);
 
-/*functionº¯ÊıÔÚ½ÚµãÉÏµÄ½ø³Ì±»»½ĞÑÊ±±»µ÷ÓÃ,privateÖ¸Ïòµ±Ç°µ÷ÓÃwait_event_interruptµÄ½ø³Ì*/
+/*functionå‡½æ•°åœ¨èŠ‚ç‚¹ä¸Šçš„è¿›ç¨‹è¢«å”¤é†’æ—¶è¢«è°ƒç”¨,privateæŒ‡å‘å½“å‰è°ƒç”¨wait_event_interruptçš„è¿›ç¨‹*/
 #define DEFINE_WAIT_FUNC(name, function)				\
 	wait_queue_t name = {						\
 		.private	= current,				\
@@ -1027,7 +1027,7 @@ int wake_bit_function(wait_queue_t *wait, unsigned mode, int sync, void *key);
 		.task_list	= LIST_HEAD_INIT((name).task_list),	\
 	}
 
-/*ÓÃÀ´¶¨ÒåÒ»¸öµÈ´ı¶ÓÁĞ½Úµã¶ÔÏó,autoremove_wake_functionº¯ÊıÔÚ½ÚµãÉÏµÄ½ø³Ì±»»½ĞÑÊ±±»µ÷ÓÃ*/
+/*ç”¨æ¥å®šä¹‰ä¸€ä¸ªç­‰å¾…é˜Ÿåˆ—èŠ‚ç‚¹å¯¹è±¡,autoremove_wake_functionå‡½æ•°åœ¨èŠ‚ç‚¹ä¸Šçš„è¿›ç¨‹è¢«å”¤é†’æ—¶è¢«è°ƒç”¨*/
 #define DEFINE_WAIT(name) DEFINE_WAIT_FUNC(name, autoremove_wake_function)
 
 #define DEFINE_WAIT_BIT(name, word, bit)				\

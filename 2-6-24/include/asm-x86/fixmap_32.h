@@ -102,15 +102,15 @@ extern void __set_fixmap (enum fixed_addresses idx,
 					unsigned long phys, pgprot_t flags);
 extern void reserve_top_address(unsigned long reserve);
 
-/* ½«¹Ì¶¨Ó³ÉäµÄÐéÄâµØÖ·ÓëÎïÀíµØÖ·¹ØÁªÆðÀ´ */
+/* å°†å›ºå®šæ˜ å°„çš„è™šæ‹Ÿåœ°å€ä¸Žç‰©ç†åœ°å€å…³è”èµ·æ¥ */
 #define set_fixmap(idx, phys) \
 		__set_fixmap(idx, phys, PAGE_KERNEL)
 /*
  * Some hardware wants to get fixmapped without caching.
  */
 /**
- * ½«¹Ì¶¨Ó³ÉäµÄÐéÄâµØÖ·ÓëÎïÀíµØÖ·¹ØÁªÆðÀ´
- * µ«ÊÇ½ûÓÃ»º´æ¡£
+ * å°†å›ºå®šæ˜ å°„çš„è™šæ‹Ÿåœ°å€ä¸Žç‰©ç†åœ°å€å…³è”èµ·æ¥
+ * ä½†æ˜¯ç¦ç”¨ç¼“å­˜ã€‚
  */
 #define set_fixmap_nocache(idx, phys) \
 		__set_fixmap(idx, phys, PAGE_KERNEL_NOCACHE)
@@ -136,7 +136,7 @@ extern void __this_fixmap_does_not_exist(void);
  * kernel oops. Illegal ranges of incoming indices are caught too.
  */
 /**
- * ÌØ¶¨Ë÷ÒýµÄ¹Ì¶¨Ó³Éä¶ÔÓ¦µÄÐéÄâµØÖ·
+ * ç‰¹å®šç´¢å¼•çš„å›ºå®šæ˜ å°„å¯¹åº”çš„è™šæ‹Ÿåœ°å€
  */
 static __always_inline unsigned long fix_to_virt(const unsigned int idx)
 {
@@ -149,10 +149,10 @@ static __always_inline unsigned long fix_to_virt(const unsigned int idx)
 	 * If it doesn't get removed, the linker will complain
 	 * loudly with a reasonably clear error message..
 	 */
-	if (idx >= __end_of_fixed_addresses)/* ÕâÀïÓÉ±àÒëÆ÷½øÐÐ¼ì²é */
-		__this_fixmap_does_not_exist();/* ²¢Ã»ÓÐÕæÕý¶¨Òå£¬Èç¹ûÃ»ÓÐ±»ÓÅ»¯£¬Ôò±àÒëÆ÷»á±¨´í */
+	if (idx >= __end_of_fixed_addresses)/* è¿™é‡Œç”±ç¼–è¯‘å™¨è¿›è¡Œæ£€æŸ¥ */
+		__this_fixmap_does_not_exist();/* å¹¶æ²¡æœ‰çœŸæ­£å®šä¹‰ï¼Œå¦‚æžœæ²¡æœ‰è¢«ä¼˜åŒ–ï¼Œåˆ™ç¼–è¯‘å™¨ä¼šæŠ¥é”™ */
 
-		/* Í¬ÑùÓÉ±àÒëÆ÷ÔÚ¹Ì¶¨µÄÓ³Éä±íÖÐÕÒµ½¶ÔÓ¦µÄµØÖ· */
+		/* åŒæ ·ç”±ç¼–è¯‘å™¨åœ¨å›ºå®šçš„æ˜ å°„è¡¨ä¸­æ‰¾åˆ°å¯¹åº”çš„åœ°å€ */
         return __fix_to_virt(idx);
 }
 

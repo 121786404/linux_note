@@ -229,11 +229,11 @@ static void wait_on_retry_sync_kiocb(struct kiocb *iocb)
 }
 
 /**
- * Í¬²½¶ÁÈ¡ÎÄ¼şÏµÍ³ÖĞµÄÊı¾İ£¬Ò»°ãÓÃ×÷vfsµÄread»Øµ÷
+ * åŒæ­¥è¯»å–æ–‡ä»¶ç³»ç»Ÿä¸­çš„æ•°æ®ï¼Œä¸€èˆ¬ç”¨ä½œvfsçš„readå›è°ƒ
  */
 ssize_t do_sync_read(struct file *filp, char __user *buf, size_t len, loff_t *ppos)
 {
-	/* ¿ØÖÆÒì²½ÊäÈëÊä³öµÄ²ÎÊı */
+	/* æ§åˆ¶å¼‚æ­¥è¾“å…¥è¾“å‡ºçš„å‚æ•° */
 	struct iovec iov = { .iov_base = buf, .iov_len = len };
 	struct kiocb kiocb;
 	ssize_t ret;
@@ -242,17 +242,17 @@ ssize_t do_sync_read(struct file *filp, char __user *buf, size_t len, loff_t *pp
 	kiocb.ki_pos = *ppos;
 	kiocb.ki_left = len;
 
-	/* ·´¸´ÖØÊÔ£¬Ö±µ½µ×²ã·µ»Ø³É¹¦ */
+	/* åå¤é‡è¯•ï¼Œç›´åˆ°åº•å±‚è¿”å›æˆåŠŸ */
 	for (;;) {
-		/* µ÷ÓÃÎÄ¼şÏµÍ³µÄaio_readº¯Êı¶ÁÈ¡Êı¾İ */
+		/* è°ƒç”¨æ–‡ä»¶ç³»ç»Ÿçš„aio_readå‡½æ•°è¯»å–æ•°æ® */
 		ret = filp->f_op->aio_read(&kiocb, &iov, 1, kiocb.ki_pos);
 		if (ret != -EIOCBRETRY)
 			break;
-		/* µÈ´ıÎÄ¼şÏµÍ³Íê³É¶ÁÈ¡²Ù×÷ */
+		/* ç­‰å¾…æ–‡ä»¶ç³»ç»Ÿå®Œæˆè¯»å–æ“ä½œ */
 		wait_on_retry_sync_kiocb(&kiocb);
 	}
 
-	if (-EIOCBQUEUED == ret)/* ÇëÇóÕıÔÚÅÅ³ı£¬µÈ´ı´¦Àí */
+	if (-EIOCBQUEUED == ret)/* è¯·æ±‚æ­£åœ¨æ’é™¤ï¼Œç­‰å¾…å¤„ç† */
 		ret = wait_on_sync_kiocb(&kiocb);
 	*ppos = kiocb.ki_pos;
 	return ret;
@@ -266,24 +266,24 @@ ssize_t vfs_read(struct file *file, char __user *buf, size_t count, loff_t *pos)
 
 	if (!(file->f_mode & FMODE_READ))
 		return -EBADF;
-	/* µ×²ãÎÄ¼şÏµÍ³Ã»ÓĞÊµÏÖread»Øµ÷£¬Òì³£ */
+	/* åº•å±‚æ–‡ä»¶ç³»ç»Ÿæ²¡æœ‰å®ç°readå›è°ƒï¼Œå¼‚å¸¸ */
 	if (!file->f_op || (!file->f_op->read && !file->f_op->aio_read))
 		return -EINVAL;
-	if (unlikely(!access_ok(VERIFY_WRITE, buf, count)))/* ÓÃ»§Ì¬»º³åÇøµØÖ·²»Õı³£ */
+	if (unlikely(!access_ok(VERIFY_WRITE, buf, count)))/* ç”¨æˆ·æ€ç¼“å†²åŒºåœ°å€ä¸æ­£å¸¸ */
 		return -EFAULT;
 
-	/* ÅĞ¶ÏÊÇ·ñÄÜ¹»¶ÁÈ¡ÎÄ¼ş */
+	/* åˆ¤æ–­æ˜¯å¦èƒ½å¤Ÿè¯»å–æ–‡ä»¶ */
 	ret = rw_verify_area(READ, file, pos, count);
 	if (ret >= 0) {
 		count = ret;
-		/* È¨ÏŞ¼ì²é */
+		/* æƒé™æ£€æŸ¥ */
 		ret = security_file_permission (file, MAY_READ);
 		if (!ret) {
-			if (file->f_op->read)/* ÎÄ¼şÏµÍ³ÊµÏÖÁËreadµ÷ÓÃ */
+			if (file->f_op->read)/* æ–‡ä»¶ç³»ç»Ÿå®ç°äº†readè°ƒç”¨ */
 				ret = file->f_op->read(file, buf, count, pos);
-			else/* Í¬²½¶Á */
+			else/* åŒæ­¥è¯» */
 				ret = do_sync_read(file, buf, count, pos);
-			if (ret > 0) {/* ´¦Àífsnotify */
+			if (ret > 0) {/* å¤„ç†fsnotify */
 				fsnotify_access(file->f_path.dentry);
 				add_rchar(current, ret);
 			}
@@ -365,7 +365,7 @@ static inline void file_pos_write(struct file *file, loff_t pos)
 }
 
 /**
- * readÏµÍ³µ÷ÓÃ
+ * readç³»ç»Ÿè°ƒç”¨
  */
 asmlinkage ssize_t sys_read(unsigned int fd, char __user * buf, size_t count)
 {
@@ -373,16 +373,16 @@ asmlinkage ssize_t sys_read(unsigned int fd, char __user * buf, size_t count)
 	ssize_t ret = -EBADF;
 	int fput_needed;
 
-	/* ¸ù¾İÎÄ¼ş¾ä±ú»ñµÃfileÊµÀı */
+	/* æ ¹æ®æ–‡ä»¶å¥æŸ„è·å¾—fileå®ä¾‹ */
 	file = fget_light(fd, &fput_needed);
 	if (file) {
-		/* »ñÈ¡ÎÄ¼şµ±Ç°Î»ÖÃ */
+		/* è·å–æ–‡ä»¶å½“å‰ä½ç½® */
 		loff_t pos = file_pos_read(file);
-		/* ¶ÁÈ¡ÎÄ¼şÄÚÈİ */
+		/* è¯»å–æ–‡ä»¶å†…å®¹ */
 		ret = vfs_read(file, buf, count, &pos);
-		/* ÉèÖÃÎÄ¼şÎ»ÖÃ */
+		/* è®¾ç½®æ–‡ä»¶ä½ç½® */
 		file_pos_write(file, pos);
-		/* ÊÍ·ÅÎÄ¼şÒıÓÃ */
+		/* é‡Šæ”¾æ–‡ä»¶å¼•ç”¨ */
 		fput_light(file, fput_needed);
 	}
 

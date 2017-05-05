@@ -154,7 +154,7 @@ EXPORT_SYMBOL(profile_pc);
  * we later on can estimate the time of day more exactly.
  */
 /**
- * 时钟中断处理函数
+ * 鏃堕挓涓柇澶勭悊鍑芥暟
  */
 irqreturn_t timer_interrupt(int irq, void *dev_id)
 {

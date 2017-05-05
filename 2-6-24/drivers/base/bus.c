@@ -634,7 +634,7 @@ int bus_add_driver(struct device_driver *drv)
 	if (!bus)
 		return -EINVAL;
 
-	/* ÉèÖÃÇý¶¯Ãû³ÆºóÌí¼Óµ½Í¨ÓÃÊý¾Ý½á¹¹ÖÐ */
+	/* è®¾ç½®é©±åŠ¨åç§°åŽæ·»åŠ åˆ°é€šç”¨æ•°æ®ç»“æž„ä¸­ */
 	pr_debug("bus %s: add driver %s\n", bus->name, drv->name);
 	error = kobject_set_name(&drv->kobj, "%s", drv->name);
 	if (error)
@@ -644,14 +644,14 @@ int bus_add_driver(struct device_driver *drv)
 	if (error)
 		goto out_put_bus;
 
-	/* ×ÜÏßÖ§³Ö×Ô¶¯Ì½²â */
+	/* æ€»çº¿æ”¯æŒè‡ªåŠ¨æŽ¢æµ‹ */
 	if (drv->bus->drivers_autoprobe) {
-		/* ±éÀú×ÜÏßÉÏµÄËùÓÐÉè±¸£¬Ê¹ÓÃÇý¶¯µÄmatchº¯Êý¼ì²âÄ³Ð©Éè±¸ÊÇ·ñ¿ÉÒÔÊ¹ÓÃ±¾Çý¶¯½øÐÐ¹ÜÀí */
+		/* éåŽ†æ€»çº¿ä¸Šçš„æ‰€æœ‰è®¾å¤‡ï¼Œä½¿ç”¨é©±åŠ¨çš„matchå‡½æ•°æ£€æµ‹æŸäº›è®¾å¤‡æ˜¯å¦å¯ä»¥ä½¿ç”¨æœ¬é©±åŠ¨è¿›è¡Œç®¡ç† */
 		error = driver_attach(drv);
 		if (error)
 			goto out_unregister;
 	}
-	/* ½«Çý¶¯Ìí¼Óµ½Çý¶¯³ÌÐòÁ´±íÖÐ */
+	/* å°†é©±åŠ¨æ·»åŠ åˆ°é©±åŠ¨ç¨‹åºé“¾è¡¨ä¸­ */
 	klist_add_tail(&drv->knode_bus, &bus->klist_drivers);
 	module_add_driver(drv->owner, drv);
 
@@ -845,7 +845,7 @@ static BUS_ATTR(uevent, S_IWUSR, NULL, bus_uevent_store);
  *	the devices and drivers that belong to the bus.
  */
 /**
- * ×¢²á×ÜÏßÀàÐÍ
+ * æ³¨å†Œæ€»çº¿ç±»åž‹
  */
 int bus_register(struct bus_type * bus)
 {

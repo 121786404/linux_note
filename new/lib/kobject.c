@@ -63,7 +63,7 @@ static int populate_dir(struct kobject *kobj)
 	return error;
 }
 
-/*ÔÚsysfsÎÄ¼şÊ÷ÖĞ´´½¨Ä¿Â¼*/
+/*åœ¨sysfsæ–‡ä»¶æ ‘ä¸­åˆ›å»ºç›®å½•*/
 static int create_dir(struct kobject *kobj)
 {
 	const struct kobj_ns_type_operations *ops;
@@ -163,7 +163,7 @@ EXPORT_SYMBOL_GPL(kobject_get_path);
 
 /* 
 add the kobject to its kset's list 
-½«kobj¼ÓÈëµ½¶ÔÓ¦ksetµÄÁ´±íÖĞ
+å°†kobjåŠ å…¥åˆ°å¯¹åº”ksetçš„é“¾è¡¨ä¸­
 */
 static void kobj_kset_join(struct kobject *kobj)
 {
@@ -188,7 +188,7 @@ static void kobj_kset_leave(struct kobject *kobj)
 	kset_put(kobj->kset);
 }
 
-/*kobject³õÊ¼»¯º¯Êı,ÉèÖÃ kobject ÒıÓÃ¼ÆÊıÎª 1*/
+/*kobjectåˆå§‹åŒ–å‡½æ•°,è®¾ç½® kobject å¼•ç”¨è®¡æ•°ä¸º 1*/
 static void kobject_init_internal(struct kobject *kobj)
 {
 	if (!kobj)
@@ -202,11 +202,11 @@ static void kobject_init_internal(struct kobject *kobj)
 }
 
 /*
-1. Ğ£ÑékobjÒÔ¼°kobj->nameµÄºÏ·¨ĞÔ£¬Èô²»ºÏ·¨´òÓ¡´íÎóĞÅÏ¢²¢ÍË³ö
-2. µ÷ÓÃkobject_getÔö¼Ó¸ÃkobjectµÄparentµÄÒıÓÃ¼ÆÊı£¨Èç¹û´æÔÚparentµÄ»°£©
-3. Èç¹û´æÔÚkset£¨¼´kobj->kset²»Îª¿Õ£©£¬Ôòµ÷ÓÃkobj_kset_join½Ó¿Ú¼ÓÈëkset¡£Í¬Ê±£¬Èç¹û¸ÃkobjectÃ»ÓĞparent£¬È´´æÔÚkset£¬Ôò½«ËüµÄparentÉèÎªkset£¨ksetÊÇÒ»¸öÌØÊâµÄkobject£©£¬²¢Ôö¼ÓksetµÄÒıÓÃ¼ÆÊı
-4. Í¨¹ıcreate_dir½Ó¿Ú£¬µ÷ÓÃsysfsµÄÏà¹Ø½Ó¿Ú£¬ÔÚsysfsÏÂ´´½¨¸Ãkobject¶ÔÓ¦µÄÄ¿Â¼
-5. Èç¹û´´½¨Ê§°Ü£¬Ö´ĞĞºóĞøµÄ»Ø¹ö²Ù×÷£¬·ñÔò½«kobj->state_in_sysfsÖÃÎª1
+1. æ ¡éªŒkobjä»¥åŠkobj->nameçš„åˆæ³•æ€§ï¼Œè‹¥ä¸åˆæ³•æ‰“å°é”™è¯¯ä¿¡æ¯å¹¶é€€å‡º
+2. è°ƒç”¨kobject_getå¢åŠ è¯¥kobjectçš„parentçš„å¼•ç”¨è®¡æ•°ï¼ˆå¦‚æœå­˜åœ¨parentçš„è¯ï¼‰
+3. å¦‚æœå­˜åœ¨ksetï¼ˆå³kobj->ksetä¸ä¸ºç©ºï¼‰ï¼Œåˆ™è°ƒç”¨kobj_kset_joinæ¥å£åŠ å…¥ksetã€‚åŒæ—¶ï¼Œå¦‚æœè¯¥kobjectæ²¡æœ‰parentï¼Œå´å­˜åœ¨ksetï¼Œåˆ™å°†å®ƒçš„parentè®¾ä¸ºksetï¼ˆksetæ˜¯ä¸€ä¸ªç‰¹æ®Šçš„kobjectï¼‰ï¼Œå¹¶å¢åŠ ksetçš„å¼•ç”¨è®¡æ•°
+4. é€šè¿‡create_diræ¥å£ï¼Œè°ƒç”¨sysfsçš„ç›¸å…³æ¥å£ï¼Œåœ¨sysfsä¸‹åˆ›å»ºè¯¥kobjectå¯¹åº”çš„ç›®å½•
+5. å¦‚æœåˆ›å»ºå¤±è´¥ï¼Œæ‰§è¡Œåç»­çš„å›æ»šæ“ä½œï¼Œå¦åˆ™å°†kobj->state_in_sysfsç½®ä¸º1
 */
 static int kobject_add_internal(struct kobject *kobj)
 {
@@ -225,25 +225,25 @@ static int kobject_add_internal(struct kobject *kobj)
 	parent = kobject_get(kobj->parent);
 
 	/* join kset if set, use it as parent if we do not already have one */
-	/*ÔÚkobjÓĞËùÊôµÄksetµÄÇé¿öÏÂ*/
+	/*åœ¨kobjæœ‰æ‰€å±çš„ksetçš„æƒ…å†µä¸‹*/
 	if (kobj->kset) {
-		/*Èç¹ûµ÷ÓÃkobject_addÊ±,´«ÈëµÄparent²ÎÊıÊÇNULLÖ¸Õë*/
+		/*å¦‚æœè°ƒç”¨kobject_addæ—¶,ä¼ å…¥çš„parentå‚æ•°æ˜¯NULLæŒ‡é’ˆ*/
 		if (!parent)
-			/*¾Í°ÑkobjËùÔÚµÄksetÖĞµÄkobj×÷ÎªËüµÄparent*/
+			/*å°±æŠŠkobjæ‰€åœ¨çš„ksetä¸­çš„kobjä½œä¸ºå®ƒçš„parent*/
 			parent = kobject_get(&kobj->kset->kobj);
-		/*½«kobj¼ÓÈëµ½ËùÊôksetÁ´±íµÄÄ©Î²*/
+		/*å°†kobjåŠ å…¥åˆ°æ‰€å±kseté“¾è¡¨çš„æœ«å°¾*/
 		kobj_kset_join(kobj);
 		kobj->parent = parent;
 	}
-	/*ÔÚkobjÃ»ÓĞËùÊôµÄksetµÄÇé¿öÏÂ,Èç¹ûµ÷ÓÃkobject_addÊ±parentÎªNULL,
-	 *ÄÇÃ´kobj->parentÒ³½«ÎªNULL*/
+	/*åœ¨kobjæ²¡æœ‰æ‰€å±çš„ksetçš„æƒ…å†µä¸‹,å¦‚æœè°ƒç”¨kobject_addæ—¶parentä¸ºNULL,
+	 *é‚£ä¹ˆkobj->parenté¡µå°†ä¸ºNULL*/
 
 	pr_debug("kobject: '%s' (%p): %s: parent: '%s', set: '%s'\n",
 		 kobject_name(kobj), kobj, __func__,
 		 parent ? kobject_name(parent) : "<NULL>",
 		 kobj->kset ? kobject_name(&kobj->kset->kobj) : "<NULL>");
 
-	/*ÔÚsysfsÎÄ¼şÊ÷ÖĞ´´½¨Ä¿Â¼*/
+	/*åœ¨sysfsæ–‡ä»¶æ ‘ä¸­åˆ›å»ºç›®å½•*/
 	error = create_dir(kobj);
 	if (error) {
 		kobj_kset_leave(kobj);
@@ -315,7 +315,7 @@ int kobject_set_name_vargs(struct kobject *kobj, const char *fmt,
  * kobject to the system, you must call kobject_rename() in order to
  * change the name of the kobject.
  */
-/*ÉèÖÃkobjectÖĞµÄname*/
+/*è®¾ç½®kobjectä¸­çš„name*/
 int kobject_set_name(struct kobject *kobj, const char *fmt, ...)
 {
 	va_list vargs;
@@ -342,7 +342,7 @@ EXPORT_SYMBOL(kobject_set_name);
  * the memory is cleaned up properly.
  */
 
-/*kobject³õÊ¼»¯º¯Êı,ÉèÖÃ kobject ÒıÓÃ¼ÆÊıÎª 1*/
+/*kobjectåˆå§‹åŒ–å‡½æ•°,è®¾ç½® kobject å¼•ç”¨è®¡æ•°ä¸º 1*/
 void kobject_init(struct kobject *kobj, struct kobj_type *ktype)
 {
 	char *err_str;
@@ -362,7 +362,7 @@ void kobject_init(struct kobject *kobj, struct kobj_type *ktype)
 		dump_stack();
 	}
 
-	/*kobject³õÊ¼»¯º¯Êı,ÉèÖÃ kobject ÒıÓÃ¼ÆÊıÎª 1*/
+	/*kobjectåˆå§‹åŒ–å‡½æ•°,è®¾ç½® kobject å¼•ç”¨è®¡æ•°ä¸º 1*/
 	kobject_init_internal(kobj);
 	kobj->ktype = ktype;
 	return;
@@ -414,10 +414,10 @@ static __printf(3, 0) int kobject_add_varg(struct kobject *kobj,
  * userspace is properly notified of this kobject's creation.
  */
  /*
- *½«kobject¶ÔÏó×¢²áµ½LinuxÏµÍ³
+ *å°†kobjectå¯¹è±¡æ³¨å†Œåˆ°Linuxç³»ç»Ÿ
  */
-/*Ò»ÊÇ½¨Á¢kobject¶ÔÏó¼äµÄ²ã´Î¹ØÏµ,¶şÊÇÔÚsysfsÎÄ¼şÏµÍ³ÖĞ½¨Á¢Ò»¸öÄ¿Â¼,½«Ò»¸ökobject¶ÔÏóÍ¨¹ı
-kobject_addº¯Êıµ÷ÓÃ¼ÓÈëÏµÍ³Ç°,kobject¶ÔÏó±ØĞëÒÑ¾­³õÊ¼»¯*/
+/*ä¸€æ˜¯å»ºç«‹kobjectå¯¹è±¡é—´çš„å±‚æ¬¡å…³ç³»,äºŒæ˜¯åœ¨sysfsæ–‡ä»¶ç³»ç»Ÿä¸­å»ºç«‹ä¸€ä¸ªç›®å½•,å°†ä¸€ä¸ªkobjectå¯¹è±¡é€šè¿‡
+kobject_addå‡½æ•°è°ƒç”¨åŠ å…¥ç³»ç»Ÿå‰,kobjectå¯¹è±¡å¿…é¡»å·²ç»åˆå§‹åŒ–*/
 int kobject_add(struct kobject *kobj, struct kobject *parent,
 		const char *fmt, ...)
 {
@@ -454,8 +454,8 @@ EXPORT_SYMBOL(kobject_add);
  * kobject_add() and kobject lifetime rules are the same here.
  */
  /*
- *¸Ãº¯ÊıÊµ¼ÊµÄ¹¤×÷ÊÇ½«kobject_initºÍkobject_addÁ½¸öº¯ÊıµÄ¹¦ÄÜºÏ²¢µ½ÁËÒ»Æğ,³õÊ¼»¯kobject,
- *²¢½«Æä×¢²áµ½linuxÏµÍ³
+ *è¯¥å‡½æ•°å®é™…çš„å·¥ä½œæ˜¯å°†kobject_initå’Œkobject_addä¸¤ä¸ªå‡½æ•°çš„åŠŸèƒ½åˆå¹¶åˆ°äº†ä¸€èµ·,åˆå§‹åŒ–kobject,
+ *å¹¶å°†å…¶æ³¨å†Œåˆ°linuxç³»ç»Ÿ
  */
 int kobject_init_and_add(struct kobject *kobj, struct kobj_type *ktype,
 			 struct kobject *parent, const char *fmt, ...)
@@ -597,8 +597,8 @@ EXPORT_SYMBOL_GPL(kobject_move);
  * kobject_del - unlink kobject from hierarchy.
  * @kobj: object.
  */
-/*ÔÚsysfsÎÄ¼şÊ÷ÖĞ°Ñkobj¶ÔÓ¦µÄÄ¿Â¼É¾³ı,ÁíÍâÈç¹ûkobjÁ¥ÊôÓÚÄ³Ò»ksetµÄ»°,
- *½«Æä´ÓksetÁ´±íÖĞÉ¾³ı*/
+/*åœ¨sysfsæ–‡ä»¶æ ‘ä¸­æŠŠkobjå¯¹åº”çš„ç›®å½•åˆ é™¤,å¦å¤–å¦‚æœkobjéš¶å±äºæŸä¸€ksetçš„è¯,
+ *å°†å…¶ä»kseté“¾è¡¨ä¸­åˆ é™¤*/
 void kobject_del(struct kobject *kobj)
 {
 	struct kernfs_node *sd;
@@ -621,7 +621,7 @@ EXPORT_SYMBOL(kobject_del);
  * kobject_get - increment refcount for object.
  * @kobj: object.
  */
- /*½«kobject¶ÔÏóµÄÒıÓÃ¼ÆÊı¼Ó1,Í¬Ê±·µ»Ø¸Ã¶ÔÏóÖ¸Õë*/
+ /*å°†kobjectå¯¹è±¡çš„å¼•ç”¨è®¡æ•°åŠ 1,åŒæ—¶è¿”å›è¯¥å¯¹è±¡æŒ‡é’ˆ*/
 struct kobject *kobject_get(struct kobject *kobj)
 {
 	if (kobj) {
@@ -647,7 +647,7 @@ static struct kobject * __must_check kobject_get_unless_zero(struct kobject *kob
  * @kobj: object to cleanup
  */
 /*
-ÊÍ·ÅkobjectÕ¼ÓÃµÄ¿Õ¼ä
+é‡Šæ”¾kobjectå ç”¨çš„ç©ºé—´
 */
 static void kobject_cleanup(struct kobject *kobj)
 {
@@ -664,8 +664,8 @@ static void kobject_cleanup(struct kobject *kobj)
 
 	/* send "remove" if the caller did not do it but sent "add" */
 	/*
-    Èç¹û¸ÃkobjectÏòÓÃ»§¿Õ¼ä·¢ËÍÁËADD ueventµ«Ã»ÓĞ·¢ËÍREMOVE uevent£¬
-    ²¹·¢REMOVE uevent
+    å¦‚æœè¯¥kobjectå‘ç”¨æˆ·ç©ºé—´å‘é€äº†ADD ueventä½†æ²¡æœ‰å‘é€REMOVE ueventï¼Œ
+    è¡¥å‘REMOVE uevent
 	*/
 	if (kobj->state_add_uevent_sent && !kobj->state_remove_uevent_sent) {
 		pr_debug("kobject: '%s' (%p): auto cleanup 'remove' event\n",
@@ -675,8 +675,8 @@ static void kobject_cleanup(struct kobject *kobj)
 
 	/* remove from sysfs if the caller did not do it */
 	/*
-        Èç¹û¸ÃkobjectÓĞÔÚsysfsÎÄ¼şÏµÍ³×¢²á£¬µ÷ÓÃkobject_del½Ó¿Ú£¬
-        É¾³ıËüÔÚsysfsÖĞµÄ×¢²á
+        å¦‚æœè¯¥kobjectæœ‰åœ¨sysfsæ–‡ä»¶ç³»ç»Ÿæ³¨å†Œï¼Œè°ƒç”¨kobject_delæ¥å£ï¼Œ
+        åˆ é™¤å®ƒåœ¨sysfsä¸­çš„æ³¨å†Œ
 	*/
 	if (kobj->state_in_sysfs) {
 		pr_debug("kobject: '%s' (%p): auto cleanup kobject_del\n",
@@ -685,7 +685,7 @@ static void kobject_cleanup(struct kobject *kobj)
 	}
 
     /*
-        µ÷ÓÃ¸ÃkobjectµÄktypeµÄrelease½Ó¿Ú£¬ÊÍ·ÅÄÚ´æ¿Õ¼ä
+        è°ƒç”¨è¯¥kobjectçš„ktypeçš„releaseæ¥å£ï¼Œé‡Šæ”¾å†…å­˜ç©ºé—´
     */
 	if (t && t->release) {
 		pr_debug("kobject: '%s' (%p): calling ktype release\n",
@@ -729,7 +729,7 @@ static void kobject_release(struct kref *kref)
  *
  * Decrement the refcount, and if 0, call kobject_cleanup().
  */
- /*½«kobject¶ÔÏóµÄÒıÓÃ¼ÆÊı¼õ1,Èç¹ûÒıÓÃ¼ÆÊı½µÎª0,Ôòµ÷ÓÃrelease·½·¨ÊÍ·Å¸Ãkobject¶ÔÏó*/
+ /*å°†kobjectå¯¹è±¡çš„å¼•ç”¨è®¡æ•°å‡1,å¦‚æœå¼•ç”¨è®¡æ•°é™ä¸º0,åˆ™è°ƒç”¨releaseæ–¹æ³•é‡Šæ”¾è¯¥kobjectå¯¹è±¡*/
 void kobject_put(struct kobject *kobj)
 {
 	if (kobj) {
@@ -764,10 +764,10 @@ static struct kobj_type dynamic_kobj_ktype = {
  * call to kobject_put() and not kfree(), as kobject_init() has
  * already been called on this structure.
  */
-/*¸Ãº¯ÊıÓÃÀ´·ÖÅä²¢³õÊ¼»¯Ò»¸ökobject¶ÔÏó
- *Èç¹ûµ÷ÓÃkobject_createÀ´²úÉúÒ»¸ökobject¶ÔÏó,ÄÇÃ´µ÷ÓÃÕß½«ÎŞ·¨Îª¸Ãkobject¶ÔÏóÁíĞĞÖ¸¶¨
- *kobj_type,kobject_createÎª²úÉúµÄkobject¶ÔÏóÖ¸¶¨ÁËÒ»¸öÄ¬ÈÏµÄkobj_type¶ÔÏódynamic_kobj_type,Õâ¸öĞĞÎª½«Ó°Ïìkobject¶ÔÏóÉÏµÄsysfsÎÄ¼ş²Ù×÷,Èç¹ûµ÷ÓÃÕßĞèÒªÃ÷È·Ö¸¶¨Ò»¸ö×Ô¼ºµÄkobj_type¶ÔÏó
- *¸ø¸Ãkobject¶ÔÏó,¿ÉÒÔÊ¹ÓÃkobject_init_and_addº¯Êı*/
+/*è¯¥å‡½æ•°ç”¨æ¥åˆ†é…å¹¶åˆå§‹åŒ–ä¸€ä¸ªkobjectå¯¹è±¡
+ *å¦‚æœè°ƒç”¨kobject_createæ¥äº§ç”Ÿä¸€ä¸ªkobjectå¯¹è±¡,é‚£ä¹ˆè°ƒç”¨è€…å°†æ— æ³•ä¸ºè¯¥kobjectå¯¹è±¡å¦è¡ŒæŒ‡å®š
+ *kobj_type,kobject_createä¸ºäº§ç”Ÿçš„kobjectå¯¹è±¡æŒ‡å®šäº†ä¸€ä¸ªé»˜è®¤çš„kobj_typeå¯¹è±¡dynamic_kobj_type,è¿™ä¸ªè¡Œä¸ºå°†å½±å“kobjectå¯¹è±¡ä¸Šçš„sysfsæ–‡ä»¶æ“ä½œ,å¦‚æœè°ƒç”¨è€…éœ€è¦æ˜ç¡®æŒ‡å®šä¸€ä¸ªè‡ªå·±çš„kobj_typeå¯¹è±¡
+ *ç»™è¯¥kobjectå¯¹è±¡,å¯ä»¥ä½¿ç”¨kobject_init_and_addå‡½æ•°*/
 struct kobject *kobject_create(void)
 {
 	struct kobject *kobj;
@@ -798,12 +798,12 @@ struct kobject *kobject_create_and_add(const char *name, struct kobject *parent)
 	struct kobject *kobj;
 	int retval;
 
-	/*·ÖÅä²¢³õÊ¼»¯Ò»¸ökobject¶ÔÏó*/
+	/*åˆ†é…å¹¶åˆå§‹åŒ–ä¸€ä¸ªkobjectå¯¹è±¡*/
 	kobj = kobject_create();
 	if (!kobj)
 		return NULL;
 
-	/*ÔÚsysfsÎÄ¼şÏµÍ³ÖĞÎªĞÂÉú³ÉµÄkobject¶ÔÏó½¨Á¢Ò»¸öĞÂµÄÄ¿Â¼*/
+	/*åœ¨sysfsæ–‡ä»¶ç³»ç»Ÿä¸­ä¸ºæ–°ç”Ÿæˆçš„kobjectå¯¹è±¡å»ºç«‹ä¸€ä¸ªæ–°çš„ç›®å½•*/
 	retval = kobject_add(kobj, parent, "%s", name);
 	if (retval) {
 		printk(KERN_WARNING "%s: kobject_add error: %d\n",
@@ -819,7 +819,7 @@ EXPORT_SYMBOL_GPL(kobject_create_and_add);
  * kset_init - initialize a kset for use
  * @k: kset
  */
-/*ÓÃÀ´³õÊ¼»¯Ò»¸ökset¶ÔÏó*/
+/*ç”¨æ¥åˆå§‹åŒ–ä¸€ä¸ªksetå¯¹è±¡*/
 void kset_init(struct kset *k)
 {
 	kobject_init_internal(&k->kobj);
@@ -862,8 +862,8 @@ EXPORT_SYMBOL_GPL(kobj_sysfs_ops);
  * kset_register - initialize and add a kset.
  * @k: kset.
  */
-/*ÓÃÀ´³õÊ¼»¯²¢ÏòÏµÍ³×¢²áÒ»¸ökset¶ÔÏó*/
-/*ÔÚkset/busÄ¿Â¼ÏÂÎªµ±Ç°×¢²áµÄbusÉú³ÉÒ»¸öĞÂµÄÄ¿Â¼*/
+/*ç”¨æ¥åˆå§‹åŒ–å¹¶å‘ç³»ç»Ÿæ³¨å†Œä¸€ä¸ªksetå¯¹è±¡*/
+/*åœ¨kset/busç›®å½•ä¸‹ä¸ºå½“å‰æ³¨å†Œçš„busç”Ÿæˆä¸€ä¸ªæ–°çš„ç›®å½•*/
 int kset_register(struct kset *k)
 {
 	int err;
@@ -884,7 +884,7 @@ EXPORT_SYMBOL(kset_register);
  * kset_unregister - remove a kset.
  * @k: kset.
  */
-/*ÓÃÀ´½«kÖ¸ÏòµÄkset¶ÔÏó´ÓÏµÍ³ÖĞ×¢Ïú,Íê³ÉµÄÊÇkset_registerµÄ·´Ïò²Ù×÷*/
+/*ç”¨æ¥å°†kæŒ‡å‘çš„ksetå¯¹è±¡ä»ç³»ç»Ÿä¸­æ³¨é”€,å®Œæˆçš„æ˜¯kset_registerçš„åå‘æ“ä½œ*/
 void kset_unregister(struct kset *k)
 {
 	if (!k)
@@ -993,9 +993,9 @@ static struct kset *kset_create(const char *name,
  *
  * If the kset was not able to be created, NULL will be returned.
  */
-/*Ö÷Òª×÷ÓÃÊÇ¶¯Ì¬²úÉúÒ»kset¶ÔÏóÈ»ºó½«Æä¼ÓÈëµ½sysfsÎÄ¼şÏµÍ³ÖĞ,²ÎÊınameÊÇ´´½¨µÄkset¶ÔÏóµÄÃû,
- *uevent_opsÊÇĞÂkset¶ÔÏóÉÏÓÃÀ´´¦ÀíÓÃ»§¿Õ¼äeventÏûÏ¢µÄ²Ù×÷¼¯,parent_kobjÊÇkset¶ÔÏóµÄÉÏ²ã
- *(¸¸¼¶)µÄÄÚºË¶ÔÏóÖ¸Õë*/
+/*ä¸»è¦ä½œç”¨æ˜¯åŠ¨æ€äº§ç”Ÿä¸€ksetå¯¹è±¡ç„¶åå°†å…¶åŠ å…¥åˆ°sysfsæ–‡ä»¶ç³»ç»Ÿä¸­,å‚æ•°nameæ˜¯åˆ›å»ºçš„ksetå¯¹è±¡çš„å,
+ *uevent_opsæ˜¯æ–°ksetå¯¹è±¡ä¸Šç”¨æ¥å¤„ç†ç”¨æˆ·ç©ºé—´eventæ¶ˆæ¯çš„æ“ä½œé›†,parent_kobjæ˜¯ksetå¯¹è±¡çš„ä¸Šå±‚
+ *(çˆ¶çº§)çš„å†…æ ¸å¯¹è±¡æŒ‡é’ˆ*/
 struct kset *kset_create_and_add(const char *name,
 				 const struct kset_uevent_ops *uevent_ops,
 				 struct kobject *parent_kobj)

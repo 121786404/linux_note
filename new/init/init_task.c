@@ -16,8 +16,8 @@ static struct sighand_struct init_sighand = INIT_SIGHAND(init_sighand);
 
 /* Initial task structure */
 /*
-ËùÓĞ½ø³ÌÁ´±íÒÔinit_taskÎªÁ´±íÍ·£¬½«ËùÓĞ½ø³ÌÍ¨¹ı
-task_struct::tasksÁ´½ÓÔÚÒ»Æğ
+æ‰€æœ‰è¿›ç¨‹é“¾è¡¨ä»¥init_taskä¸ºé“¾è¡¨å¤´ï¼Œå°†æ‰€æœ‰è¿›ç¨‹é€šè¿‡
+task_struct::tasksé“¾æ¥åœ¨ä¸€èµ·
 */
 struct task_struct init_task = INIT_TASK(init_task);
 EXPORT_SYMBOL(init_task);

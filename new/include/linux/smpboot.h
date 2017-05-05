@@ -47,17 +47,17 @@ struct smp_hotplug_thread {
 int smpboot_register_percpu_thread_cpumask(struct smp_hotplug_thread *plug_thread,
 					   const struct cpumask *cpumask);
 /*
-´´½¨ per_cpu ÄÚºË½ø³Ì£¬ËùÎ½µÄ per_cpu ½ø³ÌÊÇÖ¸ĞèÒªÔÚÃ¿¸ö 
-online cpu ÉÏ´´½¨Ïß³Ì
+åˆ›å»º per_cpu å†…æ ¸è¿›ç¨‹ï¼Œæ‰€è°“çš„ per_cpu è¿›ç¨‹æ˜¯æŒ‡éœ€è¦åœ¨æ¯ä¸ª 
+online cpu ä¸Šåˆ›å»ºçº¿ç¨‹
 
-¼ÈÈ» per_cpu ½ø³ÌÊÇºÍ cpu °ó¶¨µÄ£¬ÄÇÃ´ÔÚ cpu hotplug µÄÊ±ºò£¬
-ÉèÖÃ½ø³ÌµÄ cpu Ç×ºÍÁ¦ set_cpus_allowed_ptr()¡£
+æ—¢ç„¶ per_cpu è¿›ç¨‹æ˜¯å’Œ cpu ç»‘å®šçš„ï¼Œé‚£ä¹ˆåœ¨ cpu hotplug çš„æ—¶å€™ï¼Œ
+è®¾ç½®è¿›ç¨‹çš„ cpu äº²å’ŒåŠ› set_cpus_allowed_ptr()ã€‚
 
-È±µãÊÇ½ø³Ì°ó¶¨µÄ cpu Èç¹û±» down µô£¬
-½ø³Ì»áÇ¨ÒÆµ½ÆäËû cpu ¼ÌĞøÖ´ĞĞ¡£
+ç¼ºç‚¹æ˜¯è¿›ç¨‹ç»‘å®šçš„ cpu å¦‚æœè¢« down æ‰ï¼Œ
+è¿›ç¨‹ä¼šè¿ç§»åˆ°å…¶ä»– cpu ç»§ç»­æ‰§è¡Œã€‚
 
-ÎªÁË¿Ë·şÉÏÊö·½°¸µÄÈ±µã£¬ÊÊÅä per_cpu ½ø³ÌµÄ cpu hotplug ²Ù×÷£¬
-Éè¼ÆÁË kthread_park()/kthread_unpark() »úÖÆ¡£
+ä¸ºäº†å…‹æœä¸Šè¿°æ–¹æ¡ˆçš„ç¼ºç‚¹ï¼Œé€‚é… per_cpu è¿›ç¨‹çš„ cpu hotplug æ“ä½œï¼Œ
+è®¾è®¡äº† kthread_park()/kthread_unpark() æœºåˆ¶ã€‚
 */
 static inline int
 smpboot_register_percpu_thread(struct smp_hotplug_thread *plug_thread)

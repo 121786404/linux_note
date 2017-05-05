@@ -373,7 +373,7 @@ confused:
  * This all causes the disk requests to be issued in the correct order.
  */
 /**
- * ¶ÁÈ¡¶àÒ³µ½Ò³»º´æÖĞ
+ * è¯»å–å¤šé¡µåˆ°é¡µç¼“å­˜ä¸­
  */
 int
 mpage_readpages(struct address_space *mapping, struct list_head *pages,
@@ -386,16 +386,16 @@ mpage_readpages(struct address_space *mapping, struct list_head *pages,
 	unsigned long first_logical_block = 0;
 
 	clear_buffer_mapped(&map_bh);
-	/* Ñ­»·¶ÁÈ¡Ö¸¶¨µÄÒ³Êı */
+	/* å¾ªç¯è¯»å–æŒ‡å®šçš„é¡µæ•° */
 	for (page_idx = 0; page_idx < nr_pages; page_idx++) {
-		/* »ñµÃÒ³ÃæÊµÀı */
+		/* è·å¾—é¡µé¢å®ä¾‹ */
 		struct page *page = list_entry(pages->prev, struct page, lru);
 
 		prefetchw(&page->flags);
-		list_del(&page->lru);/* ´ÓÁÙÊ±Á´±íÖĞÕª³ı */
+		list_del(&page->lru);/* ä»ä¸´æ—¶é“¾è¡¨ä¸­æ‘˜é™¤ */
 		if (!add_to_page_cache_lru(page, mapping,
-					page->index, GFP_KERNEL)) {/* Ìí¼ÓÒ³µ½µØÖ·¿Õ¼äµÄ»º´æÖĞ */
-			/* ´´½¨bio£¬´Ó¿é²ã¶ÁÈ¡Êı¾İ */
+					page->index, GFP_KERNEL)) {/* æ·»åŠ é¡µåˆ°åœ°å€ç©ºé—´çš„ç¼“å­˜ä¸­ */
+			/* åˆ›å»ºbioï¼Œä»å—å±‚è¯»å–æ•°æ® */
 			bio = do_mpage_readpage(bio, page,
 					nr_pages - page_idx,
 					&last_block_in_bio, &map_bh,
@@ -405,7 +405,7 @@ mpage_readpages(struct address_space *mapping, struct list_head *pages,
 		page_cache_release(page);
 	}
 	BUG_ON(!list_empty(pages));
-	if (bio)/* Ìá½»×îºóÒ»¸öbio */
+	if (bio)/* æäº¤æœ€åä¸€ä¸ªbio */
 		mpage_bio_submit(READ, bio);
 	return 0;
 }

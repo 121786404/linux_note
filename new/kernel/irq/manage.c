@@ -653,7 +653,7 @@ int can_request_irq(unsigned int irq, unsigned long irqflags)
 	return canrequest;
 }
 
- /*Éè¶¨ÖĞ¶Ï´¥·¢ĞÅºÅÀàĞÍµÄº¯Êı,ÆäÖ÷ÒªµÄ¹¦ÄÜÊÇÍ¨¹ıPIC¶ÔÏóµÄirq_set_type³ÉÔ±º¯ÊıÉè¶¨µ±Ç°ÖĞ¶ÏÉÏÓĞĞ§µÄÖĞ¶Ï´¥·¢ĞÅºÅÀàĞÍ*/
+ /*è®¾å®šä¸­æ–­è§¦å‘ä¿¡å·ç±»å‹çš„å‡½æ•°,å…¶ä¸»è¦çš„åŠŸèƒ½æ˜¯é€šè¿‡PICå¯¹è±¡çš„irq_set_typeæˆå‘˜å‡½æ•°è®¾å®šå½“å‰ä¸­æ–­ä¸Šæœ‰æ•ˆçš„ä¸­æ–­è§¦å‘ä¿¡å·ç±»å‹*/
 int __irq_set_trigger(struct irq_desc *desc, unsigned long flags)
 {
 	struct irq_chip *chip = desc->irq_data.chip;
@@ -1169,7 +1169,7 @@ __setup_irq(unsigned int irq, struct irq_desc *desc, struct irqaction *new)
 	 * and the interrupt does not nest into another interrupt
 	 * thread.
 	 */
-	 /*Í¨¹ırequest_threaded_irqº¯Êı°²×°Ò»¸öÖĞ¶Ï*/
+	 /*é€šè¿‡request_threaded_irqå‡½æ•°å®‰è£…ä¸€ä¸ªä¸­æ–­*/
 	if (new->thread_fn && !nested) {
 		ret = setup_irq_thread(new, irq, false);
 		if (ret)
@@ -1378,12 +1378,12 @@ __setup_irq(unsigned int irq, struct irq_desc *desc, struct irqaction *new)
 		wake_up_process(new->thread);
 	if (new->secondary)
 		wake_up_process(new->secondary->thread);
-	/* Èç¹ûdesc->dirÎª¿Õ£¬ÄÇÃ´µ÷ÓÃregister_irq_procÔÚ/proc/irq
-	 * Ä¿Â¼ÏÂ´´½¨ÀàËÆ/proc/125ÕâÑùµÄĞÂÄ¿Â¼Ïî*/
+	/* å¦‚æœdesc->dirä¸ºç©ºï¼Œé‚£ä¹ˆè°ƒç”¨register_irq_procåœ¨/proc/irq
+	 * ç›®å½•ä¸‹åˆ›å»ºç±»ä¼¼/proc/125è¿™æ ·çš„æ–°ç›®å½•é¡¹*/
 	register_irq_proc(irq, desc);
 	new->dir = NULL;
-	/* ÔÚaction->name²»Îª¿ÕµÄÇé¿öÏÂ,»áÎª´ËĞÂactionÔÚprocÎÄ¼şÏµÍ³ÖĞ´´½¨ÀàËÆ
-	 * /proc/irq/125/action_nameÕâÑùµÄÄ¿Â¼*/
+	/* åœ¨action->nameä¸ä¸ºç©ºçš„æƒ…å†µä¸‹,ä¼šä¸ºæ­¤æ–°actionåœ¨procæ–‡ä»¶ç³»ç»Ÿä¸­åˆ›å»ºç±»ä¼¼
+	 * /proc/irq/125/action_nameè¿™æ ·çš„ç›®å½•*/
 	register_handler_proc(irq, new);
 	free_cpumask_var(mask);
 
@@ -1458,10 +1458,10 @@ EXPORT_SYMBOL_GPL(setup_irq);
  * regular and special interrupts that are part of the architecture.
  */
 /*
-Èç¹û²»ÊÇ¹²ÏíÖĞ¶ÏÏß£¬ÔòÖ±½ÓÉ¾³ıirq¶ÔÓ¦µÄÖĞ¶ÏÏß¡£
-Èç¹ûÊÇ¹²ÏíÖĞ¶ÏÏß£¬ÔòÅĞ¶Ï´ËÖĞ¶Ï´¦Àí³ÌĞòÊÇ·ñÖĞ¶ÏÏßÉÏµÄ×îºóÒ»¸öÖĞ¶Ï´¦Àí³ÌĞò£¬ 
-ÊÇ×îºóÒ»¸öÖĞ¶Ï´¦Àí³ÌĞò -> É¾³ıÖĞ¶ÏÏßºÍÖĞ¶Ï´¦Àí³ÌĞò
-²»ÊÇ×îºóÒ»¸öÖĞ¶Ï´¦Àí³ÌĞò -> É¾³ıÖĞ¶Ï´¦Àí³ÌĞò
+å¦‚æœä¸æ˜¯å…±äº«ä¸­æ–­çº¿ï¼Œåˆ™ç›´æ¥åˆ é™¤irqå¯¹åº”çš„ä¸­æ–­çº¿ã€‚
+å¦‚æœæ˜¯å…±äº«ä¸­æ–­çº¿ï¼Œåˆ™åˆ¤æ–­æ­¤ä¸­æ–­å¤„ç†ç¨‹åºæ˜¯å¦ä¸­æ–­çº¿ä¸Šçš„æœ€åä¸€ä¸ªä¸­æ–­å¤„ç†ç¨‹åºï¼Œ 
+æ˜¯æœ€åä¸€ä¸ªä¸­æ–­å¤„ç†ç¨‹åº -> åˆ é™¤ä¸­æ–­çº¿å’Œä¸­æ–­å¤„ç†ç¨‹åº
+ä¸æ˜¯æœ€åä¸€ä¸ªä¸­æ–­å¤„ç†ç¨‹åº -> åˆ é™¤ä¸­æ–­å¤„ç†ç¨‹åº
 */
 static struct irqaction *__free_irq(unsigned int irq, void *dev_id)
 {
@@ -1642,13 +1642,13 @@ EXPORT_SYMBOL(free_irq);
  *	IRQF_TRIGGER_*		Specify active edge(s) or level
  *
  */
- /*Õâ¸öº¯Êı±»request_irqÖ±½Óµ÷ÓÃÀ´°²×°ISR,
- ÓÃrequest_thread_irqº¯ÊıÀ´°²×°Ò»¸öÖĞ¶ÏÊ±£¬
- ĞèÒªÔÚstruct irqaction¶ÔÏóÖĞÊµÏÖËûµÄthread_fn³ÉÔ±£¬
- request_thread_irqº¯ÊıÄÚ²¿»áÉú³ÉÒ»¸öirq_threadµÄ¶ÀÁ¢Ïß³Ì
+ /*è¿™ä¸ªå‡½æ•°è¢«request_irqç›´æ¥è°ƒç”¨æ¥å®‰è£…ISR,
+ ç”¨request_thread_irqå‡½æ•°æ¥å®‰è£…ä¸€ä¸ªä¸­æ–­æ—¶ï¼Œ
+ éœ€è¦åœ¨struct irqactionå¯¹è±¡ä¸­å®ç°ä»–çš„thread_fnæˆå‘˜ï¼Œ
+ request_thread_irqå‡½æ•°å†…éƒ¨ä¼šç”Ÿæˆä¸€ä¸ªirq_threadçš„ç‹¬ç«‹çº¿ç¨‹
 
- º¯Êıµ÷ÓÃÁËkmalloc()£¬kmalloc()ÊÇ¿ÉÒÔË¯ÃßµÄ£¬
- ¾ø²»ÄÜÔÙÖĞ¶ÏÉÏÏÂÎÄ»òÆäËü²»ÔÊĞí×èÈûµÄ´úÂëÖĞµ÷ÓÃ¸Ãº¯Êı¡£
+ å‡½æ•°è°ƒç”¨äº†kmalloc()ï¼Œkmalloc()æ˜¯å¯ä»¥ç¡çœ çš„ï¼Œ
+ ç»ä¸èƒ½å†ä¸­æ–­ä¸Šä¸‹æ–‡æˆ–å…¶å®ƒä¸å…è®¸é˜»å¡çš„ä»£ç ä¸­è°ƒç”¨è¯¥å‡½æ•°ã€‚
 */
 int request_threaded_irq(unsigned int irq, irq_handler_t handler,
 			 irq_handler_t thread_fn, unsigned long irqflags,
@@ -1689,12 +1689,12 @@ int request_threaded_irq(unsigned int irq, irq_handler_t handler,
 		handler = irq_default_primary_handler;
 	}
 
-	/*ÉêÇë¿Õ¼ä*/
+	/*ç”³è¯·ç©ºé—´*/
 	action = kzalloc(sizeof(struct irqaction), GFP_KERNEL);
 	if (!action)
 		return -ENOMEM;
 
-	/*¸ù¾İ´«ÈëµÄ²ÎÊı³õÊ¼»¯*/
+	/*æ ¹æ®ä¼ å…¥çš„å‚æ•°åˆå§‹åŒ–*/
 	action->handler = handler;
 	action->thread_fn = thread_fn;
 	action->flags = irqflags;
@@ -1708,7 +1708,7 @@ int request_threaded_irq(unsigned int irq, irq_handler_t handler,
 	}
 
 	chip_bus_lock(desc);
-	/*°²×°ÖĞ¶Ï´¦Àíº¯Êı*/
+	/*å®‰è£…ä¸­æ–­å¤„ç†å‡½æ•°*/
 	retval = __setup_irq(irq, desc, action);
 	chip_bus_sync_unlock(desc);
 

@@ -16,7 +16,7 @@
 #include <asm/fpstate.h>
 #include <asm/page.h>
 /*
-ÄÚºËÕ»
+å†…æ ¸æ ˆ
 */
 #define THREAD_SIZE_ORDER	1
 #define THREAD_SIZE		(PAGE_SIZE << THREAD_SIZE_ORDER) // 8K
@@ -30,7 +30,7 @@ struct task_struct;
 
 typedef unsigned long mm_segment_t;
 /*
-ÄÚºËÏß³ÌÉÏÏÂÎÄ£¬µ±ÓĞÏß³ÌÇĞ»»·¢ÉúÊ±»áÓÃµ½
+å†…æ ¸çº¿ç¨‹ä¸Šä¸‹æ–‡ï¼Œå½“æœ‰çº¿ç¨‹åˆ‡æ¢å‘ç”Ÿæ—¶ä¼šç”¨åˆ°
 */
 struct cpu_context_save {
 	__u32	r4;
@@ -51,32 +51,32 @@ struct cpu_context_save {
  * __switch_to() assumes cpu_context follows immediately after cpu_domain.
  */
 /*
- thread_info¾Í±£´æÁËÌØ¶¨ÌåÏµ½á¹¹µÄ»ã±à´úÂë¶Î
- ĞèÒª·ÃÎÊµÄÄÇ²¿·Ö½ø³ÌµÄÊı¾İ
+ thread_infoå°±ä¿å­˜äº†ç‰¹å®šä½“ç³»ç»“æ„çš„æ±‡ç¼–ä»£ç æ®µ
+ éœ€è¦è®¿é—®çš„é‚£éƒ¨åˆ†è¿›ç¨‹çš„æ•°æ®
 */
 struct thread_info {
 /*
-    ±£´æ¸÷ÖÖÌØ¶¨ÓÚ½ø³ÌµÄ±êÖ¾
+    ä¿å­˜å„ç§ç‰¹å®šäºè¿›ç¨‹çš„æ ‡å¿—
 */
 	unsigned long		flags;		/* low level flags */
 /*
-	ÄÚºËÇÀÕ¼¼ÆÊıÆ÷
+	å†…æ ¸æŠ¢å è®¡æ•°å™¨
 */
 	int			preempt_count;	/* 0 => preemptable, <0 => bug */
 /*
-	Ö¸¶¨ÁË½ø³Ì¿ÉÒÔÊ¹ÓÃµÄĞéÄâµØÖ·µÄÉÏÏŞ¡£
-	ÈçÇ°ËùÊö£¬¸ÃÏŞÖÆÊÊÓÃÓÚÆÕÍ¨½ø³Ì£¬
-	µ«ÄÚºËÏß³Ì¿ÉÒÔ·ÃÎÊÕû¸öĞéÄâµØÖ·¿Õ¼ä£¬
-	°üÀ¨Ö»ÓĞÄÚºËÄÜ·ÃÎÊµÄ²¿·Ö¡£
-	Õâ²¢²»ÒâÎ¶×ÅÏŞÖÆ½ø³Ì¿ÉÒÔ·ÖÅäµÄÄÚ´æÊıÁ¿¡£
+	æŒ‡å®šäº†è¿›ç¨‹å¯ä»¥ä½¿ç”¨çš„è™šæ‹Ÿåœ°å€çš„ä¸Šé™ã€‚
+	å¦‚å‰æ‰€è¿°ï¼Œè¯¥é™åˆ¶é€‚ç”¨äºæ™®é€šè¿›ç¨‹ï¼Œ
+	ä½†å†…æ ¸çº¿ç¨‹å¯ä»¥è®¿é—®æ•´ä¸ªè™šæ‹Ÿåœ°å€ç©ºé—´ï¼Œ
+	åŒ…æ‹¬åªæœ‰å†…æ ¸èƒ½è®¿é—®çš„éƒ¨åˆ†ã€‚
+	è¿™å¹¶ä¸æ„å‘³ç€é™åˆ¶è¿›ç¨‹å¯ä»¥åˆ†é…çš„å†…å­˜æ•°é‡ã€‚
 */
 	mm_segment_t		addr_limit;	/* address limit */
 /*
-	±ãµÄÍ¨¹ıthread_infoÀ´²éÕÒtask_struct
+	ä¾¿çš„é€šè¿‡thread_infoæ¥æŸ¥æ‰¾task_struct
 */
 	struct task_struct	*task;		/* main task structure */
 /*
-	½ø³ÌÕıÔÚÆäÉÏÖ´ĞĞµÄCPUÊıÄ¿
+	è¿›ç¨‹æ­£åœ¨å…¶ä¸Šæ‰§è¡Œçš„CPUæ•°ç›®
 */
 	__u32			cpu;		/* cpu */
 	__u32			cpu_domain;	/* cpu domain */
@@ -114,20 +114,20 @@ register unsigned long current_stack_pointer asm ("sp");
  * how to get the thread information struct from C
  */
  /*
- espÖ¸ÏòµÄÊÇÄÚºË¶ÑÕ»µÄ½áÎ²£¬ÓÉÓÚ¶ÑÕ»ÊÇÏòÏÂÔö³¤µÄ£¬
- espºÍthread_infoÎ»ÓÚÍ¬Ò»¸ö8KB»òÕß4KBµÄ¿éµ±ÖĞ¡£  Ò²¾ÍÊÇthread_unionµÄ³¤¶ÈÁË¡£
- Èç¹ûÊÇ8KB£¬ÆÁ±ÎespµÄµÍ13Î»¾Í¿ÉÒÔµÃµ½thread_infoµÄµØÖ·£¬
- Ò²¾ÍÊÇ8KB¿éµÄ¿ªÊ¼Î»ÖÃ¡£4KBµÄ»°£¬¾ÍÆÁ±ÎµÍ12Î»
+ espæŒ‡å‘çš„æ˜¯å†…æ ¸å †æ ˆçš„ç»“å°¾ï¼Œç”±äºå †æ ˆæ˜¯å‘ä¸‹å¢é•¿çš„ï¼Œ
+ espå’Œthread_infoä½äºåŒä¸€ä¸ª8KBæˆ–è€…4KBçš„å—å½“ä¸­ã€‚  ä¹Ÿå°±æ˜¯thread_unionçš„é•¿åº¦äº†ã€‚
+ å¦‚æœæ˜¯8KBï¼Œå±è”½espçš„ä½13ä½å°±å¯ä»¥å¾—åˆ°thread_infoçš„åœ°å€ï¼Œ
+ ä¹Ÿå°±æ˜¯8KBå—çš„å¼€å§‹ä½ç½®ã€‚4KBçš„è¯ï¼Œå°±å±è”½ä½12ä½
  */
 static inline struct thread_info *current_thread_info(void) __attribute_const__;
 /*
-°Ñthread_info·ÅÔÚÄÚºËÕ»µÄµ×²¿ÊÇÒ»¸ö¾«ÇÉµÄÉè¼Æ£¬
-ÒòÎªµ±Ç°½ø³ÌÊÇÒ»¸öÊ¹ÓÃÂÊ¼«¸ßµÄÊı¾İ½á¹¹£¬
-ÔÚ¸ß¶ËCPUÖĞÍùÍù¶¼±£ÁôÁËÒ»¸ö×¨ÃÅµÄ¼Ä´æÆ÷À´´æ·Åµ±Ç°½ø³ÌµÄÖ¸Õë£¬
-±ÈÈçPowerPC¡¢Itanium£¬È»¶øx86µÄ¼Ä´æÆ÷ÊµÔÚÊÇÌ«ÉÙÁË£¬
-×¨ÃÅ·ÖÅäÒ»¸ö¼Ä´æÆ÷ÊµÔÚÌ«Éİ³Ş£¬ËùÒÔLinuxÉè¼ÆÁËthread_info£¬
-°ÑËü·ÅÔÚÄÚºËÕ»µÄµ×²¿£¬ÕâÑùÍ¨¹ıÕ»¼Ä´æÆ÷ÀïµÄÖ¸Õë¿ÉÒÔºÜ·½±ãµØËã³öthread_infoµÄµØÖ·£¬
-½ø¶øµÃµ½½ø³ÌµÄÖ¸Õë
+æŠŠthread_infoæ”¾åœ¨å†…æ ¸æ ˆçš„åº•éƒ¨æ˜¯ä¸€ä¸ªç²¾å·§çš„è®¾è®¡ï¼Œ
+å› ä¸ºå½“å‰è¿›ç¨‹æ˜¯ä¸€ä¸ªä½¿ç”¨ç‡æé«˜çš„æ•°æ®ç»“æ„ï¼Œ
+åœ¨é«˜ç«¯CPUä¸­å¾€å¾€éƒ½ä¿ç•™äº†ä¸€ä¸ªä¸“é—¨çš„å¯„å­˜å™¨æ¥å­˜æ”¾å½“å‰è¿›ç¨‹çš„æŒ‡é’ˆï¼Œ
+æ¯”å¦‚PowerPCã€Itaniumï¼Œç„¶è€Œx86çš„å¯„å­˜å™¨å®åœ¨æ˜¯å¤ªå°‘äº†ï¼Œ
+ä¸“é—¨åˆ†é…ä¸€ä¸ªå¯„å­˜å™¨å®åœ¨å¤ªå¥¢ä¾ˆï¼Œæ‰€ä»¥Linuxè®¾è®¡äº†thread_infoï¼Œ
+æŠŠå®ƒæ”¾åœ¨å†…æ ¸æ ˆçš„åº•éƒ¨ï¼Œè¿™æ ·é€šè¿‡æ ˆå¯„å­˜å™¨é‡Œçš„æŒ‡é’ˆå¯ä»¥å¾ˆæ–¹ä¾¿åœ°ç®—å‡ºthread_infoçš„åœ°å€ï¼Œ
+è¿›è€Œå¾—åˆ°è¿›ç¨‹çš„æŒ‡é’ˆ
 */
 static inline struct thread_info *current_thread_info(void)
 {
@@ -177,11 +177,11 @@ extern int vfp_restore_user_hwstate(struct user_vfp __user *,
  *  TIF_POLLING_NRFLAG	- true if poll_idle() is polling TIF_NEED_RESCHED
  */
 /*
- ½ø³ÌÓĞ´ı¾öĞÅºÅ
+ è¿›ç¨‹æœ‰å¾…å†³ä¿¡å·
 */
 #define TIF_SIGPENDING		0	/* signal pending */
 /*
-½ø³ÌÓ¦¸Ã»òÏëÒªµ÷¶ÈÆ÷Ñ¡ÔñÁíÒ»¸ö½ø³ÌÌæ»»±¾½ø³ÌÖ´ĞĞ
+è¿›ç¨‹åº”è¯¥æˆ–æƒ³è¦è°ƒåº¦å™¨é€‰æ‹©å¦ä¸€ä¸ªè¿›ç¨‹æ›¿æ¢æœ¬è¿›ç¨‹æ‰§è¡Œ
 */
 #define TIF_NEED_RESCHED	1	/* rescheduling necessary */
 #define TIF_NOTIFY_RESUME	2	/* callback before returning to user */

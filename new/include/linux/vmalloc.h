@@ -29,25 +29,25 @@ struct notifier_block;		/* in notifier.h */
 #define IOREMAP_MAX_ORDER	(7 + PAGE_SHIFT)	/* 128 pages */
 #endif
 
-/*½á¹¹±íÊ¾vmallocÇøÖÐÃ¿Ò»¸ö·ÖÅä³öÀ´µÄÐéÄâÄÚ´æ¿é*/
+/*ç»“æž„è¡¨ç¤ºvmallocåŒºä¸­æ¯ä¸€ä¸ªåˆ†é…å‡ºæ¥çš„è™šæ‹Ÿå†…å­˜å—*/
 struct vm_struct {
-	struct vm_struct	*next;	/* ÓÃÀ´°ÑvmallocÇøÖÐËùÓÐÒÑ·ÖÅäµÄ
-					 * struct vm_struct¶ÔÏó¹¹³ÉÁ´±í
-					 * ¸ÃÁ´±íµÄ±íÍ·ÎªÈ«¾Ö±äÁ¿
+	struct vm_struct	*next;	/* ç”¨æ¥æŠŠvmallocåŒºä¸­æ‰€æœ‰å·²åˆ†é…çš„
+					 * struct vm_structå¯¹è±¡æž„æˆé“¾è¡¨
+					 * è¯¥é“¾è¡¨çš„è¡¨å¤´ä¸ºå…¨å±€å˜é‡
 					 * struct vm_struct *vmlist
 					 */
-	void			*addr;/*¶ÔÓ¦ÐéÄâÄÚ´æ¿éµÄÆðÊ¼µØÖ·,Ó¦¸ÃÊ±Ò³¶ÔÆë*/
-	unsigned long		size; /*ÐéÄâÄÚ´æ¿éµÄ´óÐ¡,×ÜÊÇÒ³Ãæ´óÐ¡µÄÕûÊý±¶*/
-	unsigned long		flags;/* µ±Ç°ÐéÄâÄÚ´æ¿éÓ³ÉäÌØÐÔµÄ±êÖ¾
-				       * VM_ALLOC±êÖ¾±íÊ¾µ±Ç°ÐéÄâÄÚ´æ¿éÊÇ¸øvmallocº¯ÊýÊ¹ÓÃ£¬Ó³ÉäµÄÊÇÊµ¼ÊÎïÀíÄÚ´æ(RAM);VM_IOREMAP±íÊ¾µ±Ç°ÐéÄâÄÚ´æ¿éÊÇ¸øioremapÏà¹Øº¯ÊýÊ¹ÓÃ£¬Ó³ÉäµÄÊÇI/O¿Õ¼äµØÖ·£¬Ò²¾ÍÊÇÉè±¸ÄÚ´æ*/
-	struct page		**pages;/*ÊÇ±»Ó³ÉäµÄÎïÀíÄÚ´æÒ³ÃæËùÐÎ³ÉµÄÊý×éÊÕµØÖ·*/
-	unsigned int		nr_pages;/*Ó³ÉäµÄÎïÀíÒ³ÊýÁ¿*/
+	void			*addr;/*å¯¹åº”è™šæ‹Ÿå†…å­˜å—çš„èµ·å§‹åœ°å€,åº”è¯¥æ—¶é¡µå¯¹é½*/
+	unsigned long		size; /*è™šæ‹Ÿå†…å­˜å—çš„å¤§å°,æ€»æ˜¯é¡µé¢å¤§å°çš„æ•´æ•°å€*/
+	unsigned long		flags;/* å½“å‰è™šæ‹Ÿå†…å­˜å—æ˜ å°„ç‰¹æ€§çš„æ ‡å¿—
+				       * VM_ALLOCæ ‡å¿—è¡¨ç¤ºå½“å‰è™šæ‹Ÿå†…å­˜å—æ˜¯ç»™vmallocå‡½æ•°ä½¿ç”¨ï¼Œæ˜ å°„çš„æ˜¯å®žé™…ç‰©ç†å†…å­˜(RAM);VM_IOREMAPè¡¨ç¤ºå½“å‰è™šæ‹Ÿå†…å­˜å—æ˜¯ç»™ioremapç›¸å…³å‡½æ•°ä½¿ç”¨ï¼Œæ˜ å°„çš„æ˜¯I/Oç©ºé—´åœ°å€ï¼Œä¹Ÿå°±æ˜¯è®¾å¤‡å†…å­˜*/
+	struct page		**pages;/*æ˜¯è¢«æ˜ å°„çš„ç‰©ç†å†…å­˜é¡µé¢æ‰€å½¢æˆçš„æ•°ç»„æ”¶åœ°å€*/
+	unsigned int		nr_pages;/*æ˜ å°„çš„ç‰©ç†é¡µæ•°é‡*/
 /*
-	phys_addr½öµ±ÓÃioremapÓ³ÉäÁËÓÉÎïÀíµØÖ·ÃèÊöµÄÎïÀíÄÚ´æÇøÓòÊ±²ÅÐèÒª
+	phys_addrä»…å½“ç”¨ioremapæ˜ å°„äº†ç”±ç‰©ç†åœ°å€æè¿°çš„ç‰©ç†å†…å­˜åŒºåŸŸæ—¶æ‰éœ€è¦
 */
 	phys_addr_t		phys_addr;
 	/**
-     * µ÷ÓÃvmallocº¯ÊýµÄÉÏ²ãº¯ÊýµØÖ·¡£µ÷ÊÔÓÃ¡£
+     * è°ƒç”¨vmallocå‡½æ•°çš„ä¸Šå±‚å‡½æ•°åœ°å€ã€‚è°ƒè¯•ç”¨ã€‚
      */
 	const void		*caller;
 };
@@ -79,7 +79,7 @@ static inline void vmalloc_init(void)
 }
 #endif
 
-/*ÄÚºËÔÚµ÷ÓÃ»ï°éÏµÍ³»ñÈ¡ÎïÀíÄÚ´æÒ³Ê±£¬Ê¹ÓÃÁËGFP_KERNEL|GFP_HIGHMEM±êÖ¾£¬GFP_KERNELÒâÎ¶×Åvmallocº¯ÊýÔÚÖ´ÐÐ¹ý³ÌÖÐ¿ÉÄÜË¯Ãß,Òò´Ë²»ÄÜÔÚÖÐ¶ÏÉÏÏÂÎÄÖÐµ÷ÓÃ*/
+/*å†…æ ¸åœ¨è°ƒç”¨ä¼™ä¼´ç³»ç»ŸèŽ·å–ç‰©ç†å†…å­˜é¡µæ—¶ï¼Œä½¿ç”¨äº†GFP_KERNEL|GFP_HIGHMEMæ ‡å¿—ï¼ŒGFP_KERNELæ„å‘³ç€vmallocå‡½æ•°åœ¨æ‰§è¡Œè¿‡ç¨‹ä¸­å¯èƒ½ç¡çœ ,å› æ­¤ä¸èƒ½åœ¨ä¸­æ–­ä¸Šä¸‹æ–‡ä¸­è°ƒç”¨*/
 extern void *vmalloc(unsigned long size);
 extern void *vzalloc(unsigned long size);
 extern void *vmalloc_user(unsigned long size);
@@ -93,7 +93,7 @@ extern void *__vmalloc_node_range(unsigned long size, unsigned long align,
 			unsigned long start, unsigned long end, gfp_t gfp_mask,
 			pgprot_t prot, unsigned long vm_flags, int node,
 			const void *caller);
-/*ÊÍ·Åvmalloc·ÖÅäµÄÐéÄâµØÖ·¿é*/
+/*é‡Šæ”¾vmallocåˆ†é…çš„è™šæ‹Ÿåœ°å€å—*/
 extern void vfree(const void *addr);
 extern void vfree_atomic(const void *addr);
 
@@ -116,7 +116,7 @@ void vmalloc_sync_all(void);
 static inline size_t get_vm_area_size(const struct vm_struct *area)
 {
 /*
-¼õÈ¥PAGE_SIZEÊÇÒòÎª·ÖÅäÐéÄâµØÖ·¿Õ¼äÊ±¶àÖ¸¶¨ÁËÒ»¸ö¿Õ¶´Ò³Ãæ·ÀÖ¹Ô½½ç 
+å‡åŽ»PAGE_SIZEæ˜¯å› ä¸ºåˆ†é…è™šæ‹Ÿåœ°å€ç©ºé—´æ—¶å¤šæŒ‡å®šäº†ä¸€ä¸ªç©ºæ´žé¡µé¢é˜²æ­¢è¶Šç•Œ 
 */
 	if (!(area->flags & VM_NO_GUARD))
 		/* return actual size without guard page */

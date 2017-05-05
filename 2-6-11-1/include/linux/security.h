@@ -1025,10 +1025,10 @@ struct swap_info_struct;
  * This is the main security structure.
  */
 
-/* ÄÚºË°²È«½á¹¹Ìå
-  * linuxÄÚºË¶ÔÓÚ³ÌĞòµÄÔËĞĞ¡¢ÎÄ¼şÏµÍ³µÄ³¬¼¶¿éºÍ½ÚµãÒÔ¼°ÎÄ¼ş²Ù×÷¡¢
-  * ÈÎÎñ²Ù×÷¡¢ÍøÂçÁ¬½Ó¡¢socket¡¢System V½ø³Ì¼äÍ¨ĞÅµÈÌá¹©ÁË¶ÔÓ¦°²È«²Ù×÷º¯Êı
-  * ¸Ã½á¹¹ÌåÈ«ÊÇ»Øµ÷º¯Êı
+/* å†…æ ¸å®‰å…¨ç»“æ„ä½“
+  * linuxå†…æ ¸å¯¹äºç¨‹åºçš„è¿è¡Œã€æ–‡ä»¶ç³»ç»Ÿçš„è¶…çº§å—å’ŒèŠ‚ç‚¹ä»¥åŠæ–‡ä»¶æ“ä½œã€
+  * ä»»åŠ¡æ“ä½œã€ç½‘ç»œè¿æ¥ã€socketã€System Vè¿›ç¨‹é—´é€šä¿¡ç­‰æä¾›äº†å¯¹åº”å®‰å…¨æ“ä½œå‡½æ•°
+  * è¯¥ç»“æ„ä½“å…¨æ˜¯å›è°ƒå‡½æ•°
   */
 struct security_operations {
 	int (*ptrace) (struct task_struct * parent, struct task_struct * child);
@@ -2562,7 +2562,7 @@ static inline int security_unix_may_send(struct socket * sock,
 	return security_ops->unix_may_send(sock, other);
 }
 
-/* Í¨¹ıLSM°²È«Ä£¿éÀ´´´½¨Ì×½Ó×Ö */
+/* é€šè¿‡LSMå®‰å…¨æ¨¡å—æ¥åˆ›å»ºå¥—æ¥å­— */
 static inline int security_socket_create (int family, int type,
 					  int protocol, int kern)
 {

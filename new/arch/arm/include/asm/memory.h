@@ -50,10 +50,10 @@
  * and PAGE_OFFSET - it must be within 32MB of the kernel text.
  */
 /*
- MODULES_VADDRΪPAGE_OFFSETҲ��0xc0000000����ƫ�Ƶ�16M��ַ0xbf000000��
- ���������ں�ģ����صĵ�ַ��
- ͨ��lsmod����procϵͳ���Բ鿴��ǰϵͳ�е�ģ���ַ�������,
- ���е�ģ���ַӦ��λ��MODULES_VADDR��MODULES_END֮�䡣
+ MODULES_VADDR为PAGE_OFFSET也即0xc0000000向下偏移的16M地址0xbf000000，
+ 它定义了内核模块加载的地址。
+ 通过lsmod或者proc系统可以查看当前系统中的模块地址分配情况,
+ 所有的模块地址应该位于MODULES_VADDR和MODULES_END之间。
 */
 #ifndef CONFIG_THUMB2_KERNEL
 #define MODULES_VADDR		(PAGE_OFFSET - SZ_16M)

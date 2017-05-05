@@ -52,7 +52,7 @@ extern unsigned long __per_cpu_offset[];
 /* Separate out the type, so (int[3], foo) works. */
 #define DECLARE_PER_CPU(type, name) extern __typeof__(type) per_cpu__##name
 /** 
- * 定义每CPU变量 
+ * 瀹氫箟姣廋PU鍙橀噺 
  */
 #define DEFINE_PER_CPU(type, name) \
     __attribute__((__section__(".data.percpu"))) __typeof__(type) per_cpu__##name

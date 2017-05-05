@@ -12,52 +12,52 @@
  *   then it defines them prior including asm-generic/resource.h. )
  */
 
-/* °´ºÁÃë¼ÆËãµÄ×î´óCPUÊ±¼ä */
+/* æŒ‰æ¯«ç§’è®¡ç®—çš„æœ€å¤§CPUæ—¶é—´ */
 #define RLIMIT_CPU		0	/* CPU time in sec */
-/* ÔÊĞíµÄ×î´óÎÄ¼ş³¤¶È */
+/* å…è®¸çš„æœ€å¤§æ–‡ä»¶é•¿åº¦ */
 #define RLIMIT_FSIZE		1	/* Maximum filesize */
-/* Êı¾İ¶ÎµÄ×î´ó³¤¶È */
+/* æ•°æ®æ®µçš„æœ€å¤§é•¿åº¦ */
 #define RLIMIT_DATA		2	/* max data size */
-/* ÓÃ»§Õ»µÄ×î´ó³¤¶È */
+/* ç”¨æˆ·æ ˆçš„æœ€å¤§é•¿åº¦ */
 #define RLIMIT_STACK		3	/* max stack size */
-/* ÄÚ´æ×ª´¢ÎÄ¼şµÄ×î´ó³¤¶È */
+/* å†…å­˜è½¬å‚¨æ–‡ä»¶çš„æœ€å¤§é•¿åº¦ */
 #define RLIMIT_CORE		4	/* max core file size */
 
 #ifndef RLIMIT_RSS
-/* ×î´ó³£×¤ÄÚ´æ³¤¶È£¬Ä¿Ç°Î´ÓÃ */
+/* æœ€å¤§å¸¸é©»å†…å­˜é•¿åº¦ï¼Œç›®å‰æœªç”¨ */
 # define RLIMIT_RSS		5	/* max resident set size */
 #endif
 
 #ifndef RLIMIT_NPROC
-/* ÓÃ»§¿ÉÒÔÓµÓĞµÄ×î´ó½ø³ÌÊıÄ¿£¬Ä¬ÈÏÎªmax_threads/2¡£max_threadsÖµÓÉ¿ÉÓÃÄÚ´æ¾ö¶¨¡£ */
+/* ç”¨æˆ·å¯ä»¥æ‹¥æœ‰çš„æœ€å¤§è¿›ç¨‹æ•°ç›®ï¼Œé»˜è®¤ä¸ºmax_threads/2ã€‚max_threadså€¼ç”±å¯ç”¨å†…å­˜å†³å®šã€‚ */
 # define RLIMIT_NPROC		6	/* max number of processes */
 #endif
 
 #ifndef RLIMIT_NOFILE
-/* ´ò¿ªÎÄ¼şÊıÁ¿ÏŞÖÆ£¬Ä¬ÈÏÎª1024 */
+/* æ‰“å¼€æ–‡ä»¶æ•°é‡é™åˆ¶ï¼Œé»˜è®¤ä¸º1024 */
 # define RLIMIT_NOFILE		7	/* max number of open files */
 #endif
 
 #ifndef RLIMIT_MEMLOCK
-/* ²»¿É»»³öÒ³µÄ×î´óÊıÄ¿ */
+/* ä¸å¯æ¢å‡ºé¡µçš„æœ€å¤§æ•°ç›® */
 # define RLIMIT_MEMLOCK		8	/* max locked-in-memory address space */
 #endif
 
 #ifndef RLIMIT_AS
-/* ½ø³ÌµØÖ·¿Õ¼äÏŞÖÆ */
+/* è¿›ç¨‹åœ°å€ç©ºé—´é™åˆ¶ */
 # define RLIMIT_AS		9	/* address space limit */
 #endif
 
-/* ÎÄ¼şËøµÄ×î´óÊıÄ¿ */
+/* æ–‡ä»¶é”çš„æœ€å¤§æ•°ç›® */
 #define RLIMIT_LOCKS		10	/* maximum file locks held */
-/* Î´¾öĞÅºÅµÄ×î´óÊıÁ¿ */
+/* æœªå†³ä¿¡å·çš„æœ€å¤§æ•°é‡ */
 #define RLIMIT_SIGPENDING	11	/* max number of pending signals */
-/* POSIXÏûÏ¢¶ÓÁĞµÄ×î´óÊıÁ¿£¬ÒÔ×Ö½ÚÎªµ¥Î» */
+/* POSIXæ¶ˆæ¯é˜Ÿåˆ—çš„æœ€å¤§æ•°é‡ï¼Œä»¥å­—èŠ‚ä¸ºå•ä½ */
 #define RLIMIT_MSGQUEUE		12	/* maximum bytes in POSIX mqueues */
-/* ·ÇÊµÊ±½ø³ÌµÄ×î´óÓÅÏÈ¼¶ */
+/* éå®æ—¶è¿›ç¨‹çš„æœ€å¤§ä¼˜å…ˆçº§ */
 #define RLIMIT_NICE		13	/* max nice prio allowed to raise to
 					   0-39 for nice level 19 .. -20 */
-/* ÊµÊ±½ø³ÌµÄ×î´óÓÅÏÈ¼¶ */
+/* å®æ—¶è¿›ç¨‹çš„æœ€å¤§ä¼˜å…ˆçº§ */
 #define RLIMIT_RTPRIO		14	/* maximum realtime priority */
 
 #define RLIM_NLIMITS		15
@@ -69,7 +69,7 @@
  * Some architectures override this (for compatibility reasons):
  */
 #ifndef RLIM_INFINITY
-/* ÏàÓ¦µÄ×ÊÔ´Î´×÷ÏŞÖÆ */
+/* ç›¸åº”çš„èµ„æºæœªä½œé™åˆ¶ */
 # define RLIM_INFINITY		(~0UL)
 #endif
 
@@ -86,7 +86,7 @@
  * boot-time rlimit defaults for the init task:
  */
 /**
- * INIT½ø³ÌµÄ×ÊÔ´ÏŞÖÆ
+ * INITè¿›ç¨‹çš„èµ„æºé™åˆ¶
  */
 #define INIT_RLIMITS							\
 {									\

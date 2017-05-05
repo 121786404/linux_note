@@ -30,7 +30,7 @@ static struct bio *get_swap_bio(gfp_t gfp_flags, pgoff_t index,
 		swp_entry_t entry = { .val = index, };
 
 		sis = get_swap_info_struct(swp_type(entry));
-		/* ËÑË÷Çø¼äÁ´±í£¬²éÕÒ²ÛÎ»Óë´ÅÅÌ¿éÖ®¼äµÄÓ³Éä */
+		/* æœç´¢åŒºé—´é“¾è¡¨ï¼ŒæŸ¥æ‰¾æ§½ä½ä¸Žç£ç›˜å—ä¹‹é—´çš„æ˜ å°„ */
 		bio->bi_sector = map_swap_page(sis, swp_offset(entry)) *
 					(PAGE_SIZE >> 9);
 		bio->bi_bdev = sis->bdev;
@@ -95,22 +95,22 @@ void end_swap_bio_read(struct bio *bio, int err)
  * them here and get rid of the unnecessary final write.
  */
 /**
- * ½«Ò³ÃæÊý¾ÝÐ´Èëµ½½»»»ÇøÖ¸¶¨Î»ÖÃ
+ * å°†é¡µé¢æ•°æ®å†™å…¥åˆ°äº¤æ¢åŒºæŒ‡å®šä½ç½®
  */
 int swap_writepage(struct page *page, struct writeback_control *wbc)
 {
 	struct bio *bio;
 	int ret = 0, rw = WRITE;
 
-	/* Èç¹ûÒ³Ãæ½ö½öÓÉ½»»»»º´æÊ¹ÓÃ£¬Ôò¿ÉÒÔ´ÓÄÚ´æÖÐÒÆ³ý */
+	/* å¦‚æžœé¡µé¢ä»…ä»…ç”±äº¤æ¢ç¼“å­˜ä½¿ç”¨ï¼Œåˆ™å¯ä»¥ä»Žå†…å­˜ä¸­ç§»é™¤ */
 	if (remove_exclusive_swap_page(page)) {
 		unlock_page(page);
 		goto out;
 	}
-	/* Îª½»»»Ò³Éú³ÉÒ»¸öbio£¬²¢ÕýÈ·Ìî³äËùÐèµÄ²ÎÊý */
+	/* ä¸ºäº¤æ¢é¡µç”Ÿæˆä¸€ä¸ªbioï¼Œå¹¶æ­£ç¡®å¡«å……æ‰€éœ€çš„å‚æ•° */
 	bio = get_swap_bio(GFP_NOIO, page_private(page), page,
-				end_swap_bio_write);/* end_swap_bio_writeÇå³ý»ØÐ´±êÖ¾ */
-	if (bio == NULL) {/* Ã»ÄÚ´æÁË */
+				end_swap_bio_write);/* end_swap_bio_writeæ¸…é™¤å›žå†™æ ‡å¿— */
+	if (bio == NULL) {/* æ²¡å†…å­˜äº† */
 		set_page_dirty(page);
 		unlock_page(page);
 		ret = -ENOMEM;
@@ -119,10 +119,10 @@ int swap_writepage(struct page *page, struct writeback_control *wbc)
 	if (wbc->sync_mode == WB_SYNC_ALL)
 		rw |= (1 << BIO_RW_SYNC);
 	count_vm_event(PSWPOUT);
-	/* ÉèÖÃ»ØÐ´±êÖ¾ */
+	/* è®¾ç½®å›žå†™æ ‡å¿— */
 	set_page_writeback(page);
 	unlock_page(page);
-	/* Ìá½»bio */
+	/* æäº¤bio */
 	submit_bio(rw, bio);
 out:
 	return ret;
@@ -135,7 +135,7 @@ int swap_readpage(struct file *file, struct page *page)
 
 	BUG_ON(!PageLocked(page));
 	ClearPageUptodate(page);
-	/* Éú³É¶ÁÇëÇóBIO */
+	/* ç”Ÿæˆè¯»è¯·æ±‚BIO */
 	bio = get_swap_bio(GFP_KERNEL, page_private(page), page,
 				end_swap_bio_read);
 	if (bio == NULL) {
@@ -144,7 +144,7 @@ int swap_readpage(struct file *file, struct page *page)
 		goto out;
 	}
 	count_vm_event(PSWPIN);
-	/* Ìá½»¶ÁÇëÇó */
+	/* æäº¤è¯»è¯·æ±‚ */
 	submit_bio(READ, bio);
 out:
 	return ret;

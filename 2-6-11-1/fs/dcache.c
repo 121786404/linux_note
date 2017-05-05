@@ -63,7 +63,7 @@ static struct hlist_head *dentry_hashtable;
 static LIST_HEAD(dentry_unused);
 
 /* Statistics gathering. */
-/* Í³¼ÆdentryĞÅÏ¢µÄ½á¹¹ */
+/* ç»Ÿè®¡dentryä¿¡æ¯çš„ç»“æ„ */
 struct dentry_stat_t dentry_stat = {
 	.age_limit = 45,
 };
@@ -711,7 +711,7 @@ static int shrink_dcache_memory(int nr, unsigned int gfp_mask)
  * copied and the copy passed in may be reused after this call.
  */
 
-/* ´Ó¸¸Ä¿Â¼ÖĞ·ÖÅäÒ»¸öÃû³ÆÎªnameµÄ×ÓÄ¿Â¼ */
+/* ä»çˆ¶ç›®å½•ä¸­åˆ†é…ä¸€ä¸ªåç§°ä¸ºnameçš„å­ç›®å½• */
 struct dentry *d_alloc(struct dentry * parent, const struct qstr *name)
 {
 	struct dentry *dentry;
@@ -752,7 +752,7 @@ struct dentry *d_alloc(struct dentry * parent, const struct qstr *name)
 	INIT_LIST_HEAD(&dentry->d_subdirs);
 	INIT_LIST_HEAD(&dentry->d_alias);
 
-        /* ÉèÖÃÄ¿Â¼µÄ¸¸Ä¿Â¼ */
+        /* è®¾ç½®ç›®å½•çš„çˆ¶ç›®å½• */
 	if (parent) {
 		dentry->d_parent = dget(parent);
 		dentry->d_sb = parent->d_sb;
@@ -761,7 +761,7 @@ struct dentry *d_alloc(struct dentry * parent, const struct qstr *name)
 	}
 
 	spin_lock(&dcache_lock);
-        /* ½«ÆäÌí¼Óµ½¸¸Ä¿Â¼µÄº¢×ÓÄ¿Â¼ÖĞ */
+        /* å°†å…¶æ·»åŠ åˆ°çˆ¶ç›®å½•çš„å­©å­ç›®å½•ä¸­ */
 	if (parent)
 		list_add(&dentry->d_child, &parent->d_subdirs);
 	dentry_stat.nr_dentry++;
@@ -795,18 +795,18 @@ struct dentry *d_alloc_name(struct dentry *parent, const char *name)
  * in use by the dcache.
  */
  
-/* ÒòÎªÒ»¸öinode¿ÉÒÔÓĞ¶à¸ödentry¿ÉÒÔºÍËü¶ÔÓ¦ */
+/* å› ä¸ºä¸€ä¸ªinodeå¯ä»¥æœ‰å¤šä¸ªdentryå¯ä»¥å’Œå®ƒå¯¹åº” */
 void d_instantiate(struct dentry *entry, struct inode * inode)
 {
-        /* ÅĞ¶Ï¸ÃentryÊÇ²»ÊÇÄ³¸öinode±ğÃû */
+        /* åˆ¤æ–­è¯¥entryæ˜¯ä¸æ˜¯æŸä¸ªinodeåˆ«å */
 	if (!list_empty(&entry->d_alias)) BUG();
 	spin_lock(&dcache_lock);
 	if (inode)
-		list_add(&entry->d_alias, &inode->i_dentry);    /* ½«µ±Ç°µÄentryÌí¼Óµ½inodeµÄi_dentryÁ´±íµ±ÖĞ */
-        /* ÉèÖÃentryµÄd_inodeÎªinode */
+		list_add(&entry->d_alias, &inode->i_dentry);    /* å°†å½“å‰çš„entryæ·»åŠ åˆ°inodeçš„i_dentryé“¾è¡¨å½“ä¸­ */
+        /* è®¾ç½®entryçš„d_inodeä¸ºinode */
 	entry->d_inode = inode;
 	spin_unlock(&dcache_lock);
-        /* ½øĞĞ°²È«ĞÔ²Ù×÷ */
+        /* è¿›è¡Œå®‰å…¨æ€§æ“ä½œ */
 	security_d_instantiate(entry, inode);
 }
 
@@ -868,7 +868,7 @@ EXPORT_SYMBOL(d_instantiate_unique);
  */
  
 
-/* ·ÖÅäÎÄ¼şÏµÍ³µÄ¡®/'Ä¿Â¼ */
+/* åˆ†é…æ–‡ä»¶ç³»ç»Ÿçš„â€˜/'ç›®å½• */
 struct dentry * d_alloc_root(struct inode * root_inode)
 {
 	struct dentry *res = NULL;
@@ -876,11 +876,11 @@ struct dentry * d_alloc_root(struct inode * root_inode)
 	if (root_inode) {
 		static const struct qstr name = { .name = "/", .len = 1 };
                 
-                /* ·ÖÅä¸ùÄ¿Â¼ */
+                /* åˆ†é…æ ¹ç›®å½• */
 		res = d_alloc(NULL, &name);
 		if (res) {
 			res->d_sb = root_inode->i_sb;
-                        /* ¸ùÄ¿Â¼µÄ¸¸Ä¿Â¼ÊÇ×Ô¼º */
+                        /* æ ¹ç›®å½•çš„çˆ¶ç›®å½•æ˜¯è‡ªå·± */
 			res->d_parent = res;
 			d_instantiate(res, root_inode);
 		}
@@ -1744,7 +1744,7 @@ void __init vfs_caches_init(unsigned long mempages)
 	dcache_init(mempages);
 	inode_init(mempages);
 	files_init(mempages);
-        /* ¹ÒÔØ³õÊ¼»¯ */
+        /* æŒ‚è½½åˆå§‹åŒ– */
 	mnt_init(mempages);
 	bdev_cache_init();
 	chrdev_init();

@@ -21,17 +21,17 @@ static long do_ioctl(struct file *filp, unsigned int cmd,
 {
 	int error = -ENOTTY;
 
-	if (!filp->f_op)/* ÎÄ¼şÃ»ÓĞÖ¸¶¨f_op£¬Ò²¾ÍÃ»ÓĞÊµÏÖÆäioctl */
+	if (!filp->f_op)/* æ–‡ä»¶æ²¡æœ‰æŒ‡å®šf_opï¼Œä¹Ÿå°±æ²¡æœ‰å®ç°å…¶ioctl */
 		goto out;
 
-	if (filp->f_op->unlocked_ioctl) {/* ¸ÃÎÄ¼şÊµÏÖÁËunlocked_ioctl£¬ÕâÊÇĞÂµÄÇı¶¯³ÌĞò */
-		/* µ÷ÓÃÉè±¸µÄioctl·½·¨£¬¶Ô¿éÉè±¸À´Ëµ£¬ÊÇblkdev_ioctl */
+	if (filp->f_op->unlocked_ioctl) {/* è¯¥æ–‡ä»¶å®ç°äº†unlocked_ioctlï¼Œè¿™æ˜¯æ–°çš„é©±åŠ¨ç¨‹åº */
+		/* è°ƒç”¨è®¾å¤‡çš„ioctlæ–¹æ³•ï¼Œå¯¹å—è®¾å¤‡æ¥è¯´ï¼Œæ˜¯blkdev_ioctl */
 		error = filp->f_op->unlocked_ioctl(filp, cmd, arg);
 		if (error == -ENOIOCTLCMD)
 			error = -EINVAL;
 		goto out;
-	} else if (filp->f_op->ioctl) {/* ¾ÉÇı¶¯£¬Ã»ÓĞÊµÏÖunlock°æ±¾ */
-		lock_kernel();/* »ñÈ¡´óÄÚºËËøÒÔºóÔÙµ÷ÓÃÆäioctl»Øµ÷ */
+	} else if (filp->f_op->ioctl) {/* æ—§é©±åŠ¨ï¼Œæ²¡æœ‰å®ç°unlockç‰ˆæœ¬ */
+		lock_kernel();/* è·å–å¤§å†…æ ¸é”ä»¥åå†è°ƒç”¨å…¶ioctlå›è°ƒ */
 		error = filp->f_op->ioctl(filp->f_path.dentry->d_inode,
 					  filp, cmd, arg);
 		unlock_kernel();
@@ -145,10 +145,10 @@ int vfs_ioctl(struct file *filp, unsigned int fd, unsigned int cmd, unsigned lon
 			else
 				error = -ENOTTY;
 			break;
-		default:/* ·Ç±ê×¼µÄioctlµ÷ÓÃ */
-			if (S_ISREG(filp->f_path.dentry->d_inode->i_mode))/* ÆÕÍ¨ÎÄ¼ş */
+		default:/* éæ ‡å‡†çš„ioctlè°ƒç”¨ */
+			if (S_ISREG(filp->f_path.dentry->d_inode->i_mode))/* æ™®é€šæ–‡ä»¶ */
 				error = file_ioctl(filp, cmd, arg);
-			else/* ·ÇÆÕÍ¨ÎÄ¼ş£¬µ÷ÓÃÌØ¶¨µÄÎÄ¼şioctl */
+			else/* éæ™®é€šæ–‡ä»¶ï¼Œè°ƒç”¨ç‰¹å®šçš„æ–‡ä»¶ioctl */
 				error = do_ioctl(filp, cmd, arg);
 			break;
 	}
@@ -156,7 +156,7 @@ int vfs_ioctl(struct file *filp, unsigned int fd, unsigned int cmd, unsigned lon
 }
 
 /**
- * ioctlÏµÍ³µ÷ÓÃ
+ * ioctlç³»ç»Ÿè°ƒç”¨
  */
 asmlinkage long sys_ioctl(unsigned int fd, unsigned int cmd, unsigned long arg)
 {
@@ -164,20 +164,20 @@ asmlinkage long sys_ioctl(unsigned int fd, unsigned int cmd, unsigned long arg)
 	int error = -EBADF;
 	int fput_needed;
 
-	/* ¸ù¾İÎÄ¼şidµÃµ½ÎÄ¼şÃèÊöÃèÊö·û */
+	/* æ ¹æ®æ–‡ä»¶idå¾—åˆ°æ–‡ä»¶æè¿°æè¿°ç¬¦ */
 	filp = fget_light(fd, &fput_needed);
-	if (!filp)/* ÎÄ¼şÎ´´ò¿ª£¬ÍË³ö */
+	if (!filp)/* æ–‡ä»¶æœªæ‰“å¼€ï¼Œé€€å‡º */
 		goto out;
 
-	/* selinux¼ì²éÊÇ·ñÓĞÈ¨ÏŞ½øĞĞioctl²Ù×÷ */
+	/* selinuxæ£€æŸ¥æ˜¯å¦æœ‰æƒé™è¿›è¡Œioctlæ“ä½œ */
 	error = security_file_ioctl(filp, cmd, arg);
 	if (error)
 		goto out_fput;
 
-	/* ½øĞĞioctlµ÷ÓÃ */
+	/* è¿›è¡Œioctlè°ƒç”¨ */
 	error = vfs_ioctl(filp, fd, cmd, arg);
  out_fput:
- 	/* µİ¼õÎÄ¼şÃèÊö·ûµÄÒıÓÃ */
+ 	/* é€’å‡æ–‡ä»¶æè¿°ç¬¦çš„å¼•ç”¨ */
 	fput_light(filp, fput_needed);
  out:
 	return error;

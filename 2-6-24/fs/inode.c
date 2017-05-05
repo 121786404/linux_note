@@ -1181,7 +1181,7 @@ EXPORT_SYMBOL(iput);
  *	file.
  */
 /**
- * 获得某个文件某个逻辑块的磁盘块号
+ * 鑾峰緱鏌愪釜鏂囦欢鏌愪釜閫昏緫鍧楃殑纾佺洏鍧楀彿
  */
 sector_t bmap(struct inode * inode, sector_t block)
 {
@@ -1431,7 +1431,7 @@ void __init inode_init(void)
 }
 
 /**
- * 在打开设备文件时，由此函数为设备文件创建inode
+ * 鍦ㄦ墦寮�璁惧鏂囦欢鏃讹紝鐢辨鍑芥暟涓鸿澶囨枃浠跺垱寤篿node
  */
 void init_special_inode(struct inode *inode, umode_t mode, dev_t rdev)
 {

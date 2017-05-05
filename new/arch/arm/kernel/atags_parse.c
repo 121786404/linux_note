@@ -179,7 +179,7 @@ static void __init squash_mem_tags(struct tag *tag)
 }
 
 /*
-¶Ôuboot´«µİÀ´µÄtags½øĞĞ½âÎö£¬»ñÈ¡mem cmdlineµÈĞÅÏ¢
+å¯¹ubootä¼ é€’æ¥çš„tagsè¿›è¡Œè§£æï¼Œè·å–mem cmdlineç­‰ä¿¡æ¯
 */
 const struct machine_desc * __init
 setup_machine_tags(phys_addr_t __atags_pointer, unsigned int machine_nr)
@@ -194,28 +194,28 @@ setup_machine_tags(phys_addr_t __atags_pointer, unsigned int machine_nr)
 	 * locate machine in the list of supported machines.
 	 */
 	/**
-	 * ±éÀúÖ§³ÖµÄÃèÊö·û±í
+	 * éå†æ”¯æŒçš„æè¿°ç¬¦è¡¨
 	 */
 	for_each_machine_desc(p)
-		if (machine_nr == p->nr) {//Æ¥Åä
+		if (machine_nr == p->nr) {//åŒ¹é…
 			pr_info("Machine: %s\n", p->name);
 			mdesc = p;
 			break;
 		}
 
-	if (!mdesc) {//²»Ö§³ÖµÄ»úÆ÷ÀàĞÍ
+	if (!mdesc) {//ä¸æ”¯æŒçš„æœºå™¨ç±»å‹
 		early_print("\nError: unrecognized/unsupported machine ID"
 			    " (r1 = 0x%08x).\n\n", machine_nr);
 		dump_machine_table(); /* does not return */
 	}
 
 	/**
-	 * »ñµÃÉúĞ§µÄatags
+	 * è·å¾—ç”Ÿæ•ˆçš„atags
 	 */
 	if (__atags_pointer)
-		tags = phys_to_virt(__atags_pointer);//ÓÅÏÈÊ¹ÓÃboot´«¹ıÀ´µÄtags
+		tags = phys_to_virt(__atags_pointer);//ä¼˜å…ˆä½¿ç”¨bootä¼ è¿‡æ¥çš„tags
 	else if (mdesc->atag_offset)
-		tags = (void *)(PAGE_OFFSET + mdesc->atag_offset);//·ñÔòÊ¹ÓÃ»úÆ÷ĞÅÏ¢½á¹¹ÌåÖĞµÄÖµ¡£
+		tags = (void *)(PAGE_OFFSET + mdesc->atag_offset);//å¦åˆ™ä½¿ç”¨æœºå™¨ä¿¡æ¯ç»“æ„ä½“ä¸­çš„å€¼ã€‚
 
 #if defined(CONFIG_DEPRECATED_PARAM_STRUCT)
 	/*
@@ -226,23 +226,23 @@ setup_machine_tags(phys_addr_t __atags_pointer, unsigned int machine_nr)
 		convert_to_tag_list(tags);
 #endif
 	/**
-	 * µÚÒ»Ïî±ØĞëÊÇATAG_COREÀàĞÍ£¬È»ºóÊÇATAG_MEM,ATAG_CMDLINE,ATAG_NONEµÈµÈ
-	 * Èç¹û²»ÊÇ£¬¿ÉÄÜÊÇÑÏÖØµÄ¹ÊÕÏ£¬Ê¹ÓÃÄ¬ÈÏµÄatags¡£
+	 * ç¬¬ä¸€é¡¹å¿…é¡»æ˜¯ATAG_COREç±»å‹ï¼Œç„¶åæ˜¯ATAG_MEM,ATAG_CMDLINE,ATAG_NONEç­‰ç­‰
+	 * å¦‚æœä¸æ˜¯ï¼Œå¯èƒ½æ˜¯ä¸¥é‡çš„æ•…éšœï¼Œä½¿ç”¨é»˜è®¤çš„atagsã€‚
 	 */
 	if (tags->hdr.tag != ATAG_CORE) {
 		early_print("Warning: Neither atags nor dtb found\n");
 		tags = (struct tag *)&default_tags;
 	}
 
-	if (mdesc->fixup)//ÏÈ´¦Àífixup
+	if (mdesc->fixup)//å…ˆå¤„ç†fixup
 		mdesc->fixup(tags, &from);
 
-	if (tags->hdr.tag == ATAG_CORE) {//atagsÓĞĞ§
-		if (memblock_phys_mem_size())//Èç¹ûfixupÖĞÒÑ¾­´¦ÀíÁËmeminfo
-			squash_mem_tags(tags);//ºöÂÔatagsÖĞµÄATAG_MEM
-		//¸´ÖÆÒ»·İatags
+	if (tags->hdr.tag == ATAG_CORE) {//atagsæœ‰æ•ˆ
+		if (memblock_phys_mem_size())//å¦‚æœfixupä¸­å·²ç»å¤„ç†äº†meminfo
+			squash_mem_tags(tags);//å¿½ç•¥atagsä¸­çš„ATAG_MEM
+		//å¤åˆ¶ä¸€ä»½atags
 		save_atags(tags);
-		//´¦Àíatags
+		//å¤„ç†atags
 		parse_tags(tags);
 	}
 

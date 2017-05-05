@@ -7,11 +7,11 @@ struct vfsmount;
 struct fs_struct {
 	atomic_t count;
 	rwlock_t lock;
-	/* ĞÂÎÄ¼şµÄÈ¨ÏŞ£¬Ê¹ÓÃumaskÃüÁîÉèÖÃ */
+	/* æ–°æ–‡ä»¶çš„æƒé™ï¼Œä½¿ç”¨umaskå‘½ä»¤è®¾ç½® */
 	int umask;
-	/* ½ø³Ì¸ùÄ¿Â¼¡¢µ±Ç°Ä¿Â¼¡£altrootÓÃÓÚ·ÂÕæ */
+	/* è¿›ç¨‹æ ¹ç›®å½•ã€å½“å‰ç›®å½•ã€‚altrootç”¨äºä»¿çœŸ */
 	struct dentry * root, * pwd, * altroot;
-	/* ËùÔÚµÄmountµã */
+	/* æ‰€åœ¨çš„mountç‚¹ */
 	struct vfsmount * rootmnt, * pwdmnt, * altrootmnt;
 };
 

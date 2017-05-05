@@ -38,14 +38,14 @@ typedef union sigval {
 #ifndef HAVE_ARCH_SIGINFO_T
 
 typedef struct siginfo {
-	/* �źű�� */
+	/* 信号编号 */
 	int si_signo;
-	/* ����ź��ɴ������������ʾ�������Ĵ���� */
+	/* 如果信号由错误引发，则表示引起错误的错误号 */
 	int si_errno;
-	/* �ź���Դ����SI_USER */
+	/* 信号来源，如SI_USER */
 	int si_code;
 
-	/* �ں˴����ź�����Ҫ�ĸ�����Ϣ����_sigfault��ʾ�����źŵ�ָ����û��ռ��ַ */
+	/* 内核处理信号所需要的附加信息，如_sigfault表示引发信号的指令的用户空间地址 */
 	union {
 		int _pad[SI_PAD_SIZE];
 

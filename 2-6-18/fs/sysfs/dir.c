@@ -120,12 +120,12 @@ static int init_symlink(struct inode * inode)
 	return 0;
 }
 
-//´´½¨Ä¿Â¼
+//åˆ›å»ºç›®å½•
 static int create_dir(struct kobject * k, struct dentry * p,
 		      const char * n, struct dentry ** d)
 {
 	int error;
-	umode_t mode = S_IFDIR| S_IRWXU | S_IRUGO | S_IXUGO;¡¡//Ö¸¶¨ÊÇÒ»¸öÄ¿Â¼²Ù×÷
+	umode_t mode = S_IFDIR| S_IRWXU | S_IRUGO | S_IXUGO;ã€€//æŒ‡å®šæ˜¯ä¸€ä¸ªç›®å½•æ“ä½œ
 
 	mutex_lock(&p->d_inode->i_mutex);
 	*d = lookup_one_len(n, p, strlen(n));
@@ -165,20 +165,20 @@ int sysfs_create_subdir(struct kobject * k, const char * n, struct dentry ** d)
 }
 
 /**
- *	sysfs_create_dir - Îªkobj¶ÔÏó´´½¨Ò»¸öÄ¿Â¼¡£
+ *	sysfs_create_dir - ä¸ºkobjå¯¹è±¡åˆ›å»ºä¸€ä¸ªç›®å½•ã€‚
  *	@parent:	parent parent object.
- *	@kobj:		Òª´´½¨Ä¿Â¼µÄ¶ÔÏó. 
+ *	@kobj:		è¦åˆ›å»ºç›®å½•çš„å¯¹è±¡. 
  */
 
 int sysfs_create_dir(struct kobject * kobj)
 {
 	struct dentry * dentry = NULL;
-	struct dentry * parent; //¸¸dentry
+	struct dentry * parent; //çˆ¶dentry
 	int error = 0;
 
 	BUG_ON(!kobj);
 
-	//ÉèÖÃ¸¸dentry,Èç¹ûÃ»ÓĞdentry,Ö¸¶¨ÎÄ¼şÏµÍ³µÄroot dentryÎª¸¸dentry
+	//è®¾ç½®çˆ¶dentry,å¦‚æœæ²¡æœ‰dentry,æŒ‡å®šæ–‡ä»¶ç³»ç»Ÿçš„root dentryä¸ºçˆ¶dentry
 	if (kobj->parent)
 		parent = kobj->parent->dentry;
 	else if (sysfs_mount && sysfs_mount->mnt_sb)
@@ -186,7 +186,7 @@ int sysfs_create_dir(struct kobject * kobj)
 	else
 		return -EFAULT;
 
-	//Íê³ÉÄ¿Â¼µÄ´´½¨
+	//å®Œæˆç›®å½•çš„åˆ›å»º
 	error = create_dir(kobj,parent,kobject_name(kobj),&dentry);
 	if (!error)
 		kobj->dentry = dentry;

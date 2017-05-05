@@ -71,7 +71,7 @@ static int elf_core_dump(long signr, struct pt_regs *regs, struct file *file, un
 #define ELF_PAGEOFFSET(_v) ((_v) & (ELF_MIN_ALIGN-1))
 #define ELF_PAGEALIGN(_v) (((_v) + ELF_MIN_ALIGN - 1) & ~(ELF_MIN_ALIGN - 1))
 
-/*±ê×¼Ö´ĞĞ¸ñÊ½£¬ÓëÌåÏµ½á¹¹ÎŞ¹Ø£¬¿ÉÒÔÊÇ32Î»Ò²¿ÉÒÔÊÇ64Î» */
+/*æ ‡å‡†æ‰§è¡Œæ ¼å¼ï¼Œä¸ä½“ç³»ç»“æ„æ— å…³ï¼Œå¯ä»¥æ˜¯32ä½ä¹Ÿå¯ä»¥æ˜¯64ä½ */
 static struct linux_binfmt elf_format = {
 		.module		= THIS_MODULE,
 		.load_binary	= load_elf_binary,

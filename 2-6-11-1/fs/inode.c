@@ -70,7 +70,7 @@ static unsigned int i_hash_shift;
  * allowing for low-overhead inode sync() operations.
  */
 
-/* ¼ÇÂ¼inodeÕıÔÚÊ¹ÓÃºÍÃ»ÓĞ±»Ê¹ÓÃµÄÁ´±í */
+/* è®°å½•inodeæ­£åœ¨ä½¿ç”¨å’Œæ²¡æœ‰è¢«ä½¿ç”¨çš„é“¾è¡¨ */
 LIST_HEAD(inode_in_use);
 LIST_HEAD(inode_unused);
 static struct hlist_head *inode_hashtable;
@@ -81,7 +81,7 @@ static struct hlist_head *inode_hashtable;
  * NOTE! You also have to own the lock if you change
  * the i_state of an inode while it is in use..
  */
-/* Ò»¸öÃ»ÓĞ±»Ëø×¡µÄËø */
+/* ä¸€ä¸ªæ²¡æœ‰è¢«é”ä½çš„é” */
 DEFINE_SPINLOCK(inode_lock);
 
 /*
@@ -98,12 +98,12 @@ DECLARE_MUTEX(iprune_sem);
  * Statistics gathering..
  */
 
-/* ¼ÇÂ¼ÏµÍ³ÖĞÕû¸öinodeµÄÊ¹ÓÃÇé¿ö */
+/* è®°å½•ç³»ç»Ÿä¸­æ•´ä¸ªinodeçš„ä½¿ç”¨æƒ…å†µ */
 struct inodes_stat_t inodes_stat;
 
 static kmem_cache_t * inode_cachep;
 
-/* ´Ó³¬¼¶¿ìÖĞ·ÖÅäÒ»¸öinode,È»ºóÉèÖÃinodeµÄÏà¹ØĞÅÏ¢ */
+/* ä»è¶…çº§å¿«ä¸­åˆ†é…ä¸€ä¸ªinode,ç„¶åè®¾ç½®inodeçš„ç›¸å…³ä¿¡æ¯ */
 static struct inode *alloc_inode(struct super_block *sb)
 {
     static struct address_space_operations empty_aops;
@@ -111,8 +111,8 @@ static struct inode *alloc_inode(struct super_block *sb)
     static struct file_operations empty_fops;
     struct inode *inode;
     
-    /* Èç¹û³¬¼¶¿éµÄalloc_inodeº¯ÊıÖ¸Õë²»Îª¿Õ£¬ÔòÊ¹ÓÃ³¬¼¶¿éÀ´·ÖÅä
-     * ·ñÔò¾ÍÖ±½Ó´Ó¸ßËÙ»º´æÖĞ·ÖÅä */
+    /* å¦‚æœè¶…çº§å—çš„alloc_inodeå‡½æ•°æŒ‡é’ˆä¸ä¸ºç©ºï¼Œåˆ™ä½¿ç”¨è¶…çº§å—æ¥åˆ†é…
+     * å¦åˆ™å°±ç›´æ¥ä»é«˜é€Ÿç¼“å­˜ä¸­åˆ†é… */
     if (sb->s_op->alloc_inode)
         inode = sb->s_op->alloc_inode(sb);
     else
@@ -227,7 +227,7 @@ static void init_once(void * foo, kmem_cache_t * cachep, unsigned long flags)
 /*
  * inode_lock must be held
  */
-/* Ôö¼ÓinodeµÄÒıÓÃ¼ÆÊı */
+/* å¢åŠ inodeçš„å¼•ç”¨è®¡æ•° */
 void __iget(struct inode * inode)
 {
     if (atomic_read(&inode->i_count)) {
@@ -537,7 +537,7 @@ repeat:
  * find_inode_fast is the fast path version of find_inode, see the comment at
  * iget_locked for details.
  */
-/* ²éÕÒhashÁ´±íÖĞinoºÍsu¶¼ÏàÍ¬µÄinode */
+/* æŸ¥æ‰¾hashé“¾è¡¨ä¸­inoå’Œsuéƒ½ç›¸åŒçš„inode */
 static struct inode * find_inode_fast(struct super_block * sb, struct hlist_head *head, unsigned long ino)
 {
     struct hlist_node *node;
@@ -565,11 +565,11 @@ repeat:
  *
  *	Allocates a new inode for given superblock.
  */
-/* ´Ó³¬¼¶¿éµ±ÖĞ·ÖÅäÒ»¸öinode½Úµã
+/* ä»è¶…çº§å—å½“ä¸­åˆ†é…ä¸€ä¸ªinodeèŠ‚ç‚¹
  * */
 struct inode *new_inode(struct super_block *sb)
 {
-    /* ¼ÇÂ¼ÏµÍ³ÖĞinoµÄÊ¹ÓÃÇé¿ö */
+    /* è®°å½•ç³»ç»Ÿä¸­inoçš„ä½¿ç”¨æƒ…å†µ */
     static unsigned long last_ino;
     struct inode * inode;
     
@@ -581,7 +581,7 @@ struct inode *new_inode(struct super_block *sb)
         inodes_stat.nr_inodes++;
         list_add(&inode->i_list, &inode_in_use);
         list_add(&inode->i_sb_list, &sb->s_inodes);
-        /* ÉèÖÃinodeµÄºÅ */
+        /* è®¾ç½®inodeçš„å· */
         inode->i_ino = ++last_ino;
         inode->i_state = 0;
         spin_unlock(&inode_lock);
@@ -664,7 +664,7 @@ set_failed:
  * get_new_inode_fast is the fast path version of get_new_inode, see the
  * comment at iget_locked for details.
  */
-/* ¿ìËÙĞÂ½¨inode */
+/* å¿«é€Ÿæ–°å»ºinode */
 static struct inode * get_new_inode_fast(struct super_block *sb, struct hlist_head *head, unsigned long ino)
 {
     struct inode * inode;
@@ -676,7 +676,7 @@ static struct inode * get_new_inode_fast(struct super_block *sb, struct hlist_he
         spin_lock(&inode_lock);
         /* We released the lock, so.. */
         old = find_inode_fast(sb, head, ino);
-        /* Èç¹ûÃ»ÓĞ£¬ÔòÖØĞÂ´´½¨£¬¸³Öµ£¬·µ»Ø*/
+        /* å¦‚æœæ²¡æœ‰ï¼Œåˆ™é‡æ–°åˆ›å»ºï¼Œèµ‹å€¼ï¼Œè¿”å›*/
         if (!old) {
             inode->i_ino = ino;
             inodes_stat.nr_inodes++;
@@ -697,7 +697,7 @@ static struct inode * get_new_inode_fast(struct super_block *sb, struct hlist_he
          * us. Use the old inode instead of the one we just
          * allocated.
          */
-        /* Èç¹ûÒÑ¾­ÓĞÁË£¬ÔòÖ±½Ó·µ»Ø */
+        /* å¦‚æœå·²ç»æœ‰äº†ï¼Œåˆ™ç›´æ¥è¿”å› */
         __iget(old);
         spin_unlock(&inode_lock);
         destroy_inode(inode);

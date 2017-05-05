@@ -10,17 +10,17 @@ struct file_operations;
 struct inode;
 struct module;
 
-/* ×Ö·ûÉè±¸¶ÔÏó */
+/* å­—ç¬¦è®¾å¤‡å¯¹è±¡ */
 struct cdev {
-	/* Í¨¹ı´Ë½á¹¹½«Éè±¸Ìí¼Óµ½Í¨ÓÃÉè±¸ÎÄ¼şÏµÍ³(/sys/)ÖĞ */
+	/* é€šè¿‡æ­¤ç»“æ„å°†è®¾å¤‡æ·»åŠ åˆ°é€šç”¨è®¾å¤‡æ–‡ä»¶ç³»ç»Ÿ(/sys/)ä¸­ */
 	struct kobject kobj;
-	/* ËùÊôÄ£¿é */
+	/* æ‰€å±æ¨¡å— */
 	struct module *owner;
-	/* ÎÄ¼ş²Ù×÷»Øµ÷ */
+	/* æ–‡ä»¶æ“ä½œå›è°ƒ */
 	const struct file_operations *ops;
-	/* Á´±í£¬°üº¬ËùÓĞ±íÊ¾¸ÃÉè±¸µÄinode */
+	/* é“¾è¡¨ï¼ŒåŒ…å«æ‰€æœ‰è¡¨ç¤ºè¯¥è®¾å¤‡çš„inode */
 	struct list_head list;
-	/* Éè±¸ºÅ */
+	/* è®¾å¤‡å· */
 	dev_t dev;
 	unsigned int count;
 };

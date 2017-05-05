@@ -124,7 +124,7 @@
 #define	BYTES_PER_WORD		sizeof(void *)
 
 #ifndef cache_line_size
-#define cache_line_size()	L1_CACHE_BYTES       /* »ñÈ¡cpuÒ»¼¶»º´æµÄ×Ö½ÚÊı */
+#define cache_line_size()	L1_CACHE_BYTES       /* è·å–cpuä¸€çº§ç¼“å­˜çš„å­—èŠ‚æ•° */
 #endif
 
 #ifndef ARCH_KMALLOC_MINALIGN
@@ -206,12 +206,12 @@ static unsigned long offslab_limit;
  */
 struct slab {
 	struct list_head	list;
-	unsigned long		colouroff;     /* slabÖĞµÚÒ»¸ö¶ÔÏóµÄ×ÅÉ« */
-        /* slabÖĞµÚÒ»¸ö¶ÔÏó(ÒÑ·ÖÅä»ò¿ÕÏĞ)µÄµØÖ· */
+	unsigned long		colouroff;     /* slabä¸­ç¬¬ä¸€ä¸ªå¯¹è±¡çš„ç€è‰² */
+        /* slabä¸­ç¬¬ä¸€ä¸ªå¯¹è±¡(å·²åˆ†é…æˆ–ç©ºé—²)çš„åœ°å€ */
 	void			*s_mem;		/* including colour offset */
-        /* µ±Ç°ÕıÔÚÊ¹ÓÃµÄslabÖĞµÄ¶ÔÏó¸öÊı */
+        /* å½“å‰æ­£åœ¨ä½¿ç”¨çš„slabä¸­çš„å¯¹è±¡ä¸ªæ•° */
 	unsigned int		inuse;		/* num of objs active in slab */
-        /* slabÖĞÏÂÒ»¸ö¿ÕÏĞ¶ÔÏóµÄÏÂ±ê£¬Èç¹ûÃ»ÓĞÊ£ÏÂ¿ÕÏĞ¶ÔÏóÔòÎªBUFCTL_END */
+        /* slabä¸­ä¸‹ä¸€ä¸ªç©ºé—²å¯¹è±¡çš„ä¸‹æ ‡ï¼Œå¦‚æœæ²¡æœ‰å‰©ä¸‹ç©ºé—²å¯¹è±¡åˆ™ä¸ºBUFCTL_END */
 	kmem_bufctl_t		free;
 };
 
@@ -274,13 +274,13 @@ struct arraycache_init {
  * fewer cross-node spinlock operations.
  */
 struct kmem_list3 {
-        /* °üº¬¿ÕÏĞºÍ·Ç¿ÕÏĞ¶ÔÏóµÄslabÃèÊö·ûË«ÏòÑ­»·Á´±í */
+        /* åŒ…å«ç©ºé—²å’Œéç©ºé—²å¯¹è±¡çš„slabæè¿°ç¬¦åŒå‘å¾ªç¯é“¾è¡¨ */
 	struct list_head	slabs_partial;	/* partial list first, better asm code */
-        /* ²»°üº¬¿ÕÏĞ¶ÔÏóµÄslabÃèÊö·ûË«ÏòÑ­»·Á´±í */
+        /* ä¸åŒ…å«ç©ºé—²å¯¹è±¡çš„slabæè¿°ç¬¦åŒå‘å¾ªç¯é“¾è¡¨ */
 	struct list_head	slabs_full;
-        /* Ö»°üº¬¿ÕÏĞ¶ÔÏóµÄslabÃèÊö·ûµÄË«ÏòÑ­»·Á´±í */
+        /* åªåŒ…å«ç©ºé—²å¯¹è±¡çš„slabæè¿°ç¬¦çš„åŒå‘å¾ªç¯é“¾è¡¨ */
 	struct list_head	slabs_free;
-        /* ¸ßËÙ»º´æÖĞ¿ÕÏĞ¶ÔÏóµÄ¸öÊı */
+        /* é«˜é€Ÿç¼“å­˜ä¸­ç©ºé—²å¯¹è±¡çš„ä¸ªæ•° */
 	unsigned long	free_objects;
 	int		free_touched;
 	unsigned long	next_reap;
@@ -305,7 +305,7 @@ struct kmem_list3 {
  *
  * manages a cache.
  */
-/* ¸ßËÙ»º´æµÄ½á¹¹
+/* é«˜é€Ÿç¼“å­˜çš„ç»“æ„
   */
 struct kmem_cache_s {
 /* 1) per-cpu data, touched during every alloc/free */
@@ -315,45 +315,45 @@ struct kmem_cache_s {
 /* 2) touched by every alloc & free from the backend */
 	struct kmem_list3	lists;
 	/* NUMA: kmem_3list_t	*nodelists[MAX_NUMNODES] */
-        /* ¸ßËÙ»º´æÖĞ¶ÔÆëºó¶ÔÏóµÄ´óĞ¡ */
+        /* é«˜é€Ÿç¼“å­˜ä¸­å¯¹é½åå¯¹è±¡çš„å¤§å° */
 	unsigned int		objsize;
 	unsigned int	 	flags;	/* constant flags */
-        /* ·â×°ÔÚÒ»¸öµ¥¶ÀslabÖĞµÄ¶ÔÏó¸öÊı(¸ßËÙ»º´æÖĞËùÓĞµÄslab¶¼¾ßÓĞÏàÍ¬´óĞ¡ */
+        /* å°è£…åœ¨ä¸€ä¸ªå•ç‹¬slabä¸­çš„å¯¹è±¡ä¸ªæ•°(é«˜é€Ÿç¼“å­˜ä¸­æ‰€æœ‰çš„slabéƒ½å…·æœ‰ç›¸åŒå¤§å° */
 	unsigned int		num;	/* # of objs per slab */
-        /* Õû¸öslab¸ßËÙ»º´æÖĞ¿ÕÏĞ¶ÔÏóµÄÉÏÏŞ */
+        /* æ•´ä¸ªslabé«˜é€Ÿç¼“å­˜ä¸­ç©ºé—²å¯¹è±¡çš„ä¸Šé™ */
 	unsigned int		free_limit; /* upper limit of objects in the lists */
-        /* ¸ßËÙ»º´æµÄ×ÔĞıËø */
+        /* é«˜é€Ÿç¼“å­˜çš„è‡ªæ—‹é” */
 	spinlock_t		spinlock;
 
 /* 3) cache_grow/shrink */
 	/* order of pgs per slab (2^n) */
-        /* Ò»¸öµ¥¶ÀµÄslabÖĞ°üº¬µÄÁ¬ĞøÒ³¿òÊıÄ¿µÄ¶ÔÊı */
+        /* ä¸€ä¸ªå•ç‹¬çš„slabä¸­åŒ…å«çš„è¿ç»­é¡µæ¡†æ•°ç›®çš„å¯¹æ•° */
 	unsigned int		gfporder;
 
 	/* force GFP flags, e.g. GFP_DMA */
-        /* ·ÖÅäÒ³¿òÊ±´«µİ¸ø»ï°éÏµÍ³º¯ÊıµÄÒ»×é±ê¼Ç */
+        /* åˆ†é…é¡µæ¡†æ—¶ä¼ é€’ç»™ä¼™ä¼´ç³»ç»Ÿå‡½æ•°çš„ä¸€ç»„æ ‡è®° */
 	unsigned int		gfpflags;
 
-        /* slabÖĞÊ¹ÓÃÑÕÉ«µÄ¸öÊı */
+        /* slabä¸­ä½¿ç”¨é¢œè‰²çš„ä¸ªæ•° */
 	size_t			colour;		/* cache colouring range */
 	unsigned int		colour_off;	/* colour offset */
 	unsigned int		colour_next;	/* cache colouring */
 	kmem_cache_t		*slabp_cache;
-        /* µ¥¸öslabµÄ´óĞ¡ */
+        /* å•ä¸ªslabçš„å¤§å° */
 	unsigned int		slab_size;
 	unsigned int		dflags;		/* dynamic flags */
 
 	/* constructor func */
-        /* Ö¸ÏòÓë¸ßËÙ»º´æÏà¹ØµÄ¹¹Ôì·½·¨µÄÖ¸Õë */
+        /* æŒ‡å‘ä¸é«˜é€Ÿç¼“å­˜ç›¸å…³çš„æ„é€ æ–¹æ³•çš„æŒ‡é’ˆ */
 	void (*ctor)(void *, kmem_cache_t *, unsigned long);
 
 	/* de-constructor func */
-        /* Ö¸ÏòÓë¸ßËÙ»º´æÏà¹ØµÄÎö¹¹·½·¨µÄÖ¸Õë */
+        /* æŒ‡å‘ä¸é«˜é€Ÿç¼“å­˜ç›¸å…³çš„ææ„æ–¹æ³•çš„æŒ‡é’ˆ */
 	void (*dtor)(void *, kmem_cache_t *, unsigned long);
 
 /* 4) cache creation/removal */
-	const char		*name;            /* ¸ßËÙ»º´æµÄÃû³Æ */
-	struct list_head	next;              /* ¸ßËÙ»º´æË«ÏòÁ´±í */
+	const char		*name;            /* é«˜é€Ÿç¼“å­˜çš„åç§° */
+	struct list_head	next;              /* é«˜é€Ÿç¼“å­˜åŒå‘é“¾è¡¨ */
 
 /* 5) statistics */
 #if STATS
@@ -372,7 +372,7 @@ struct kmem_cache_s {
 #endif
 #if DEBUG
 	int			dbghead;
-	int			reallen;       /* ¶ÔÏóµÄÊµ¼Ê´óĞ¡ */
+	int			reallen;       /* å¯¹è±¡çš„å®é™…å¤§å° */
 #endif
 };
 
@@ -516,7 +516,7 @@ static int slab_break_gfp_order = BREAK_GFP_ORDER_LO;
  * global 'mem_map'. These are used to find the slab an obj belongs to.
  * With kfree(), these are used to find the cache which an obj belongs to.
  */
-/* ÉèÖÃÎïÀíÒ³¶ÔÓ¦µÄ¸ßËÙ»º³åÍ· */
+/* è®¾ç½®ç‰©ç†é¡µå¯¹åº”çš„é«˜é€Ÿç¼“å†²å¤´ */
 #define	SET_PAGE_CACHE(pg,x)  ((pg)->lru.next = (struct list_head *)(x))
 
 #define	GET_PAGE_CACHE(pg)    ((kmem_cache_t *)(pg)->lru.next)
@@ -552,7 +552,7 @@ static struct arraycache_init initarray_generic =
 	{ { 0, BOOT_CPUCACHE_ENTRIES, 1, 0} };
 
 /* internal cache of cache description objs */
-/* ´æ·Å¸ßËÙ»º³åÍ·µÄ¸ßËÙ»º´æÒ²³ÆÖ®ÎªÆÕÍ¨¸ßËÙ»º´æ */
+/* å­˜æ”¾é«˜é€Ÿç¼“å†²å¤´çš„é«˜é€Ÿç¼“å­˜ä¹Ÿç§°ä¹‹ä¸ºæ™®é€šé«˜é€Ÿç¼“å­˜ */
 static kmem_cache_t cache_cache = {
 	.lists		= LIST3_INIT(cache_cache.lists),
 	.batchcount	= 1,
@@ -567,10 +567,10 @@ static kmem_cache_t cache_cache = {
 };
 
 /* Guard access to the cache-chain. */
-/* ±£»¤¶Ô¸ßËÙ»º³åÃèÊö·ûÁ´±íµÄ²Ù×÷ */
+/* ä¿æŠ¤å¯¹é«˜é€Ÿç¼“å†²æè¿°ç¬¦é“¾è¡¨çš„æ“ä½œ */
 static struct semaphore	cache_chain_sem;
 
-/* ¸ßËÙ»º´æÁ´£¬ÏµÍ³ÖĞ´´½¨µÄËùÓĞ¸ßËÙ»º³åÃèÊö·û¶¼²åÈëµ½¸ÃÁ´±íÖĞ */
+/* é«˜é€Ÿç¼“å­˜é“¾ï¼Œç³»ç»Ÿä¸­åˆ›å»ºçš„æ‰€æœ‰é«˜é€Ÿç¼“å†²æè¿°ç¬¦éƒ½æ’å…¥åˆ°è¯¥é“¾è¡¨ä¸­ */
 static struct list_head cache_chain;
 
 /*
@@ -625,17 +625,17 @@ static kmem_cache_t * kmem_find_general_cachep (size_t size, int gfpflags)
 }
 
 /* Cal the num objs, wastage, and bytes left over for a given slab size. */
-/* ¼ÆËãÒ»¸öslabÖĞÄÚ´æµÄÕ¼ÓÃÇé¿ö */
+/* è®¡ç®—ä¸€ä¸ªslabä¸­å†…å­˜çš„å ç”¨æƒ…å†µ */
 static void cache_estimate (unsigned long gfporder, size_t size, size_t align,
 		 int flags, size_t *left_over, unsigned int *num)
 {
 	int i;
-        /* wastage±íÊ¾Ò»¸öslabÖĞ×ÜÄÚ´æµÄ´óĞ¡ */
+        /* wastageè¡¨ç¤ºä¸€ä¸ªslabä¸­æ€»å†…å­˜çš„å¤§å° */
 	size_t wastage = PAGE_SIZE<<gfporder;
 	size_t extra = 0;
 	size_t base = 0;
 
-        /* struct slabÃèÊö·ûÊÇ·ñ´æ·ÅÔÚslabµ±ÖĞ */
+        /* struct slabæè¿°ç¬¦æ˜¯å¦å­˜æ”¾åœ¨slabå½“ä¸­ */
 	if (!(flags & CFLGS_OFF_SLAB)) {
 		base = sizeof(struct slab);
 		extra = sizeof(kmem_bufctl_t);
@@ -768,7 +768,7 @@ static struct notifier_block cpucache_notifier = { &cpuup_callback, NULL, 0 };
 /* Initialisation.
  * Called after the gfp() functions have been enabled, and before smp_init().
  */
-/* ÏµÍ³³õÊ¼»¯½×¶Îµ÷ÓÃ¸Ãº¯ÊıÀ´³õÊ¼»¯¸ßËÙ»º´æ */
+/* ç³»ç»Ÿåˆå§‹åŒ–é˜¶æ®µè°ƒç”¨è¯¥å‡½æ•°æ¥åˆå§‹åŒ–é«˜é€Ÿç¼“å­˜ */
 void __init kmem_cache_init(void)
 {
 	size_t left_over;
@@ -802,7 +802,7 @@ void __init kmem_cache_init(void)
 	/* 1) create the cache_cache */
 	init_MUTEX(&cache_chain_sem);
 	INIT_LIST_HEAD(&cache_chain);
-        /* Ê×ÏÈ°Ñ×¨ÃÅ´æ·Å¸ßËÙ»º³åÍ·µÄ¸ßËÙ»º³åÃèÊö·ûÌí¼Óµ½»º³åÁ´±íÖĞ */
+        /* é¦–å…ˆæŠŠä¸“é—¨å­˜æ”¾é«˜é€Ÿç¼“å†²å¤´çš„é«˜é€Ÿç¼“å†²æè¿°ç¬¦æ·»åŠ åˆ°ç¼“å†²é“¾è¡¨ä¸­ */
 	list_add(&cache_cache.next, &cache_chain);
 	cache_cache.colour_off = cache_line_size();
 	cache_cache.array[smp_processor_id()] = &initarray_cache.cache;
@@ -1212,7 +1212,7 @@ static void slab_destroy (kmem_cache_t *cachep, struct slab *slabp)
  * cacheline.  This can be beneficial if you're counting cycles as closely
  * as davem.
  */
-/* ×¨ÓÃ¸ßËÙ»º´æµÄ´´½¨ */
+/* ä¸“ç”¨é«˜é€Ÿç¼“å­˜çš„åˆ›å»º */
 kmem_cache_t *
 kmem_cache_create (const char *name, size_t size, size_t align,
 	unsigned long flags, void (*ctor)(void*, kmem_cache_t *, unsigned long),
@@ -1285,7 +1285,7 @@ kmem_cache_create (const char *name, size_t size, size_t align,
 		 * objects into one cacheline.
 		 */
 		ralign = cache_line_size();
-                /* »ñÈ¡×î¼ÑµÄÄÚ´æ¶ÔÆë´óĞ¡ */
+                /* è·å–æœ€ä½³çš„å†…å­˜å¯¹é½å¤§å° */
 		while (size <= ralign/2)
 			ralign /= 2;
 	} else {
@@ -1351,7 +1351,7 @@ kmem_cache_create (const char *name, size_t size, size_t align,
 
 	size = ALIGN(size, align);
 
-        /* Èç¹ûslabÖĞ¶ÔÏóµÄ´óĞ¡Ğ¡ÓÚÒ»¸öÒ³¿ò£¬ÔòÏàÓ¦µÄgfporderÎª0 */
+        /* å¦‚æœslabä¸­å¯¹è±¡çš„å¤§å°å°äºä¸€ä¸ªé¡µæ¡†ï¼Œåˆ™ç›¸åº”çš„gfporderä¸º0 */
 	if ((flags & SLAB_RECLAIM_ACCOUNT) && size <= PAGE_SIZE) {
 		/*
 		 * A VFS-reclaimable slab tends to have most allocations
@@ -1435,11 +1435,11 @@ next:
 	cachep->gfpflags = 0;
 	if (flags & SLAB_CACHE_DMA)
 		cachep->gfpflags |= GFP_DMA;
-        /* ³õÊ¼»¯×ÔĞıËø */
+        /* åˆå§‹åŒ–è‡ªæ—‹é” */
 	spin_lock_init(&cachep->spinlock);
 	cachep->objsize = size;
 	/* NUMA */
-        /* ÉèÖÃÈı¸öÁ´±íµÄ¹ØÏµ */
+        /* è®¾ç½®ä¸‰ä¸ªé“¾è¡¨çš„å…³ç³» */
 	INIT_LIST_HEAD(&cachep->lists.slabs_full);
 	INIT_LIST_HEAD(&cachep->lists.slabs_partial);
 	INIT_LIST_HEAD(&cachep->lists.slabs_free);
@@ -1481,7 +1481,7 @@ next:
 					((unsigned long)cachep)%REAPTIMEOUT_LIST3;
 
 	/* Need the semaphore to access the chain. */
-        /* ´ËÊ±½«´´½¨µÄkmem_cache_tÌí¼Óµ½cache_chainÁ´±íµ±ÖĞ */
+        /* æ­¤æ—¶å°†åˆ›å»ºçš„kmem_cache_tæ·»åŠ åˆ°cache_chainé“¾è¡¨å½“ä¸­ */
 	down(&cache_chain_sem);
 	{
 		struct list_head *p;
@@ -1731,21 +1731,21 @@ static struct slab* alloc_slabmgmt (kmem_cache_t *cachep,
 	return slabp;
 }
 
-/* »ñÈ¡slabÖĞ¶ÔÏóµÄÆ«ÒÆÊı×é */
+/* è·å–slabä¸­å¯¹è±¡çš„åç§»æ•°ç»„ */
 static inline kmem_bufctl_t *slab_bufctl(struct slab *slabp)
 {
 	return (kmem_bufctl_t *)(slabp+1);
 }
 
-/* slabÖĞ¶ÔÏóµÄ³õÊ¼»¯ */
+/* slabä¸­å¯¹è±¡çš„åˆå§‹åŒ– */
 static void cache_init_objs (kmem_cache_t * cachep,
 			struct slab * slabp, unsigned long ctor_flags)
 {
 	int i;
 
-        /* ÒÀ´ÎÉ¨ÃèÒ»¸öslabÖĞµÄËùÓĞ¶ÔÏó */
+        /* ä¾æ¬¡æ‰«æä¸€ä¸ªslabä¸­çš„æ‰€æœ‰å¯¹è±¡ */
 	for (i = 0; i < cachep->num; i++) {
-                /* »ñÈ¡µØi¸ö¶ÔÏóµÄµØÖ· */
+                /* è·å–åœ°iä¸ªå¯¹è±¡çš„åœ°å€ */
 		void* objp = slabp->s_mem+cachep->objsize*i;
 #if DEBUG
 		/* need to poison the objs? */
@@ -1777,16 +1777,16 @@ static void cache_init_objs (kmem_cache_t * cachep,
 		if ((cachep->objsize % PAGE_SIZE) == 0 && OFF_SLAB(cachep) && cachep->flags & SLAB_POISON)
 	       		kernel_map_pages(virt_to_page(objp), cachep->objsize/PAGE_SIZE, 0);
 #else    
-                /* Èç¹û´æÔÚ¶ÔÏóµÄ¹¹Ôìº¯Êı£¬Ôòµ÷ÓÃ */
+                /* å¦‚æœå­˜åœ¨å¯¹è±¡çš„æ„é€ å‡½æ•°ï¼Œåˆ™è°ƒç”¨ */
 		if (cachep->ctor)
 			cachep->ctor(objp, cachep, ctor_flags);
 #endif
-                /* ÉèÖÃ¶ÔÏóµÄoffset */
+                /* è®¾ç½®å¯¹è±¡çš„offset */
 		slab_bufctl(slabp)[i] = i+1;
 	}
-        /* ÉèÖÃ×îºóÒ»¸ö¶ÔÏóµÄoffsetÎª½áÊø */
+        /* è®¾ç½®æœ€åä¸€ä¸ªå¯¹è±¡çš„offsetä¸ºç»“æŸ */
 	slab_bufctl(slabp)[i-1] = BUFCTL_END;
-        /* ÉèÖÃµÚÒ»¸ö¿ÕÏĞÏÂ±êÎª0 */
+        /* è®¾ç½®ç¬¬ä¸€ä¸ªç©ºé—²ä¸‹æ ‡ä¸º0 */
 	slabp->free = 0;
 }
 
@@ -1880,7 +1880,7 @@ static int cache_grow (kmem_cache_t * cachep, int flags, int nodeid)
 
 	set_slab_attr(cachep, slabp, objp);
 
-        /* ³õÊ¼»¯slabÖĞµÄ¶ÔÏóºÍÄÚ´æ²¼¾Ö */
+        /* åˆå§‹åŒ–slabä¸­çš„å¯¹è±¡å’Œå†…å­˜å¸ƒå±€ */
 	cache_init_objs(cachep, slabp, ctor_flags);
 
 	if (local_flags & __GFP_WAIT)
@@ -2338,7 +2338,7 @@ static inline void __cache_free (kmem_cache_t *cachep, void* objp)
  * Allocate an object from this cache.  The flags are only relevant
  * if the cache has no available objects.
  */
-/* ´ÓcacheÖĞ·ÖÅäÒ»¸ö¶ÔÏó */
+/* ä»cacheä¸­åˆ†é…ä¸€ä¸ªå¯¹è±¡ */
 void * kmem_cache_alloc (kmem_cache_t *cachep, int flags)
 {
 	return __cache_alloc(cachep, flags);

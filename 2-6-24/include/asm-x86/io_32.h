@@ -118,7 +118,7 @@ extern void __iomem * __ioremap(unsigned long offset, unsigned long size, unsign
  */
 
 /**
- * 将用于IO操作的一段地址映射到内核地址空间
+ * 灏嗙敤浜嶪O鎿嶄綔鐨勪竴娈靛湴鍧�鏄犲皠鍒板唴鏍稿湴鍧�绌洪棿
  */
 static inline void __iomem * ioremap(unsigned long offset, unsigned long size)
 {

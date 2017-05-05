@@ -3,33 +3,33 @@
  * (C) Nadia Yvette Chambers, April 2004
  */
 /**
- *���ż��������ģ�Ĳ�������Ӧ�ó�����ڴ������ҲԽ��Խ��
- *Ϊ��ʵ�������ڴ�������ƣ�����ϵͳ���ڴ�ʵ�з�ҳ����������
- *��"��ҳ����"���֮ʼ���ڴ�ҳ���Ĭ�ϴ�С�㱻����Ϊ 4096 ��
- *�ڣ�4KB������Ȼԭ�����ڴ�ҳ���С�ǿ����õģ�����������Ĳ�
- *��ϵͳʵ������Ȼ����Ĭ�ϵ� 4KB ҳ�档 4KB ��С��ҳ����"��ҳ
- *����"�����ʱ���Ǻ����ģ���Ϊ��ʱ���ڴ��С������ʮ���ֽڣ�
- *Ȼ���������ڴ������������� G ������ʮ G ��ʱ�򣬲���ϵͳ��
- *Ȼ�� 4KB ��СΪҳ��Ļ�����λ���Ƿ���Ȼ�����أ�
+ *随着计算需求规模的不断增大，应用程序对内存的需求也越来越大。
+ *为了实现虚拟内存管理机制，操作系统对内存实行分页管理。自内
+ *存"分页机制"提出之始，内存页面的默认大小便被设置为 4096 字
+ *节（4KB），虽然原则上内存页面大小是可配置的，但绝大多数的操
+ *作系统实现中仍然采用默认的 4KB 页面。 4KB 大小的页面在"分页
+ *机制"提出的时候是合理的，因为当时的内存大小不过几十兆字节，
+ *然而当物理内存容量增长到几 G 甚至几十 G 的时候，操作系统仍
+ *然以 4KB 大小为页面的基本单位，是否依然合理呢？
  *
- *�� Linux ����ϵͳ�������ڴ��������ϴ��Ӧ�ó���ʱ���������
- *�õ�Ĭ��ҳ���СΪ 4KB�������������϶� TLB Miss ��ȱҳ�жϣ�
- *�Ӷ����Ӱ��Ӧ�ó�������ܡ�������ϵͳ��2MB����������Ϊ��ҳ
- *�ĵ�λʱ����������� TLB Miss ��ȱҳ�жϵ��������������
- *Ӧ�ó�������ܡ���Ҳ���� Linux �ں������ҳ��֧�ֵ�ֱ��ԭ��
- *�ô��Ǻ����Եģ�����Ӧ�ó�����Ҫ 2MB ���ڴ棬�������ϵͳ�� 
- *4KB ��Ϊ��ҳ�ĵ�λ������Ҫ 512 ��ҳ�棬������ TLB ����Ҫ 512 
- *�����ͬʱҲ��Ҫ 512 ��ҳ�������ϵͳ��Ҫ�������� 512 ��
- *TLB Miss �� 512 ��ȱҳ�жϲ��ܽ� 2MB Ӧ�ó���ռ�ȫ��ӳ�䵽
- *�����ڴ棻Ȼ����������ϵͳ���� 2MB ��Ϊ��ҳ�Ļ�����λʱ��ֻ
- *��Ҫһ�� TLB Miss ��һ��ȱҳ�жϣ��Ϳ���Ϊ 2MB ��Ӧ�ó����
- *�佨����ʵӳ�䣬�������й����������پ��� TLB Miss ��ȱҳ�ж�
- *������δ���� TLB ���滻�� Swap��
+ *在 Linux 操作系统上运行内存需求量较大的应用程序时，由于其采
+ *用的默认页面大小为 4KB，因而将会产生较多 TLB Miss 和缺页中断，
+ *从而大大影响应用程序的性能。当操作系统以2MB甚至更大作为分页
+ *的单位时，将会大大减少 TLB Miss 和缺页中断的数量，显著提高
+ *应用程序的性能。这也正是 Linux 内核引入大页面支持的直接原因。
+ *好处是很明显的，假设应用程序需要 2MB 的内存，如果操作系统以 
+ *4KB 作为分页的单位，则需要 512 个页面，进而在 TLB 中需要 512 
+ *个表项，同时也需要 512 个页表项，操作系统需要经历至少 512 次
+ *TLB Miss 和 512 次缺页中断才能将 2MB 应用程序空间全部映射到
+ *物理内存；然而，当操作系统采用 2MB 作为分页的基本单位时，只
+ *需要一次 TLB Miss 和一次缺页中断，就可以为 2MB 的应用程序空
+ *间建立虚实映射，并在运行过程中无需再经历 TLB Miss 和缺页中断
+ *（假设未发生 TLB 项替换和 Swap）
  *
- *Ϊ��������С�Ĵ���ʵ�ִ�ҳ��֧�֣�Linux ����ϵͳ�����˻���
- *hugetlbfs �����ļ�ϵͳ 2M �ֽڴ�ҳ��֧�֡����ֲ��������ļ�
- *ϵͳ��ʽ֧�ִ�ҳ��ķ�ʽ��ʹ��Ӧ�ó�����Ը�����Ҫ����ѡ
- *�����ҳ���С�������ᱻǿ��ʹ��2MB��ҳ��.
+ *为了能以最小的代价实现大页面支持，Linux 操作系统采用了基于
+ *hugetlbfs 特殊文件系统 2M 字节大页面支持。这种采用特殊文件
+ *系统形式支持大页面的方式，使得应用程序可以根据需要灵活地选
+ *择虚存页面大小，而不会被强制使用2MB大页面.
  */
 #include <linux/list.h>
 #include <linux/init.h>
@@ -1305,11 +1305,11 @@ void free_huge_page(struct page *page)
 }
 
 /**
- *1.����ɹ��󣬽���512��������page�ṹ�еĵڶ���page�ṹ��
- *  lru.nextָ��ָ��һ���ض���"��������":free_huge_page()
- *2.����put_page()����ҳ��ŵ���Ӧ�Ŀ���������ȥ�����������
- *  ҳ�汻������PG_compound��־,��������ø���������,��ҳ���
- *  ���ô�ҳ������NUMA node ��hugepage_freelists[]������ȥ
+ *1.分配成功后，将这512个连续的page结构中的第二个page结构的
+ *  lru.next指针指向一个特定的"析构函数":free_huge_page()
+ *2.调用put_page()将大页面放到相应的空闲链表中去，由于这个大
+ *  页面被设置了PG_compound标志,进而会调用该析构函数,将页面放
+ *  到该大页面所在NUMA node 的hugepage_freelists[]链表中去
  */
 static void prep_new_huge_page(struct hstate *h, struct page *page, int nid)
 {
@@ -1402,16 +1402,16 @@ static struct page *alloc_fresh_huge_page_node(struct hstate *h, int nid)
 	struct page *page;
 
 	/**
-	 *��__GFP_COMPΪ��־����ͨ�õײ������ҳ����亯��alloc_page_node()
-	 *�Է���һ��2MB�Ĵ�ҳ�棬����������__GFP_COMP��־��ʹ��������512��4KB
-	 *��ҳ����Ϊһ��"���"ҳ�棬���ǵ�page�ṹһ�𱻷����hugetlbfs
+	 *以__GFP_COMP为标志调用通用底层的物理页面分配函数alloc_page_node()
+	 *以分配一个2MB的大页面，由于声明了__GFP_COMP标志，使得连续的512个4KB
+	 *的页面作为一个"混合"页面，它们的page结构一起被分配给hugetlbfs
 	 */
 	page = __alloc_pages_node(nid,
 		htlb_alloc_mask(h)|__GFP_COMP|__GFP_THISNODE|
 						__GFP_REPEAT|__GFP_NOWARN,
 		huge_page_order(h));
 	if (page) {
-		/* ����ɹ���Դ�ҳ��Ĵ��� */
+		/* 分配成功后对大页面的处理 */
 		prep_new_huge_page(h, page, nid);
 	}
 

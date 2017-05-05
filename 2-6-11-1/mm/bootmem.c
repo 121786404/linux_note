@@ -54,7 +54,7 @@ static unsigned long __init init_bootmem_core (pg_data_t *pgdat,
 	bootmem_data_t *bdata = pgdat->bdata;
 	unsigned long mapsize = ((end - start)+7)/8;
 
-        /* ÉèÖÃÄÚ´æ½ÚµãÖ®¼äµÄÁ´±í¹ØÏµ */
+        /* è®¾ç½®å†…å­˜èŠ‚ç‚¹ä¹‹é—´çš„é“¾è¡¨å…³ç³» */
 	pgdat->pgdat_next = pgdat_list;
 	pgdat_list = pgdat;
 

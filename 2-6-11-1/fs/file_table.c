@@ -52,7 +52,7 @@ void filp_dtor(void * objp, struct kmem_cache_s *cachep, unsigned long dflags)
 	spin_unlock_irqrestore(&filp_count_lock, flags);
 }
 
-/* ÊÍ·Åfile½á¹¹ÄÚ´æ */
+/* é‡Šæ”¾fileç»“æž„å†…å­˜ */
 static inline void file_free(struct file *f)
 {
 	kmem_cache_free(filp_cachep, f);
@@ -62,7 +62,7 @@ static inline void file_free(struct file *f)
  * Returns NULL, if there are no more free file structures or
  * we run out of memory.
  */
-/* »ñÈ¡Ò»¸ö¿ÕµÄÎÄ¼þÖ¸Õë */
+/* èŽ·å–ä¸€ä¸ªç©ºçš„æ–‡ä»¶æŒ‡é’ˆ */
 struct file *get_empty_filp(void)
 {
 static int old_max;
@@ -107,7 +107,7 @@ fail:
 
 EXPORT_SYMBOL(get_empty_filp);
 
-/* ÊÍ·ÅÎÄ¼þ£¬Èç¹ûfileµÄÒýÓÃ¼ÆÊýÎª0£¬ÔòÕæÕýµÄÊÍ·ÅÄÚ´æ */
+/* é‡Šæ”¾æ–‡ä»¶ï¼Œå¦‚æžœfileçš„å¼•ç”¨è®¡æ•°ä¸º0ï¼Œåˆ™çœŸæ­£çš„é‡Šæ”¾å†…å­˜ */
 void fastcall fput(struct file *file)
 {
 	if (atomic_dec_and_test(&file->f_count))
@@ -119,7 +119,7 @@ EXPORT_SYMBOL(fput);
 /* __fput is called from task context when aio completion releases the last
  * last use of a struct file *.  Do not use otherwise.
  */
-/* ÊÍ·ÅÎÄ¼þ½á¹¹ */
+/* é‡Šæ”¾æ–‡ä»¶ç»“æž„ */
 void fastcall __fput(struct file *file)
 {
 	struct dentry *dentry = file->f_dentry;
@@ -145,13 +145,13 @@ void fastcall __fput(struct file *file)
 	file_kill(file);
 	file->f_dentry = NULL;
 	file->f_vfsmnt = NULL;
-	/* ÊÍ·ÅÄÚ´æ */
+	/* é‡Šæ”¾å†…å­˜ */
 	file_free(file);
 	dput(dentry);
 	mntput(mnt);
 }
 
-/* ¸ù¾ÝÎÄ¼þÃèÊö·ûÀ´»ñÈ¡¶ÔÓ¦µÄfileÖ¸Õë */
+/* æ ¹æ®æ–‡ä»¶æè¿°ç¬¦æ¥èŽ·å–å¯¹åº”çš„fileæŒ‡é’ˆ */
 struct file fastcall *fget(unsigned int fd)
 {
 	struct file *file;
@@ -174,14 +174,14 @@ EXPORT_SYMBOL(fget);
  * and a flag is returned to be passed to the corresponding fput_light().
  * There must not be a cloning between an fget_light/fput_light pair.
  */
-/* µÚ¶þ¸ö²ÎÊý±íÊ¾ÊÇ·ñÐèÒªÊÍ·ÅfileµÄÒýÓÃ¼ÆÊý */
+/* ç¬¬äºŒä¸ªå‚æ•°è¡¨ç¤ºæ˜¯å¦éœ€è¦é‡Šæ”¾fileçš„å¼•ç”¨è®¡æ•° */
 struct file fastcall *fget_light(unsigned int fd, int *fput_needed)
 {
 	struct file *file;
 	struct files_struct *files = current->files;
 
 	*fput_needed = 0;
-        /* Èç¹ûµ±Ç°fileµÄÒýÓÃ¼ÆÊýÎª1£¬ÔòÊÇÐÂ½¨µÄfile½á¹¹£¬²»ÐèÒªºÍ±ðÈË¹²Ïífile½á¹¹  */
+        /* å¦‚æžœå½“å‰fileçš„å¼•ç”¨è®¡æ•°ä¸º1ï¼Œåˆ™æ˜¯æ–°å»ºçš„fileç»“æž„ï¼Œä¸éœ€è¦å’Œåˆ«äººå…±äº«fileç»“æž„  */
 	if (likely((atomic_read(&files->count) == 1))) {
 		file = fcheck_files(files, fd);
 	} else {

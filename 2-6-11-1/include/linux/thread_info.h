@@ -27,7 +27,7 @@ extern long do_no_restart_syscall(struct restart_block *parm);
  * - pass TIF_xxxx constants to these functions
  */
 
-/* Õû¸öÎÄ¼ş¶¼ÊÇ¶Ôthread_infoµÄflag×Ö¶ÎµÄ²Ù×÷ */
+/* æ•´ä¸ªæ–‡ä»¶éƒ½æ˜¯å¯¹thread_infoçš„flagå­—æ®µçš„æ“ä½œ */
 
 static inline void set_thread_flag(int flag)
 {
@@ -79,7 +79,7 @@ static inline int test_ti_thread_flag(struct thread_info *ti, int flag)
 	return test_bit(flag,&ti->flags);
 }
 
-/* ÉèÖÃ½ø³ÌÖĞÖĞ¶Ï´¦Àí¹ı³Ìµ±ÖĞ·µ»ØÊ±£¬ÖØĞÂµ÷ÓÃµ÷¶È³ÌĞò */
+/* è®¾ç½®è¿›ç¨‹ä¸­ä¸­æ–­å¤„ç†è¿‡ç¨‹å½“ä¸­è¿”å›æ—¶ï¼Œé‡æ–°è°ƒç”¨è°ƒåº¦ç¨‹åº */
 static inline void set_need_resched(void)
 {
 	set_thread_flag(TIF_NEED_RESCHED);

@@ -547,11 +547,11 @@ void __init setup_nr_cpu_ids(void)
 }
 
 /* Called by boot processor to activate the rest. 
-ÓÉBootstrap´¦ÀíÆ÷,½øĞĞActive¶àºËĞÄ¼Ü¹¹ÏÂÆäËüµÄ´¦ÀíÆ÷. 
-Èç¹û·¢ÉúOnlineµÄ´¦ÀíÆ÷¸öÊı(from num_online_cpus)³¬¹ıÔÚºËĞÄ±àÒëÊ±,
-ËùÉè¶¨µÄ×î´ó´¦ÀíÆ÷¸öÊı setup_max_cpus (from NR_CPUS),¾Í»áÖÕÖ¹Á÷³Ì.
-Èç¹û¸Ã´¦ÀíÆ÷Ä¿Ç°Êôì¶Present £¨Ò²¾ÍÊÇ´æÔÚÏµÍ³ÖĞ),
-µ«ÉĞÎ´ÊÇOnlineµÄ×´Ì¬,¾Í»áºô½Ğº¯Ê½cpu_up(in kernel/cpu.c)À´†¢¶¯¸Ã´¦ÀíÆ÷
+ç”±Bootstrapå¤„ç†å™¨,è¿›è¡ŒActiveå¤šæ ¸å¿ƒæ¶æ„ä¸‹å…¶å®ƒçš„å¤„ç†å™¨. 
+å¦‚æœå‘ç”ŸOnlineçš„å¤„ç†å™¨ä¸ªæ•°(from num_online_cpus)è¶…è¿‡åœ¨æ ¸å¿ƒç¼–è¯‘æ—¶,
+æ‰€è®¾å®šçš„æœ€å¤§å¤„ç†å™¨ä¸ªæ•° setup_max_cpus (from NR_CPUS),å°±ä¼šç»ˆæ­¢æµç¨‹.
+å¦‚æœè¯¥å¤„ç†å™¨ç›®å‰å±æ–¼Present ï¼ˆä¹Ÿå°±æ˜¯å­˜åœ¨ç³»ç»Ÿä¸­),
+ä½†å°šæœªæ˜¯Onlineçš„çŠ¶æ€,å°±ä¼šå‘¼å«å‡½å¼cpu_up(in kernel/cpu.c)æ¥å•ŸåŠ¨è¯¥å¤„ç†å™¨
 */
 void __init smp_init(void)
 {

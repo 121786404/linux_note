@@ -8,20 +8,20 @@
 struct tvec_t_base_s;
 
 /**
- * µÍ·Ö±æÂÊÊ±ÖÓ
+ * ä½åˆ†è¾¨ç‡æ—¶é’Ÿ
  */
 struct timer_list {
-	/* Á´±íÔªËØ×Ö¶Î */
+	/* é“¾è¡¨å…ƒç´ å­—æ®µ */
 	struct list_head entry;
-	/* µ½ÆÚÊ±¼ä£¬ÒÔjiffiesÎªµ¥Î» */
+	/* åˆ°æœŸæ—¶é—´ï¼Œä»¥jiffiesä¸ºå•ä½ */
 	unsigned long expires;
 
-	/* ³¬Ê±»Øµ÷ */
+	/* è¶…æ—¶å›è°ƒ */
 	void (*function)(unsigned long);
-	/* »Øµ÷º¯ÊıµÄ²ÎÊı */
+	/* å›è°ƒå‡½æ•°çš„å‚æ•° */
 	unsigned long data;
 
-	/* ´Ë½á¹¹ÓëCPUÏà¹Ø£¬ÆäÖĞµÄ¶¨Ê±Æ÷ÒÔµ½ÆÚÊ±¼äÅÅĞò¡£ */
+	/* æ­¤ç»“æ„ä¸CPUç›¸å…³ï¼Œå…¶ä¸­çš„å®šæ—¶å™¨ä»¥åˆ°æœŸæ—¶é—´æ’åºã€‚ */
 	struct tvec_t_base_s *base;
 #ifdef CONFIG_TIMER_STATS
 	void *start_site;

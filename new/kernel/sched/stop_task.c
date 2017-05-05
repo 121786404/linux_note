@@ -108,11 +108,11 @@ static void update_curr_stop(struct rq *rq)
 
 /*
  * Simple, special scheduling class for the per-CPU stop tasks:
- ÓÅÏÈ¼¶×î¸ßµÄÏß³Ì£¬»áÖĞ¶ÏËùÓĞÆäËûÏß³Ì£¬
- ÇÒ²»»á±»ÆäËûÈÎÎñ´ò¶Ï¡£
- ×÷ÓÃ£º
- 1.·¢ÉúÔÚcpu_stop_cpu_callback ½øĞĞcpuÖ®¼äÈÎÎñmigration£»
- 2.HOTPLUG_CPUµÄÇé¿öÏÂ¹Ø±ÕÈÎÎñ¡£
+ ä¼˜å…ˆçº§æœ€é«˜çš„çº¿ç¨‹ï¼Œä¼šä¸­æ–­æ‰€æœ‰å…¶ä»–çº¿ç¨‹ï¼Œ
+ ä¸”ä¸ä¼šè¢«å…¶ä»–ä»»åŠ¡æ‰“æ–­ã€‚
+ ä½œç”¨ï¼š
+ 1.å‘ç”Ÿåœ¨cpu_stop_cpu_callback è¿›è¡Œcpuä¹‹é—´ä»»åŠ¡migrationï¼›
+ 2.HOTPLUG_CPUçš„æƒ…å†µä¸‹å…³é—­ä»»åŠ¡ã€‚
  */
 const struct sched_class stop_sched_class = {
 	.next			= &dl_sched_class,

@@ -30,7 +30,7 @@
 static struct kmem_cache *nsproxy_cachep;
 
 /*
-系统中默认的nsproxy
+绯荤粺涓粯璁ょ殑nsproxy
 */
 struct nsproxy init_nsproxy = {
 	.count			= ATOMIC_INIT(1),

@@ -387,16 +387,16 @@ struct jbd2_revoke_table_s;
  * in so it can be fixed later.
  */
 /**
- * ÈÕÖ¾¾ä±ú
+ * æ—¥å¿—å¥æŸ„
  */
 struct handle_s
 {
 	/* Which compound transaction is this update a part of? */
-	/* µ±Ç°¾ä±úÏà¹ØµÄÊÂÎñ */
+	/* å½“å‰å¥æŸ„ç›¸å…³çš„äº‹åŠ¡ */
 	transaction_t		*h_transaction;
 
 	/* Number of remaining buffers we are allowed to dirty: */
-	/* ÈÕÖ¾²Ù×÷»¹ÓĞ¶àÉÙ¿ÕÏĞ»º³åÇø */
+	/* æ—¥å¿—æ“ä½œè¿˜æœ‰å¤šå°‘ç©ºé—²ç¼“å†²åŒº */
 	int			h_buffer_credits;
 
 	/* Reference count on this handle */
@@ -450,12 +450,12 @@ struct handle_s
  */
 
 /**
- * ÎÄ¼şÏµÍ³ÊÂÎñÃèÊö·û
+ * æ–‡ä»¶ç³»ç»Ÿäº‹åŠ¡æè¿°ç¬¦
  */
 struct transaction_s
 {
 	/* Pointer to the journal for this transaction. [no locking] */
-	/* ÊÂÎñËùÊôµÄÈÕÖ¾ */
+	/* äº‹åŠ¡æ‰€å±çš„æ—¥å¿— */
 	journal_t		*t_journal;
 
 	/* Sequence number for this transaction [no locking] */
@@ -467,17 +467,17 @@ struct transaction_s
 	 * FIXME: needs barriers
 	 * KLUDGE: [use j_state_lock]
 	 */
-	/* ÊÂÎñ×´Ì¬ */
+	/* äº‹åŠ¡çŠ¶æ€ */
 	enum {
-		/* ¿ÉÒÔÏòÈÕÖ¾Ìí¼ÓÔ­×Ó¾ä±ú */
+		/* å¯ä»¥å‘æ—¥å¿—æ·»åŠ åŸå­å¥æŸ„ */
 		T_RUNNING,
 		T_LOCKED,
 		T_RUNDOWN,
-		/* ÕıÔÚ½«ÊÂÎñĞ´µ½´ÅÅÌ */
+		/* æ­£åœ¨å°†äº‹åŠ¡å†™åˆ°ç£ç›˜ */
 		T_FLUSH,
-		/* ÈÕÖ¾Ğ´ÈëÍê±Ï£¬µ«ÊÇ»¹ĞèÒª´¦ÀíÔªÊı¾İ */
+		/* æ—¥å¿—å†™å…¥å®Œæ¯•ï¼Œä½†æ˜¯è¿˜éœ€è¦å¤„ç†å…ƒæ•°æ® */
 		T_COMMIT,
-		/* ËùÓĞÈÕÖ¾Ïî¾ùÒÑ¾­°²È«µÄĞ´µ½´ÅÅÌ */
+		/* æ‰€æœ‰æ—¥å¿—é¡¹å‡å·²ç»å®‰å…¨çš„å†™åˆ°ç£ç›˜ */
 		T_FINISHED
 	}			t_state;
 
@@ -505,7 +505,7 @@ struct transaction_s
 	 * Doubly-linked circular list of all metadata buffers owned by this
 	 * transaction [j_list_lock]
 	 */
-	/* ¸ÃÊÂÎñ¹ØÁªµÄ»º³åÇø */
+	/* è¯¥äº‹åŠ¡å…³è”çš„ç¼“å†²åŒº */
 	struct journal_head	*t_buffers;
 
 	/*
@@ -579,13 +579,13 @@ struct transaction_s
 	 * When will the transaction expire (become due for commit), in jiffies?
 	 * [no locking]
 	 */
-	/* ³¬Ê±Ê±¼ä£¬Ä¬ÈÏ5ÃëÄÚĞèÒª½«ÈÕÖ¾Ğ´µ½ÎïÀíÉè±¸ */
+	/* è¶…æ—¶æ—¶é—´ï¼Œé»˜è®¤5ç§’å†…éœ€è¦å°†æ—¥å¿—å†™åˆ°ç‰©ç†è®¾å¤‡ */
 	unsigned long		t_expires;
 
 	/*
 	 * How many handles used this transaction? [t_handle_lock]
 	 */
-	/* ÓëÊÂÎñ¹ØÁªµÄ¾ä±úÊıÁ¿ */
+	/* ä¸äº‹åŠ¡å…³è”çš„å¥æŸ„æ•°é‡ */
 	int t_handle_count;
 
 };
@@ -908,7 +908,7 @@ extern void		__wait_on_journal (journal_t *);
  */
 
 /**
- * »ñµÃµ±Ç°½ø³ÌµÄÈÕÖ¾¾ä±ú
+ * è·å¾—å½“å‰è¿›ç¨‹çš„æ—¥å¿—å¥æŸ„
  */
 static inline handle_t *journal_current_handle(void)
 {

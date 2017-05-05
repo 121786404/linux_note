@@ -372,7 +372,7 @@ EXPORT_SYMBOL(sync_page_range_nolock);
  * Walk the list of under-writeback pages of the given address space
  * and wait for all of them.
  */
-/* µÈ´ıËùÓĞÎ´¾öµÄĞ´²Ù×÷Íê³É */
+/* ç­‰å¾…æ‰€æœ‰æœªå†³çš„å†™æ“ä½œå®Œæˆ */
 int filemap_fdatawait(struct address_space *mapping)
 {
 	loff_t i_size = i_size_read(mapping->host);
@@ -452,7 +452,7 @@ int filemap_write_and_wait_range(struct address_space *mapping,
  * This function does not add the page to the LRU.  The caller must do that.
  */
 /**
- * ½«Ò³ÃæÌí¼Óµ½Ò³»º´æÖĞ
+ * å°†é¡µé¢æ·»åŠ åˆ°é¡µç¼“å­˜ä¸­
  */
 int add_to_page_cache(struct page *page, struct address_space *mapping,
 		pgoff_t offset, gfp_t gfp_mask)
@@ -613,7 +613,7 @@ void fastcall __lock_page_nosync(struct page *page)
  * If yes, increment its refcount and return it; if no, return NULL.
  */
 /**
- * ÔÚ»ùÊ÷ÖĞ²éÕÒÒ³
+ * åœ¨åŸºæ ‘ä¸­æŸ¥æ‰¾é¡µ
  */
 struct page * find_get_page(struct address_space *mapping, pgoff_t offset)
 {
@@ -877,7 +877,7 @@ static void shrink_readahead_size_eio(struct file *filp,
  * It may be NULL.
  */
 /**
- * ¶ÁÈ¡Ó³ÉäµÄÎÄ¼şÄÚÈİ
+ * è¯»å–æ˜ å°„çš„æ–‡ä»¶å†…å®¹
  */
 void do_generic_mapping_read(struct address_space *mapping,
 			     struct file_ra_state *ra,
@@ -900,7 +900,7 @@ void do_generic_mapping_read(struct address_space *mapping,
 	last_index = (*ppos + desc->count + PAGE_CACHE_SIZE-1) >> PAGE_CACHE_SHIFT;
 	offset = *ppos & ~PAGE_CACHE_MASK;
 
-	/* Ñ­»·£¬Ö±µ½¶ÁÈ¡ËùÓĞµÄÒ³Ãæ */
+	/* å¾ªç¯ï¼Œç›´åˆ°è¯»å–æ‰€æœ‰çš„é¡µé¢ */
 	for (;;) {
 		struct page *page;
 		pgoff_t end_index;
@@ -909,24 +909,24 @@ void do_generic_mapping_read(struct address_space *mapping,
 
 		cond_resched();
 find_page:
-		/* ¼ì²éÒ³ÊÇ·ñÔÚ»º´æÖĞ */
+		/* æ£€æŸ¥é¡µæ˜¯å¦åœ¨ç¼“å­˜ä¸­ */
 		page = find_get_page(mapping, index);
-		if (!page) {/* Ò³²»ÔÚ»º´æÖĞ */
-			/* Í¬²½Ô¤¶Á */
+		if (!page) {/* é¡µä¸åœ¨ç¼“å­˜ä¸­ */
+			/* åŒæ­¥é¢„è¯» */
 			page_cache_sync_readahead(mapping,
 					ra, filp,
 					index, last_index - index);
-			/* ÔÙ´Î´Ó»º´æÖĞ¶ÁÈ¡Ò³Ãæ */
+			/* å†æ¬¡ä»ç¼“å­˜ä¸­è¯»å–é¡µé¢ */
 			page = find_get_page(mapping, index);
-			if (unlikely(page == NULL))/* Èç¹û»º´æÖĞÈÔÈ»Ã»ÓĞ */
-				goto no_cached_page;/* Ö±½Ó¶ÁÈ¡Ò³Ãæ */
+			if (unlikely(page == NULL))/* å¦‚æœç¼“å­˜ä¸­ä»ç„¶æ²¡æœ‰ */
+				goto no_cached_page;/* ç›´æ¥è¯»å–é¡µé¢ */
 		}
-		if (PageReadahead(page)) {/* Æô¶¯Ô¤¶Á */
+		if (PageReadahead(page)) {/* å¯åŠ¨é¢„è¯» */
 			page_cache_async_readahead(mapping,
 					ra, filp, page,
 					index, last_index - index);
 		}
-		if (!PageUptodate(page))/* »º´æÖĞµÄÒ³Ãæ²»ÊÇ×îĞÂµÄ */
+		if (!PageUptodate(page))/* ç¼“å­˜ä¸­çš„é¡µé¢ä¸æ˜¯æœ€æ–°çš„ */
 			goto page_not_up_to_date;
 page_ok:
 		/*
@@ -992,7 +992,7 @@ page_ok:
 			continue;
 		goto out;
 
-/* Ò³ÃæËäÈ»ÔÚ»º´æÖĞ£¬µ«ÊÇ²»ÊÇ×îĞÂµÄ */
+/* é¡µé¢è™½ç„¶åœ¨ç¼“å­˜ä¸­ï¼Œä½†æ˜¯ä¸æ˜¯æœ€æ–°çš„ */
 page_not_up_to_date:
 		/* Get exclusive access to the page ... */
 		lock_page(page);
@@ -1005,14 +1005,14 @@ page_not_up_to_date:
 		}
 
 		/* Did somebody else fill it already? */
-		if (PageUptodate(page)) {/* ÖØĞÂ»ñÈ¡Ò³Ãæºó£¬ËüÒÑ¾­ÓÉÆäËû¹ı³Ì¸üĞÂÁË */
+		if (PageUptodate(page)) {/* é‡æ–°è·å–é¡µé¢åï¼Œå®ƒå·²ç»ç”±å…¶ä»–è¿‡ç¨‹æ›´æ–°äº† */
 			unlock_page(page);
 			goto page_ok;
 		}
 
 readpage:
 		/* Start the actual read. The read will unlock the page. */
-		/* ÖØĞÂ¶ÁÈ¡Ò³Ãæ£¬Í¨³£ÊÇmpage_readpage */
+		/* é‡æ–°è¯»å–é¡µé¢ï¼Œé€šå¸¸æ˜¯mpage_readpage */
 		error = mapping->a_ops->readpage(filp, page);
 
 		if (unlikely(error)) {
@@ -1055,12 +1055,12 @@ no_cached_page:
 		 * Ok, it wasn't cached, so we need to create a new
 		 * page..
 		 */
-		page = page_cache_alloc_cold(mapping);/* ·ÖÅäÒ»¸öĞÂµÄÒ³Ãæ */
+		page = page_cache_alloc_cold(mapping);/* åˆ†é…ä¸€ä¸ªæ–°çš„é¡µé¢ */
 		if (!page) {
 			desc->error = -ENOMEM;
 			goto out;
 		}
-		/* ½«Ò³ÃæÌí¼Óµ½lru»º´æÖĞ */
+		/* å°†é¡µé¢æ·»åŠ åˆ°lruç¼“å­˜ä¸­ */
 		error = add_to_page_cache_lru(page, mapping,
 						index, GFP_KERNEL);
 		if (error) {
@@ -1070,7 +1070,7 @@ no_cached_page:
 			desc->error = error;
 			goto out;
 		}
-		/* ¶ÁÈ¡Ò³ÃæÄÚÈİ */
+		/* è¯»å–é¡µé¢å†…å®¹ */
 		goto readpage;
 	}
 
@@ -1173,7 +1173,7 @@ EXPORT_SYMBOL(generic_segment_checks);
  * that can use the page cache directly.
  */
 /**
- * Òì²½IO¶ÁÈ¡º¯Êı
+ * å¼‚æ­¥IOè¯»å–å‡½æ•°
  */
 ssize_t
 generic_file_aio_read(struct kiocb *iocb, const struct iovec *iov,
@@ -1186,13 +1186,13 @@ generic_file_aio_read(struct kiocb *iocb, const struct iovec *iov,
 	loff_t *ppos = &iocb->ki_pos;
 
 	count = 0;
-	/* È·ÈÏ²ÎÊıÓĞĞ§ */
+	/* ç¡®è®¤å‚æ•°æœ‰æ•ˆ */
 	retval = generic_segment_checks(iov, &nr_segs, &count, VERIFY_WRITE);
 	if (retval)
 		return retval;
 
 	/* coalesce the iovecs and go direct-to-BIO for O_DIRECT */
-	if (filp->f_flags & O_DIRECT) {/* Ö±½Ó¶ÁÈ¡£¬¶ø²»¿¼ÂÇÒ³»º´æ */
+	if (filp->f_flags & O_DIRECT) {/* ç›´æ¥è¯»å–ï¼Œè€Œä¸è€ƒè™‘é¡µç¼“å­˜ */
 		loff_t size;
 		struct address_space *mapping;
 		struct inode *inode;
@@ -1204,7 +1204,7 @@ generic_file_aio_read(struct kiocb *iocb, const struct iovec *iov,
 			goto out; /* skip atime */
 		size = i_size_read(inode);
 		if (pos < size) {
-			/* Ö±½ÓIO */
+			/* ç›´æ¥IO */
 			retval = generic_file_direct_IO(READ, iocb,
 						iov, pos, nr_segs);
 			if (retval > 0)
@@ -1216,10 +1216,10 @@ generic_file_aio_read(struct kiocb *iocb, const struct iovec *iov,
 		}
 	}
 
-	/* Í¨¹ıÒ³»º´æ¶ÁÈ¡ */
+	/* é€šè¿‡é¡µç¼“å­˜è¯»å– */
 	retval = 0;
 	if (count) {
-		/* ±éÀúÃ¿¸ö¶Î£¬½«Êı¾İ¶ÁÈ¡µ½ÆäÖĞ */
+		/* éå†æ¯ä¸ªæ®µï¼Œå°†æ•°æ®è¯»å–åˆ°å…¶ä¸­ */
 		for (seg = 0; seg < nr_segs; seg++) {
 			read_descriptor_t desc;
 
@@ -1229,7 +1229,7 @@ generic_file_aio_read(struct kiocb *iocb, const struct iovec *iov,
 			if (desc.count == 0)
 				continue;
 			desc.error = 0;
-			/* ¶ÁÈ¡IO */
+			/* è¯»å–IO */
 			do_generic_file_read(filp,ppos,&desc,file_read_actor);
 			retval += desc.written;
 			if (desc.error) {
@@ -1325,7 +1325,7 @@ static int fastcall page_cache_read(struct file * file, pgoff_t offset)
  * having a lot of duplicated code.
  */
 /**
- * ÎÄ¼şÓ³ÉäÈ±Ò³´¦Àí
+ * æ–‡ä»¶æ˜ å°„ç¼ºé¡µå¤„ç†
  */
 int filemap_fault(struct vm_area_struct *vma, struct vm_fault *vmf)
 {
@@ -1355,23 +1355,23 @@ retry_find:
 	/*
 	 * For sequential accesses, we use the generic readahead logic.
 	 */
-	if (VM_SequentialReadHint(vma)) {/* ÅĞ¶ÏÒ³Ãæ·ÃÎÊÊÇË³Ğò·ÃÎÊ»¹ÊÇËæ»ú·ÃÎÊ */
+	if (VM_SequentialReadHint(vma)) {/* åˆ¤æ–­é¡µé¢è®¿é—®æ˜¯é¡ºåºè®¿é—®è¿˜æ˜¯éšæœºè®¿é—® */
 		if (!page) {
-			/* ·ÖÅäÒ³Ãæ²¢Ô¤¶ÁÒ³ÃæÄÚÈİ */
+			/* åˆ†é…é¡µé¢å¹¶é¢„è¯»é¡µé¢å†…å®¹ */
 			page_cache_sync_readahead(mapping, ra, file,
 							   vmf->pgoff, 1);
-			/* ¼ì²éÒ³ÃæÊÇ·ñÔÚ»º´æÖĞ */
+			/* æ£€æŸ¥é¡µé¢æ˜¯å¦åœ¨ç¼“å­˜ä¸­ */
 			page = find_lock_page(mapping, vmf->pgoff);
-			if (!page)/* Ã»ÓĞÕÒµ½Ò³Ãæ£¬ËµÃ÷Ô¤¶ÁÃ»ÓĞ¶ÁÈ¡µ½ÄÚÈİ£¬Ö±½Ó¶ÁÈ¡Ò³Ãæ */
+			if (!page)/* æ²¡æœ‰æ‰¾åˆ°é¡µé¢ï¼Œè¯´æ˜é¢„è¯»æ²¡æœ‰è¯»å–åˆ°å†…å®¹ï¼Œç›´æ¥è¯»å–é¡µé¢ */
 				goto no_cached_page;
 		}
-		if (PageReadahead(page)) {/* ´¦ÀíÔ¤¶Á */
+		if (PageReadahead(page)) {/* å¤„ç†é¢„è¯» */
 			page_cache_async_readahead(mapping, ra, file, page,
 							   vmf->pgoff, 1);
 		}
 	}
 
-	if (!page) {/* Ò³Ãæ²»ÔÚ»º´æÖĞ£¬²¢ÇÒ²»ÊÇË³Ğò·ÃÎÊ */
+	if (!page) {/* é¡µé¢ä¸åœ¨ç¼“å­˜ä¸­ï¼Œå¹¶ä¸”ä¸æ˜¯é¡ºåºè®¿é—® */
 		unsigned long ra_pages;
 
 		ra->mmap_miss++;
@@ -1392,23 +1392,23 @@ retry_find:
 			count_vm_event(PGMAJFAULT);
 		}
 		did_readaround = 1;
-		/* ¼ÆËãÔ¤¶ÁµÄÒ³ÃæÊıÁ¿ */
+		/* è®¡ç®—é¢„è¯»çš„é¡µé¢æ•°é‡ */
 		ra_pages = max_sane_readahead(file->f_ra.ra_pages);
 		if (ra_pages) {
 			pgoff_t start = 0;
 
 			if (vmf->pgoff > ra_pages / 2)
 				start = vmf->pgoff - ra_pages / 2;
-			/* ÔÚÒ³Ãæ»º´æÖĞ·ÖÅäÒ³Ãæ²¢¶ÁÈëÊı¾İ */
+			/* åœ¨é¡µé¢ç¼“å­˜ä¸­åˆ†é…é¡µé¢å¹¶è¯»å…¥æ•°æ® */
 			do_page_cache_readahead(mapping, file, start, ra_pages);
 		}
-		/* ÔÙ´ÎÔÚÒ³»º´æÖĞ²éÕÒÒ³Ãæ */
+		/* å†æ¬¡åœ¨é¡µç¼“å­˜ä¸­æŸ¥æ‰¾é¡µé¢ */
 		page = find_lock_page(mapping, vmf->pgoff);
-		if (!page)/* Ã»ÓĞÕÒµ½£¬¶ÁÈ¡Ò³ÃæÄÚÈİ */
+		if (!page)/* æ²¡æœ‰æ‰¾åˆ°ï¼Œè¯»å–é¡µé¢å†…å®¹ */
 			goto no_cached_page;
 	}
 
-	/* ÔËĞĞµ½´Ë£¬ËµÃ÷Ò³ÃæÔÚ»º´æÖĞ */
+	/* è¿è¡Œåˆ°æ­¤ï¼Œè¯´æ˜é¡µé¢åœ¨ç¼“å­˜ä¸­ */
 	if (!did_readaround)
 		ra->mmap_miss--;
 
@@ -1416,7 +1416,7 @@ retry_find:
 	 * We have a locked page in the page cache, now we need to check
 	 * that it's up-to-date. If not, it is going to be due to an error.
 	 */
-	if (unlikely(!PageUptodate(page)))/* ²é¿´Ò³ÃæÊÇ·ñÊÇ×îĞÂµÄ */
+	if (unlikely(!PageUptodate(page)))/* æŸ¥çœ‹é¡µé¢æ˜¯å¦æ˜¯æœ€æ–°çš„ */
 		goto page_not_uptodate;
 
 	/* Must recheck i_size under page lock */
@@ -1430,7 +1430,7 @@ retry_find:
 	/*
 	 * Found the page and have a reference on it.
 	 */
-	mark_page_accessed(page);/* Ò³ÃæÊÇ×îĞÂµÄ£¬±ê¼ÇÆä·ÃÎÊÊôĞÔ */
+	mark_page_accessed(page);/* é¡µé¢æ˜¯æœ€æ–°çš„ï¼Œæ ‡è®°å…¶è®¿é—®å±æ€§ */
 	ra->prev_pos = (loff_t)page->index << PAGE_CACHE_SHIFT;
 	vmf->page = page;
 	return ret | VM_FAULT_LOCKED;
@@ -1473,11 +1473,11 @@ page_not_uptodate:
 	 * and we need to check for errors.
 	 */
 	ClearPageError(page);
-	/* ¶ÁÈ¡Ò³ÃæÄÚÈİµ½ÄÚ´æÖĞ */
+	/* è¯»å–é¡µé¢å†…å®¹åˆ°å†…å­˜ä¸­ */
 	error = mapping->a_ops->readpage(file, page);
 	page_cache_release(page);
 
-	if (!error || error == AOP_TRUNCATED_PAGE)/* ÖØĞÂ²éÕÒÒ³Ãæ */
+	if (!error || error == AOP_TRUNCATED_PAGE)/* é‡æ–°æŸ¥æ‰¾é¡µé¢ */
 		goto retry_find;
 
 	/* Things didn't work out. Return zero to tell the mm layer so. */

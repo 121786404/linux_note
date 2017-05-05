@@ -380,13 +380,13 @@ static int bprm_mm_init(struct linux_binprm *bprm)
 	int err;
 	struct mm_struct *mm = NULL;
 
-    /* Éú³ÉÒ»¸öĞÂµÄmm_structÊµÀıÀ´¹ÜÀí½ø³ÌµØÖ·¿Õ¼ä*/
+    /* ç”Ÿæˆä¸€ä¸ªæ–°çš„mm_structå®ä¾‹æ¥ç®¡ç†è¿›ç¨‹åœ°å€ç©ºé—´*/
 	bprm->mm = mm = mm_alloc();
 	err = -ENOMEM;
 	if (!mm)
 		goto err;
 
-    /* ½¨Á¢³õÊ¼µÄÕ» */
+    /* å»ºç«‹åˆå§‹çš„æ ˆ */
 	err = __bprm_mm_init(bprm);
 	if (err)
 		goto err;
@@ -1597,13 +1597,13 @@ int search_binary_handler(struct linux_binprm *bprm)
 	retval = -ENOENT;
  retry:
 	read_lock(&binfmt_lock);
-	/* ±éÀúformatsÁ´±í*/
+	/* éå†formatsé“¾è¡¨*/
 	list_for_each_entry(fmt, &formats, lh) {
 		if (!try_module_get(fmt->module))
 			continue;
 		read_unlock(&binfmt_lock);
 		bprm->recursion_depth++;
-		/* Ó¦ÓÃÃ¿ÖÖ¸ñÊ½µÄload_binary·½·¨ */
+		/* åº”ç”¨æ¯ç§æ ¼å¼çš„load_binaryæ–¹æ³• */
 		retval = fmt->load_binary(bprm);
 		read_lock(&binfmt_lock);
 		put_binfmt(fmt);
@@ -1646,7 +1646,7 @@ static int exec_binprm(struct linux_binprm *bprm)
 	old_vpid = task_pid_nr_ns(current, task_active_pid_ns(current->parent));
 	rcu_read_unlock();
 
-    /* ±éÀúËùÓĞµÄ¶ş½øÖÆ¸ñÊ½£¬²éÕÒºÏÊÊµÄhandler */
+    /* éå†æ‰€æœ‰çš„äºŒè¿›åˆ¶æ ¼å¼ï¼ŒæŸ¥æ‰¾åˆé€‚çš„handler */
 	ret = search_binary_handler(bprm);
 	if (ret >= 0) {
 		audit_bprm(bprm);
@@ -1691,7 +1691,7 @@ static int do_execveat_common(int fd, struct filename *filename,
 	 * further execve() calls fail. */
 	current->flags &= ~PF_NPROC_EXCEEDED;
 /*
-Îª½ø³Ì¸´ÖÆÒ»·İÎÄ¼ş±í
+ä¸ºè¿›ç¨‹å¤åˆ¶ä¸€ä»½æ–‡ä»¶è¡¨
 */
 	retval = unshare_files(&displaced);
 	if (retval)
@@ -1699,7 +1699,7 @@ static int do_execveat_common(int fd, struct filename *filename,
 
 	retval = -ENOMEM;
 /*
-	·ÖÅäÒ»·İlinux_binprm½á¹¹Ìå
+	åˆ†é…ä¸€ä»½linux_binprmç»“æ„ä½“
 */
 	bprm = kzalloc(sizeof(*bprm), GFP_KERNEL);
 	if (!bprm)
@@ -1712,17 +1712,17 @@ static int do_execveat_common(int fd, struct filename *filename,
 	check_unsafe_exec(bprm);
 	current->in_execve = 1;
 
-    /* ´ò¿ªÒªÖ´ĞĞµÄÎÄ¼ş£¬²¢¼ì²éÆäÓĞĞ§ĞÔ */
+    /* æ‰“å¼€è¦æ‰§è¡Œçš„æ–‡ä»¶ï¼Œå¹¶æ£€æŸ¥å…¶æœ‰æ•ˆæ€§ */
 	file = do_open_execat(fd, filename, flags);
 	retval = PTR_ERR(file);
 	if (IS_ERR(file))
 		goto out_unmark;
 
-    /* Ñ¡Ôñ×îĞ¡¸ºÔØµÄCPU£¬ÒÔÖ´ĞĞĞÂ³ÌĞò*/
+    /* é€‰æ‹©æœ€å°è´Ÿè½½çš„CPUï¼Œä»¥æ‰§è¡Œæ–°ç¨‹åº*/
 	sched_exec();
 
 /*
-    ¸ù¾İ»ñÈ¡µÄĞÅÏ¢£¬Ìî³älinux_binprm½á¹¹ÌåÖĞµÄfile¡¢filename¡¢interp³ÉÔ±
+    æ ¹æ®è·å–çš„ä¿¡æ¯ï¼Œå¡«å……linux_binprmç»“æ„ä½“ä¸­çš„fileã€filenameã€interpæˆå‘˜
 */
 	bprm->file = file;
 	if (fd == AT_FDCWD || filename->name[0] == '/') {
@@ -1748,16 +1748,16 @@ static int do_execveat_common(int fd, struct filename *filename,
 	}
 	bprm->interp = bprm->filename;
 /*
-    ´´½¨½ø³ÌµÄÄÚ´æµØÖ·¿Õ¼ä£¬ÎªĞÂ³ÌĞò³õÊ¼»¯ÄÚ´æ¹ÜÀí.
-    ²¢µ÷ÓÃinit_new_context()¼ì²éµ±Ç°½ø³ÌÊÇ·ñÊ¹ÓÃ×Ô¶¨ÒåµÄ¾Ö²¿ÃèÊö·û±í£»
-    Èç¹ûÊÇ£¬ÄÇÃ´·ÖÅäºÍ×¼±¸Ò»¸öĞÂµÄLDT
+    åˆ›å»ºè¿›ç¨‹çš„å†…å­˜åœ°å€ç©ºé—´ï¼Œä¸ºæ–°ç¨‹åºåˆå§‹åŒ–å†…å­˜ç®¡ç†.
+    å¹¶è°ƒç”¨init_new_context()æ£€æŸ¥å½“å‰è¿›ç¨‹æ˜¯å¦ä½¿ç”¨è‡ªå®šä¹‰çš„å±€éƒ¨æè¿°ç¬¦è¡¨ï¼›
+    å¦‚æœæ˜¯ï¼Œé‚£ä¹ˆåˆ†é…å’Œå‡†å¤‡ä¸€ä¸ªæ–°çš„LDT
 */
 	retval = bprm_mm_init(bprm);
 	if (retval)
 		goto out_unmark;
 
 /*
-    Ìî³älinux_binprm½á¹¹ÌåÖĞµÄÃüÁîĞĞ²ÎÊıargv,»·¾³±äÁ¿envp
+    å¡«å……linux_binprmç»“æ„ä½“ä¸­çš„å‘½ä»¤è¡Œå‚æ•°argv,ç¯å¢ƒå˜é‡envp
 */
 	bprm->argc = count(argv, MAX_ARG_STRINGS);
 	if ((retval = bprm->argc) < 0)
@@ -1768,17 +1768,17 @@ static int do_execveat_common(int fd, struct filename *filename,
 		goto out;
 
     /*
-    ĞÂ½ø³ÌµÄºÜ¶à²ÎÊı£¬ÀıÈçeuid,egid,²ÎÊıÁĞ±íµÈ£¬»á±»ºóÃæµÄº¯ÊıÓÃµ½£¬
-    Î´À´·½±ãÆğ¼û£¬»á½«ÕâĞ©ĞÅÏ¢´ò°üÔÚlinux_binprmÀï£¬
-    Òò´Ëprepare_binprmµÄ×÷ÓÃÊÇ½«¸¸½ø³ÌµÄÒ»Ğ©Ïà¹ØµÄÖµ£¨ÌØ±ğÊÇeuidºÍgid)
-    ¸´ÖÆµ½linux_binprmÕâ¸ö½á¹¹Àï
+    æ–°è¿›ç¨‹çš„å¾ˆå¤šå‚æ•°ï¼Œä¾‹å¦‚euid,egid,å‚æ•°åˆ—è¡¨ç­‰ï¼Œä¼šè¢«åé¢çš„å‡½æ•°ç”¨åˆ°ï¼Œ
+    æœªæ¥æ–¹ä¾¿èµ·è§ï¼Œä¼šå°†è¿™äº›ä¿¡æ¯æ‰“åŒ…åœ¨linux_binprmé‡Œï¼Œ
+    å› æ­¤prepare_binprmçš„ä½œç”¨æ˜¯å°†çˆ¶è¿›ç¨‹çš„ä¸€äº›ç›¸å…³çš„å€¼ï¼ˆç‰¹åˆ«æ˜¯euidå’Œgid)
+    å¤åˆ¶åˆ°linux_binprmè¿™ä¸ªç»“æ„é‡Œ
     */
 	retval = prepare_binprm(bprm);
 	if (retval < 0)
 		goto out;
 
 /*
-    ´ÓÄÚºË¿Õ¼ä»ñÈ¡¶ş½øÖÆÎÄ¼şµÄÂ·¾¶Ãû³Æ
+    ä»å†…æ ¸ç©ºé—´è·å–äºŒè¿›åˆ¶æ–‡ä»¶çš„è·¯å¾„åç§°
 */
 	retval = copy_strings_kernel(1, &bprm->filename, bprm);
 	if (retval < 0)
@@ -1786,7 +1786,7 @@ static int do_execveat_common(int fd, struct filename *filename,
 
 	bprm->exec = bprm->p;
 /*
-	´ÓÓÃ»§¿Õ¼ä¿½±´»·¾³±äÁ¿ºÍÃüÁîĞĞ²ÎÊı
+	ä»ç”¨æˆ·ç©ºé—´æ‹·è´ç¯å¢ƒå˜é‡å’Œå‘½ä»¤è¡Œå‚æ•°
 */
 	retval = copy_strings(bprm->envc, envp, bprm);
 	if (retval < 0)
@@ -1798,8 +1798,8 @@ static int do_execveat_common(int fd, struct filename *filename,
 
 	would_dump(bprm, bprm->file);
 /*
-        ÖÁ´Ë£¬¶ş½øÖÆÎÄ¼şÒÑ¾­±»´ò¿ª£¬linux_binprm½á¹¹ÌåÖĞÒ²¼ÇÂ¼ÁËÖØÒªĞÅÏ¢£»
-        ÏÂÃæĞèÒªÊ¶±ğ¸Ã¶ş½øÖÆÎÄ¼şµÄ¸ñÊ½²¢×îÖÕÔËĞĞ¸ÃÎÄ¼ş
+        è‡³æ­¤ï¼ŒäºŒè¿›åˆ¶æ–‡ä»¶å·²ç»è¢«æ‰“å¼€ï¼Œlinux_binprmç»“æ„ä½“ä¸­ä¹Ÿè®°å½•äº†é‡è¦ä¿¡æ¯ï¼›
+        ä¸‹é¢éœ€è¦è¯†åˆ«è¯¥äºŒè¿›åˆ¶æ–‡ä»¶çš„æ ¼å¼å¹¶æœ€ç»ˆè¿è¡Œè¯¥æ–‡ä»¶
 */
 	retval = exec_binprm(bprm);
 	if (retval < 0)
@@ -1839,9 +1839,9 @@ out_ret:
 	return retval;
 }
 
-int do_execve(struct filename *filename, // ¿ÉÖ´ĞĞÎÄ¼şÃû
-	const char __user *const __user *__argv, // ²ÎÊı
-	const char __user *const __user *__envp) // »·¾³±äÁ¿
+int do_execve(struct filename *filename, // å¯æ‰§è¡Œæ–‡ä»¶å
+	const char __user *const __user *__argv, // å‚æ•°
+	const char __user *const __user *__envp) // ç¯å¢ƒå˜é‡
 {
 	struct user_arg_ptr argv = { .ptr.native = __argv };
 	struct user_arg_ptr envp = { .ptr.native = __envp };

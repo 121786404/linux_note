@@ -154,9 +154,9 @@ struct prctl_mm_map {
 #define PR_SET_PTRACER 0x59616d61
 # define PR_SET_PTRACER_ANY ((unsigned long)-1)
 /*
-被标记为CHILD SUBREAPER的进程，它的所有子进程以及后续进程
-都会被标记为拥有subrepear，该进程充当init(1)
-的功能收养该进程树的孤儿进程
+琚爣璁颁负CHILD SUBREAPER鐨勮繘绋嬶紝瀹冪殑鎵�鏈夊瓙杩涚▼浠ュ強鍚庣画杩涚▼
+閮戒細琚爣璁颁负鎷ユ湁subrepear锛岃杩涚▼鍏呭綋init(1)
+鐨勫姛鑳芥敹鍏昏杩涚▼鏍戠殑瀛ゅ効杩涚▼
 */
 #define PR_SET_CHILD_SUBREAPER	36
 #define PR_GET_CHILD_SUBREAPER	37

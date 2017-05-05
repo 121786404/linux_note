@@ -29,7 +29,7 @@
 
 #define SETFL_MASK (O_APPEND | O_NONBLOCK | O_NDELAY | O_DIRECT | O_NOATIME)
 
-/*º¯ÊıÔÚÄÚ²¿Ö±½Óµ÷ÓÃÇı¶¯³ÌĞòÌá¹©µÄfasyncÀı³Ì*/
+/*å‡½æ•°åœ¨å†…éƒ¨ç›´æ¥è°ƒç”¨é©±åŠ¨ç¨‹åºæä¾›çš„fasyncä¾‹ç¨‹*/
 static int setfl(int fd, struct file * filp, unsigned long arg)
 {
 	struct inode * inode = file_inode(filp);
@@ -68,7 +68,7 @@ static int setfl(int fd, struct file * filp, unsigned long arg)
 	 * ->fasync() is responsible for setting the FASYNC bit.
 	 */
 	if (((arg ^ filp->f_flags) & FASYNC) && filp->f_op->fasync) {
-		/*µ÷ÓÃÇı¶¯³ÌĞòÊµÏÖµÄfasyncÀı³Ì*/
+		/*è°ƒç”¨é©±åŠ¨ç¨‹åºå®ç°çš„fasyncä¾‹ç¨‹*/
 		error = filp->f_op->fasync(fd, filp, (arg & FASYNC) != 0);
 		if (error < 0)
 			goto out;
@@ -109,7 +109,7 @@ void __f_setown(struct file *filp, struct pid *pid, enum pid_type type,
 }
 EXPORT_SYMBOL(__f_setown);
 
-/*f_setownº¯Êı½«ÒªÍ¨Öª½ø³ÌµÄIDÏà¹ØĞÅÏ¢¼ÇÂ¼ÔÚfilp->f_ownerÖĞ*/
+/*f_setownå‡½æ•°å°†è¦é€šçŸ¥è¿›ç¨‹çš„IDç›¸å…³ä¿¡æ¯è®°å½•åœ¨filp->f_ownerä¸­*/
 void f_setown(struct file *filp, unsigned long arg, int force)
 {
 	enum pid_type type;
@@ -298,7 +298,7 @@ static long do_fcntl(int fd, unsigned int cmd, unsigned long arg,
 		force_successful_syscall_return();
 		break;
 	case F_SETOWN:
-		/*f_setownº¯Êı½«ÒªÍ¨Öª½ø³ÌµÄIDÏà¹ØĞÅÏ¢¼ÇÂ¼ÔÚfilp->f_ownerÖĞ*/
+		/*f_setownå‡½æ•°å°†è¦é€šçŸ¥è¿›ç¨‹çš„IDç›¸å…³ä¿¡æ¯è®°å½•åœ¨filp->f_ownerä¸­*/
 		f_setown(filp, arg, 1);
 		err = 0;
 		break;
@@ -357,7 +357,7 @@ static int check_fcntl_cmd(unsigned cmd)
 	}
 	return 0;
 }
-/*fcntlÍ¨¹ıÏµÍ³µ÷ÓÃsys_fcntlÓëÄÚºË¿Õ¼ä½»»¥*/
+/*fcntlé€šè¿‡ç³»ç»Ÿè°ƒç”¨sys_fcntlä¸å†…æ ¸ç©ºé—´äº¤äº’*/
 SYSCALL_DEFINE3(fcntl, unsigned int, fd, unsigned int, cmd, unsigned long, arg)
 {	
 	struct fd f = fdget_raw(fd);
@@ -373,7 +373,7 @@ SYSCALL_DEFINE3(fcntl, unsigned int, fd, unsigned int, cmd, unsigned long, arg)
 
 	err = security_file_fcntl(f.file, cmd, arg);
 	if (!err)
-	    /*ºËĞÄµ÷ÓÃ*/
+	    /*æ ¸å¿ƒè°ƒç”¨*/
 		err = do_fcntl(fd, cmd, arg, f.file);
 
 out1:
@@ -578,7 +578,7 @@ static void fasync_free_rcu(struct rcu_head *head)
  * match the state "is the filp on a fasync list".
  *
  */
-/*Ó¦ÓÃ³ÌĞò¹Ø±ÕÒì²½Í¨Öª¹¦ÄÜ,º¯Êı½«½ø³Ì´ÓÒì²½Í¨ÖªÁ´±íappÖĞÒÆ³ı*/
+/*åº”ç”¨ç¨‹åºå…³é—­å¼‚æ­¥é€šçŸ¥åŠŸèƒ½,å‡½æ•°å°†è¿›ç¨‹ä»å¼‚æ­¥é€šçŸ¥é“¾è¡¨appä¸­ç§»é™¤*/
 int fasync_remove_entry(struct file *filp, struct fasync_struct **fapp)
 {
 	struct fasync_struct *fa, **fp;
@@ -690,11 +690,11 @@ static int fasync_add_entry(int fd, struct file *filp, struct fasync_struct **fa
  * lease code. It returns negative on error, 0 if it did no changes
  * and positive if it added/deleted the entry.
  */
-/*Çı¶¯³ÌĞòÔÚÆäfasyncÀı³ÌÖĞĞèÒªfasync_helperºÍkill_fasyncÁ½¸öº¯Êı,Ç°ÕßÖ÷Òª½«µ±Ç°ÒªÍ¨ÖªµÄ
- *½ø³Ì¼ÓÈëÒ»¸öÁ´±í»òÕß´ÓÁ´±íÖĞÒÆ³ı,ÕâÖ÷ÒªÈ¡¾öÓÚÓ¦ÓÃ³ÌĞòµ÷ÓÃfcntlÊ±ÊÇ·ñÉèÖÃÁËFASYNC±êÖ¾,
- *¶økill_fasyncÔòÔÚÉè±¸ÖĞµÄÄ³Ò»ÊÂ¼ş·¢ÉúÊ±Í¨ÖªÁ´±íÉÏµÄËùÓĞÏà¹ØµÄ½ø³Ì*/
+/*é©±åŠ¨ç¨‹åºåœ¨å…¶fasyncä¾‹ç¨‹ä¸­éœ€è¦fasync_helperå’Œkill_fasyncä¸¤ä¸ªå‡½æ•°,å‰è€…ä¸»è¦å°†å½“å‰è¦é€šçŸ¥çš„
+ *è¿›ç¨‹åŠ å…¥ä¸€ä¸ªé“¾è¡¨æˆ–è€…ä»é“¾è¡¨ä¸­ç§»é™¤,è¿™ä¸»è¦å–å†³äºåº”ç”¨ç¨‹åºè°ƒç”¨fcntlæ—¶æ˜¯å¦è®¾ç½®äº†FASYNCæ ‡å¿—,
+ *è€Œkill_fasyncåˆ™åœ¨è®¾å¤‡ä¸­çš„æŸä¸€äº‹ä»¶å‘ç”Ÿæ—¶é€šçŸ¥é“¾è¡¨ä¸Šçš„æ‰€æœ‰ç›¸å…³çš„è¿›ç¨‹*/
 /**
- * @on:ÔÚsetflº¯ÊıÖĞ,´«µİ¸øËûµÄÊÇÒ»¸öÌõ¼ş±í´ïÊ½(arg&FASYNC)!=0,ÒâÎ¶×ÅÈç¹ûÓ¦ÓÃ³ÌĞòÔÚµ÷ÓÃfcntlÊ±,¶ÔÓÚF_SETFLÃüÁîÊ¹ÓÃµÄ²ÎÊıargÉèÖÃÁËFASYNC,ÄÇÃ´(arg&FASYNC)!=0½á¹ûÎª1,ËùÒÔfasync_helperÖĞµÄ²ÎÊıon½«Îª1,±íÃ÷Ó¦ÓÃ³ÌĞòÕıÔÚÆôÓÃÇı¶¯³ÌĞòµÄÒì²½Í¨Öª»úÖÆ,·´Ö®,Èô¶Ôfcntlº¯ÊıÊ¹ÓÃF_SETFLÃüÁîÊ±Çå³ıÁËFASYNC±êÖ¾,½«µ¼ÖÂÇı¶¯³ÌĞòµÄfasyncÀı³Ì¹Ø±ÕÒì²½Í¨ÖªÌØĞÔ.ËùÒÔfasync_helperµÄÖ÷Òª¹¦ÄÜÊÇÎ¬»¤Ò»¸öĞèÒªÍ¨ÖªµÄ½ø³ÌÁ´±ífapp,Èç¹ûÓ¦ÓÃ³ÌĞòĞèÒª»ñµÃÒì²½Í¨ÖªµÄÄÜÁ¦,ÄÇÃ´ĞèÒªÍ¨¹ıfcntlµÄF_SETFLÃüÁîÉèÖÃFASYNC±êÖ¾,Èç¹ûÉèÖÃÁË¸Ã±êÖ¾,Çı¶¯³ÌĞòµÄfasyncÀı³ÌÔÚµ÷ÓÃfasync_helperÊ±½«ÓÃfasync_add_entry½«ĞèÒªÍ¨ÖªµÄ½ø³Ì¼ÓÈëµ½Çı¶¯³ÌĞòÎ¬»¤µÄÒ»¸öÁ´±íÖĞ,·ñÔÚµ÷ÓÃfasync_remove_entry½«Æä´ÓÁ´±íÖĞÒÆ³ı*/
+ * @on:åœ¨setflå‡½æ•°ä¸­,ä¼ é€’ç»™ä»–çš„æ˜¯ä¸€ä¸ªæ¡ä»¶è¡¨è¾¾å¼(arg&FASYNC)!=0,æ„å‘³ç€å¦‚æœåº”ç”¨ç¨‹åºåœ¨è°ƒç”¨fcntlæ—¶,å¯¹äºF_SETFLå‘½ä»¤ä½¿ç”¨çš„å‚æ•°argè®¾ç½®äº†FASYNC,é‚£ä¹ˆ(arg&FASYNC)!=0ç»“æœä¸º1,æ‰€ä»¥fasync_helperä¸­çš„å‚æ•°onå°†ä¸º1,è¡¨æ˜åº”ç”¨ç¨‹åºæ­£åœ¨å¯ç”¨é©±åŠ¨ç¨‹åºçš„å¼‚æ­¥é€šçŸ¥æœºåˆ¶,åä¹‹,è‹¥å¯¹fcntlå‡½æ•°ä½¿ç”¨F_SETFLå‘½ä»¤æ—¶æ¸…é™¤äº†FASYNCæ ‡å¿—,å°†å¯¼è‡´é©±åŠ¨ç¨‹åºçš„fasyncä¾‹ç¨‹å…³é—­å¼‚æ­¥é€šçŸ¥ç‰¹æ€§.æ‰€ä»¥fasync_helperçš„ä¸»è¦åŠŸèƒ½æ˜¯ç»´æŠ¤ä¸€ä¸ªéœ€è¦é€šçŸ¥çš„è¿›ç¨‹é“¾è¡¨fapp,å¦‚æœåº”ç”¨ç¨‹åºéœ€è¦è·å¾—å¼‚æ­¥é€šçŸ¥çš„èƒ½åŠ›,é‚£ä¹ˆéœ€è¦é€šè¿‡fcntlçš„F_SETFLå‘½ä»¤è®¾ç½®FASYNCæ ‡å¿—,å¦‚æœè®¾ç½®äº†è¯¥æ ‡å¿—,é©±åŠ¨ç¨‹åºçš„fasyncä¾‹ç¨‹åœ¨è°ƒç”¨fasync_helperæ—¶å°†ç”¨fasync_add_entryå°†éœ€è¦é€šçŸ¥çš„è¿›ç¨‹åŠ å…¥åˆ°é©±åŠ¨ç¨‹åºç»´æŠ¤çš„ä¸€ä¸ªé“¾è¡¨ä¸­,å¦åœ¨è°ƒç”¨fasync_remove_entryå°†å…¶ä»é“¾è¡¨ä¸­ç§»é™¤*/
 int fasync_helper(int fd, struct file * filp, int on, struct fasync_struct **fapp)
 {
 	if (!on)
@@ -709,7 +709,7 @@ EXPORT_SYMBOL(fasync_helper);
  */
 static void kill_fasync_rcu(struct fasync_struct *fa, int sig, int band)
 {
-	/*Í¨¹ıwhileÑ­»·±äÁ³fasyncÁ´±í,¶ÔÃ¿¸ö½ø³Ìµ÷ÓÃsend_sigioÀ´ÏòÆä·¢ËÍĞÅºÅSIGIOÒÔÍ¨Öª½ø³Ì*/
+	/*é€šè¿‡whileå¾ªç¯å˜è„¸fasyncé“¾è¡¨,å¯¹æ¯ä¸ªè¿›ç¨‹è°ƒç”¨send_sigioæ¥å‘å…¶å‘é€ä¿¡å·SIGIOä»¥é€šçŸ¥è¿›ç¨‹*/
 	while (fa) {
 		struct fown_struct *fown;
 		unsigned long flags;
@@ -733,9 +733,9 @@ static void kill_fasync_rcu(struct fasync_struct *fa, int sig, int band)
 	}
 }
 
-/*Çı¶¯³ÌĞòÔÚÆäfasyncÀı³ÌÖĞĞèÒªfasync_helperºÍkill_fasyncÁ½¸öº¯Êı,Ç°ÕßÖ÷Òª½«µ±Ç°ÒªÍ¨ÖªµÄ
- *½ø³Ì¼ÓÈëÒ»¸öÁ´±í»òÕß´ÓÁ´±íÖĞÒÆ³ı,ÕâÖ÷ÒªÈ¡¾öÓÚÓ¦ÓÃ³ÌĞòµ÷ÓÃfcntlÊ±ÊÇ·ñÉèÖÃÁËFASYNC±êÖ¾,
- *¶økill_fasyncÔòÔÚÉè±¸ÖĞµÄÄ³Ò»ÊÂ¼ş·¢ÉúÊ±Í¨ÖªÁ´±íÉÏµÄËùÓĞÏà¹ØµÄ½ø³Ì,ÓÃÀ´·¢ËÍÍ¨ÖªĞÅºÅ*/
+/*é©±åŠ¨ç¨‹åºåœ¨å…¶fasyncä¾‹ç¨‹ä¸­éœ€è¦fasync_helperå’Œkill_fasyncä¸¤ä¸ªå‡½æ•°,å‰è€…ä¸»è¦å°†å½“å‰è¦é€šçŸ¥çš„
+ *è¿›ç¨‹åŠ å…¥ä¸€ä¸ªé“¾è¡¨æˆ–è€…ä»é“¾è¡¨ä¸­ç§»é™¤,è¿™ä¸»è¦å–å†³äºåº”ç”¨ç¨‹åºè°ƒç”¨fcntlæ—¶æ˜¯å¦è®¾ç½®äº†FASYNCæ ‡å¿—,
+ *è€Œkill_fasyncåˆ™åœ¨è®¾å¤‡ä¸­çš„æŸä¸€äº‹ä»¶å‘ç”Ÿæ—¶é€šçŸ¥é“¾è¡¨ä¸Šçš„æ‰€æœ‰ç›¸å…³çš„è¿›ç¨‹,ç”¨æ¥å‘é€é€šçŸ¥ä¿¡å·*/
 void kill_fasync(struct fasync_struct **fp, int sig, int band)
 {
 	/* First a quick test without locking: usually

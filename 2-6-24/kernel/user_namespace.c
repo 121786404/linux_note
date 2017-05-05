@@ -27,7 +27,7 @@ EXPORT_SYMBOL_GPL(init_user_ns);
  * Return NULL on error (failure to kmalloc), new ns otherwise
  */
 /**
- * ¸´ÖÆÓÃ»§ÃüÃû¿Õ¼ä
+ * å¤åˆ¶ç”¨æˆ·å‘½åç©ºé—´
  */
 static struct user_namespace *clone_user_ns(struct user_namespace *old_ns)
 {
@@ -35,20 +35,20 @@ static struct user_namespace *clone_user_ns(struct user_namespace *old_ns)
 	struct user_struct *new_user;
 	int n;
 
-	/* ·ÖÅäÓÃ»§ÃüÃû¿Õ¼äÊµÀı */
+	/* åˆ†é…ç”¨æˆ·å‘½åç©ºé—´å®ä¾‹ */
 	ns = kmalloc(sizeof(struct user_namespace), GFP_KERNEL);
 	if (!ns)
 		return ERR_PTR(-ENOMEM);
 
-	/* ³õÊ¼»¯ÃüÃû¿Õ¼äÒıÓÃ¼ÆÊı */
+	/* åˆå§‹åŒ–å‘½åç©ºé—´å¼•ç”¨è®¡æ•° */
 	kref_init(&ns->kref);
 
-	/* ³õÊ¼»¯¹şÏ£±íÍ° */
+	/* åˆå§‹åŒ–å“ˆå¸Œè¡¨æ¡¶ */
 	for (n = 0; n < UIDHASH_SZ; ++n)
 		INIT_HLIST_HEAD(ns->uidhash_table + n);
 
 	/* Insert new root user.  */
-	/* ÔÚÃüÃû¿Õ¼äÖĞ£¬ÎªrootÓÃ»§´´½¨Ò»¸öuser_structÊµÀı£¬Èç¹ûÕâ¸öÊµÀı»¹²»´æÔÚµÄ»° */
+	/* åœ¨å‘½åç©ºé—´ä¸­ï¼Œä¸ºrootç”¨æˆ·åˆ›å»ºä¸€ä¸ªuser_structå®ä¾‹ï¼Œå¦‚æœè¿™ä¸ªå®ä¾‹è¿˜ä¸å­˜åœ¨çš„è¯ */
 	ns->root_user = alloc_uid(ns, 0);
 	if (!ns->root_user) {
 		kfree(ns);
@@ -56,7 +56,7 @@ static struct user_namespace *clone_user_ns(struct user_namespace *old_ns)
 	}
 
 	/* Reset current->user with a new one */
-	/* Îªµ±Ç°ÓÃ»§´´½¨Ò»¸öuser_structÊµÀı */
+	/* ä¸ºå½“å‰ç”¨æˆ·åˆ›å»ºä¸€ä¸ªuser_structå®ä¾‹ */
 	new_user = alloc_uid(ns, current->uid);
 	if (!new_user) {
 		free_uid(ns->root_user);
@@ -64,7 +64,7 @@ static struct user_namespace *clone_user_ns(struct user_namespace *old_ns)
 		return ERR_PTR(-ENOMEM);
 	}
 
-	/* ÇĞ»»ÃüÃû¿Õ¼ä£¬´Ó´ËÒÔºó£¬ĞÂµÄuser_structÊµÀıÓÃÓÚ×ÊÔ´Í³¼Æ */
+	/* åˆ‡æ¢å‘½åç©ºé—´ï¼Œä»æ­¤ä»¥åï¼Œæ–°çš„user_structå®ä¾‹ç”¨äºèµ„æºç»Ÿè®¡ */
 	switch_uid(new_user);
 	return ns;
 }

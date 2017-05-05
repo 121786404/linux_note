@@ -23,23 +23,23 @@
 #ifndef __LINUX_RCU_H
 #define __LINUX_RCU_H
 
-/*RCU»úÖÆ*/
+/*RCUæœºåˆ¶*/
 /*
- * RCUµäÐÍÓÃ·¨·¶Àý:
+ * RCUå…¸åž‹ç”¨æ³•èŒƒä¾‹:
 
-   //¼ÙÉèstruct shared_dataÊ±Ò»¸öÔÚ¶ÁÈ¡ÕßºÍÐ´ÈëÕßÖ®¼ä¹²ÏíµÄÊÜ±£»¤Êý¾Ý
+   //å‡è®¾struct shared_dataæ—¶ä¸€ä¸ªåœ¨è¯»å–è€…å’Œå†™å…¥è€…ä¹‹é—´å…±äº«çš„å—ä¿æŠ¤æ•°æ®
    struct shared_data{
    	int a;
 	int b;
 	struct rcu_head rcu;
    };
-   //¶ÁÈ¡Õß²àµÄ´úÂë,¶ÁÈ¡Õßµ÷ÓÃrcu_read_lockºÍrcu_read_unlock¹¹½¨ËüµÄ¶ÁÈ¡ÁÙ½çÇø,
-   	ËùÓÐµÄÖ¸Ïò±»±£»¤×ÊÔ´Ö¸ÕëµÄÒýÓÃ¶¼Ó¦¸ÃÔÚÁÙ½çÇøÖÐ³öÏÖ,¶øÇÒÁÙ½çÇøÖÐµÄ´úÂë²»ÄÜË¯Ãß
+   //è¯»å–è€…ä¾§çš„ä»£ç ,è¯»å–è€…è°ƒç”¨rcu_read_lockå’Œrcu_read_unlockæž„å»ºå®ƒçš„è¯»å–ä¸´ç•ŒåŒº,
+   	æ‰€æœ‰çš„æŒ‡å‘è¢«ä¿æŠ¤èµ„æºæŒ‡é’ˆçš„å¼•ç”¨éƒ½åº”è¯¥åœ¨ä¸´ç•ŒåŒºä¸­å‡ºçŽ°,è€Œä¸”ä¸´ç•ŒåŒºä¸­çš„ä»£ç ä¸èƒ½ç¡çœ 
    static void demo_reader(struct shared_data *ptr)
    {
    	struct shared_data *p = NULL;
 	rcu_read_lock();
-	//µ÷ÓÃrcu_dereference»ñµÃptrµÄÖ¸Õë
+	//è°ƒç”¨rcu_dereferenceèŽ·å¾—ptrçš„æŒ‡é’ˆ
 	p = rcu_dereference(ptr);
 	if(p)
 		do_something_withp(p);
@@ -47,8 +47,8 @@
    }
 
 
-   //Ð´ÈëÕß²àµÄ´úÂë
-   //Ð´ÈëÕßÌá¹©µÄ»Øµ÷º¯Êý,ÓÃÓÚÊÍ·ÅÀÏÖ¸Õë
+   //å†™å…¥è€…ä¾§çš„ä»£ç 
+   //å†™å…¥è€…æä¾›çš„å›žè°ƒå‡½æ•°,ç”¨äºŽé‡Šæ”¾è€æŒ‡é’ˆ
    static void demo_del_oldptr(struct rcu_head *rh)
    {
    	struct shared_data *p = container_of(rh, struct shared_data, rcu)
@@ -60,9 +60,9 @@
 	...
 	new_ptr->a = 10;
 	new_ptr->b = 10;
-	//ÓÃÐÂÖ¸Õë¸üÐÂÀÏÖ¸Õë
+	//ç”¨æ–°æŒ‡é’ˆæ›´æ–°è€æŒ‡é’ˆ
 	rcu_assign_pointer(ptr, new_ptr);
-	//µ÷ÓÃcall_rcuÈÃÄÚºËÔÚÈ·±£ËùÓÐ¶ÔÀÏÖ¸ÕëptrµÄÒýÓÃ¶¼½áÊøºó»Øµ÷demo_del_oldptrÊÍ·ÅÀÏÖ¸Õë
+	//è°ƒç”¨call_rcuè®©å†…æ ¸åœ¨ç¡®ä¿æ‰€æœ‰å¯¹è€æŒ‡é’ˆptrçš„å¼•ç”¨éƒ½ç»“æŸåŽå›žè°ƒdemo_del_oldptré‡Šæ”¾è€æŒ‡é’ˆ
 	call_rcu(ptr->rcu, demo_del_oldptr);
    }
  */

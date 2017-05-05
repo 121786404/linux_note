@@ -50,19 +50,19 @@ extern int __must_check bus_create_file(struct bus_type *,
 extern void bus_remove_file(struct bus_type *, struct bus_attribute *);
 
 /**
- * ×ÜÏßÊı¾İÀàĞÍ
+ * æ€»çº¿æ•°æ®ç±»å‹
  */
 struct bus_type {
-	/* ×ÜÏßµÄÃû³Æ */
+	/* æ€»çº¿çš„åç§° */
 	const char		* name;
-	/* ËùÊôÄ£¿é */
+	/* æ‰€å±æ¨¡å— */
 	struct module		* owner;
 
-	/* ÓÃÓÚsysfsÎÄ¼şÏµÍ³ */
+	/* ç”¨äºsysfsæ–‡ä»¶ç³»ç»Ÿ */
 	struct kset		subsys;
 	struct kset		drivers;
 	struct kset		devices;
-	/* Á´±í±íÍ·£¬·Ö±ğ±íÊ¾Éè±¸Á´±íºÍÇı¶¯Á´±í */
+	/* é“¾è¡¨è¡¨å¤´ï¼Œåˆ†åˆ«è¡¨ç¤ºè®¾å¤‡é“¾è¡¨å’Œé©±åŠ¨é“¾è¡¨ */
 	struct klist		klist_devices;
 	struct klist		klist_drivers;
 
@@ -72,14 +72,14 @@ struct bus_type {
 	struct device_attribute	* dev_attrs;
 	struct driver_attribute	* drv_attrs;
 
-	/* ²éÕÒÓë¸ø¶¨Éè±¸Æ¥ÅäµÄÇı¶¯³ÌĞò */
+	/* æŸ¥æ‰¾ä¸ç»™å®šè®¾å¤‡åŒ¹é…çš„é©±åŠ¨ç¨‹åº */
 	int		(*match)(struct device * dev, struct device_driver * drv);
 	int		(*uevent)(struct device *dev, struct kobj_uevent_env *env);
-	/* ¼ì²âÉè±¸ÔÚÏµÍ³ÖĞÊÇ·ñÕæÊµ´æÔÚ */
+	/* æ£€æµ‹è®¾å¤‡åœ¨ç³»ç»Ÿä¸­æ˜¯å¦çœŸå®å­˜åœ¨ */
 	int		(*probe)(struct device * dev);
-	/* É¾³ıÇı¶¯ÓëÉè±¸Ö®¼äµÄ¹ØÁª */
+	/* åˆ é™¤é©±åŠ¨ä¸è®¾å¤‡ä¹‹é—´çš„å…³è” */
 	int		(*remove)(struct device * dev);
-	/* ÓÃÓÚµçÔ´¹ÜÀí */
+	/* ç”¨äºç”µæºç®¡ç† */
 	void		(*shutdown)(struct device * dev);
 
 	int (*suspend)(struct device * dev, pm_message_t state);
@@ -130,30 +130,30 @@ extern int bus_unregister_notifier(struct bus_type *bus,
 						      unbound */
 
 /**
- * Éè±¸Çı¶¯³ÌĞòÍ¨ÓÃÊı¾İ½á¹¹
+ * è®¾å¤‡é©±åŠ¨ç¨‹åºé€šç”¨æ•°æ®ç»“æ„
  */
 struct device_driver {
-	/* Çı¶¯Ãû³Æ */
+	/* é©±åŠ¨åç§° */
 	const char		* name;
-	/* ËùÊô×ÜÏß */
+	/* æ‰€å±æ€»çº¿ */
 	struct bus_type		* bus;
 
-	/* ÓÃÓÚsysfsÎÄ¼şÏµÍ³µÄÍ¨ÓÃ¶ÔÏó */
+	/* ç”¨äºsysfsæ–‡ä»¶ç³»ç»Ÿçš„é€šç”¨å¯¹è±¡ */
 	struct kobject		kobj;
-	/* ±¾Çı¶¯¹ÜÀíµÄËùÓĞÉè±¸±íÍ· */
+	/* æœ¬é©±åŠ¨ç®¡ç†çš„æ‰€æœ‰è®¾å¤‡è¡¨å¤´ */
 	struct klist		klist_devices;
-	/* Í¨¹ı´Ë×Ö¶ÎÁ´½Óµ½×ÜÏßµÄÇı¶¯Á´±íÖĞ */
+	/* é€šè¿‡æ­¤å­—æ®µé“¾æ¥åˆ°æ€»çº¿çš„é©±åŠ¨é“¾è¡¨ä¸­ */
 	struct klist_node	knode_bus;
 
-	/* ËùÊôÄ£¿é */
+	/* æ‰€å±æ¨¡å— */
 	struct module		* owner;
 	const char 		* mod_name;	/* used for built-in modules */
 	struct module_kobject	* mkobj;
 
-	/* Ì½²âº¯Êı£¬ÓÃÀ´¼ì²âÏµÍ³ÖĞÊÇ·ñ´æÔÚ ÄÜ¹»ÓÃ¸ÃÉè±¸Çı¶¯³ÌĞò´¦ÀíµÄÉè±¸ */
+	/* æ¢æµ‹å‡½æ•°ï¼Œç”¨æ¥æ£€æµ‹ç³»ç»Ÿä¸­æ˜¯å¦å­˜åœ¨ èƒ½å¤Ÿç”¨è¯¥è®¾å¤‡é©±åŠ¨ç¨‹åºå¤„ç†çš„è®¾å¤‡ */
 	int	(*probe)	(struct device * dev);
 	int	(*remove)	(struct device * dev);
-	/* ÓÃÓÚµçÔ´¹ÜÀí */
+	/* ç”¨äºç”µæºç®¡ç† */
 	void	(*shutdown)	(struct device * dev);
 	int	(*suspend)	(struct device * dev, pm_message_t state);
 	int	(*resume)	(struct device * dev);
@@ -419,21 +419,21 @@ extern int devres_release_group(struct device *dev, void *id);
 extern void *devm_kzalloc(struct device *dev, size_t size, gfp_t gfp);
 extern void devm_kfree(struct device *dev, void *p);
 
-/* Í¨ÓÃÉè±¸Êı¾İ½á¹¹ */
+/* é€šç”¨è®¾å¤‡æ•°æ®ç»“æ„ */
 struct device {
-	/* klistÁ´±í±íÍ·£¬Ö¸Ïò×ÓÉè±¸ */
+	/* klisté“¾è¡¨è¡¨å¤´ï¼ŒæŒ‡å‘å­è®¾å¤‡ */
 	struct klist		klist_children;
-	/* Í¨¹ı´Ë×Ö¶ÎÁ´½Óµ½¸¸Éè±¸µÄklistÁ´±í */
+	/* é€šè¿‡æ­¤å­—æ®µé“¾æ¥åˆ°çˆ¶è®¾å¤‡çš„klisté“¾è¡¨ */
 	struct klist_node	knode_parent;		/* node in sibling list */
-	/* Í¨¹ı´Ë×Ö¶ÎÁ´½Óµ½Çı¶¯³ÌĞòµÄÉè±¸Á´±íÖĞ */
+	/* é€šè¿‡æ­¤å­—æ®µé“¾æ¥åˆ°é©±åŠ¨ç¨‹åºçš„è®¾å¤‡é“¾è¡¨ä¸­ */
 	struct klist_node	knode_driver;
 	struct klist_node	knode_bus;
-	/* ¸¸Éè±¸ */
+	/* çˆ¶è®¾å¤‡ */
 	struct device		*parent;
 
-	/* ÓÃÓÚsysfsÎÄ¼şÏµÍ³ */
+	/* ç”¨äºsysfsæ–‡ä»¶ç³»ç»Ÿ */
 	struct kobject kobj;
-	/* °´×ÜÏß±àºÅ¡¢²å²Û±àºÅ¡¢¹¦ÄÜºÅµÄ·½Ê½×éÖ¯µÄÎ»ÖÃĞÅÏ¢ */
+	/* æŒ‰æ€»çº¿ç¼–å·ã€æ’æ§½ç¼–å·ã€åŠŸèƒ½å·çš„æ–¹å¼ç»„ç»‡çš„ä½ç½®ä¿¡æ¯ */
 	char	bus_id[BUS_ID_SIZE];	/* position on parent bus */
 	struct device_type	*type;
 	unsigned		is_registered:1;
@@ -443,12 +443,12 @@ struct device {
 					 * its driver.
 					 */
 
-	/* Éè±¸ËùÔÚµÄ×ÜÏß */
+	/* è®¾å¤‡æ‰€åœ¨çš„æ€»çº¿ */
 	struct bus_type	* bus;		/* type of bus device is on */
-	/* Éè±¸µÄÇı¶¯³ÌĞò */
+	/* è®¾å¤‡çš„é©±åŠ¨ç¨‹åº */
 	struct device_driver *driver;	/* which driver has allocated this
 					   device */
-	/* Éè±¸Çı¶¯³ÌĞòµÄË½ÓĞÊı¾İ¡£Í¨ÓÃ´úÂë²»ÄÜĞŞ¸ÄËü */
+	/* è®¾å¤‡é©±åŠ¨ç¨‹åºçš„ç§æœ‰æ•°æ®ã€‚é€šç”¨ä»£ç ä¸èƒ½ä¿®æ”¹å®ƒ */
 	void		*driver_data;	/* data private to the driver */
 	void		*platform_data;	/* Platform specific data, device
 					   core doesn't touch it */
@@ -480,7 +480,7 @@ struct device {
 	dev_t			devt;		/* dev_t, creates the sysfs "dev" */
 	struct attribute_group	**groups;	/* optional groups */
 
-	/* Îö¹¹º¯Êı */
+	/* ææ„å‡½æ•° */
 	void	(*release)(struct device * dev);
 };
 

@@ -78,8 +78,8 @@
  */
 #define in_irq()		(hardirq_count())
 #define in_softirq()		(softirq_count())
-/* Ö÷ÒªÓÃÒâÊÇ¸ù¾İµ±Ç°Õ»ÖĞµÄpreempt_count±äÁ¿,
- * À´ÅĞ¶Ïµ±Ç°ÊÇ·ñÔÚÒ»¸öÖĞ¶ÏÉÏÏÂÎÄÖĞÖ´ĞĞ.preempt_countµÄµÍ8Î»ÓëPREEMPTÏà¹Ø,8-15Î»Áô¸øSOFTIRQÊ¹ÓÃ,16-25Î»¸øHARDIRQÊ¹ÓÃ,NMIÕ¼¾İ1Î»*/
+/* ä¸»è¦ç”¨æ„æ˜¯æ ¹æ®å½“å‰æ ˆä¸­çš„preempt_countå˜é‡,
+ * æ¥åˆ¤æ–­å½“å‰æ˜¯å¦åœ¨ä¸€ä¸ªä¸­æ–­ä¸Šä¸‹æ–‡ä¸­æ‰§è¡Œ.preempt_countçš„ä½8ä½ä¸PREEMPTç›¸å…³,8-15ä½ç•™ç»™SOFTIRQä½¿ç”¨,16-25ä½ç»™HARDIRQä½¿ç”¨,NMIå æ®1ä½*/
 #define in_interrupt()		(irq_count())
 #define in_serving_softirq()	(softirq_count() & SOFTIRQ_OFFSET)
 #define in_nmi()		(preempt_count() & NMI_MASK)

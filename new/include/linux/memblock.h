@@ -14,39 +14,39 @@
  * 2 of the License, or (at your option) any later version.
  */
 /*
-bootmemҲ�кܶ�����. �����Եľ�������Ƭ������, 
-����ں�ά����memblock�ڴ������, ͬʱ��memblockʵ����һ��bootmem��ͬ�ļ���API, 
-��nobootmem, Memblock��ǰ������ΪLogical Memory Block( �߼��ڴ��), 
-������Yinghai Lu�Ĳ���, ����������Ϊmemblock. 
-���������bootmem��Ϊ��ʼ���׶ε��ڴ������
+bootmem也有很多问题. 最明显的就是外碎片的问题, 
+因此内核维护了memblock内存分配器, 同时用memblock实现了一份bootmem相同的兼容API, 
+即nobootmem, Memblock以前被定义为Logical Memory Block( 逻辑内存块), 
+但根据Yinghai Lu的补丁, 它被重命名为memblock. 
+并最终替代bootmem成为初始化阶段的内存管理器
 */
 
 /*
-bootmem��ͨ��λͼ��������λͼ���ڵص�ַ��, 
-��memblock���ڸߵ�ַ�����ڴ�, ά����������, ��memory��reserved
+bootmem是通过位图来管理，位图存在地地址段, 
+而memblock是在高地址管理内存, 维护两个链表, 即memory和reserved
 
-memory����ά��ϵͳ���ڴ���Ϣ(�ڳ�ʼ���׶�ͨ��bios��ȡ��), 
-�����κ��ڴ����, ��ȥ����memory����, Ȼ����reserve�����ϼ�¼(����һ���ڵ㣬���ߺϲ�)
+memory链表维护系统的内存信息(在初始化阶段通过bios获取的), 
+对于任何内存分配, 先去查找memory链表, 然后在reserve链表上记录(新增一个节点，或者合并)
 
-���߶����Է���С��һҳ���ڴ棻
-���߶��Ǿͽ����ҿ��õ��ڴ棬 bootmem�Ǵӵ͵����ң� memblock�ǴӸ������ң�
+两者都可以分配小于一页的内存；
+两者都是就近查找可用的内存， bootmem是从低到高找， memblock是从高往低找；
 
-��boot���ݸ�kernel memory bank�����Ϣ��kernel��߻���memblcok�ķ�ʽ������Щ��Ϣ��
-��buddy system û������֮ǰ����kernel��Ҳ��Ҫ��һ�׻���������memory��������ͷ�.
+在boot传递给kernel memory bank相关信息后，kernel这边会以memblcok的方式保存这些信息，
+当buddy system 没有起来之前，在kernel中也是要有一套机制来管理memory的申请和释放.
 
-Kernel����ѡ��nobootmem ����bootmem ����buddy system����֮ǰ����memory.
-�����ֻ��ƶ��ṩ��API��һ�µģ���˶��û���͸����
+Kernel可以选择nobootmem 或者bootmem 来在buddy system起来之前管理memory.
+这两种机制对提供的API是一致的，因此对用户是透明的
 
-memblock�ڴ�����ǽ����е������ڴ�ŵ�memblock.memory����Ϊ�����ڴ�������, 
-��������ڴ�ֻ���뵽memblock.reserved��, ������memory���Ƴ�.
-ͬ���ͷ��ڴ�Ҳ����뵽memory��. Ҳ����˵, memory��fill����������ǲ�������. 
-����ͷ����ڴ�����޸�reserved�ʹﵽĿ��. 
-�ڳ�ʼ���׶�û����ô�ิ�ӵ��ڴ��������, 
-�����ܶ�ط������������ڴ�������ʹ�õ�, 
-�����������ڴ������ʽ�Ѿ��㹻�պ�������, 
-�Ͼ��ں�Ҳ��ָ������һ����. 
+memblock内存管理是将所有的物理内存放到memblock.memory中作为可用内存来管理, 
+分配过的内存只加入到memblock.reserved中, 并不从memory中移出.
+同理释放内存也会加入到memory中. 也就是说, memory在fill过后基本就是不动的了. 
+申请和分配内存仅仅修改reserved就达到目的. 
+在初始化阶段没有那么多复杂的内存操作场景, 
+甚至很多地方都是申请了内存做永久使用的, 
+所以这样的内存管理方式已经足够凑合着用了, 
+毕竟内核也不指望用它一辈子. 
 
-��ϵͳ��ɳ�ʼ��֮�����еĹ������ƽ���ǿ���buddyϵͳ�������ڴ����
+在系统完成初始化之后所有的工作会移交给强大的buddy系统来进行内存管理
 */
 
 #include <linux/init.h>
@@ -65,20 +65,20 @@ enum {
 
 struct memblock_region {
 /*
-    �ڴ�������ʼ��ַ
+    内存区域起始地址
 */
 	phys_addr_t base;
 /*
-�ڴ������С
+内存区域大小
 */
 	phys_addr_t size;
 /*
-���
+标记
 */
 	unsigned long flags;
 #ifdef CONFIG_HAVE_MEMBLOCK_NODE_MAP
 /*
-node��
+node号
 */
 	int nid;
 #endif
@@ -86,46 +86,46 @@ node��
 
 struct memblock_type {
 /*
-    ��ǰ����(memory����reserved)�м�¼���ڴ��������
+    当前集合(memory或者reserved)中记录的内存区域个数
 */
 	unsigned long cnt;	/* number of regions */
 /*
-��ǰ����(memory����reserved)�пɼ�¼���ڴ������������
+当前集合(memory或者reserved)中可记录的内存区域的最大个数
 */
 	unsigned long max;	/* size of the allocated array */
 /*
-���ϼ�¼������Ϣ��С
+集合记录区域信息大小
 */
 	phys_addr_t total_size;	/* size of all regions */
 /*
-�ڴ�����ṹָ��
+内存区域结构指针
 */
 	struct memblock_region *regions;
 };
 
 struct memblock {
 /*
-��ʾ�����������ڴ�ķ�ʽ
-true:�ӵ͵�ַ(�ں�ӳ���β��)��ߵ�ַ����
-false:Ҳ����top-down,�Ӹߵ�ַ���ַ�����ڴ�.
+表示分配器分配内存的方式
+true:从低地址(内核映像的尾部)向高地址分配
+false:也就是top-down,从高地址向地址分配内存.
 */
 	bool bottom_up;  /* is bottom up direction? */
 /*
-ָ�����ڴ��Ĵ�С����, ��������ͨ��memblock_alloc���ڴ�����
+指出了内存块的大小限制, 用于限制通过memblock_alloc的内存申请
 
 */
 	phys_addr_t current_limit; 
 /*
-�ǿ����ڴ�ļ���
+是可用内存的集合
 */
 	struct memblock_type memory;
 /*
-�ѷ����ڴ�ļ���
+已分配内存的集合
 */
 	struct memblock_type reserved;
 #ifdef CONFIG_HAVE_MEMBLOCK_PHYS_MAP
 /*
-�����ڴ�ļ���
+物理内存的集合
 */
 	struct memblock_type physmem;
 #endif
@@ -139,9 +139,9 @@ extern bool movable_node_enabled;
 #endif /* CONFIG_MOVABLE_NODE */
 
 /*
-�������CONFIG_ARCH_DISCARD_MEMBLOCK������ѡ�
-memblock����ᱻ�ŵ�.init�����, 
-���ں�������ɺ� memblock������.init������ͷ�
+如果启用CONFIG_ARCH_DISCARD_MEMBLOCK宏配置选项，
+memblock代码会被放到.init代码段, 
+在内核启动完成后 memblock代码会从.init代码段释放
 */
 #ifdef CONFIG_ARCH_DISCARD_MEMBLOCK
 #define __init_memblock __meminit
@@ -424,7 +424,7 @@ bool memblock_is_reserved(phys_addr_t addr);
 bool memblock_is_region_reserved(phys_addr_t base, phys_addr_t size);
 
 extern void __memblock_dump_all(void);
-// ��ʼ�����, ��ʾmemblock�ı����������ڴ���Ϣ
+// 初始化完成, 显示memblock的保留的所有内存信息
 static inline void memblock_dump_all(void)
 {
 	if (memblock_debug)

@@ -58,7 +58,7 @@ extern int sysctl_legacy_va_layout;
  * space that has a special rule for the page-fault handlers (ie a shared
  * library, the executable area etc).
  */
-/* 虚拟存储结构体，对用户空间的0-3GB进行管理
+/* 铏氭嫙瀛樺偍缁撴瀯浣擄紝瀵圭敤鎴风┖闂寸殑0-3GB杩涜绠＄悊
   */
 struct vm_area_struct {
 	struct mm_struct * vm_mm;	/* The address space we belong to. */
@@ -222,7 +222,7 @@ typedef unsigned long page_flags_t;
  * moment. Note that we have no way to track which tasks are using
  * a page.
  */
-/* 内存页描述符 */
+/* 鍐呭瓨椤垫弿杩扮 */
 struct page {
 	page_flags_t flags;		/* Atomic flags, some possibly
 					 * updated asynchronously */

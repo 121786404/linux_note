@@ -43,7 +43,7 @@ int do_truncate(struct dentry *dentry, loff_t length, unsigned int time_attrs,
 	/* Not pretty: "inode->i_size" shouldn't really be signed. But it is. */
 	if (length < 0)
 		return -EINVAL;
-    /* ÉèÖÃÒª¸Ä±äµÄÊôĞÔ£¬¶ÔÓÚ½Ø¶ÏÀ´Ëµ£¬×îÖØÒªµÄÊÇÎÄ¼ş³¤¶È */
+    /* è®¾ç½®è¦æ”¹å˜çš„å±æ€§ï¼Œå¯¹äºæˆªæ–­æ¥è¯´ï¼Œæœ€é‡è¦çš„æ˜¯æ–‡ä»¶é•¿åº¦ */
 	newattrs.ia_size = length;
 	newattrs.ia_valid = ATTR_SIZE | time_attrs;
 	if (filp) {
@@ -57,7 +57,7 @@ int do_truncate(struct dentry *dentry, loff_t length, unsigned int time_attrs,
 		return ret;
 	if (ret)
 		newattrs.ia_valid |= ret | ATTR_FORCE;
-    /* ĞŞ¸ÄinodeÊôĞÔ */
+    /* ä¿®æ”¹inodeå±æ€§ */
 	inode_lock(dentry->d_inode);
 	/* Note any delegations or leases have already been broken: */
 	ret = notify_change(dentry, &newattrs, NULL);
@@ -74,23 +74,23 @@ long vfs_truncate(const struct path *path, loff_t length)
 	inode = path->dentry->d_inode;
 
 	/* For directories it's -EISDIR, for other non-regulars - -EINVAL */
-    /* Ä¿Â¼²»ÄÜ±»½Ø¶Ï */ 
+    /* ç›®å½•ä¸èƒ½è¢«æˆªæ–­ */ 
 	if (S_ISDIR(inode->i_mode))
 		return -EISDIR;
-    /* ²»ÊÇÆÕÍ¨ÎÄ¼ş²»ÄÜ±»½Ø¶Ï */
+    /* ä¸æ˜¯æ™®é€šæ–‡ä»¶ä¸èƒ½è¢«æˆªæ–­ */
 	if (!S_ISREG(inode->i_mode))
 		return -EINVAL;
-    /* ³¢ÊÔ»ñµÃÎÄ¼şÏµÍ³µÄĞ´È¨ÏŞ */
+    /* å°è¯•è·å¾—æ–‡ä»¶ç³»ç»Ÿçš„å†™æƒé™ */
 	error = mnt_want_write(path->mnt);
 	if (error)
 		goto out;
-    /* ¼ì²éÊÇ·ñÓĞÎÄ¼şĞ´È¨ÏŞ */
+    /* æ£€æŸ¥æ˜¯å¦æœ‰æ–‡ä»¶å†™æƒé™ */
 	error = inode_permission(inode, MAY_WRITE);
 	if (error)
 		goto mnt_drop_write_and_out;
 
 	error = -EPERM;
-    /* ÎÄ¼şÉèÖÃÁË×·¼ÓÊôĞÔ£¬Ôò²»ÄÜ±»½Ø¶Ï */ 
+    /* æ–‡ä»¶è®¾ç½®äº†è¿½åŠ å±æ€§ï¼Œåˆ™ä¸èƒ½è¢«æˆªæ–­ */ 
 	if (IS_APPEND(inode))
 		goto mnt_drop_write_and_out;
 
@@ -103,7 +103,7 @@ long vfs_truncate(const struct path *path, loff_t length)
 	error = PTR_ERR(upperdentry);
 	if (IS_ERR(upperdentry))
 		goto mnt_drop_write_and_out;
-    /* µÃµ½inodeµÄĞ´È¨ÏŞ */
+    /* å¾—åˆ°inodeçš„å†™æƒé™ */
 	error = get_write_access(upperdentry->d_inode);
 	if (error)
 		goto mnt_drop_write_and_out;
@@ -112,17 +112,17 @@ long vfs_truncate(const struct path *path, loff_t length)
 	 * Make sure that there are no leases.  get_write_access() protects
 	 * against the truncate racing with a lease-granting setlease().
 	 */
-    /* ²é¿´ÊÇ·ñÓëÎÄ¼şleaseËøÏà³åÍ» */
+    /* æŸ¥çœ‹æ˜¯å¦ä¸æ–‡ä»¶leaseé”ç›¸å†²çª */
 	error = break_lease(inode, O_WRONLY);
 	if (error)
 		goto put_write_and_out;
 /*
-¼ì²éÊÇ·ñÓëÎÄ¼şËøÏà³åÍ» 
+æ£€æŸ¥æ˜¯å¦ä¸æ–‡ä»¶é”ç›¸å†²çª 
 */
 	error = locks_verify_truncate(inode, NULL, length);
 	if (!error)
 		error = security_path_truncate(path);
-    /* Èç¹ûÃ»ÓĞ´íÎó£¬Ôò½øĞĞÕæÕıµÄ½Ø¶Ï */
+    /* å¦‚æœæ²¡æœ‰é”™è¯¯ï¼Œåˆ™è¿›è¡ŒçœŸæ­£çš„æˆªæ–­ */
 	if (!error)
 		error = do_truncate(path->dentry, length, 0, NULL);
 
@@ -140,12 +140,12 @@ static long do_sys_truncate(const char __user *pathname, loff_t length)
 	unsigned int lookup_flags = LOOKUP_FOLLOW;
 	struct path path;
 	int error;
-    /* ³¤¶È²»ÄÜÎª¸ºÊı */
+    /* é•¿åº¦ä¸èƒ½ä¸ºè´Ÿæ•° */
 	if (length < 0)	/* sorry, but loff_t says... */
 		return -EINVAL;
 
 retry:
-    /* µÃµ½Â·¾¶½á¹¹ */  
+    /* å¾—åˆ°è·¯å¾„ç»“æ„ */  
 	error = user_path_at(AT_FDCWD, pathname, lookup_flags, &path);
 	if (!error) {
 		error = vfs_truncate(&path, length);
@@ -178,40 +178,40 @@ static long do_sys_ftruncate(unsigned int fd, loff_t length, int small)
 	int error;
 
 	error = -EINVAL;
-    /* ³¤¶È¼ì²é */ 
+    /* é•¿åº¦æ£€æŸ¥ */ 
 	if (length < 0)
 		goto out;
 	error = -EBADF;
-    /* ´ÓÎÄ¼şÃèÊö·ûµÃµ½fileÖ¸Õë */ 
+    /* ä»æ–‡ä»¶æè¿°ç¬¦å¾—åˆ°fileæŒ‡é’ˆ */ 
 	f = fdget(fd);
 	if (!f.file)
 		goto out;
 
 	/* explicitly opened as large or we are on 64-bit box */
-    /* Èç¹ûÎÄ¼şÊÇÒÔO_LARGEFILEÑ¡Ïî´ò¿ªµÄ£¬Ôò½«±êÖ¾smallÖÃÎª0¼´¼Ù */
+    /* å¦‚æœæ–‡ä»¶æ˜¯ä»¥O_LARGEFILEé€‰é¡¹æ‰“å¼€çš„ï¼Œåˆ™å°†æ ‡å¿—smallç½®ä¸º0å³å‡ */
 	if (f.file->f_flags & O_LARGEFILE)
 		small = 0;
 
 	dentry = f.file->f_path.dentry;
 	inode = dentry->d_inode;
 	error = -EINVAL;
-    /* Èç¹ûÎÄ¼ş²»ÊÇÆÕÍ¨ÎÄ¼ş»òÎÄ¼ş²»ÊÇĞ´´ò¿ª£¬Ôò±¨´í */ 
+    /* å¦‚æœæ–‡ä»¶ä¸æ˜¯æ™®é€šæ–‡ä»¶æˆ–æ–‡ä»¶ä¸æ˜¯å†™æ‰“å¼€ï¼Œåˆ™æŠ¥é”™ */ 
 	if (!S_ISREG(inode->i_mode) || !(f.file->f_mode & FMODE_WRITE))
 		goto out_putf;
 
 	error = -EINVAL;
 	/* Cannot ftruncate over 2^31 bytes without large file support */
-    /* Èç¹ûÎÄ¼ş²»ÊÇÒÔO_LARGEFILE´ò¿ªµÄ»°£¬³¤¶È¾Í²»ÄÜ³¬¹ıMAX_NON_LFS */
+    /* å¦‚æœæ–‡ä»¶ä¸æ˜¯ä»¥O_LARGEFILEæ‰“å¼€çš„è¯ï¼Œé•¿åº¦å°±ä¸èƒ½è¶…è¿‡MAX_NON_LFS */
 	if (small && length > MAX_NON_LFS)
 		goto out_putf;
 
 	error = -EPERM;
-    /* Èç¹ûÊÇ×·¼ÓÄ£Ê½´ò¿ªµÄ£¬Ò²²»ÄÜ½øĞĞ½Ø¶Ï */ 
+    /* å¦‚æœæ˜¯è¿½åŠ æ¨¡å¼æ‰“å¼€çš„ï¼Œä¹Ÿä¸èƒ½è¿›è¡Œæˆªæ–­ */ 
 	if (IS_APPEND(inode))
 		goto out_putf;
 
 	sb_start_write(inode->i_sb);
-    /* ¼ì²éÊÇ·ñÓĞËø³åÍ» */
+    /* æ£€æŸ¥æ˜¯å¦æœ‰é”å†²çª */
 	error = locks_verify_truncate(inode, f.file, length);
 	if (!error)
 		error = security_path_truncate(&f.file->f_path);
@@ -1054,8 +1054,8 @@ long do_sys_open(int dfd, const char __user *filename, int flags, umode_t mode)
 {
 	struct open_flags op;
 	/* 
-	flagsÎªÓÃ»§²ã´«µİµÄ²ÎÊı, ÄÚºË»á¶Ôflags½øĞĞºÏ·¨ĞÔ¼ì²é, 
-	²¢¸ù¾İmodeÉú³ÉĞÂµÄflagsÖµ¸³¸ø  lookup 
+	flagsä¸ºç”¨æˆ·å±‚ä¼ é€’çš„å‚æ•°, å†…æ ¸ä¼šå¯¹flagsè¿›è¡Œåˆæ³•æ€§æ£€æŸ¥, 
+	å¹¶æ ¹æ®modeç”Ÿæˆæ–°çš„flagså€¼èµ‹ç»™  lookup 
 	*/
 	int fd = build_open_flags(flags, mode, &op);
 	struct filename *tmp;
@@ -1064,12 +1064,12 @@ long do_sys_open(int dfd, const char __user *filename, int flags, umode_t mode)
 		return fd;
 
     /* 
-      ½«ÓÃ»§¿Õ¼äµÄÎÄ¼şÃû²ÎÊı¸´ÖÆµ½ÄÚºË¿Õ¼ä 
+      å°†ç”¨æˆ·ç©ºé—´çš„æ–‡ä»¶åå‚æ•°å¤åˆ¶åˆ°å†…æ ¸ç©ºé—´ 
      */
 	tmp = getname(filename);
 	if (IS_ERR(tmp))
 		return PTR_ERR(tmp);
-	/* Î´³ö´íÔòÉêÇë ĞÂµÄÎÄ¼şÃèÊö·û */
+	/* æœªå‡ºé”™åˆ™ç”³è¯· æ–°çš„æ–‡ä»¶æè¿°ç¬¦ */
 	fd = get_unused_fd_flags(flags);
 	if (fd >= 0) {
 		struct file *f = do_filp_open(dfd, tmp, &op);
@@ -1077,9 +1077,9 @@ long do_sys_open(int dfd, const char __user *filename, int flags, umode_t mode)
 			put_unused_fd(fd);
 			fd = PTR_ERR(f);
 		} else {
-		    /* ²úÉúÎÄ¼ş´ò¿ªµÄÍ¨ÖªÊÂ¼ş */
+		    /* äº§ç”Ÿæ–‡ä»¶æ‰“å¼€çš„é€šçŸ¥äº‹ä»¶ */
 			fsnotify_open(f);
-			/* ½«ÎÄ¼şÃèÊö·ûfdÓëÎÄ¼ş¹ÜÀí½á¹¹file¶ÔÓ¦ÆğÀ´, ¼´°²×° */
+			/* å°†æ–‡ä»¶æè¿°ç¬¦fdä¸æ–‡ä»¶ç®¡ç†ç»“æ„fileå¯¹åº”èµ·æ¥, å³å®‰è£… */
 			fd_install(fd, f);
 		}
 	}
@@ -1197,7 +1197,7 @@ EXPORT_SYMBOL(generic_file_open);
  * reason it returns an 'int' and not 'void' is so that it can be plugged
  * directly into file_operations structure.
  */
-/*¹Ø±ÕFMODE_LSEEK±êÖ¾*/
+/*å…³é—­FMODE_LSEEKæ ‡å¿—*/
 int nonseekable_open(struct inode *inode, struct file *filp)
 {
 	filp->f_mode &= ~(FMODE_LSEEK | FMODE_PREAD | FMODE_PWRITE);

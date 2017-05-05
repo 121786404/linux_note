@@ -586,18 +586,18 @@ int ip_defrag(struct sk_buff *skb, u32 user)
 	IP_INC_STATS_BH(IPSTATS_MIB_REASMREQDS);
 
 	/* Start by cleaning up the memory. */
-	/* ÄÚ´æÊ¹ÓÃ¹ý¶à£¬¿ÉÄÜÊÇÊÜµ½ÁË¹¥»÷ */
+	/* å†…å­˜ä½¿ç”¨è¿‡å¤šï¼Œå¯èƒ½æ˜¯å—åˆ°äº†æ”»å‡» */
 	if (atomic_read(&ip4_frags.mem) > ip4_frags_ctl.high_thresh)
 		ip_evictor();
 
 	/* Lookup (or create) queue header */
-	/* ip_findÔÚÉ¢ÁÐ±íÖÐ²éÕÒ¸Ã·ÖÆ¬µÄµÈ´ý¶ÓÁÐ */
+	/* ip_findåœ¨æ•£åˆ—è¡¨ä¸­æŸ¥æ‰¾è¯¥åˆ†ç‰‡çš„ç­‰å¾…é˜Ÿåˆ— */
 	if ((qp = ip_find(ip_hdr(skb), user)) != NULL) {.
 		int ret;
 
 		spin_lock(&qp->q.lock);
 
-		/* ½«·ÖÆ¬Ìí¼Óµ½¶ÓÁÐÖÐ */
+		/* å°†åˆ†ç‰‡æ·»åŠ åˆ°é˜Ÿåˆ—ä¸­ */
 		ret = ip_frag_queue(qp, skb);
 
 		spin_unlock(&qp->q.lock);

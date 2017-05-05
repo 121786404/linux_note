@@ -17,20 +17,20 @@
 #ifdef CONFIG_BLOCK
 
 enum bh_state_bits {
-	/* ÄÚ´æÓë¿éÉè±¸ÖĞµÄÄÚÈİÆ¥Åä */
+	/* å†…å­˜ä¸å—è®¾å¤‡ä¸­çš„å†…å®¹åŒ¹é… */
 	BH_Uptodate,	/* Contains valid data */
-	/* »º³åÇøÖĞµÄÊı¾İÒÑ¾­±»ĞŞ¸Ä */
+	/* ç¼“å†²åŒºä¸­çš„æ•°æ®å·²ç»è¢«ä¿®æ”¹ */
 	BH_Dirty,	/* Is dirty */
-	/* »º³åÇøÒÑ¾­±»Ëø¶¨£¬·ÀÖ¹¶à¸öÏß³Ì²¢·¢´¦Àí»º³åÇø */
+	/* ç¼“å†²åŒºå·²ç»è¢«é”å®šï¼Œé˜²æ­¢å¤šä¸ªçº¿ç¨‹å¹¶å‘å¤„ç†ç¼“å†²åŒº */
 	BH_Lock,	/* Is locked */
 	BH_Req,		/* Has been submitted for I/O */
 	BH_Uptodate_Lock,/* Used by the first bh in a page, to serialise
 			  * IO completion of other buffers in the page
 			  */
 
-	/* ´æÔÚÒ»¸ö»º³åÇøÄÚÈİµ½´æ´¢Éè±¸µÄÓ³Éä */
+	/* å­˜åœ¨ä¸€ä¸ªç¼“å†²åŒºå†…å®¹åˆ°å­˜å‚¨è®¾å¤‡çš„æ˜ å°„ */
 	BH_Mapped,	/* Has a disk mapping */
-	/* ĞÂ´´½¨µÄ»º³åÇø */
+	/* æ–°åˆ›å»ºçš„ç¼“å†²åŒº */
 	BH_New,		/* Disk mapping was newly created by get_block */
 	BH_Async_Read,	/* Is under end_buffer_async_read I/O */
 	BH_Async_Write,	/* Is under end_buffer_async_write I/O */
@@ -63,34 +63,34 @@ typedef void (bh_end_io_t)(struct buffer_head *bh, int uptodate);
  * for backward compatibility reasons (e.g. submit_bh).
  */
 /**
- * ¿é»º³åÍ·ÃèÊö·û
+ * å—ç¼“å†²å¤´æè¿°ç¬¦
  */
 struct buffer_head {
-	/* ¿é»º³å×´Ì¬Î»Í¼£¬ÈçBH_Uptodate */
+	/* å—ç¼“å†²çŠ¶æ€ä½å›¾ï¼Œå¦‚BH_Uptodate */
 	unsigned long b_state;		/* buffer state bitmap (see above) */
-	/* Ö¸ÏòÏÂÒ»¸ö¿é»º³å£¬¶şÕßÊôÓÚÍ¬Ò»¸öÒ³»º´æ */
+	/* æŒ‡å‘ä¸‹ä¸€ä¸ªå—ç¼“å†²ï¼ŒäºŒè€…å±äºåŒä¸€ä¸ªé¡µç¼“å­˜ */
 	struct buffer_head *b_this_page;/* circular list of page's buffers */
-	/* Èç¹û»º³åÇøÊôÓÚÒ³»º´æ£¬ÔòÖ¸Ïò»º´æÒ³¡£Èç¹û¶ÀÁ¢ÓÚÒ³»º´æ£¬ÔòÎªNULL */
+	/* å¦‚æœç¼“å†²åŒºå±äºé¡µç¼“å­˜ï¼Œåˆ™æŒ‡å‘ç¼“å­˜é¡µã€‚å¦‚æœç‹¬ç«‹äºé¡µç¼“å­˜ï¼Œåˆ™ä¸ºNULL */
 	struct page *b_page;		/* the page this bh is mapped to */
 
-	/* ¶ÔÓ¦µÄ¿éºÅ */
+	/* å¯¹åº”çš„å—å· */
 	sector_t b_blocknr;		/* start block number */
-	/* ¿é³¤ */
+	/* å—é•¿ */
 	size_t b_size;			/* size of mapping */
-	/* ÄÚ´æÖĞµÄÊı¾İÖ¸Õë */
+	/* å†…å­˜ä¸­çš„æ•°æ®æŒ‡é’ˆ */
 	char *b_data;			/* pointer to data within the page */
 
-	/* ºó±¸Éè±¸ */
+	/* åå¤‡è®¾å¤‡ */
 	struct block_device *b_bdev;
-	/* µ±IO²Ù×÷Íê³ÉÊ±£¬ÓÉÄÚºËµ÷ÓÃµÄ»Øµ÷º¯Êı */
+	/* å½“IOæ“ä½œå®Œæˆæ—¶ï¼Œç”±å†…æ ¸è°ƒç”¨çš„å›è°ƒå‡½æ•° */
 	bh_end_io_t *b_end_io;		/* I/O completion */
-	/* Ô¤ÁôÖ¸Õë£¬ÓÃÓÚb_end_io¡£Ò»°ãÓÃÓÚÈÕÖ¾ÎÄ¼şÏµÍ³¡£ */
+	/* é¢„ç•™æŒ‡é’ˆï¼Œç”¨äºb_end_ioã€‚ä¸€èˆ¬ç”¨äºæ—¥å¿—æ–‡ä»¶ç³»ç»Ÿã€‚ */
  	void *b_private;		/* reserved for b_end_io */
 	struct list_head b_assoc_buffers; /* associated with another mapping */
-	/* ËùÊôµØÖ·¿Õ¼ä */
+	/* æ‰€å±åœ°å€ç©ºé—´ */
 	struct address_space *b_assoc_map;	/* mapping this buffer is
 						   associated with */
-	/* ·ÃÎÊ¼ÆÊıÆ÷ */
+	/* è®¿é—®è®¡æ•°å™¨ */
 	atomic_t b_count;		/* users using this buffer_head */
 };
 

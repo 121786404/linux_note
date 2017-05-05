@@ -15,17 +15,17 @@
  * nesting etc..
  */
 /**
- * IO×ÊÔ´Ê÷½á¹¹
+ * IOèµ„æºæ ‘ç»“æ„
  */
 struct resource {
-	/* IO×ÊÔ´·¶Î§ */
+	/* IOèµ„æºèŒƒå›´ */
 	resource_size_t start;
 	resource_size_t end;
-	/* ×ÊÔ´Ãû³Æ£¬ÓÃÓÚproc */
+	/* èµ„æºåç§°ï¼Œç”¨äºproc */
 	const char *name;
-	/* ×ÊÔ´±êÖ¾¼°µ±Ç°×´Ì¬ */
+	/* èµ„æºæ ‡å¿—åŠå½“å‰çŠ¶æ€ */
 	unsigned long flags;
-	/* ¸¸¡¢ĞÖ¡¢×Ó×ÊÔ´£¬ÒÔ´Ë¹¹³ÉÒ»¿ÃÊ÷ */
+	/* çˆ¶ã€å…„ã€å­èµ„æºï¼Œä»¥æ­¤æ„æˆä¸€æ£µæ ‘ */
 	struct resource *parent, *sibling, *child;
 };
 

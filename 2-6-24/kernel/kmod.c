@@ -63,7 +63,7 @@ char modprobe_path[KMOD_PATH_LEN] = "/sbin/modprobe";
  * becomes a no-operation.
  */
 /**
- * ÔÚÄÚºËÖÐ£¬ÇëÇó¼ÓÔØÄ£¿é
+ * åœ¨å†…æ ¸ä¸­ï¼Œè¯·æ±‚åŠ è½½æ¨¡å—
  */
 int request_module(const char *fmt, ...)
 {
@@ -75,7 +75,7 @@ int request_module(const char *fmt, ...)
 	static char *envp[] = { "HOME=/",
 				"TERM=linux",
 				"PATH=/sbin:/usr/sbin:/bin:/usr/bin",
-				NULL };/* Îªmodeprob×¼±¸»·¾³±äÁ¿ */
+				NULL };/* ä¸ºmodeprobå‡†å¤‡çŽ¯å¢ƒå˜é‡ */
 	static atomic_t kmod_concurrent = ATOMIC_INIT(0);
 #define MAX_KMOD_CONCURRENT 50	/* Completely arbitrary value - KAO */
 	static int kmod_loop_msg;
@@ -99,7 +99,7 @@ int request_module(const char *fmt, ...)
 	 * parent exits.  I think this is as good as it gets. --RR
 	 */
 	max_modprobes = min(max_threads/2, MAX_KMOD_CONCURRENT);
-	atomic_inc(&kmod_concurrent);/* kmod_concurrentÊÇÎªÁË·ÀÖ¹¶à´Î¼ÓÔØmodprobe */
+	atomic_inc(&kmod_concurrent);/* kmod_concurrentæ˜¯ä¸ºäº†é˜²æ­¢å¤šæ¬¡åŠ è½½modprobe */
 	if (atomic_read(&kmod_concurrent) > max_modprobes) {
 		/* We may be blaming an innocent here, but unlikely */
 		if (kmod_loop_msg++ < 5)
@@ -110,7 +110,7 @@ int request_module(const char *fmt, ...)
 		return -ENOMEM;
 	}
 
-	/* modprobe_pathÄ¬ÈÏÖµÊÇ/sbin/modprobe,¿ÉÍ¨¹ýprocÎÄ¼þÏµÍ³¸Ä±ä */
+	/* modprobe_pathé»˜è®¤å€¼æ˜¯/sbin/modprobe,å¯é€šè¿‡procæ–‡ä»¶ç³»ç»Ÿæ”¹å˜ */
 	ret = call_usermodehelper(modprobe_path, argv, envp, 1);
 	atomic_dec(&kmod_concurrent);
 	return ret;

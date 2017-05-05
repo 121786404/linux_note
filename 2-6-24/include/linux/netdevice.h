@@ -446,7 +446,7 @@ static inline void napi_synchronize(const struct napi_struct *n)
  */
 
 /**
- * ÍøÂçÉè±¸ÃèÊö·û
+ * ç½‘ç»œè®¾å¤‡æè¿°ç¬¦
  */
 struct net_device
 {
@@ -456,7 +456,7 @@ struct net_device
 	 * (i.e. as seen by users in the "Space.c" file).  It is the name
 	 * the interface.
 	 */
-	/* Éè±¸Ãû³Æ£¬Èçeth0 */
+	/* è®¾å¤‡åç§°ï¼Œå¦‚eth0 */
 	char			name[IFNAMSIZ];
 	/* device name hash chain */
 	struct hlist_node	name_hlist;
@@ -531,12 +531,12 @@ struct net_device
 	struct net_device	*next_sched;
 
 	/* Interface index. Unique device identifier	*/
-	/* ½Ó¿ÚË÷ÒıºÅ */
+	/* æ¥å£ç´¢å¼•å· */
 	int			ifindex;
 	int			iflink;
 
 
-	/* ²éÑ¯Í³¼ÆÊı¾İ£¬Èç·¢ËÍ¡¢½ÓÊÕ¡¢¶ªÆúµÄÊıÄ¿ */
+	/* æŸ¥è¯¢ç»Ÿè®¡æ•°æ®ï¼Œå¦‚å‘é€ã€æ¥æ”¶ã€ä¸¢å¼ƒçš„æ•°ç›® */
 	struct net_device_stats* (*get_stats)(struct net_device *dev);
 	struct net_device_stats	stats;
 
@@ -550,7 +550,7 @@ struct net_device
 	const struct ethtool_ops *ethtool_ops;
 
 	/* Hardware header description */
-	/* ´¦ÀíÓ²¼ş±¨ÎÄÍ·²¿µÄÖ¸Õë */
+	/* å¤„ç†ç¡¬ä»¶æŠ¥æ–‡å¤´éƒ¨çš„æŒ‡é’ˆ */
 	const struct header_ops *header_ops;
 
 	/*
@@ -568,9 +568,9 @@ struct net_device
 	unsigned char		operstate; /* RFC2863 operstate */
 	unsigned char		link_mode; /* mapping policy to operstate */
 
-	/* Éè±¸µÄmtuÖµ */
+	/* è®¾å¤‡çš„mtuå€¼ */
 	unsigned		mtu;	/* interface MTU value		*/
-	/* Éè±¸ÀàĞÍ£¬ÈçARPHRD_ETHER */
+	/* è®¾å¤‡ç±»å‹ï¼Œå¦‚ARPHRD_ETHER */
 	unsigned short		type;	/* interface hardware type	*/
 	unsigned short		hard_header_len;	/* hardware hdr length	*/
 
@@ -580,7 +580,7 @@ struct net_device
 
 	/* Interface address info. */
 	unsigned char		perm_addr[MAX_ADDR_LEN]; /* permanent hw address */
-	/* Éè±¸Ó²¼şµØÖ·³¤¶È */
+	/* è®¾å¤‡ç¡¬ä»¶åœ°å€é•¿åº¦ */
 	unsigned char		addr_len;	/* hardware address length	*/
 	unsigned short          dev_id;		/* for shared network cards */
 
@@ -594,7 +594,7 @@ struct net_device
 
 
 	/* Protocol specific pointers */
-	/* ÌØ¶¨Ğ­ÒéµÄÊı¾İÖ¸Õë */
+	/* ç‰¹å®šåè®®çš„æ•°æ®æŒ‡é’ˆ */
 	void 			*atalk_ptr;	/* AppleTalk link 	*/
 	void			*ip_ptr;	/* IPv4 specific data	*/  
 	void                    *dn_ptr;        /* DECnet specific data */
@@ -609,11 +609,11 @@ struct net_device
  */
 	unsigned long		last_rx;	/* Time of last Rx	*/
 	/* Interface address info used in eth_type_trans() */
-	/* Éè±¸Ó²¼şµØÖ·£¬ÈçMACµØÖ· */
+	/* è®¾å¤‡ç¡¬ä»¶åœ°å€ï¼Œå¦‚MACåœ°å€ */
 	unsigned char		dev_addr[MAX_ADDR_LEN];	/* hw address, (before bcast 
 							because most packets are unicast) */
 
-	/* ÏòÕ¾µã·¢ËÍÏûÏ¢µÄ¹ã²¥µØÖ· */
+	/* å‘ç«™ç‚¹å‘é€æ¶ˆæ¯çš„å¹¿æ’­åœ°å€ */
 	unsigned char		broadcast[MAX_ADDR_LEN];	/* hw bcast add	*/
 
 /*
@@ -643,7 +643,7 @@ struct net_device
 	 */
 	int			xmit_lock_owner;
 	void			*priv;	/* pointer to private data	*/
-	/* ´ÓµÈ´ı¶ÓÁĞÖĞÉ¾³ıÒÑ¾­Íê³ÉµÄ·Ö×é²¢½«Ëü·¢ËÍ³öÈ¥ */
+	/* ä»ç­‰å¾…é˜Ÿåˆ—ä¸­åˆ é™¤å·²ç»å®Œæˆçš„åˆ†ç»„å¹¶å°†å®ƒå‘é€å‡ºå» */
 	int			(*hard_start_xmit) (struct sk_buff *skb,
 						    struct net_device *dev);
 	/* These may be needed for future network-power-down code. */
@@ -679,7 +679,7 @@ struct net_device
 	void			(*destructor)(struct net_device *dev);
 
 	/* Pointers to interface service routines.	*/
-	/* ³õÊ¼»¯ºÍÖÕÖ¹Éè±¸µÄ»Øµ÷ */
+	/* åˆå§‹åŒ–å’Œç»ˆæ­¢è®¾å¤‡çš„å›è°ƒ */
 	int			(*open)(struct net_device *dev);
 	int			(*stop)(struct net_device *dev);
 #define HAVE_NETDEV_POLL
@@ -696,18 +696,18 @@ struct net_device
 #define HAVE_VALIDATE_ADDR
 	int			(*validate_addr)(struct net_device *dev);
 #define HAVE_PRIVATE_IOCTL
-	/* ´¦ÀíÌØ¶¨ÓÚÉè±¸µÄioctl»Øµ÷ */
+	/* å¤„ç†ç‰¹å®šäºè®¾å¤‡çš„ioctlå›è°ƒ */
 	int			(*do_ioctl)(struct net_device *dev,
 					    struct ifreq *ifr, int cmd);
 #define HAVE_SET_CONFIG
 	int			(*set_config)(struct net_device *dev,
 					      struct ifmap *map);
 #define HAVE_CHANGE_MTU
-	/* ĞŞ¸ÄÉè±¸µÄmtuÖµ */
+	/* ä¿®æ”¹è®¾å¤‡çš„mtuå€¼ */
 	int			(*change_mtu)(struct net_device *dev, int new_mtu);
 
 #define HAVE_TX_TIMEOUT
-	/* ´«Êä³¬Ê±»Øµ÷ */
+	/* ä¼ è¾“è¶…æ—¶å›è°ƒ */
 	void			(*tx_timeout) (struct net_device *dev);
 
 	void			(*vlan_rx_register)(struct net_device *dev,

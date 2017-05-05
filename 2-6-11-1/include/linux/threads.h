@@ -15,7 +15,7 @@
  * saves quite a bit of memory.
  */
 
-/* ¸ù¾ÝCONFIG_SMPºêÀ´ÅÐ¶ÏÏµÍ³ÖÐµ½µ×ÓÐ¶àÉÙ¸ö´¦ÀíÆ÷£¬Ä¬ÈÏÇé¿öÏÂ¾ÍÊÇÒ»¸ö */
+/* æ ¹æ®CONFIG_SMPå®æ¥åˆ¤æ–­ç³»ç»Ÿä¸­åˆ°åº•æœ‰å¤šå°‘ä¸ªå¤„ç†å™¨ï¼Œé»˜è®¤æƒ…å†µä¸‹å°±æ˜¯ä¸€ä¸ª */
 #ifdef CONFIG_SMP
 #define NR_CPUS		CONFIG_NR_CPUS
 #else
@@ -27,14 +27,14 @@
 /*
  * This controls the default maximum pid allocated to a process
  */
-/* ÉèÖÃ¿ÉÒÔ¸ø½ø³Ì·ÖÅäµÄ×î´ó½ø³ÌºÅ 
+/* è®¾ç½®å¯ä»¥ç»™è¿›ç¨‹åˆ†é…çš„æœ€å¤§è¿›ç¨‹å· 
  */
 #define PID_MAX_DEFAULT 0x8000
 
 /*
  * A maximum of 4 million PIDs should be enough for a while:
  */
-/* ¸ù¾Ý²»Í¬Çé¿öÀ´È·¶¨ÏµÍ³ÖÐ¿ÉÒÔ·ÖÅä¸ø½ø³ÌµÄ×î´óÐòºÅ */
+/* æ ¹æ®ä¸åŒæƒ…å†µæ¥ç¡®å®šç³»ç»Ÿä¸­å¯ä»¥åˆ†é…ç»™è¿›ç¨‹çš„æœ€å¤§åºå· */
 #define PID_MAX_LIMIT (sizeof(long) > 4 ? 4*1024*1024 : PID_MAX_DEFAULT)
 
 #endif

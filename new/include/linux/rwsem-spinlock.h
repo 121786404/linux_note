@@ -5,7 +5,7 @@
  * - Derived also from comments by Linus
  */
 
- /*读取者与写入者信号量*/
+ /*璇诲彇鑰呬笌鍐欏叆鑰呬俊鍙烽噺*/
 
 #ifndef _LINUX_RWSEM_SPINLOCK_H
 #define _LINUX_RWSEM_SPINLOCK_H
@@ -22,7 +22,7 @@
  * - if count is -1 then there is one active writer
  * - if wait_list is not empty, then there are processes waiting for the semaphore
  */
- /*读取者与写入者信号量定义*/
+ /*璇诲彇鑰呬笌鍐欏叆鑰呬俊鍙烽噺瀹氫箟*/
 struct rw_semaphore {
 	__s32			count;
 	raw_spinlock_t		wait_lock;

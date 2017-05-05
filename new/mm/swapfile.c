@@ -47,11 +47,11 @@ static void free_swap_count_continuations(struct swap_info_struct *);
 static sector_t map_swap_entry(swp_entry_t, struct block_device**);
 
 /**
- * ·ÀÖ¹ÔÚ¶à´¦ÀíÆ÷ÏµÍ³ÖĞ¶Ô½»»»ÇøÁ´±íµÄ²¢·¢·ÃÎÊ¡£
+ * é˜²æ­¢åœ¨å¤šå¤„ç†å™¨ç³»ç»Ÿä¸­å¯¹äº¤æ¢åŒºé“¾è¡¨çš„å¹¶å‘è®¿é—®ã€‚
  */
 DEFINE_SPINLOCK(swap_lock);
 /**
- * ½»»»ÇøÊı×éÖĞËùÊ¹ÓÃ½»»»ÇøÃèÊö·ûµÄ×îºóÒ»¸öÔªËØµÄË÷Òı¡£²¢²»ÊÇ»î¶¯½»»»ÇøµÄ¸öÊı¡£
+ * äº¤æ¢åŒºæ•°ç»„ä¸­æ‰€ä½¿ç”¨äº¤æ¢åŒºæè¿°ç¬¦çš„æœ€åä¸€ä¸ªå…ƒç´ çš„ç´¢å¼•ã€‚å¹¶ä¸æ˜¯æ´»åŠ¨äº¤æ¢åŒºçš„ä¸ªæ•°ã€‚
  */
 static unsigned int nr_swapfiles;
 atomic_long_t nr_swap_pages;
@@ -63,7 +63,7 @@ atomic_long_t nr_swap_pages;
 EXPORT_SYMBOL_GPL(nr_swap_pages);
 /* protected with swap_lock. reading in vm_swap_full() doesn't need lock */
 /**
- * ½»»»ÇøÖĞËùÓĞÒ³²Û(º¬ÓĞÈ±ÏİµÄÒ³²Û)
+ * äº¤æ¢åŒºä¸­æ‰€æœ‰é¡µæ§½(å«æœ‰ç¼ºé™·çš„é¡µæ§½)
  */
 long total_swap_pages;
 static int least_priority;
@@ -601,9 +601,9 @@ static int scan_swap_map_slots(struct swap_info_struct *si,
 			goto scan;
 	}
 
-	/* µ±Ç°¾Û½¹´ØÓÃÍêÁË£¬·ÖÅäĞÂµÄ´Ø */
+	/* å½“å‰èšç„¦ç°‡ç”¨å®Œäº†ï¼Œåˆ†é…æ–°çš„ç°‡ */
 	if (unlikely(!si->cluster_nr--)) {
-		/* ¿ÕÏĞÒ³Ãæ²»×ãÒ»¸ö´Ø */
+		/* ç©ºé—²é¡µé¢ä¸è¶³ä¸€ä¸ªç°‡ */
 		if (si->pages - si->inuse_pages < SWAPFILE_CLUSTER) {
 			si->cluster_nr = SWAPFILE_CLUSTER - 1;
 			goto checks;
@@ -621,13 +621,13 @@ static int scan_swap_map_slots(struct swap_info_struct *si,
 		last_in_cluster = offset + SWAPFILE_CLUSTER - 1;
 
 		/* Locate the first empty (unaligned) cluster */
-		/* ´Óµ±Ç°Î»ÖÃ¿ªÊ¼£¬²éÕÒÁ¬ĞøµÄ´Ø */
+		/* ä»å½“å‰ä½ç½®å¼€å§‹ï¼ŒæŸ¥æ‰¾è¿ç»­çš„ç°‡ */
 		for (; last_in_cluster <= si->highest_bit; offset++) {
-			/* µ±Ç°Î»ÖÃ²»¿ÉÓÃ£¬ÖØĞÂÉèÖÃ½áÊø¿éºÅ */
+			/* å½“å‰ä½ç½®ä¸å¯ç”¨ï¼Œé‡æ–°è®¾ç½®ç»“æŸå—å· */
 			if (si->swap_map[offset])
 				last_in_cluster = offset + SWAPFILE_CLUSTER;
 			else if (offset == last_in_cluster) {
-			/* Ö±µ½½áÊø¿éºÅÎªÖ¹£¬¶¼¿ÉÓÃ */
+			/* ç›´åˆ°ç»“æŸå—å·ä¸ºæ­¢ï¼Œéƒ½å¯ç”¨ */
 				spin_lock(&si->lock);
 				offset -= SWAPFILE_CLUSTER - 1;
 				si->cluster_next = offset;
@@ -741,9 +741,9 @@ done:
 
 scan:
 	spin_unlock(&si->lock);
-	/* ÊÍ·ÅËøÒÔºó±éÀú²éÕÒ¿ÉÓÃ²ÛÎ» */
+	/* é‡Šæ”¾é”ä»¥åéå†æŸ¥æ‰¾å¯ç”¨æ§½ä½ */
 	while (++offset <= si->highest_bit) {
-		/* ¿ÉÓÃ£¬µ«ÊÇ´ËÊ±Ã»ÓĞ¼ÓËø£¬Òò´Ë¼ÓËøºóÔÙ´Î¼ì²é */
+		/* å¯ç”¨ï¼Œä½†æ˜¯æ­¤æ—¶æ²¡æœ‰åŠ é”ï¼Œå› æ­¤åŠ é”åå†æ¬¡æ£€æŸ¥ */
 		if (!si->swap_map[offset]) {
 			spin_lock(&si->lock);
 			goto checks;
@@ -752,7 +752,7 @@ scan:
 			spin_lock(&si->lock);
 			goto checks;
 		}
-		/* ¼ÓÈëµ÷¶Èµã */
+		/* åŠ å…¥è°ƒåº¦ç‚¹ */
 		if (unlikely(--latency_ration < 0)) {
 			cond_resched();
 			latency_ration = LATENCY_LIMIT;
@@ -797,19 +797,19 @@ static unsigned long scan_swap_map(struct swap_info_struct *si,
 }
 
 /**
- * ËÑË÷ËùÓĞ»î¶¯½»»»ÇøÀ´²éÕÒÒ»¸ö¿ÕÏĞÒ³²Û¡£
- * ·µ»ØÒ»¸öĞÂ½ü·ÖÅäÒ³²ÛµÄ»»³öÒ³±êÊ¶·û¡£Èç¹ûËùÓĞ½»»»Çø¶¼Âú£¬¾Í·µ»Ø0.
- * ¸Ãº¯Êı»á¿¼ÂÇ²»Í¬½»»»µÄÓÅÏÈ¼¶¡£
- * ½øĞĞÁ½±éÉ¨Ãè£¬ÒÔ±ãÔÚÈİÒ×·¢ÏÖÒ³²ÛÊ±½ÚÔ¼ÔËĞĞÊ±¼ä¡£
- * µÚÒ»±éÊÇ²¿·ÖµÄ£¬Ö»ÊÊÓÃÓÚÖ»ÓĞÏàÍ¬ÓÅÏÈ¼¶µÄ½»»»Çø¡£¸Ãº¯ÊıÒÔÂÖÑ¯·½Ê½ÔÚÕâÖÖ½»»»ÇøÖĞ²éÕÒÒ»¸ö¿ÕÏĞÒ³²Û¡£
- * Èç¹ûÃ»ÓĞÕÒµ½¿ÕÏĞÒ³²Û£¬¾Í´Ó½»»»ÇøÁ´±íµÄÆğÊ¼Î»ÖÃ¿ªÊ¼½øĞĞµÚ¶ş±éÉ¨Ãè¡£ÔÚµÚ¶ş±éÉ¨ÃèÖĞ£¬Òª¶ÔËùÓĞµÄ½»»»Çø¶¼½øĞĞ¼ì²é¡£
+ * æœç´¢æ‰€æœ‰æ´»åŠ¨äº¤æ¢åŒºæ¥æŸ¥æ‰¾ä¸€ä¸ªç©ºé—²é¡µæ§½ã€‚
+ * è¿”å›ä¸€ä¸ªæ–°è¿‘åˆ†é…é¡µæ§½çš„æ¢å‡ºé¡µæ ‡è¯†ç¬¦ã€‚å¦‚æœæ‰€æœ‰äº¤æ¢åŒºéƒ½æ»¡ï¼Œå°±è¿”å›0.
+ * è¯¥å‡½æ•°ä¼šè€ƒè™‘ä¸åŒäº¤æ¢çš„ä¼˜å…ˆçº§ã€‚
+ * è¿›è¡Œä¸¤éæ‰«æï¼Œä»¥ä¾¿åœ¨å®¹æ˜“å‘ç°é¡µæ§½æ—¶èŠ‚çº¦è¿è¡Œæ—¶é—´ã€‚
+ * ç¬¬ä¸€éæ˜¯éƒ¨åˆ†çš„ï¼Œåªé€‚ç”¨äºåªæœ‰ç›¸åŒä¼˜å…ˆçº§çš„äº¤æ¢åŒºã€‚è¯¥å‡½æ•°ä»¥è½®è¯¢æ–¹å¼åœ¨è¿™ç§äº¤æ¢åŒºä¸­æŸ¥æ‰¾ä¸€ä¸ªç©ºé—²é¡µæ§½ã€‚
+ * å¦‚æœæ²¡æœ‰æ‰¾åˆ°ç©ºé—²é¡µæ§½ï¼Œå°±ä»äº¤æ¢åŒºé“¾è¡¨çš„èµ·å§‹ä½ç½®å¼€å§‹è¿›è¡Œç¬¬äºŒéæ‰«æã€‚åœ¨ç¬¬äºŒéæ‰«æä¸­ï¼Œè¦å¯¹æ‰€æœ‰çš„äº¤æ¢åŒºéƒ½è¿›è¡Œæ£€æŸ¥ã€‚
  */
 int get_swap_pages(int n_goal, swp_entry_t swp_entries[])
 {
 	struct swap_info_struct *si, *next;
 	long avail_pgs;
 	int n_ret = 0;
-	/* Ã»ÓĞ½»»»ÇøÁË */
+	/* æ²¡æœ‰äº¤æ¢åŒºäº† */
 	avail_pgs = atomic_long_read(&nr_swap_pages);
 	if (avail_pgs <= 0)
 		goto noswap;
@@ -1064,26 +1064,26 @@ static void swap_entry_free(struct swap_info_struct *p, swp_entry_t entry)
  * is still around or has not been recycled.
  */
 /**
- * µ±»»ÈëÒ³Ê±£¬ÊÍ·Å¿ÕÏĞÒ³²Û¡£
- * 	entry:	Òª»»ÈëµÄÒ³±êÊ¶·û¡£
+ * å½“æ¢å…¥é¡µæ—¶ï¼Œé‡Šæ”¾ç©ºé—²é¡µæ§½ã€‚
+ * 	entry:	è¦æ¢å…¥çš„é¡µæ ‡è¯†ç¬¦ã€‚
  */
 void swap_free(swp_entry_t entry)
 {
 	struct swap_info_struct *p;
 
 	/**
-	 * ¸ù¾İÒ³±êÊ¶·û»ñµÃ½»»»ÇøË÷ÒıºÍÒ³²ÛË÷Òı¡£
-	 * ²¢»ñµÃ½»»»ÇøÃèÊö·ûµÄµØÖ·¡£
+	 * æ ¹æ®é¡µæ ‡è¯†ç¬¦è·å¾—äº¤æ¢åŒºç´¢å¼•å’Œé¡µæ§½ç´¢å¼•ã€‚
+	 * å¹¶è·å¾—äº¤æ¢åŒºæè¿°ç¬¦çš„åœ°å€ã€‚
 	 */
 	p = _swap_info_get(entry);
 	/**
-	 * Èç¹û½»»»ÇøÊÇ²»»î¶¯µÄ£¬¾ÍÍË³ö¡£
+	 * å¦‚æœäº¤æ¢åŒºæ˜¯ä¸æ´»åŠ¨çš„ï¼Œå°±é€€å‡ºã€‚
 	 */
 	if (p) {
 		/**
-		 * Èç¹ûÒ³²Û¼ÆÊıÆ÷Ğ¡ÓÚSWAP_MAP_MAX£¬¾Í¼õÉÙÕâ¸ö¼ÆÊıÆ÷µÄÖµ¡£
-		 * Èç¹û¼ÆÊıÆ÷±ä³É0£¬ÔòÒ³²Û¿ÉÓÃ£¬¾ÍÔö¼Ónr_swap_pagesµÄÖµ²¢¼õÉÙinuse_pages×Ö¶ÎµÄÖµ¡£
-		 * Èç¹ûÓĞ±ØÒª£¬Í¬Ê±ĞŞ¸Ä½»»»ÇøÃèÊö·ûµÄlowest_bitºÍhighest_bit×Ö¶Î¡£
+		 * å¦‚æœé¡µæ§½è®¡æ•°å™¨å°äºSWAP_MAP_MAXï¼Œå°±å‡å°‘è¿™ä¸ªè®¡æ•°å™¨çš„å€¼ã€‚
+		 * å¦‚æœè®¡æ•°å™¨å˜æˆ0ï¼Œåˆ™é¡µæ§½å¯ç”¨ï¼Œå°±å¢åŠ nr_swap_pagesçš„å€¼å¹¶å‡å°‘inuse_pageså­—æ®µçš„å€¼ã€‚
+		 * å¦‚æœæœ‰å¿…è¦ï¼ŒåŒæ—¶ä¿®æ”¹äº¤æ¢åŒºæè¿°ç¬¦çš„lowest_bitå’Œhighest_bitå­—æ®µã€‚
 		 */
 		if (!__swap_entry_free(p, entry, 1))
 			free_swap_slot(entry);
@@ -1303,9 +1303,9 @@ int try_to_free_swap(struct page *page)
  * free the page cache entry if it is the last user.
  */
 /**
- * ÊÍ·ÅÒ»¸ö½»»»±íÏî£¬²¢¼ì²é¸Ã±íÏîÒıÓÃµÄÒ³ÊÇ·ñÔÚ½»»»¸ßËÙ»º´æ¡£
- * Èç¹ûÃ»ÓĞÓÃ»§Ì¬½ø³Ì(³ıÁËµ±Ç°½ø³Ì)ÒıÓÃ¸ÃÒ³£¬»òÕß³¬¹ı50%µÄ½»»»
- * ±íÏîÔÚÓÃ£¬Ôò´Ó½»»»¸ßËÙ»º´æÖĞÊÍ·Å¸ÃÒ³¡£
+ * é‡Šæ”¾ä¸€ä¸ªäº¤æ¢è¡¨é¡¹ï¼Œå¹¶æ£€æŸ¥è¯¥è¡¨é¡¹å¼•ç”¨çš„é¡µæ˜¯å¦åœ¨äº¤æ¢é«˜é€Ÿç¼“å­˜ã€‚
+ * å¦‚æœæ²¡æœ‰ç”¨æˆ·æ€è¿›ç¨‹(é™¤äº†å½“å‰è¿›ç¨‹)å¼•ç”¨è¯¥é¡µï¼Œæˆ–è€…è¶…è¿‡50%çš„äº¤æ¢
+ * è¡¨é¡¹åœ¨ç”¨ï¼Œåˆ™ä»äº¤æ¢é«˜é€Ÿç¼“å­˜ä¸­é‡Šæ”¾è¯¥é¡µã€‚
  */
 int free_swap_and_cache(swp_entry_t entry)
 {
@@ -1687,9 +1687,9 @@ static unsigned int find_next_to_unuse(struct swap_info_struct *si,
  * pages_to_unuse==0 means all pages; ignored if frontswap is false
  */
 /**
- * »»Èë½»»»ÇøÖĞµÄÒ³£¬¸üĞÂÒÑ¾­»»³öÒ³µÄ½ø³ÌµÄËùÓĞÒ³±í¡£
- * Ëü·ÃÎÊËùÓĞÄÚºËÏß³ÌºÍ½ø³ÌµÄµØÖ·¿Õ¼ä¡£
- *		type:		±»Çå¿ÕµÄ½»»»ÇøË÷Òı¡£
+ * æ¢å…¥äº¤æ¢åŒºä¸­çš„é¡µï¼Œæ›´æ–°å·²ç»æ¢å‡ºé¡µçš„è¿›ç¨‹çš„æ‰€æœ‰é¡µè¡¨ã€‚
+ * å®ƒè®¿é—®æ‰€æœ‰å†…æ ¸çº¿ç¨‹å’Œè¿›ç¨‹çš„åœ°å€ç©ºé—´ã€‚
+ *		type:		è¢«æ¸…ç©ºçš„äº¤æ¢åŒºç´¢å¼•ã€‚
  */
 int try_to_unuse(unsigned int type, bool frontswap,
 		 unsigned long pages_to_unuse)
@@ -1730,11 +1730,11 @@ int try_to_unuse(unsigned int type, bool frontswap,
 	 * there are races when an instance of an entry might be missed.
 	 */
 	/**
-	 * É¨Ãè½»»»ÇøµÄËùÓĞ»»³öÒ³¡£
+	 * æ‰«æäº¤æ¢åŒºçš„æ‰€æœ‰æ¢å‡ºé¡µã€‚
 	 */
 	while ((i = find_next_to_unuse(si, i, frontswap)) != 0) {
 		/**
-		 * ±¾º¯ÊıÖ´ĞĞÊ±¼ä±È½Ï³¤£¬ĞÅºÅ¿ÉÄÜµÃ²»µ½¼°Ê±´¦Àí£¬ÔÚ´Ë¼ì²éÒ»ÏÂÊÇ·ñÓĞĞÅºÅĞèÒª´¦Àí¡£
+		 * æœ¬å‡½æ•°æ‰§è¡Œæ—¶é—´æ¯”è¾ƒé•¿ï¼Œä¿¡å·å¯èƒ½å¾—ä¸åˆ°åŠæ—¶å¤„ç†ï¼Œåœ¨æ­¤æ£€æŸ¥ä¸€ä¸‹æ˜¯å¦æœ‰ä¿¡å·éœ€è¦å¤„ç†ã€‚
 		 */
 		if (signal_pending(current)) {
 			retval = -EINTR;
@@ -1749,8 +1749,8 @@ int try_to_unuse(unsigned int type, bool frontswap,
 		swap_map = &si->swap_map[i];
 		entry = swp_entry(type, i);
 		/**
-		 * read_swap_cache_asyncº¯Êı»»ÈëÒ³£¬¿ÉÄÜ»¹»á·ÖÅäÒ»¸öĞÂÒ³¡£ÓÃ´æ·ÅÔÚÒ³²ÛÖĞ
-		 * µÄÊı¾İÌî³äĞÂÒ³¿ò¡£²¢°ÑÕâ¸öÒ³´æ·ÅÔÚ½»»»¸ßËÙ»º´æ¡£
+		 * read_swap_cache_asyncå‡½æ•°æ¢å…¥é¡µï¼Œå¯èƒ½è¿˜ä¼šåˆ†é…ä¸€ä¸ªæ–°é¡µã€‚ç”¨å­˜æ”¾åœ¨é¡µæ§½ä¸­
+		 * çš„æ•°æ®å¡«å……æ–°é¡µæ¡†ã€‚å¹¶æŠŠè¿™ä¸ªé¡µå­˜æ”¾åœ¨äº¤æ¢é«˜é€Ÿç¼“å­˜ã€‚
 		 */
 		page = read_swap_cache_async(entry,
 					GFP_HIGHUSER_MOVABLE, NULL, 0);
@@ -1793,7 +1793,7 @@ int try_to_unuse(unsigned int type, bool frontswap,
 		 * do_swap_page and try_to_unuse repeatedly compete.
 		 */
 		/**
-		 * µÈ´ı£¬Ö±µ½ÓÃ´ÅÅÌÖĞµÄÊı¾İÊÊµ±µÄ¸üĞÂÁËĞÂÒ³£¬È»ºóËø×¡Ëü¡£
+		 * ç­‰å¾…ï¼Œç›´åˆ°ç”¨ç£ç›˜ä¸­çš„æ•°æ®é€‚å½“çš„æ›´æ–°äº†æ–°é¡µï¼Œç„¶åé”ä½å®ƒã€‚
 		 */
 		wait_on_page_locked(page);
 		wait_on_page_writeback(page);
@@ -1815,8 +1815,8 @@ int try_to_unuse(unsigned int type, bool frontswap,
 			retval = unuse_mm(start_mm, entry, page);
 
 		/**
-		 * ÓÉÓÚÔÚÉÏÒ»²½ÖĞ£¬½ø³Ì¿ÉÄÜ±»¹ÒÆğ£¬Îª´Ë£¬ÔÙ´Î¼ì²éÒ³²ÛÒıÓÃ¼ÆÊıÆ÷ÊÇ·ñ±äÎª¿Õ¡£
-		 * Èç¹ûÎª¿Õ£¬¾Í¼ÌĞø´¦ÀíÏÂÒ»¸öÒ³²Û¡£·ñÔò´¦Àí¸ÃÒ³²Û¡£
+		 * ç”±äºåœ¨ä¸Šä¸€æ­¥ä¸­ï¼Œè¿›ç¨‹å¯èƒ½è¢«æŒ‚èµ·ï¼Œä¸ºæ­¤ï¼Œå†æ¬¡æ£€æŸ¥é¡µæ§½å¼•ç”¨è®¡æ•°å™¨æ˜¯å¦å˜ä¸ºç©ºã€‚
+		 * å¦‚æœä¸ºç©ºï¼Œå°±ç»§ç»­å¤„ç†ä¸‹ä¸€ä¸ªé¡µæ§½ã€‚å¦åˆ™å¤„ç†è¯¥é¡µæ§½ã€‚
 		 */
 		if (swap_count(*swap_map)) {
 			int set_start_mm = (*swap_map >= swcount);
@@ -1829,7 +1829,7 @@ int try_to_unuse(unsigned int type, bool frontswap,
 			atomic_inc(&prev_mm->mm_users);
 			spin_lock(&mmlist_lock);
 			/**
-			 * ¶ÔÃ¿¸öÄÚ´æÃèÊö·û£¬µ÷ÓÃunuse_process¡£
+			 * å¯¹æ¯ä¸ªå†…å­˜æè¿°ç¬¦ï¼Œè°ƒç”¨unuse_processã€‚
 			 */
 			while (swap_count(*swap_map) && !retval &&
 					(p = p->next) != &start_mm->mmlist) {
@@ -1849,8 +1849,8 @@ int try_to_unuse(unsigned int type, bool frontswap,
 					set_start_mm = 1;
 				else
 					/**
-					 * unuse_processÉ¨Ãè½ø³ÌËùÓĞÒ³±íÏî£¬²¢ÓÃÕâ¸öĞÂÒ³¿òµÄ
-					 * ÎïÀíµØÖ·Ìæ»»Ò³±íÖĞÃ¿¸ö³öÏÖµÄ»»³öÒ³±êÊ¶·û¡£
+					 * unuse_processæ‰«æè¿›ç¨‹æ‰€æœ‰é¡µè¡¨é¡¹ï¼Œå¹¶ç”¨è¿™ä¸ªæ–°é¡µæ¡†çš„
+					 * ç‰©ç†åœ°å€æ›¿æ¢é¡µè¡¨ä¸­æ¯ä¸ªå‡ºç°çš„æ¢å‡ºé¡µæ ‡è¯†ç¬¦ã€‚
 					 */
 					retval = unuse_mm(mm, entry, page);
 
@@ -1893,7 +1893,7 @@ int try_to_unuse(unsigned int type, bool frontswap,
 		 * is unnecessarily slow, but we can fix that later on.
 		 */
 		/**
-		 * ¼ì²éÒ³ÊÇ·ñÊôÓÚ½»»»¸ßËÙ»º´æ¡£²¢ÇÒÎªÔà¡£
+		 * æ£€æŸ¥é¡µæ˜¯å¦å±äºäº¤æ¢é«˜é€Ÿç¼“å­˜ã€‚å¹¶ä¸”ä¸ºè„ã€‚
 		 */
 		if (swap_count(*swap_map) &&
 		     PageDirty(page) && PageSwapCache(page)) {
@@ -1902,7 +1902,7 @@ int try_to_unuse(unsigned int type, bool frontswap,
 			};
 
 			/**
-			 * ½«Ò³µÄÄÚÈİË¢ĞÂµ½´ÅÅÌ¡£
+			 * å°†é¡µçš„å†…å®¹åˆ·æ–°åˆ°ç£ç›˜ã€‚
 			 */
 			swap_writepage(page, &wbc);
 			lock_page(page);
@@ -1918,7 +1918,7 @@ int try_to_unuse(unsigned int type, bool frontswap,
 		 */
 		if (PageSwapCache(page) &&
 		    likely(page_private(page) == entry.val))
-			/* ½«Ò³½»»»¸ßËÙ»º´æ´Ó»º´æÖĞÉ¾³ı */
+			/* å°†é¡µäº¤æ¢é«˜é€Ÿç¼“å­˜ä»ç¼“å­˜ä¸­åˆ é™¤ */
 			delete_from_swap_cache(page);
 
 		/*
@@ -1927,7 +1927,7 @@ int try_to_unuse(unsigned int type, bool frontswap,
 		 * mark page dirty so shrink_page_list will preserve it.
 		 */
 		/**
-		 * ÉèÖÃÒ³ÃèÊö·ûµÄPG_dirty±êÖ¾£¬´ò¿ªÒ³¿òµÄËø£¬µİ¼õËüµÄÒıÓÃ¼ÆÊıÆ÷¡£
+		 * è®¾ç½®é¡µæè¿°ç¬¦çš„PG_dirtyæ ‡å¿—ï¼Œæ‰“å¼€é¡µæ¡†çš„é”ï¼Œé€’å‡å®ƒçš„å¼•ç”¨è®¡æ•°å™¨ã€‚
 		 */
 		SetPageDirty(page);
 		unlock_page(page);
@@ -2116,9 +2116,9 @@ static int setup_swap_extents(struct swap_info_struct *sis, sector_t *span)
 	struct inode *inode = mapping->host;
 	int ret;
 
-	/* ¿éÉè±¸×÷Îª½»»»Çø */
+	/* å—è®¾å¤‡ä½œä¸ºäº¤æ¢åŒº */
 	if (S_ISBLK(inode->i_mode)) {
-		/* ¿éÉè±¸ÊÇÁ¬ĞøµÄ£¬Òò´ËÖ»ÓĞÒ»¸öÇø¿é£¬Ìí¼Óºó·µ»Ø */
+		/* å—è®¾å¤‡æ˜¯è¿ç»­çš„ï¼Œå› æ­¤åªæœ‰ä¸€ä¸ªåŒºå—ï¼Œæ·»åŠ åè¿”å› */
 		ret = add_swap_extent(sis, 0, sis->max, 0);
 		*span = sis->pages;
 		return ret;
@@ -2208,7 +2208,7 @@ bool has_usable_swap(void)
 }
 
 /**
- * Ê¹Ö¸¶¨µÄ½»»»ÇøÎŞĞ§¡£
+ * ä½¿æŒ‡å®šçš„äº¤æ¢åŒºæ— æ•ˆã€‚
  */
 SYSCALL_DEFINE1(swapoff, const char __user *, specialfile)
 {
@@ -2224,7 +2224,7 @@ SYSCALL_DEFINE1(swapoff, const char __user *, specialfile)
 	unsigned int old_block_size;
 
 	/**
-	 * ÑéÖ¤µ±Ç°½ø³ÌÊÇ·ñ¾ßÓĞCAP_SYS_ADMINÈ¨ÏŞ¡£
+	 * éªŒè¯å½“å‰è¿›ç¨‹æ˜¯å¦å…·æœ‰CAP_SYS_ADMINæƒé™ã€‚
 	 */
 	if (!capable(CAP_SYS_ADMIN))
 		return -EPERM;
@@ -2232,14 +2232,14 @@ SYSCALL_DEFINE1(swapoff, const char __user *, specialfile)
 	BUG_ON(!current->mm);
 
 	/**
-	 * ¿½±´ÓÃ»§Ì¬¿Õ¼äµÄspecialfile²ÎÊı¡£
+	 * æ‹·è´ç”¨æˆ·æ€ç©ºé—´çš„specialfileå‚æ•°ã€‚
 	 */
 	pathname = getname(specialfile);
 	if (IS_ERR(pathname))
 		return PTR_ERR(pathname);
 
 	/**
-	 * ´ò¿ªÎÄ¼ş¡£·µ»ØÎÄ¼ş¶ÔÏóµØÖ·¡£
+	 * æ‰“å¼€æ–‡ä»¶ã€‚è¿”å›æ–‡ä»¶å¯¹è±¡åœ°å€ã€‚
 	 */
 	victim = file_open_name(pathname, O_RDWR|O_LARGEFILE, 0);
 	err = PTR_ERR(victim);
@@ -2249,8 +2249,8 @@ SYSCALL_DEFINE1(swapoff, const char __user *, specialfile)
 	mapping = victim->f_mapping;
 	spin_lock(&swap_lock);
 	/**
-	 * É¨Ãè½»»»ÇøÃèÊö·ûÁ´±í£¬±È½ÏÎÄ¼ş¶ÔÏóµØÖ·Óë»î¶¯½»»»ÇøÃèÊö·ûµÄswap_file¡£
-	 * Èç¹û²»Ò»ÖÂ£¬ËµÃ÷´«¸øº¯ÊıµÄÊÇÒ»¸öÎŞĞ§²ÎÊı£¬·µ»Ø´íÎóÂë¡£
+	 * æ‰«æäº¤æ¢åŒºæè¿°ç¬¦é“¾è¡¨ï¼Œæ¯”è¾ƒæ–‡ä»¶å¯¹è±¡åœ°å€ä¸æ´»åŠ¨äº¤æ¢åŒºæè¿°ç¬¦çš„swap_fileã€‚
+	 * å¦‚æœä¸ä¸€è‡´ï¼Œè¯´æ˜ä¼ ç»™å‡½æ•°çš„æ˜¯ä¸€ä¸ªæ— æ•ˆå‚æ•°ï¼Œè¿”å›é”™è¯¯ç ã€‚
 	 */
 	plist_for_each_entry(p, &swap_active_head, list) {
 		if (p->flags & SWP_WRITEOK) {
@@ -2266,7 +2266,7 @@ SYSCALL_DEFINE1(swapoff, const char __user *, specialfile)
 		goto out_dput;
 	}
 	/**
-	 * µ÷ÓÃsecurity_vm_enough_memory£¬¼ì²éÊÇ·ñÓĞ×ã¹»µÄ¿ÕÏĞÒ³¿ò°Ñ½»»»ÇøÉÏ´æ·ÅµÄËùÓĞÒ³»»Èë¡£
+	 * è°ƒç”¨security_vm_enough_memoryï¼Œæ£€æŸ¥æ˜¯å¦æœ‰è¶³å¤Ÿçš„ç©ºé—²é¡µæ¡†æŠŠäº¤æ¢åŒºä¸Šå­˜æ”¾çš„æ‰€æœ‰é¡µæ¢å…¥ã€‚
 	 */
 	if (!security_vm_enough_memory_mm(current->mm, p->pages))
 		vm_unacct_memory(p->pages);
@@ -2293,7 +2293,7 @@ SYSCALL_DEFINE1(swapoff, const char __user *, specialfile)
 	atomic_long_sub(p->pages, &nr_swap_pages);
 	total_swap_pages -= p->pages;
 	/**
-	 * Çå³ı¸Ã±êÖ¾ºó£¬½«²»»áÔÙÏò½»»»Çø»»³ö¸ü¶àµÄÒ³¡£
+	 * æ¸…é™¤è¯¥æ ‡å¿—åï¼Œå°†ä¸ä¼šå†å‘äº¤æ¢åŒºæ¢å‡ºæ›´å¤šçš„é¡µã€‚
 	 */
 	p->flags &= ~SWP_WRITEOK;
 	spin_unlock(&p->lock);
@@ -2303,14 +2303,14 @@ SYSCALL_DEFINE1(swapoff, const char __user *, specialfile)
 
 	set_current_oom_origin();
 	/**
-	 * µ÷ÓÃtry_to_unuseº¯ÊıÇ¿ÖÆ°ÑÕâ¸ö½»»»ÇøÖĞÊ£ÓàµÄËùÓĞÒ³¶¼ÒÆµ½RAMÖĞ¡£²¢ÏàÓ¦µØĞŞ¸ÄÕâĞ©Ò³µÄ½ø³ÌµÄÒ³±í¡£
-	 * µ±Ö´ĞĞ¸Ãº¯ÊıÊ±£¬µ±Ç°½ø³ÌµÄPF_SWAPOFF±êÖ¾ÖÃÎ»¡£
+	 * è°ƒç”¨try_to_unuseå‡½æ•°å¼ºåˆ¶æŠŠè¿™ä¸ªäº¤æ¢åŒºä¸­å‰©ä½™çš„æ‰€æœ‰é¡µéƒ½ç§»åˆ°RAMä¸­ã€‚å¹¶ç›¸åº”åœ°ä¿®æ”¹è¿™äº›é¡µçš„è¿›ç¨‹çš„é¡µè¡¨ã€‚
+	 * å½“æ‰§è¡Œè¯¥å‡½æ•°æ—¶ï¼Œå½“å‰è¿›ç¨‹çš„PF_SWAPOFFæ ‡å¿—ç½®ä½ã€‚
 	 */
 	err = try_to_unuse(p->type, false, 0); /* force unuse all pages */
 	clear_current_oom_origin();
 
 	/**
-	 * try_to_unuse·µ»ØÊ§°Ü¡£²»ÄÜ¹Ø±Õ½»»»Çø¡£
+	 * try_to_unuseè¿”å›å¤±è´¥ã€‚ä¸èƒ½å…³é—­äº¤æ¢åŒºã€‚
 	 */
 	if (err) {
 		/* re-insert swap space back into swap_list */
@@ -2368,21 +2368,21 @@ SYSCALL_DEFINE1(swapoff, const char __user *, specialfile)
 	inode = mapping->host;
 	if (S_ISBLK(inode->i_mode)) {
 		/**
-		 * ½»»»ÇøÔÚ´ÅÅÌ·ÖÇø£¬»Ö¸´¿é´óĞ¡ÎªÔ­Öµ¡£
+		 * äº¤æ¢åŒºåœ¨ç£ç›˜åˆ†åŒºï¼Œæ¢å¤å—å¤§å°ä¸ºåŸå€¼ã€‚
 		 */
 		struct block_device *bdev = I_BDEV(inode);
 		set_blocksize(bdev, old_block_size);
 		blkdev_put(bdev, FMODE_READ | FMODE_WRITE | FMODE_EXCL);
 	} else {
 		/**
-		 * ½»»»ÇøÔÚÆÕÍ¨ÎÄ¼şÖĞ£¬Ôò°ÑÎÄ¼şË÷Òı½ÚµãµÄS_SWAPFILE±êÖ¾Çå0.
+		 * äº¤æ¢åŒºåœ¨æ™®é€šæ–‡ä»¶ä¸­ï¼Œåˆ™æŠŠæ–‡ä»¶ç´¢å¼•èŠ‚ç‚¹çš„S_SWAPFILEæ ‡å¿—æ¸…0.
 		 */
 		inode_lock(inode);
 		inode->i_flags &= ~S_SWAPFILE;
 		inode_unlock(inode);
 	}
 	/**
-	 * ¹Ø±ÕÁ½¸öÎÄ¼ş:swap_fileºÍvictim¡£
+	 * å…³é—­ä¸¤ä¸ªæ–‡ä»¶:swap_fileå’Œvictimã€‚
 	 */
 	filp_close(swap_file, NULL);
 
@@ -2550,20 +2550,20 @@ static struct swap_info_struct *alloc_swap_info(void)
 	if (!p)
 		return ERR_PTR(-ENOMEM);
 
-	/* »ñÈ¡×ÔĞıËø£¬ÒÔ±£»¤¶Ô½»»»ÇøÊı×éµÄ·ÃÎÊ */
+	/* è·å–è‡ªæ—‹é”ï¼Œä»¥ä¿æŠ¤å¯¹äº¤æ¢åŒºæ•°ç»„çš„è®¿é—® */
 	spin_lock(&swap_lock);
-	/* ²éÕÒÒ»¸ö¿ÕÏĞÏî */
+	/* æŸ¥æ‰¾ä¸€ä¸ªç©ºé—²é¡¹ */
 	for (type = 0; type < nr_swapfiles; type++) {
 		if (!(swap_info[type]->flags & SWP_USED))
 			break;
 	}
-	/* Ã»ÓĞ¿ÕÏĞÏîÁË£¬ÍË³ö */
+	/* æ²¡æœ‰ç©ºé—²é¡¹äº†ï¼Œé€€å‡º */
 	if (type >= MAX_SWAPFILES) {
 		spin_unlock(&swap_lock);
 		kfree(p);
 		return ERR_PTR(-EPERM);
 	}
-	/* ÕâÑùµÄÓÅ»¯ÊµÔÚÃ»ÓĞ±ØÒª */
+	/* è¿™æ ·çš„ä¼˜åŒ–å®åœ¨æ²¡æœ‰å¿…è¦ */
 	if (type >= nr_swapfiles) {
 		p->type = type;
 		swap_info[type] = p;
@@ -2582,7 +2582,7 @@ static struct swap_info_struct *alloc_swap_info(void)
 		 * would be relying on p->type to remain valid.
 		 */
 	}
-	/* ³õÊ¼»¯Êı¾İÏî */
+	/* åˆå§‹åŒ–æ•°æ®é¡¹ */
 	INIT_LIST_HEAD(&p->first_swap_extent.list);
 	plist_node_init(&p->list, 0);
 	plist_node_init(&p->avail_list, 0);
@@ -2834,7 +2834,7 @@ SYSCALL_DEFINE2(swapon, const char __user *, specialfile, int, swap_flags)
 	INIT_WORK(&p->discard_work, swap_discard_work);
 
 	/**
-	 * ´ÓÓÃ»§Ì¬µØÖ·¿Õ¼ä¸´ÖÆspecialfile²ÎÊıËùÖ¸ÏòµÄ×Ö·û´®¡£
+	 * ä»ç”¨æˆ·æ€åœ°å€ç©ºé—´å¤åˆ¶specialfileå‚æ•°æ‰€æŒ‡å‘çš„å­—ç¬¦ä¸²ã€‚
 	 */
 	name = getname(specialfile);
 	if (IS_ERR(name)) {
@@ -2842,7 +2842,7 @@ SYSCALL_DEFINE2(swapon, const char __user *, specialfile, int, swap_flags)
 		name = NULL;
 		goto bad_swap;
 	}
-	/* ´ò¿ª½»»»ÎÄ¼ş»òÉè±¸ */
+	/* æ‰“å¼€äº¤æ¢æ–‡ä»¶æˆ–è®¾å¤‡ */
 	swap_file = file_open_name(name, O_RDWR|O_LARGEFILE, 0);
 	if (IS_ERR(swap_file)) {
 		error = PTR_ERR(swap_file);
@@ -2851,7 +2851,7 @@ SYSCALL_DEFINE2(swapon, const char __user *, specialfile, int, swap_flags)
 	}
 
 	/**
-	 * ½«´ò¿ªµÄÎÄ¼şÃèÊö·û´æ·ÅÔÚswap_fileÖĞ¡£
+	 * å°†æ‰“å¼€çš„æ–‡ä»¶æè¿°ç¬¦å­˜æ”¾åœ¨swap_fileä¸­ã€‚
 	 */
 	p->swap_file = swap_file;
 	mapping = swap_file->f_mapping;
@@ -2865,14 +2865,14 @@ SYSCALL_DEFINE2(swapon, const char __user *, specialfile, int, swap_flags)
 	/*
 	 * Read the swap header.
 	 */
-	/* µØÖ·¿Õ¼äÃ»ÓĞÖ¸¶¨readpageº¯Êı£¬ÎŞ·¨ÓÃÓÚ½»»» */
+	/* åœ°å€ç©ºé—´æ²¡æœ‰æŒ‡å®šreadpageå‡½æ•°ï¼Œæ— æ³•ç”¨äºäº¤æ¢ */
 	if (!mapping->a_ops->readpage) {
 		error = -EINVAL;
 		goto bad_swap;
 	}
-	/* ¶ÁÈ¡µÚÒ»Ò³ */
+	/* è¯»å–ç¬¬ä¸€é¡µ */
 	/**
-	 * ¶ÁÈ¡´æ·ÅÔÚ½»»»ÇøÒ³²Û0ÖĞµÄswap_headerÃèÊö·û¡£
+	 * è¯»å–å­˜æ”¾åœ¨äº¤æ¢åŒºé¡µæ§½0ä¸­çš„swap_headeræè¿°ç¬¦ã€‚
 	 */
 	page = read_mapping_page(mapping, 0, swap_file);
 	if (IS_ERR(page)) {
@@ -3067,8 +3067,8 @@ void si_swapinfo(struct sysinfo *val)
  * - swap-mapped reference requested but needs continued swap count. -> ENOMEM
  */
 /**
- * µ±ÊÔÍ¼»»³öÒ»¸öÒÑ¾­»»³öµÄÒ³Ê±¾Í»áµ÷ÓÃ´Ëº¯Êı¡£
- * ±¾º¯ÊıÑéÖ¤²ÎÊı´«µİµÄ»»³öÒ³±êÊ¶·ûÊÇ·ñÓĞĞ§£¬²¢Ôö¼ÓÏàÓ¦µÄswap_map¼ÆÊıÆ÷µÄÖµ¡£
+ * å½“è¯•å›¾æ¢å‡ºä¸€ä¸ªå·²ç»æ¢å‡ºçš„é¡µæ—¶å°±ä¼šè°ƒç”¨æ­¤å‡½æ•°ã€‚
+ * æœ¬å‡½æ•°éªŒè¯å‚æ•°ä¼ é€’çš„æ¢å‡ºé¡µæ ‡è¯†ç¬¦æ˜¯å¦æœ‰æ•ˆï¼Œå¹¶å¢åŠ ç›¸åº”çš„swap_mapè®¡æ•°å™¨çš„å€¼ã€‚
  */
 static int __swap_duplicate(swp_entry_t entry, unsigned char usage)
 {
@@ -3083,7 +3083,7 @@ static int __swap_duplicate(swp_entry_t entry, unsigned char usage)
 		goto out;
 
 	/**
-	 * ´Ó²ÎÊıÖĞÈ¡³ö½»»»ÇøºÅºÍÒ³²ÛË÷Òı¡£
+	 * ä»å‚æ•°ä¸­å–å‡ºäº¤æ¢åŒºå·å’Œé¡µæ§½ç´¢å¼•ã€‚
 	 */
 	type = swp_type(entry);
 	if (type >= nr_swapfiles)

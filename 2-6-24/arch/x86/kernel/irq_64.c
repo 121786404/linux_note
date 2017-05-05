@@ -138,11 +138,11 @@ skip:
  * handlers).
  */
 /**
- * Ò»°ãµÄÍâÉèÖĞ¶ÏÈë¿Ú
+ * ä¸€èˆ¬çš„å¤–è®¾ä¸­æ–­å…¥å£
  */
 asmlinkage unsigned int do_IRQ(struct pt_regs *regs)
 {
-	/* ½«¼Ä´æÆ÷Ö¸Õë±£´æµ½Ã¿CPU±äÁ¿ÖĞ£¬ÕâÑùËùÓĞÖĞ¶Ïº¯Êı¶¼¿ÉÒÔ·ÃÎÊÔ­Ê¼µÄregs */
+	/* å°†å¯„å­˜å™¨æŒ‡é’ˆä¿å­˜åˆ°æ¯CPUå˜é‡ä¸­ï¼Œè¿™æ ·æ‰€æœ‰ä¸­æ–­å‡½æ•°éƒ½å¯ä»¥è®¿é—®åŸå§‹çš„regs */
 	struct pt_regs *old_regs = set_irq_regs(regs);
 
 	/* high bit used in ret_from_ code  */
@@ -150,7 +150,7 @@ asmlinkage unsigned int do_IRQ(struct pt_regs *regs)
 	unsigned irq;
 
 	exit_idle();
-	/* ¸üĞÂÒ»Ğ©Í³¼Æ±äÁ¿ */
+	/* æ›´æ–°ä¸€äº›ç»Ÿè®¡å˜é‡ */
 	irq_enter();
 	irq = __get_cpu_var(vector_irq)[vector];
 
@@ -159,9 +159,9 @@ asmlinkage unsigned int do_IRQ(struct pt_regs *regs)
 #endif
 
 	if (likely(irq < NR_IRQS))
-		/* µ÷ÓÃISR´¦ÀíÖĞ¶Ï */
+		/* è°ƒç”¨ISRå¤„ç†ä¸­æ–­ */
 		generic_handle_irq(irq);
-	else {/* ·Ç·¨µÄÖĞ¶ÏºÅ */
+	else {/* éæ³•çš„ä¸­æ–­å· */
 		if (!disable_apic)
 			ack_APIC_irq();
 
@@ -170,10 +170,10 @@ asmlinkage unsigned int do_IRQ(struct pt_regs *regs)
 				__func__, smp_processor_id(), vector);
 	}
 
-	/* Í³¼Æ±äÁ¿£¬²¢´¦ÀíÈíÖĞ¶Ï */
+	/* ç»Ÿè®¡å˜é‡ï¼Œå¹¶å¤„ç†è½¯ä¸­æ–­ */
 	irq_exit();
 
-	/* »Ö¸´Ç°Ò»´ÎÖĞ¶ÏµÄ¼Ä´æÆ÷Ö¸Õë */
+	/* æ¢å¤å‰ä¸€æ¬¡ä¸­æ–­çš„å¯„å­˜å™¨æŒ‡é’ˆ */
 	set_irq_regs(old_regs);
 	return 1;
 }

@@ -133,23 +133,23 @@ struct pci_cap_saved_state {
  * The pci_dev structure is used to describe PCI devices.
  */
 /**
- * PCIÉè±¸¡¢¹¦ÄÜ¿¨¡¢¹¦ÄÜ²¿¼ş
+ * PCIè®¾å¤‡ã€åŠŸèƒ½å¡ã€åŠŸèƒ½éƒ¨ä»¶
  */
 struct pci_dev {
-	/* Í¨¹ıÕâÁ½¸ö×Ö¶Î½«Éè±¸Ìí¼Óµ½È«¾Ö¡¢×ÜÏßÉè±¸Á´±íÖĞ */
+	/* é€šè¿‡è¿™ä¸¤ä¸ªå­—æ®µå°†è®¾å¤‡æ·»åŠ åˆ°å…¨å±€ã€æ€»çº¿è®¾å¤‡é“¾è¡¨ä¸­ */
 	struct list_head global_list;	/* node in list of all PCI devices */
 	struct list_head bus_list;	/* node in per-bus list */
-	/* Ö¸ÏòÉè±¸ËùÊôµÄ×ÜÏß */
+	/* æŒ‡å‘è®¾å¤‡æ‰€å±çš„æ€»çº¿ */
 	struct pci_bus	*bus;		/* bus this device is on */
-	/* Èç¹ûÊÇÇÅ½ÓÆ÷£¬ÔòÖ¸ÏòÏÂ¼¶×ÜÏß */
+	/* å¦‚æœæ˜¯æ¡¥æ¥å™¨ï¼Œåˆ™æŒ‡å‘ä¸‹çº§æ€»çº¿ */
 	struct pci_bus	*subordinate;	/* bus this device bridges to */
 
-	/* Çı¶¯³ÌĞòË½ÓĞÊı¾İ */
+	/* é©±åŠ¨ç¨‹åºç§æœ‰æ•°æ® */
 	void		*sysdata;	/* hook for sys-specific extension */
-	/* ÔÚprocÖĞµÄÄ¿Â¼Ïî */
+	/* åœ¨procä¸­çš„ç›®å½•é¡¹ */
 	struct proc_dir_entry *procent;	/* device entry in /proc/bus/pci */
 
-	/* pciÅäÖÃ¿Õ¼äÊı¾İ */
+	/* pcié…ç½®ç©ºé—´æ•°æ® */
 	unsigned int	devfn;		/* encoded device & function index */
 	unsigned short	vendor;
 	unsigned short	device;
@@ -162,7 +162,7 @@ struct pci_dev {
 	u8		rom_base_reg;	/* which config register controls the ROM */
 	u8		pin;  		/* which interrupt pin this device uses */
 
-	/* ¹ÜÀí¸ÃÉè±¸µÄÇı¶¯³ÌĞò */
+	/* ç®¡ç†è¯¥è®¾å¤‡çš„é©±åŠ¨ç¨‹åº */
 	struct pci_driver *driver;	/* which driver has allocated this device */
 	u64		dma_mask;	/* Mask of the bits of bus address this
 					   device implements.  Normally this is
@@ -175,7 +175,7 @@ struct pci_dev {
 					   and D3 being off. */
 
 	pci_channel_state_t error_state;	/* current connectivity state */
-	/* Í¨ÓÃÉè±¸Ä£ĞÍ */
+	/* é€šç”¨è®¾å¤‡æ¨¡å‹ */
 	struct	device	dev;		/* Generic device interface */
 
 	/* device is compatible with these IDs */
@@ -188,9 +188,9 @@ struct pci_dev {
 	 * Instead of touching interrupt line and base address registers
 	 * directly, use the values stored here. They might be different!
 	 */
-	/* Éè±¸Ê¹ÓÃµÄÖĞ¶ÏºÅ */
+	/* è®¾å¤‡ä½¿ç”¨çš„ä¸­æ–­å· */
 	unsigned int	irq;
-	/* Çı¶¯³ÌĞòÎªIOÉêÇëµÄ×ÊÔ´ */
+	/* é©±åŠ¨ç¨‹åºä¸ºIOç”³è¯·çš„èµ„æº */
 	struct resource resource[DEVICE_COUNT_RESOURCE]; /* I/O and memory regions + expansion ROMs */
 
 	/* These fields are used by common fixups */
@@ -268,36 +268,36 @@ static inline void pci_add_saved_cap(struct pci_dev *pci_dev,
 
 #define PCI_REGION_FLAG_MASK	0x0fU	/* These bits of resource flags tell us the PCI region flags */
 
-/* pci×ÜÏß */
+/* pciæ€»çº¿ */
 struct pci_bus {
-	/* Í¨¹ı´Ë×Ö¶ÎÁ´½Óµ½È«¾ÖÁ´±í */
+	/* é€šè¿‡æ­¤å­—æ®µé“¾æ¥åˆ°å…¨å±€é“¾è¡¨ */
 	struct list_head node;		/* node in list of buses */
-	/* ÉÏ¼¶bus */
+	/* ä¸Šçº§bus */
 	struct pci_bus	*parent;	/* parent bus this bridge is on */
-	/* Á´±íÍ·£¬Ö¸ÏòËùÓĞ×Óbus */
+	/* é“¾è¡¨å¤´ï¼ŒæŒ‡å‘æ‰€æœ‰å­bus */
 	struct list_head children;	/* list of child buses */
-	/* Á´±íÍ·£¬Ö¸Ïò×ÜÏßÀïÃæµÄËùÓĞÉè±¸ */
+	/* é“¾è¡¨å¤´ï¼ŒæŒ‡å‘æ€»çº¿é‡Œé¢çš„æ‰€æœ‰è®¾å¤‡ */
 	struct list_head devices;	/* list of devices on this bus */
-	/* ×ÜÏßÇÅ½ÓÆ÷Éè±¸ */
+	/* æ€»çº¿æ¡¥æ¥å™¨è®¾å¤‡ */
 	struct pci_dev	*self;		/* bridge device as seen by parent */
-	/* ×ÜÏßÔÚĞéÄâÄÚ´æÖĞÕ¼ÓÃµÄµØÖ·¿Õ¼ä */
+	/* æ€»çº¿åœ¨è™šæ‹Ÿå†…å­˜ä¸­å ç”¨çš„åœ°å€ç©ºé—´ */
 	struct resource	*resource[PCI_BUS_NUM_RESOURCES];
 					/* address space routed to this bus */
 
-	/* ·ÃÎÊÅäÖÃ¿Õ¼äµÄº¯ÊıÖ¸Õë */
+	/* è®¿é—®é…ç½®ç©ºé—´çš„å‡½æ•°æŒ‡é’ˆ */
 	struct pci_ops	*ops;		/* configuration access functions */
 	void		*sysdata;	/* hook for sys-specific extension */
-	/* ÓÃÓÚ/proc/bus/pciÄ¿Â¼Êä³ö×ÜÏßĞÅÏ¢ */
+	/* ç”¨äº/proc/bus/pciç›®å½•è¾“å‡ºæ€»çº¿ä¿¡æ¯ */
 	struct proc_dir_entry *procdir;	/* directory entry in /proc/bus/pci */
 
-	/* ×ÜÏß±àºÅ */
+	/* æ€»çº¿ç¼–å· */
 	unsigned char	number;		/* bus number */
 	unsigned char	primary;	/* number of primary bridge */
 	unsigned char	secondary;	/* number of secondary bridge */
-	/* ÏÂ¼¶×ÜÏßµÄ×î´óÊıÁ¿ */
+	/* ä¸‹çº§æ€»çº¿çš„æœ€å¤§æ•°é‡ */
 	unsigned char	subordinate;	/* max number of subordinate buses */
 
-	/* ×ÜÏßÃû³Æ£¬ÓÃÓÚproc */
+	/* æ€»çº¿åç§°ï¼Œç”¨äºproc */
 	char		name[48];
 
 	unsigned short  bridge_ctl;	/* manage NO_ISA/FBB/et al behaviors */
@@ -398,14 +398,14 @@ struct pci_error_handlers
 /* ---------------------------------------------------------------- */
 
 struct module;
-/* PCIÇı¶¯ */
+/* PCIé©±åŠ¨ */
 struct pci_driver {
-	/* Á´½Ó½øÈëÈ«¾ÖÇı¶¯Á´±í */
+	/* é“¾æ¥è¿›å…¥å…¨å±€é©±åŠ¨é“¾è¡¨ */
 	struct list_head node;
-	/* Çı¶¯Ãû³Æ */
+	/* é©±åŠ¨åç§° */
 	char *name;
 	const struct pci_device_id *id_table;	/* must be non-NULL for probe to be called */
-	/* Ì½²âÇı¶¯³ÌĞòÊÇ·ñÖ§³ÖÄ³¸öÉè±¸ */
+	/* æ¢æµ‹é©±åŠ¨ç¨‹åºæ˜¯å¦æ”¯æŒæŸä¸ªè®¾å¤‡ */
 	int  (*probe)  (struct pci_dev *dev, const struct pci_device_id *id);	/* New device inserted */
 	void (*remove) (struct pci_dev *dev);	/* Device removed (NULL if not a hot-plug capable driver) */
 	int  (*suspend) (struct pci_dev *dev, pm_message_t state);	/* Device suspended */
@@ -415,7 +415,7 @@ struct pci_driver {
 	void (*shutdown) (struct pci_dev *dev);
 
 	struct pci_error_handlers *err_handler;
-	/* Í¨ÓÃÇı¶¯Ä£ĞÍ */
+	/* é€šç”¨é©±åŠ¨æ¨¡å‹ */
 	struct device_driver	driver;
 	struct pci_dynids dynids;
 };
@@ -472,7 +472,7 @@ extern struct bus_type pci_bus_type;
 /* Do NOT directly access these two variables, unless you are arch specific pci
  * code, or pci core code. */
 extern struct list_head pci_root_buses;	/* list of all known PCI buses */
-/* ËùÓĞµÄpciÉè±¸Á´±í */
+/* æ‰€æœ‰çš„pciè®¾å¤‡é“¾è¡¨ */
 extern struct list_head pci_devices;	/* list of all devices */
 /* Some device drivers need know if pci is initiated */
 extern int no_pci_devices(void);

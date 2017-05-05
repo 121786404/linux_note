@@ -24,12 +24,12 @@
 #include <linux/slab.h>
 
 /*
-Kmemleak �ṩ��һ�ֿ�ѡ���ں�й©��⣬
-�䷽�������ڸ����ڴ��ռ�����
+Kmemleak 提供了一种可选的内核泄漏检测，
+其方法类似于跟踪内存收集器。
 
-�������Ķ���û�б��ͷ�ʱ��
-�䱨���¼�� /sys/kernel/debug/kmemleak��, 
-Kmemcheck�ܹ�������λ������ڴ�����������
+当独立的对象没有被释放时，
+其报告记录在 /sys/kernel/debug/kmemleak中, 
+Kmemcheck能够帮助定位大多数内存错误的上下文
 */
 #ifdef CONFIG_DEBUG_KMEMLEAK
 

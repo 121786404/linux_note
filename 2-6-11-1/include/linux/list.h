@@ -25,14 +25,14 @@
  * using the generic single-entry routines.
  */
 
-/* Ò»¸ö·Ç³£ÖØÒªµÄË«ÏòÁ´±í£¬ÔÚºÜ¶à½á¹¹µ±ÖĞ¶¼ÓĞ¸ÃÁ´±íµÄÉíÓ° */
+/* ä¸€ä¸ªéå¸¸é‡è¦çš„åŒå‘é“¾è¡¨ï¼Œåœ¨å¾ˆå¤šç»“æ„å½“ä¸­éƒ½æœ‰è¯¥é“¾è¡¨çš„èº«å½± */
 struct list_head {
 	struct list_head *next, *prev;
 };
 
 #define LIST_HEAD_INIT(name) { &(name), &(name) }
 
-/* ¶¨ÒåÒ»¸ö¿ÕµÄÁ´±íÍ· */
+/* å®šä¹‰ä¸€ä¸ªç©ºçš„é“¾è¡¨å¤´ */
 #define LIST_HEAD(name) \
 	struct list_head name = LIST_HEAD_INIT(name)
 
@@ -77,7 +77,7 @@ static inline void list_add(struct list_head *new, struct list_head *head)
  * Insert a new entry before the specified head.
  * This is useful for implementing queues.
  */
-/* ½«ÁĞ±ínewÌí¼Óµ½headµ±ÖĞ */
+/* å°†åˆ—è¡¨newæ·»åŠ åˆ°headå½“ä¸­ */
 static inline void list_add_tail(struct list_head *new, struct list_head *head)
 {
 	__list_add(new, head->prev, head);
@@ -217,7 +217,7 @@ static inline void list_replace_rcu(struct list_head *old, struct list_head *new
  * list_del_init - deletes entry from list and reinitialize it.
  * @entry: the element to delete from the list.
  */
-/* ½«entry´ÓÁ´±íÖĞÉ¾³ı£¬²¢ÇÒ½«É¾³ıµÄ½Úµã¸ø³õÊ¼»¯ÎªNULL  
+/* å°†entryä»é“¾è¡¨ä¸­åˆ é™¤ï¼Œå¹¶ä¸”å°†åˆ é™¤çš„èŠ‚ç‚¹ç»™åˆå§‹åŒ–ä¸ºNULL  
   */
 static inline void list_del_init(struct list_head *entry)
 {
@@ -493,14 +493,14 @@ static inline void list_splice_init(struct list_head *list,
  * You lose the ability to access the tail in O(1).
  */
 
-/* hashÁ´±íÍ·²¿ */
+/* hashé“¾è¡¨å¤´éƒ¨ */
 struct hlist_head {
 	struct hlist_node *first;
 };
 
-/* hash½Úµã£¬ÕâÖÖ½ÚµãºÍ´¿´âµÄµ¥Á´±í½ÚµãÎ¨Ò»µÄ²î±ğ¾ÍÊÇ
-  * ÓĞÒ»¸öÖ¸ÏòÉÏÒ»¸ö½ÚµãµÄÖ¸ÕëµÄÖ¸Õë£¬É¾³ıµÄÊ±ºò£¬Ö±½Ó´«ÈëÒ»¸ö 
-  * ²ÎÊı¼´¿É£¬¶ÔÎ²²¿½ÚµãµÄ·ÃÎÊ²»ºÃ¡£ 
+/* hashèŠ‚ç‚¹ï¼Œè¿™ç§èŠ‚ç‚¹å’Œçº¯ç²¹çš„å•é“¾è¡¨èŠ‚ç‚¹å”¯ä¸€çš„å·®åˆ«å°±æ˜¯
+  * æœ‰ä¸€ä¸ªæŒ‡å‘ä¸Šä¸€ä¸ªèŠ‚ç‚¹çš„æŒ‡é’ˆçš„æŒ‡é’ˆï¼Œåˆ é™¤çš„æ—¶å€™ï¼Œç›´æ¥ä¼ å…¥ä¸€ä¸ª 
+  * å‚æ•°å³å¯ï¼Œå¯¹å°¾éƒ¨èŠ‚ç‚¹çš„è®¿é—®ä¸å¥½ã€‚ 
   */
 struct hlist_node {
 	struct hlist_node *next, **pprev;
@@ -521,7 +521,7 @@ static inline int hlist_empty(const struct hlist_head *h)
 	return !h->first;
 }
 
-/* ½«×Ô¼º´ÓÁ´±íÖĞÉ¾³ı£¬×¢ÒâÕâÖÖÁ´±íºÍlist_headµÄÇø±ğºÍÊ¹ÓÃ³¡¾° */
+/* å°†è‡ªå·±ä»é“¾è¡¨ä¸­åˆ é™¤ï¼Œæ³¨æ„è¿™ç§é“¾è¡¨å’Œlist_headçš„åŒºåˆ«å’Œä½¿ç”¨åœºæ™¯ */
 static inline void __hlist_del(struct hlist_node *n)
 {
 	struct hlist_node *next = n->next;
@@ -563,7 +563,7 @@ static inline void hlist_del_rcu(struct hlist_node *n)
 	n->pprev = LIST_POISON2;
 }
 
-/* ½«n´ÓÁ´±íµ±ÖĞÉ¾³ı */
+/* å°†nä»é“¾è¡¨å½“ä¸­åˆ é™¤ */
 static inline void hlist_del_init(struct hlist_node *n)
 {
 	if (n->pprev)  {
@@ -572,7 +572,7 @@ static inline void hlist_del_init(struct hlist_node *n)
 	}
 }
 
-/* ÏòÁ´±íÖĞÌí¼ÓÒ»¸ö½Úµã£¬×¢ÒâÊÇÌí¼Óµ½Á´±íµÄÍ·²¿ */
+/* å‘é“¾è¡¨ä¸­æ·»åŠ ä¸€ä¸ªèŠ‚ç‚¹ï¼Œæ³¨æ„æ˜¯æ·»åŠ åˆ°é“¾è¡¨çš„å¤´éƒ¨ */
 static inline void hlist_add_head(struct hlist_node *n, struct hlist_head *h)
 {
 	struct hlist_node *first = h->first;
@@ -601,7 +601,7 @@ static inline void hlist_add_head(struct hlist_node *n, struct hlist_head *h)
  * list-traversal primitive must be guarded by rcu_read_lock().
  */
 
-/* Í¨¹ıRCU»úÖÆµÄÌí¼Ó */
+/* é€šè¿‡RCUæœºåˆ¶çš„æ·»åŠ  */
 static inline void hlist_add_head_rcu(struct hlist_node *n,
 					struct hlist_head *h)
 {
@@ -615,7 +615,7 @@ static inline void hlist_add_head_rcu(struct hlist_node *n,
 }
 
 /* next must be != NULL */
-/* ½«n²åÈëµ½nextµÄÇ°Ãæ */
+/* å°†næ’å…¥åˆ°nextçš„å‰é¢ */
 static inline void hlist_add_before(struct hlist_node *n,
 					struct hlist_node *next)
 {
@@ -637,7 +637,7 @@ static inline void hlist_add_after(struct hlist_node *n,
 		next->next->pprev  = &next->next;
 }
 
-/* »ñÈ¡hlist_nodeËùÔÚ½ÚµãµÄ½á¹¹ÌåµÄÊ×µØÖ· */
+/* è·å–hlist_nodeæ‰€åœ¨èŠ‚ç‚¹çš„ç»“æ„ä½“çš„é¦–åœ°å€ */
 #define hlist_entry(ptr, type, member) container_of(ptr,type,member)
 
 #define hlist_for_each(pos, head) \

@@ -47,27 +47,27 @@ enum pid_type
  * find_pid_ns() using the int nr and struct pid_namespace *ns.
  */
 /**
- * ÌØ¶¨ÃüÃû¿Õ¼äÖĞ¿É¼ûµÄpid
+ * ç‰¹å®šå‘½åç©ºé—´ä¸­å¯è§çš„pid
  */
 struct upid {
 	/* Try to keep pid_chain in the same cacheline as nr for find_pid */
-	/* IDºÅ */
+	/* IDå· */
 	int nr;
-	/* ËùÊôÃüÃû¿Õ¼ä */
+	/* æ‰€å±å‘½åç©ºé—´ */
 	struct pid_namespace *ns;
-	/* Í¨¹ı´Ë×Ö¶ÎÁ´½Óµ½È«¾ÖupidÉ¢ÁĞ±íÖĞ */
+	/* é€šè¿‡æ­¤å­—æ®µé“¾æ¥åˆ°å…¨å±€upidæ•£åˆ—è¡¨ä¸­ */
 	struct hlist_node pid_chain;
 };
 
 /**
- * È«¾ÖpidµÄ±íÊ¾
+ * å…¨å±€pidçš„è¡¨ç¤º
  */
 struct pid
 {
-	/* ÒıÓÃ¼ÆÊıÖµ */
+	/* å¼•ç”¨è®¡æ•°å€¼ */
 	atomic_t count;
 	/* lists of tasks that use this pid */
-	/* Ê¹ÓÃ¸ÃidµÄËùÓĞ½ø³ÌÁ´±í */
+	/* ä½¿ç”¨è¯¥idçš„æ‰€æœ‰è¿›ç¨‹é“¾è¡¨ */
 	struct hlist_head tasks[PIDTYPE_MAX];
 	struct rcu_head rcu;
 	int level;
@@ -76,13 +76,13 @@ struct pid
 
 extern struct pid init_struct_pid;
 /**
- * ´Ë½á¹¹½«task_structÓëpidÉ¢ÁĞ±í¹ØÁª
+ * æ­¤ç»“æ„å°†task_structä¸pidæ•£åˆ—è¡¨å…³è”
  */
 struct pid_link
 {
-	/* ÓÃÓÚÉ¢ÁĞ±í½ÚµãµÄ½á¹¹ */
+	/* ç”¨äºæ•£åˆ—è¡¨èŠ‚ç‚¹çš„ç»“æ„ */
 	struct hlist_node node;
-	/* ½ø³ÌËùÊôpidÊµÀı */
+	/* è¿›ç¨‹æ‰€å±pidå®ä¾‹ */
 	struct pid *pid;
 };
 
@@ -150,7 +150,7 @@ extern void zap_pid_ns_processes(struct pid_namespace *pid_ns);
  */
 
 /**
- * ·µ»Øinit½ø³Ì¿´µ½µÄÈ«¾ÖPID
+ * è¿”å›initè¿›ç¨‹çœ‹åˆ°çš„å…¨å±€PID
  */
 static inline pid_t pid_nr(struct pid *pid)
 {
@@ -163,7 +163,7 @@ static inline pid_t pid_nr(struct pid *pid)
 pid_t pid_nr_ns(struct pid *pid, struct pid_namespace *ns);
 
 /**
- * ·µ»ØidËùÊôÃüÃû¿Õ¼äÖĞµÄ¾Ö²¿pid
+ * è¿”å›idæ‰€å±å‘½åç©ºé—´ä¸­çš„å±€éƒ¨pid
  */
 static inline pid_t pid_vnr(struct pid *pid)
 {

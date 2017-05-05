@@ -24,27 +24,27 @@
 
 #include "internal.h"
 
-/*È«¾Ö±äÁ¿£¬ÔÚlinuxÆô¶¯ÆÚ¼äÓÉchrdev_initº¯Êı³õÊ¼»¯,×Ö·ûÉè±¸Á´±í¼ÓÈëµ½´Î±äÁ¿ÖĞ*/
-/*struct kobj_map¶¨ÒåÔÚdrivers/base/map.c*/
+/*å…¨å±€å˜é‡ï¼Œåœ¨linuxå¯åŠ¨æœŸé—´ç”±chrdev_initå‡½æ•°åˆå§‹åŒ–,å­—ç¬¦è®¾å¤‡é“¾è¡¨åŠ å…¥åˆ°æ¬¡å˜é‡ä¸­*/
+/*struct kobj_mapå®šä¹‰åœ¨drivers/base/map.c*/
 static struct kobj_map *cdev_map;
 
 static DEFINE_MUTEX(chrdevs_lock);
 
-/* Éè±¸Çı¶¯ÒªÊ¹ÓÃµÄÉè±¸ºÅ¼ÇÂ¼ÔÚÕâ¸ö chrdevs É¢ÁĞ±íÀï,ÓĞÁËÕâÖÖ¶ÔÉè±¸ºÅÊ¹ÓÃÇé¿öµÄ    ¸ú×Ù£¬ÏµÍ³¾Í¿ÉÒÔ±ÜÃâ²»Í¬µÄÉè±¸Ê¹ÓÃÍ¬Ò»¸öÉè±¸ºÅµÄÇéĞÎ³öÏÖ¡£
- * ËûÊÇÄÚºËÓÃÓÚÉè±¸ºÅ·ÖÅäºÍ¹ÜÀíµÄºËĞÄÔªËØ
- * ¸ÃÉ¢ÁĞ±íÖĞµÄÃ¿Ò»¸öÔªËØÊÇÒ»¸öchar_device_struct ½á¹¹*/
+/* è®¾å¤‡é©±åŠ¨è¦ä½¿ç”¨çš„è®¾å¤‡å·è®°å½•åœ¨è¿™ä¸ª chrdevs æ•£åˆ—è¡¨é‡Œ,æœ‰äº†è¿™ç§å¯¹è®¾å¤‡å·ä½¿ç”¨æƒ…å†µçš„    è·Ÿè¸ªï¼Œç³»ç»Ÿå°±å¯ä»¥é¿å…ä¸åŒçš„è®¾å¤‡ä½¿ç”¨åŒä¸€ä¸ªè®¾å¤‡å·çš„æƒ…å½¢å‡ºç°ã€‚
+ * ä»–æ˜¯å†…æ ¸ç”¨äºè®¾å¤‡å·åˆ†é…å’Œç®¡ç†çš„æ ¸å¿ƒå…ƒç´ 
+ * è¯¥æ•£åˆ—è¡¨ä¸­çš„æ¯ä¸€ä¸ªå…ƒç´ æ˜¯ä¸€ä¸ªchar_device_struct ç»“æ„*/
 static struct char_device_struct {
-	struct char_device_struct *next; //Ö¸ÏòÉ¢ÁĞ³åÍ»Á´±íÖĞµÄÏÂÒ»¸öÔªËØµÄÖ¸Õë
-	unsigned int major;		// Ö÷Éè±¸ºÅ
-	unsigned int baseminor;		// ÆğÊ¼´ÎÉè±¸ºÅ
-	int minorct;			// Éè±¸±àºÅµÄ·¶Î§´óĞ¡
-	char name[64];			// ´¦Àí¸ÃÉè±¸±àºÅ·¶Î§ÄÚµÄÉè±¸Çı¶¯µÄÃû³Æ
+	struct char_device_struct *next; //æŒ‡å‘æ•£åˆ—å†²çªé“¾è¡¨ä¸­çš„ä¸‹ä¸€ä¸ªå…ƒç´ çš„æŒ‡é’ˆ
+	unsigned int major;		// ä¸»è®¾å¤‡å·
+	unsigned int baseminor;		// èµ·å§‹æ¬¡è®¾å¤‡å·
+	int minorct;			// è®¾å¤‡ç¼–å·çš„èŒƒå›´å¤§å°
+	char name[64];			// å¤„ç†è¯¥è®¾å¤‡ç¼–å·èŒƒå›´å†…çš„è®¾å¤‡é©±åŠ¨çš„åç§°
 	struct cdev *cdev;		/* will die */
-	/* Ö¸Ïò×Ö·ûÉè±¸Çı¶¯³ÌĞòÃèÊö·ûµÄÖ¸Õë*/
+	/* æŒ‡å‘å­—ç¬¦è®¾å¤‡é©±åŠ¨ç¨‹åºæè¿°ç¬¦çš„æŒ‡é’ˆ*/
 } *chrdevs[CHRDEV_MAJOR_HASH_SIZE];
 
 /* index in the above */
-/*»ñÈ¡hashË÷Òı¹Ø¼ü×Ö*/
+/*è·å–hashç´¢å¼•å…³é”®å­—*/
 static inline int major_to_index(unsigned major)
 {
 	return major % CHRDEV_MAJOR_HASH_SIZE;
@@ -92,7 +92,7 @@ __register_chrdev_region(unsigned int major, unsigned int baseminor,
 	mutex_lock(&chrdevs_lock);
 
 	/* temporary */
-	/*Ö÷Éè±¸ºÅÎª0,ËµÃ÷Õâ¸öÉè±¸Ã»Ö¸¶¨Éè±¸ºÅ£¬ĞèÒª·ÖÅäÒ»¸ö*/
+	/*ä¸»è®¾å¤‡å·ä¸º0,è¯´æ˜è¿™ä¸ªè®¾å¤‡æ²¡æŒ‡å®šè®¾å¤‡å·ï¼Œéœ€è¦åˆ†é…ä¸€ä¸ª*/
 	if (major == 0) {
 		for (i = ARRAY_SIZE(chrdevs)-1; i > 0; i--) {
 			if (chrdevs[i] == NULL)
@@ -115,10 +115,10 @@ __register_chrdev_region(unsigned int major, unsigned int baseminor,
 	cd->minorct = minorct;
 	strlcpy(cd->name, name, sizeof(cd->name));
 
-	/*¸ù¾İÖ÷Éè±¸ºÅÉú³ÉhashË÷Òı£¬Êµ¼ÊÊÇÖ÷Éè±¸ºÅ³ıÒÔ255µÄÓàÊı*/
+	/*æ ¹æ®ä¸»è®¾å¤‡å·ç”Ÿæˆhashç´¢å¼•ï¼Œå®é™…æ˜¯ä¸»è®¾å¤‡å·é™¤ä»¥255çš„ä½™æ•°*/
 	i = major_to_index(major);
 
-	/*ÕÒÒ»¸öÎ´Õ¼ÓÃµÄÇø¼ä*/
+	/*æ‰¾ä¸€ä¸ªæœªå ç”¨çš„åŒºé—´*/
 	for (cp = &chrdevs[i]; *cp; cp = &(*cp)->next)
 		if ((*cp)->major > major ||
 		    ((*cp)->major == major &&
@@ -185,10 +185,10 @@ __unregister_chrdev_region(unsigned major, unsigned baseminor, int minorct)
  *
  * Return value is zero on success, a negative error code on failure.
  */
- /* ÓÃÓÚ·ÖÅäÖ¸¶¨µÄÉè±¸±àºÅ·¶Î§,Õâ¸öº¯Êı½«Ö¸¶¨Éè±¸ºÅÄÉÈëÄÚºËÉè±¸ºÅ¹ÜÀíÌåÏµÖĞ£¬Èç¹ûÉè±¸ºÅÒÑ±»Ö®Ç°µÄÄ³¸öÉè±¸Ê¹ÓÃÁË£¬µ÷ÓÃÊ§°Ü
-  * @from:±íÊ¾µÄÊÇÒ»¸öÉè±¸ºÅ
-  * @count:Á¬ĞøÉè±¸ºÅµÄ¸öÊı
-  * @name:Éè±¸»òÕßÇı¶¯µÄÃû³Æ
+ /* ç”¨äºåˆ†é…æŒ‡å®šçš„è®¾å¤‡ç¼–å·èŒƒå›´,è¿™ä¸ªå‡½æ•°å°†æŒ‡å®šè®¾å¤‡å·çº³å…¥å†…æ ¸è®¾å¤‡å·ç®¡ç†ä½“ç³»ä¸­ï¼Œå¦‚æœè®¾å¤‡å·å·²è¢«ä¹‹å‰çš„æŸä¸ªè®¾å¤‡ä½¿ç”¨äº†ï¼Œè°ƒç”¨å¤±è´¥
+  * @from:è¡¨ç¤ºçš„æ˜¯ä¸€ä¸ªè®¾å¤‡å·
+  * @count:è¿ç»­è®¾å¤‡å·çš„ä¸ªæ•°
+  * @name:è®¾å¤‡æˆ–è€…é©±åŠ¨çš„åç§°
   */
 int register_chrdev_region(dev_t from, unsigned count, const char *name)
 {
@@ -226,7 +226,7 @@ fail:
  * chosen dynamically, and returned (along with the first minor number)
  * in @dev.  Returns zero or a negative error code.
  */
- /*ÓÃÓÚ¶¯Ì¬ÉêÇëÉè±¸±àºÅ·¶Î§*/
+ /*ç”¨äºåŠ¨æ€ç”³è¯·è®¾å¤‡ç¼–å·èŒƒå›´*/
 int alloc_chrdev_region(dev_t *dev, unsigned baseminor, unsigned count,
 			const char *name)
 {
@@ -270,17 +270,17 @@ int __register_chrdev(unsigned int major, unsigned int baseminor,
 	cd = __register_chrdev_region(major, baseminor, count, name);
 	if (IS_ERR(cd))
 		return PTR_ERR(cd);
-	/*ÉêÇëÒ»¸öcdev¶ÔÏó*/
+	/*ç”³è¯·ä¸€ä¸ªcdevå¯¹è±¡*/
 	cdev = cdev_alloc();
 	if (!cdev)
 		goto out2;
 
 	cdev->owner = fops->owner;
 	cdev->ops = fops;
-	/*ÉèÖÃ×Ö·ûÉè±¸kobj½á¹¹µÄÃû×Ö*/
+	/*è®¾ç½®å­—ç¬¦è®¾å¤‡kobjç»“æ„çš„åå­—*/
 	kobject_set_name(&cdev->kobj, "%s", name);
 		
-	/*cdev²åÈëÁ´±í*/
+	/*cdevæ’å…¥é“¾è¡¨*/
 	err = cdev_add(cdev, MKDEV(cd->major, baseminor), count);
 	if (err)
 		goto out;
@@ -375,24 +375,24 @@ static int chrdev_open(struct inode *inode, struct file *filp)
 
 	spin_lock(&cdev_lock);
 	p = inode->i_cdev;
-	/*Èç¹û×Ö·ûÉè±¸²»´æÔÚ*/
+	/*å¦‚æœå­—ç¬¦è®¾å¤‡ä¸å­˜åœ¨*/
 	if (!p) {
 		struct kobject *kobj;
 		int idx;
 		spin_unlock(&cdev_lock);
-		/*²éÕÒ×Ö·ûÉè±¸µÄkobj½á¹¹*/
+		/*æŸ¥æ‰¾å­—ç¬¦è®¾å¤‡çš„kobjç»“æ„*/
 		kobj = kobj_lookup(cdev_map, inode->i_rdev, &idx);
 		if (!kobj)
 			return -ENXIO;
-		/*»ñµÃcdev¶ÔÏó*/
+		/*è·å¾—cdevå¯¹è±¡*/
 		new = container_of(kobj, struct cdev, kobj);
 		spin_lock(&cdev_lock);
 		/* Check i_cdev again in case somebody beat us to it while
 		   we dropped the lock. */
 		p = inode->i_cdev;
-		/*ÔÙ´Î¼ì²é*/
+		/*å†æ¬¡æ£€æŸ¥*/
 		if (!p) {
-			/*inodeµÄ×Ö·ûÉè±¸Ö¸ÕëÖ¸Ïò·¢ÏÖµÄÉè±¸*/
+			/*inodeçš„å­—ç¬¦è®¾å¤‡æŒ‡é’ˆæŒ‡å‘å‘ç°çš„è®¾å¤‡*/
 			inode->i_cdev = p = new;
 			list_add(&inode->i_devices, &p->list);
 			new = NULL;
@@ -406,13 +406,13 @@ static int chrdev_open(struct inode *inode, struct file *filp)
 		return ret;
 
 	ret = -ENXIO;
-	/*»ñµÃÉè±¸µÄº¯ÊıÖ¸Õë,¶ÔinputÉè±¸À´Ëµ£¬¾ÍÊÇinput_fops*/
+	/*è·å¾—è®¾å¤‡çš„å‡½æ•°æŒ‡é’ˆ,å¯¹inputè®¾å¤‡æ¥è¯´ï¼Œå°±æ˜¯input_fops*/
 	fops = fops_get(p->ops);
 	if (!fops)
 		goto out_cdev_put;
 
 	replace_fops(filp, fops);
-	/*Èç¹ûÇı¶¯³ÌĞòÊµÏÖÁËopenº¯Êı;Õâ¸öopenº¯Êı¾ÍÊÇinputÉè±¸µÄinput_open_file*/
+	/*å¦‚æœé©±åŠ¨ç¨‹åºå®ç°äº†openå‡½æ•°;è¿™ä¸ªopenå‡½æ•°å°±æ˜¯inputè®¾å¤‡çš„input_open_file*/
 	if (filp->f_op->open) {
 		ret = filp->f_op->open(inode, filp);
 		if (ret)
@@ -452,7 +452,7 @@ static void cdev_purge(struct cdev *cdev)
  * is contain the open that then fills in the correct operations
  * depending on the special file...
  */
- /*³õÊ¼»¯inode½á¹¹³ÉÔ±i_fop*/
+ /*åˆå§‹åŒ–inodeç»“æ„æˆå‘˜i_fop*/
 const struct file_operations def_chr_fops = {
 	.open = chrdev_open,
 	.llseek = noop_llseek,
@@ -480,10 +480,10 @@ static int exact_lock(dev_t dev, void *data)
  * cdev_add() adds the device represented by @p to the system, making it
  * live immediately.  A negative error code is returned on failure.
  */
- /* °ÑÒ»¸ö×Ö·ûÉè±¸ÎÄ¼ş¼ÓÈëµ½ÏµÍ³ÖĞ,Éè±¸Çı¶¯³ÌĞòÍ¨¹ı¸Ãº¯Êı°ÑËûËù¹ÜÀíµÄÉè±¸¶ÔÏóµÄÖ¸ÕëÇ¶Èëµ½Ò»¸öÀàĞÍÎªstruct probeµÄ½ÚµãÖĞ£¬È»ºóÔÙ°Ñ½Úµã¼ÓÈëµ½cdev_mapËùÊµÏÖµÄ¹şÏ£Á´±íÖĞ
-  * @p:ÎªÒª¼ÓÈëÏµÍ³µÄ×Ö·ûÉè±¸¶ÔÏóµÄÖ¸Õë
-  * @dev:¸ÃÉè±¸µÄÉè±¸ºÅ
-  * @count:´Ó´ÎÉè±¸ºÅ¿ªÊ¼Á´½ÓµÄÉè±¸ÊıÁ¿
+ /* æŠŠä¸€ä¸ªå­—ç¬¦è®¾å¤‡æ–‡ä»¶åŠ å…¥åˆ°ç³»ç»Ÿä¸­,è®¾å¤‡é©±åŠ¨ç¨‹åºé€šè¿‡è¯¥å‡½æ•°æŠŠä»–æ‰€ç®¡ç†çš„è®¾å¤‡å¯¹è±¡çš„æŒ‡é’ˆåµŒå…¥åˆ°ä¸€ä¸ªç±»å‹ä¸ºstruct probeçš„èŠ‚ç‚¹ä¸­ï¼Œç„¶åå†æŠŠèŠ‚ç‚¹åŠ å…¥åˆ°cdev_mapæ‰€å®ç°çš„å“ˆå¸Œé“¾è¡¨ä¸­
+  * @p:ä¸ºè¦åŠ å…¥ç³»ç»Ÿçš„å­—ç¬¦è®¾å¤‡å¯¹è±¡çš„æŒ‡é’ˆ
+  * @dev:è¯¥è®¾å¤‡çš„è®¾å¤‡å·
+  * @count:ä»æ¬¡è®¾å¤‡å·å¼€å§‹é“¾æ¥çš„è®¾å¤‡æ•°é‡
   */
 int cdev_add(struct cdev *p, dev_t dev, unsigned count)
 {
@@ -491,7 +491,7 @@ int cdev_add(struct cdev *p, dev_t dev, unsigned count)
 
 	p->dev = dev;
 	p->count = count;
-	/*²Ù×÷Ò»¸öÈ«¾Ö±äÁ¿cdev_mapÀ´°ÑÉè±¸(*p)¼ÓÈëµ½ÆäÖĞµÄ¹şÏ£Á´±íÖĞ*/
+	/*æ“ä½œä¸€ä¸ªå…¨å±€å˜é‡cdev_mapæ¥æŠŠè®¾å¤‡(*p)åŠ å…¥åˆ°å…¶ä¸­çš„å“ˆå¸Œé“¾è¡¨ä¸­*/
 	error = kobj_map(cdev_map, dev, count, NULL,
 			 exact_match, exact_lock, p);
 	if (error)

@@ -824,10 +824,10 @@ static struct file *do_filp_open(int dfd, const char *filename, int flags,
 	if ((namei_flags+1) & O_ACCMODE)
 		namei_flags++;
 
-	/* ²éÕÒÎÄ¼şÃû¶ÔÓ¦µÄinode£¬²¢¼ì²é´ò¿ª±êÖ¾ÊÇ·ñºÏ·¨ */
+	/* æŸ¥æ‰¾æ–‡ä»¶åå¯¹åº”çš„inodeï¼Œå¹¶æ£€æŸ¥æ‰“å¼€æ ‡å¿—æ˜¯å¦åˆæ³• */
 	error = open_namei(dfd, filename, namei_flags, mode, &nd);
 	if (!error)
-		/* ³õÊ¼»¯Ô¤¶Á½á¹¹£¬²¢½«ĞÂ´´½¨µÄfileÊµÀıÌí¼Óµ½³¬¼¶¿éµÄÁ´±íÖĞ£¬²¢µ÷ÓÃµ×²ãÎÄ¼şÏµÍ³µÄopen·½·¨ */
+		/* åˆå§‹åŒ–é¢„è¯»ç»“æ„ï¼Œå¹¶å°†æ–°åˆ›å»ºçš„fileå®ä¾‹æ·»åŠ åˆ°è¶…çº§å—çš„é“¾è¡¨ä¸­ï¼Œå¹¶è°ƒç”¨åº•å±‚æ–‡ä»¶ç³»ç»Ÿçš„openæ–¹æ³• */
 		return nameidata_to_filp(&nd, flags);
 
 	return ERR_PTR(error);
@@ -1031,44 +1031,44 @@ EXPORT_SYMBOL(fd_install);
 
 long do_sys_open(int dfd, const char __user *filename, int flags, int mode)
 {
-	/* ´ÓÓÃ»§Ì¬¶ÁÈ¡ÎÄ¼şÃû */
+	/* ä»ç”¨æˆ·æ€è¯»å–æ–‡ä»¶å */
 	char *tmp = getname(filename);
 	int fd = PTR_ERR(tmp);
 
 	if (!IS_ERR(tmp)) {
-		/* ²éÕÒÒ»¸ö¿ÉÓÃµÄÃèÊö·û */
+		/* æŸ¥æ‰¾ä¸€ä¸ªå¯ç”¨çš„æè¿°ç¬¦ */
 		fd = get_unused_fd_flags(flags);
-		if (fd >= 0) {/* ÎÄ¼şÃèÊö·ûÓĞĞ§ */
-			/* ²éÕÒÎÄ¼şµÄinode£¬²¢´ò¿ªËü */
+		if (fd >= 0) {/* æ–‡ä»¶æè¿°ç¬¦æœ‰æ•ˆ */
+			/* æŸ¥æ‰¾æ–‡ä»¶çš„inodeï¼Œå¹¶æ‰“å¼€å®ƒ */
 			struct file *f = do_filp_open(dfd, tmp, flags, mode);
 			if (IS_ERR(f)) {
-				/* Ê§°Üºó·µ»¹ÎÄ¼şÃèÊö·û */
+				/* å¤±è´¥åè¿”è¿˜æ–‡ä»¶æè¿°ç¬¦ */
 				put_unused_fd(fd);
 				fd = PTR_ERR(f);
 			} else {
-				/* ÓÃÓÚfsnotifyÍ¨Öª */
+				/* ç”¨äºfsnotifyé€šçŸ¥ */
 				fsnotify_open(f->f_path.dentry);
-				/* ½«ÎÄ¼ş¾ä±úÓëÎÄ¼ş¹ØÁªÆğÀ´ */
+				/* å°†æ–‡ä»¶å¥æŸ„ä¸æ–‡ä»¶å…³è”èµ·æ¥ */
 				fd_install(fd, f);
 			}
 		}
-		/* ÊÍ·ÅÎÄ¼şÃû */
+		/* é‡Šæ”¾æ–‡ä»¶å */
 		putname(tmp);
 	}
 	return fd;
 }
 
 /**
- * openÏµÍ³µ÷ÓÃ
+ * openç³»ç»Ÿè°ƒç”¨
  */
 asmlinkage long sys_open(const char __user *filename, int flags, int mode)
 {
 	long ret;
 
-	if (force_o_largefile())/* Èç¹ûÊÇ64Î»ÏµÍ³£¬ÔòÇ¿ÖÆÆôÓÃ´óÎÄ¼ş±êÖ¾ */
+	if (force_o_largefile())/* å¦‚æœæ˜¯64ä½ç³»ç»Ÿï¼Œåˆ™å¼ºåˆ¶å¯ç”¨å¤§æ–‡ä»¶æ ‡å¿— */
 		flags |= O_LARGEFILE;
 
-	/* ´ò¿ªÎÄ¼ş */
+	/* æ‰“å¼€æ–‡ä»¶ */
 	ret = do_sys_open(AT_FDCWD, filename, flags, mode);
 	/* avoid REGPARM breakage on x86: */
 	prevent_tail_call(ret);

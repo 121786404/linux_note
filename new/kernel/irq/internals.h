@@ -198,7 +198,7 @@ static inline bool irqd_has_set(struct irq_data *d, unsigned int mask)
 }
 
 #undef __irqd_to_state
-/*用来跟新与中断相关的一些统计量，比如统计某一CPU上中断发生的次数*/
+/*鐢ㄦ潵璺熸柊涓庝腑鏂浉鍏崇殑涓�浜涚粺璁￠噺锛屾瘮濡傜粺璁℃煇涓�CPU涓婁腑鏂彂鐢熺殑娆℃暟*/
 static inline void kstat_incr_irqs_this_cpu(struct irq_desc *desc)
 {
 	__this_cpu_inc(*desc->kstat_irqs);

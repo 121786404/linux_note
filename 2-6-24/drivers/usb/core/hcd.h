@@ -63,7 +63,7 @@
 
 /*-------------------------------------------------------------------------*/
 /**
- * USBÖ÷»ú¿ØÖÆÆ÷½á¹¹¡£
+ * USBä¸»æœºæ§åˆ¶å™¨ç»“æ„ã€‚
  */
 struct usb_hcd {
 
@@ -71,27 +71,27 @@ struct usb_hcd {
 	 * housekeeping
 	 */
 	/**
-	 * Ö÷»ú¿ØÖÆÆ÷±¾ÉíÒ²»áÁ¬½Ó³öÒ»ÌõUSB×ÜÏß¡£
+	 * ä¸»æœºæ§åˆ¶å™¨æœ¬èº«ä¹Ÿä¼šè¿æ¥å‡ºä¸€æ¡USBæ€»çº¿ã€‚
 	 */
 	struct usb_bus		self;		/* hcd is-a bus */
 	/**
-	 * ÒıÓÃ¼ÆÊı¡£Ïà¹Øº¯ÊıÊÇhcd_release¡¢usb_get_hcd¡¢usb_put_hcd¡£
+	 * å¼•ç”¨è®¡æ•°ã€‚ç›¸å…³å‡½æ•°æ˜¯hcd_releaseã€usb_get_hcdã€usb_put_hcdã€‚
 	 */
 	struct kref		kref;		/* reference counter */
 
 	/**
-	 * ¿ØÖÆÆ÷²úÆ·ÃèÊö·û¡£
+	 * æ§åˆ¶å™¨äº§å“æè¿°ç¬¦ã€‚
 	 */
 	const char		*product_desc;	/* product/vendor string */
 	/**
-	 * Çı¶¯Ãû³Æ+×ÜÏß±àºÅÕâÑùµÄ×Ö·û´®¡£
+	 * é©±åŠ¨åç§°+æ€»çº¿ç¼–å·è¿™æ ·çš„å­—ç¬¦ä¸²ã€‚
 	 */
 	char			irq_descr[24];	/* driver + bus # */
 
 	struct timer_list	rh_timer;	/* drives root-hub polling */
 	struct urb		*status_urb;	/* the current status urb */
 	/**
-	 * Ô¶³Ì»½ĞÑÊ¹ÓÃµÄ¹¤×÷ÈÎÎñ¡£
+	 * è¿œç¨‹å”¤é†’ä½¿ç”¨çš„å·¥ä½œä»»åŠ¡ã€‚
 	 */
 #ifdef CONFIG_PM
 	struct work_struct	wakeup_work;	/* for remote wakeup */
@@ -101,7 +101,7 @@ struct usb_hcd {
 	 * hardware info/state
 	 */
 	/**
-	 * ÃèÊöÖ÷»ú¿ØÖÆÆ÷¡£±ÈÈç¾ßÌå¿ØÖÆÆ÷µÄ»Øµ÷º¯Êı¡£
+	 * æè¿°ä¸»æœºæ§åˆ¶å™¨ã€‚æ¯”å¦‚å…·ä½“æ§åˆ¶å™¨çš„å›è°ƒå‡½æ•°ã€‚
 	 */
 	const struct hc_driver	*driver;	/* hw-specific hooks */
 
@@ -111,7 +111,7 @@ struct usb_hcd {
 #define HCD_FLAG_SAW_IRQ	0x00000002
 
 	/**
-	 * ÒÔÏÂ±êÖ¾ÊÇÓÃÓÚRoot HUBµÄ¡£
+	 * ä»¥ä¸‹æ ‡å¿—æ˜¯ç”¨äºRoot HUBçš„ã€‚
 	 */
 	unsigned		rh_registered:1;/* is root hub registered? */
 
@@ -121,32 +121,32 @@ struct usb_hcd {
 	unsigned		poll_rh:1;	/* poll for rh status? */
 	unsigned		poll_pending:1;	/* status has changed? */
 	/**
-	 * ÎŞÏßHCD¡£
+	 * æ— çº¿HCDã€‚
 	 */
 	unsigned		wireless:1;	/* Wireless USB HCD */
 	unsigned		authorized_default:1;
 
 	/**
-	 * ÒÔÏÂ¼¸¸ö×Ö¶ÎÓëPCIÏà¹Ø£¬irqÊÇHCDÓÃµ½µÄÖĞ¶ÏºÅ¡£
+	 * ä»¥ä¸‹å‡ ä¸ªå­—æ®µä¸PCIç›¸å…³ï¼Œirqæ˜¯HCDç”¨åˆ°çš„ä¸­æ–­å·ã€‚
 	 */
 	int			irq;		/* irq allocated */
 	/**
-	 * Éè±¸IOÄÚ´æ¡£µ÷ÓÃioremap_nocacheÓ³ÉäºóµÄÄÚ´æµØÖ·¡£
+	 * è®¾å¤‡IOå†…å­˜ã€‚è°ƒç”¨ioremap_nocacheæ˜ å°„åçš„å†…å­˜åœ°å€ã€‚
 	 */
 	void __iomem		*regs;		/* device memory/io */
 	/**
-	 * ´ÓPCI±íÖĞ¶Á³öµÄÖ÷»ú¿ØÖÆÆ÷µÄIO¶Ë¿Ú»òÄÚ´æµÄÊ×µØÖ·ºÍ³¤¶È¡£
+	 * ä»PCIè¡¨ä¸­è¯»å‡ºçš„ä¸»æœºæ§åˆ¶å™¨çš„IOç«¯å£æˆ–å†…å­˜çš„é¦–åœ°å€å’Œé•¿åº¦ã€‚
 	 */
 	u64			rsrc_start;	/* memory/io resource start */
 	u64			rsrc_len;	/* memory/io resource length */
 	/**
-	 * ÄÜ¹»Ìá¹©µÄµçÁ÷¡£
+	 * èƒ½å¤Ÿæä¾›çš„ç”µæµã€‚
 	 */
 	unsigned		power_budget;	/* in mA, 0 = no limit */
 
 #define HCD_BUFFER_POOLS	4
 	/**
-	 * 4¸öDMA³Ø¡£
+	 * 4ä¸ªDMAæ± ã€‚
 	 */
 	struct dma_pool		*pool [HCD_BUFFER_POOLS];
 
@@ -198,15 +198,15 @@ struct hcd_timeout {	/* timeouts we allocate */
 
 struct hc_driver {
 	/**
-	 * Çı¶¯Æ÷Ãû³Æ¡£
+	 * é©±åŠ¨å™¨åç§°ã€‚
 	 */
 	const char	*description;	/* "ehci-hcd" etc */
 	/**
-	 * Óëusc_hcdÖĞµÄÃèÊö×Ö·û´®ÊÇÒ»ÑùµÄ¡£
+	 * ä¸usc_hcdä¸­çš„æè¿°å­—ç¬¦ä¸²æ˜¯ä¸€æ ·çš„ã€‚
 	 */
 	const char	*product_desc;	/* product/vendor string */
 	/**
-	 * Ë½ÓĞÊı¾İÇøµÄ³¤¶È¡£
+	 * ç§æœ‰æ•°æ®åŒºçš„é•¿åº¦ã€‚
 	 */
 	size_t		hcd_priv_size;	/* size of private data */
 
@@ -214,7 +214,7 @@ struct hc_driver {
 	irqreturn_t	(*irq) (struct usb_hcd *hcd);
 
 	/**
-	 * HCDµÄ±êÖ¾¡£ÈçHCD_MEMORY¡£
+	 * HCDçš„æ ‡å¿—ã€‚å¦‚HCD_MEMORYã€‚
 	 */
 	int	flags;
 #define	HCD_MEMORY	0x0001		/* HC regs use memory (else I/O) */
@@ -419,7 +419,7 @@ extern void usb_set_device_state(struct usb_device *udev,
 
 /* exported only within usbcore */
 
-/* ÏµÍ³ÖĞËùÓĞusb×ÜÏßµÄÈ«¾ÖÁ´±í */
+/* ç³»ç»Ÿä¸­æ‰€æœ‰usbæ€»çº¿çš„å…¨å±€é“¾è¡¨ */
 extern struct list_head usb_bus_list;
 extern struct mutex usb_bus_list_lock;
 extern wait_queue_head_t usb_kill_urb_queue;

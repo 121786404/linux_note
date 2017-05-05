@@ -294,9 +294,9 @@ int show_unhandled_signals = 1;
  *	bit 4 == 1 means fault was an instruction fetch
  */
 /**
- * È±Ò³Òì³£´¦Àí³ÌĞò
- * regs:È±Ò³Ê±µÄ¼Ä´æÆ÷ÏÖ³¡
- * error_code:0Î»-È±Ò³»ò±£»¤Òì³££¬1-¶Á·ÃÎÊÔì³ÉµÄÒì³££¬2-ÄÚºËÌ¬£¬3-Ê¹ÓÃÁË±£ÁôÎ»£¬4-È¡Ö¸Òì³£
+ * ç¼ºé¡µå¼‚å¸¸å¤„ç†ç¨‹åº
+ * regs:ç¼ºé¡µæ—¶çš„å¯„å­˜å™¨ç°åœº
+ * error_code:0ä½-ç¼ºé¡µæˆ–ä¿æŠ¤å¼‚å¸¸ï¼Œ1-è¯»è®¿é—®é€ æˆçš„å¼‚å¸¸ï¼Œ2-å†…æ ¸æ€ï¼Œ3-ä½¿ç”¨äº†ä¿ç•™ä½ï¼Œ4-å–æŒ‡å¼‚å¸¸
  */
 fastcall void __kprobes do_page_fault(struct pt_regs *regs,
 				      unsigned long error_code)
@@ -314,7 +314,7 @@ fastcall void __kprobes do_page_fault(struct pt_regs *regs,
 	trace_hardirqs_fixup();
 
 	/* get the address */
-	/* È±Ò³Ê±µÄÒì³£µØÖ· */
+	/* ç¼ºé¡µæ—¶çš„å¼‚å¸¸åœ°å€ */
         address = read_cr2();
 
 	tsk = current;
@@ -334,12 +334,12 @@ fastcall void __kprobes do_page_fault(struct pt_regs *regs,
 	 * (error_code & 4) == 0, and that the fault was not a
 	 * protection error (error_code & 9) == 0.
 	 */
-	/* ³¬³öÁËÓÃ»§Ì¬µØÖ··¶Î§£¬¿ÉÄÜÊÇÄÚºËÌ¬vmallocÇøÓòµÄÒì³£ */
+	/* è¶…å‡ºäº†ç”¨æˆ·æ€åœ°å€èŒƒå›´ï¼Œå¯èƒ½æ˜¯å†…æ ¸æ€vmallocåŒºåŸŸçš„å¼‚å¸¸ */
 	if (unlikely(address >= TASK_SIZE)) {
-		/* vmalloc_fault½«½ø³ÌÒ³±íÓëÄÚºËµÄÖ÷Ò³±íÖĞµÄĞÅÏ¢½øĞĞÍ¬²½ */
-		if (!(error_code & 0x0000000d) && vmalloc_fault(address) >= 0)/* È·±£²»ÊÇÔÚÄÚºËÌ¬µÄ±£»¤ĞÔ´íÎó */
+		/* vmalloc_faultå°†è¿›ç¨‹é¡µè¡¨ä¸å†…æ ¸çš„ä¸»é¡µè¡¨ä¸­çš„ä¿¡æ¯è¿›è¡ŒåŒæ­¥ */
+		if (!(error_code & 0x0000000d) && vmalloc_fault(address) >= 0)/* ç¡®ä¿ä¸æ˜¯åœ¨å†…æ ¸æ€çš„ä¿æŠ¤æ€§é”™è¯¯ */
 			return;
-		/* Í¨Öªkprobe´¦Àí */
+		/* é€šçŸ¥kprobeå¤„ç† */
 		if (notify_page_fault(regs))
 			return;
 		/*
@@ -363,7 +363,7 @@ fastcall void __kprobes do_page_fault(struct pt_regs *regs,
 	 * If we're in an interrupt, have no user context or are running in an
 	 * atomic region then we must not take the fault..
 	 */
-	if (in_atomic() || !mm)/* ÔÚÖĞ¶Ï»òÔ­×Ó×´Ì¬ÏÂ£¬»òÕßÊÇÄÚºËÏß³Ì¡£´ËÊ±²»ÔÊĞí·ÃÎÊÓÃ»§Ì¬ÄÚÈİ£¬Òì³£ */
+	if (in_atomic() || !mm)/* åœ¨ä¸­æ–­æˆ–åŸå­çŠ¶æ€ä¸‹ï¼Œæˆ–è€…æ˜¯å†…æ ¸çº¿ç¨‹ã€‚æ­¤æ—¶ä¸å…è®¸è®¿é—®ç”¨æˆ·æ€å†…å®¹ï¼Œå¼‚å¸¸ */
 		goto bad_area_nosemaphore;
 
 	/* When running in the kernel we expect faults to occur only to
@@ -388,26 +388,26 @@ fastcall void __kprobes do_page_fault(struct pt_regs *regs,
 		down_read(&mm->mmap_sem);
 	}
 
-	/* ²»ÊÇÖĞ¶ÏÉÏÏÂÎÄ£¬Ò²ÓĞ×Ô¼ºµÄÉÏÏÂÎÄ£¬Ôò²éÕÒ½ø³ÌµÄµØÖ· */
+	/* ä¸æ˜¯ä¸­æ–­ä¸Šä¸‹æ–‡ï¼Œä¹Ÿæœ‰è‡ªå·±çš„ä¸Šä¸‹æ–‡ï¼Œåˆ™æŸ¥æ‰¾è¿›ç¨‹çš„åœ°å€ */
 	vma = find_vma(mm, address);
-	if (!vma)/* ´íÎóµØÖ· */
+	if (!vma)/* é”™è¯¯åœ°å€ */
 		goto bad_area;
-	if (vma->vm_start <= address)/* ÓĞĞ§µØÖ·¿Õ¼ä */
+	if (vma->vm_start <= address)/* æœ‰æ•ˆåœ°å€ç©ºé—´ */
 		goto good_area;
-	/* Òì³£µØÖ·Ö®ºóÓĞÒ»¸övmaÇøÓò£¬µ«ÊÇÒì³£µØÖ·Ã»ÓĞ°üº¬ÔÚ¸ÃÇøÓòÄÚ */
-	if (!(vma->vm_flags & VM_GROWSDOWN))/* ÅĞ¶Ï¸ÃÇøÓòÊÇ·ñÎªÏòÏÂÀ©Õ¹µÄ¶ÑÕ» */
+	/* å¼‚å¸¸åœ°å€ä¹‹åæœ‰ä¸€ä¸ªvmaåŒºåŸŸï¼Œä½†æ˜¯å¼‚å¸¸åœ°å€æ²¡æœ‰åŒ…å«åœ¨è¯¥åŒºåŸŸå†… */
+	if (!(vma->vm_flags & VM_GROWSDOWN))/* åˆ¤æ–­è¯¥åŒºåŸŸæ˜¯å¦ä¸ºå‘ä¸‹æ‰©å±•çš„å †æ ˆ */
 		goto bad_area;
-	if (error_code & 4) {/* È±Ò³Òì³££¬ÅĞ¶ÏÊÇ·ñ¿ÉÒÔÀ©Õ¹¶ÑÕ» */
+	if (error_code & 4) {/* ç¼ºé¡µå¼‚å¸¸ï¼Œåˆ¤æ–­æ˜¯å¦å¯ä»¥æ‰©å±•å †æ ˆ */
 		/*
 		 * Accessing the stack below %esp is always a bug.
 		 * The large cushion allows instructions like enter
 		 * and pusha to work.  ("enter $65535,$31" pushes
 		 * 32 pointers and then decrements %esp by 65535.)
 		 */
-		if (address + 65536 + 32 * sizeof(unsigned long) < regs->esp)/* µØÖ·Ì«Ğ¡£¬²»¿ÉÄÜÊÇ·ÃÎÊ¶ÑÕ»Ôì³ÉµÄ */
+		if (address + 65536 + 32 * sizeof(unsigned long) < regs->esp)/* åœ°å€å¤ªå°ï¼Œä¸å¯èƒ½æ˜¯è®¿é—®å †æ ˆé€ æˆçš„ */
 			goto bad_area;
 	}
-	/* ÊÔÍ¼À©Õ¹¶ÑÕ» */
+	/* è¯•å›¾æ‰©å±•å †æ ˆ */
 	if (expand_stack(vma, address))
 		goto bad_area;
 /*
@@ -415,23 +415,23 @@ fastcall void __kprobes do_page_fault(struct pt_regs *regs,
  * we can handle it..
  */
 good_area:
-	/* ÔËĞĞµ½ÕâÀï£¬ËµÃ÷·ÃÎÊµÄµØÖ·Çø¼äÊÇÕı³£µÄ */
+	/* è¿è¡Œåˆ°è¿™é‡Œï¼Œè¯´æ˜è®¿é—®çš„åœ°å€åŒºé—´æ˜¯æ­£å¸¸çš„ */
 	si_code = SEGV_ACCERR;
 	write = 0;
 	switch (error_code & 3) {
 		default:	/* 3: write, present */
 				/* fall through */
 		case 2:		/* write, not present */
-			/* ´íÎó´úÂëÎª2¡¢3£¬ËµÃ÷ÊÇĞ´Ôì³ÉµÄÒì³£ */
-			if (!(vma->vm_flags & VM_WRITE))/* Ïà¹ØÇøÓò²»ÔÊĞíĞ´ */
+			/* é”™è¯¯ä»£ç ä¸º2ã€3ï¼Œè¯´æ˜æ˜¯å†™é€ æˆçš„å¼‚å¸¸ */
+			if (!(vma->vm_flags & VM_WRITE))/* ç›¸å…³åŒºåŸŸä¸å…è®¸å†™ */
 				goto bad_area;
 			write++;
 			break;
 		case 1:		/* read, present */
-			/* ¶ÁÒıÆğµÄÒì³££¬²¢ÇÒÏà¹ØµÄpteÓĞĞ§¡£¿ÉÄÜÊÇÓÃ»§·ÃÎÊÁË±£»¤Ò³£¬Òì³£ */
+			/* è¯»å¼•èµ·çš„å¼‚å¸¸ï¼Œå¹¶ä¸”ç›¸å…³çš„pteæœ‰æ•ˆã€‚å¯èƒ½æ˜¯ç”¨æˆ·è®¿é—®äº†ä¿æŠ¤é¡µï¼Œå¼‚å¸¸ */
 			goto bad_area;
 		case 0:		/* read, not present */
-			if (!(vma->vm_flags & (VM_READ | VM_EXEC | VM_WRITE)))/* ÅĞ¶ÏvmaÊÇ·ñÔÊĞí¶Á */
+			if (!(vma->vm_flags & (VM_READ | VM_EXEC | VM_WRITE)))/* åˆ¤æ–­vmaæ˜¯å¦å…è®¸è¯» */
 				goto bad_area;
 	}
 
@@ -441,16 +441,16 @@ good_area:
 	 * make sure we exit gracefully rather than endlessly redo
 	 * the fault.
 	 */ 
-	/* ÔËĞĞµ½ÕâÀï£¬ËµÃ÷ÓÃ»§·ÃÎÊµÄÇøÓòÊÇÓĞĞ§µÄ£¬½ö½öÊÇÄÚºË»¹Ã»ÓĞ×¼±¸ºÃÒ³±í */
-	fault = handle_mm_fault(mm, vma, address, write);/* ´¦ÀíÈ±Ò³ */
-	if (unlikely(fault & VM_FAULT_ERROR)) {/* ÓÉÓÚÌØ¶¨µÄÒì³£Ôì³ÉÎŞ·¨´¦ÀíÈ±Ò³ */
-		if (fault & VM_FAULT_OOM)/* Ã»ÓĞÄÚ´æÁË */
+	/* è¿è¡Œåˆ°è¿™é‡Œï¼Œè¯´æ˜ç”¨æˆ·è®¿é—®çš„åŒºåŸŸæ˜¯æœ‰æ•ˆçš„ï¼Œä»…ä»…æ˜¯å†…æ ¸è¿˜æ²¡æœ‰å‡†å¤‡å¥½é¡µè¡¨ */
+	fault = handle_mm_fault(mm, vma, address, write);/* å¤„ç†ç¼ºé¡µ */
+	if (unlikely(fault & VM_FAULT_ERROR)) {/* ç”±äºç‰¹å®šçš„å¼‚å¸¸é€ æˆæ— æ³•å¤„ç†ç¼ºé¡µ */
+		if (fault & VM_FAULT_OOM)/* æ²¡æœ‰å†…å­˜äº† */
 			goto out_of_memory;
-		else if (fault & VM_FAULT_SIGBUS)/* Ææ¹ÖµÄ´íÎó£¬ÀıÈçÒª·ÃÎÊµÄÎÄ¼şÒÑ¾­±»ÊÕËõ£¬ÏòÓÃ»§·¢ËÍĞÅºÅ */
+		else if (fault & VM_FAULT_SIGBUS)/* å¥‡æ€ªçš„é”™è¯¯ï¼Œä¾‹å¦‚è¦è®¿é—®çš„æ–‡ä»¶å·²ç»è¢«æ”¶ç¼©ï¼Œå‘ç”¨æˆ·å‘é€ä¿¡å· */
 			goto do_sigbus;
 		BUG();
 	}
-	if (fault & VM_FAULT_MAJOR)/* ¸ù¾İ±¾´ÎÒì³£ÊÇ´Ó¿éÉè±¸ÖĞ¶ÁÈ¡Êı¾İ»¹ÊÇ´ÓÄÚ´æÖĞ¶ÁÈ¡Êı¾İ£¬À´¶ÔÒì³£È±Ò³½øĞĞÍ³¼Æ */
+	if (fault & VM_FAULT_MAJOR)/* æ ¹æ®æœ¬æ¬¡å¼‚å¸¸æ˜¯ä»å—è®¾å¤‡ä¸­è¯»å–æ•°æ®è¿˜æ˜¯ä»å†…å­˜ä¸­è¯»å–æ•°æ®ï¼Œæ¥å¯¹å¼‚å¸¸ç¼ºé¡µè¿›è¡Œç»Ÿè®¡ */
 		tsk->maj_flt++;
 	else
 		tsk->min_flt++;
@@ -458,12 +458,12 @@ good_area:
 	/*
 	 * Did it hit the DOS screen memory VA from vm86 mode?
 	 */
-	if (regs->eflags & VM_MASK) {/* ÕâÀïÊÇ´¦ÀíÊµÄ£Ê½³ÌĞò£¬ÂÔ¹ı */
+	if (regs->eflags & VM_MASK) {/* è¿™é‡Œæ˜¯å¤„ç†å®æ¨¡å¼ç¨‹åºï¼Œç•¥è¿‡ */
 		unsigned long bit = (address - 0xA0000) >> PAGE_SHIFT;
 		if (bit < 32)
 			tsk->thread.screen_bitmap |= 1 << bit;
 	}
-	up_read(&mm->mmap_sem);/* ÊÍ·ÅmmapĞÅºÅÁ¿ */
+	up_read(&mm->mmap_sem);/* é‡Šæ”¾mmapä¿¡å·é‡ */
 	return;
 
 /*
@@ -475,11 +475,11 @@ bad_area:
 
 bad_area_nosemaphore:
 	/* User mode accesses just cause a SIGSEGV */
-	if (error_code & 4) {/* Òì³£À´×ÔÓÚÓÃ»§Ì¬ */
+	if (error_code & 4) {/* å¼‚å¸¸æ¥è‡ªäºç”¨æˆ·æ€ */
 		/*
 		 * It's possible to have interrupts off here.
 		 */
-		local_irq_enable();/* Ç¿ÖÆ´ò¿ªÖĞ¶Ï */
+		local_irq_enable();/* å¼ºåˆ¶æ‰“å¼€ä¸­æ–­ */
 
 		/* 
 		 * Valid to do another page fault here because this one came 
@@ -489,7 +489,7 @@ bad_area_nosemaphore:
 			return;
 
 		if (show_unhandled_signals && unhandled_signal(tsk, SIGSEGV) &&
-		    printk_ratelimit()) {/* ÓÃ»§Ã»ÓĞ´¦Àí¶Î´íÎó£¬ÕâÀï´òÓ¡¾¯¸æ */
+		    printk_ratelimit()) {/* ç”¨æˆ·æ²¡æœ‰å¤„ç†æ®µé”™è¯¯ï¼Œè¿™é‡Œæ‰“å°è­¦å‘Š */
 			printk("%s%s[%d]: segfault at %08lx eip %08lx "
 			    "esp %08lx error %lx\n",
 			    task_pid_nr(tsk) > 1 ? KERN_INFO : KERN_EMERG,
@@ -500,7 +500,7 @@ bad_area_nosemaphore:
 		/* Kernel addresses are always protection faults */
 		tsk->thread.error_code = error_code | (address >= TASK_SIZE);
 		tsk->thread.trap_no = 14;
-		/* Ç¿ÖÆÏò½ø³Ì·¢ËÍ¶Î´íÎóĞÅºÅ */
+		/* å¼ºåˆ¶å‘è¿›ç¨‹å‘é€æ®µé”™è¯¯ä¿¡å· */
 		force_sig_info_fault(SIGSEGV, si_code, address, tsk);
 		return;
 	}
@@ -521,9 +521,9 @@ bad_area_nosemaphore:
 	}
 #endif
 
-no_context:/* ÔËĞĞµ½ÕâÀï£¬ËµÃ÷ÊÇÄÚºËÌ¬²úÉúÁËÒì³££¬Ã»ÓĞ½ø³ÌÉÏÏÂÎÄ */
+no_context:/* è¿è¡Œåˆ°è¿™é‡Œï¼Œè¯´æ˜æ˜¯å†…æ ¸æ€äº§ç”Ÿäº†å¼‚å¸¸ï¼Œæ²¡æœ‰è¿›ç¨‹ä¸Šä¸‹æ–‡ */
 	/* Are we prepared to handle this kernel fault?  */
-	/* Òì³£·¢ÉúÔÚÄÚºËÌ¬£¬Ê×ÏÈ³¢ÊÔÓÃÒì³£ĞŞ¸´±íĞŞ¸´ */
+	/* å¼‚å¸¸å‘ç”Ÿåœ¨å†…æ ¸æ€ï¼Œé¦–å…ˆå°è¯•ç”¨å¼‚å¸¸ä¿®å¤è¡¨ä¿®å¤ */
 	if (fixup_exception(regs))
 		return;
 
@@ -532,7 +532,7 @@ no_context:/* ÔËĞĞµ½ÕâÀï£¬ËµÃ÷ÊÇÄÚºËÌ¬²úÉúÁËÒì³££¬Ã»ÓĞ½ø³ÌÉÏÏÂÎÄ */
 	 * had been triggered by is_prefetch fixup_exception would have 
 	 * handled it.
 	 */
-	/* Ä³Ğ©CPU»áÔÚÔ¤È¡Ê±·¢Éú¶Î´íÎó£¬ÕâÊµ¼ÊÉÏ²¢²»ÊÇ´íÎó */
+	/* æŸäº›CPUä¼šåœ¨é¢„å–æ—¶å‘ç”Ÿæ®µé”™è¯¯ï¼Œè¿™å®é™…ä¸Šå¹¶ä¸æ˜¯é”™è¯¯ */
  	if (is_prefetch(regs, address, error_code))
  		return;
 
@@ -541,7 +541,7 @@ no_context:/* ÔËĞĞµ½ÕâÀï£¬ËµÃ÷ÊÇÄÚºËÌ¬²úÉúÁËÒì³££¬Ã»ÓĞ½ø³ÌÉÏÏÂÎÄ */
  * terminate things with extreme prejudice.
  */
 
-	/* ÔËĞĞµ½ÕâÀï£¬ËµÃ÷ÕæÕı´íÎóÁË£¬´òÓ¡Ò»Ğ©´íÎóĞÅÏ¢£¬ÓÃÓÚµ÷ÊÔ */
+	/* è¿è¡Œåˆ°è¿™é‡Œï¼Œè¯´æ˜çœŸæ­£é”™è¯¯äº†ï¼Œæ‰“å°ä¸€äº›é”™è¯¯ä¿¡æ¯ï¼Œç”¨äºè°ƒè¯• */
 	bust_spinlocks(1);
 
 	if (oops_may_print()) {

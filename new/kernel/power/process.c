@@ -39,16 +39,16 @@ static int try_to_freeze_tasks(bool user_only)
 
 	end_time = jiffies + msecs_to_jiffies(freeze_timeout_msecs);
 
-    // (4.1) Èç¹ûÊÇ kernel freeze£¬
-    // Í£¹¤ÓĞ WQ_FREEZABLE ±êÖ¾µÄ workqueue
-    // ½« wq µÄ pwq->max_active ÉèÖÃ³É 0£¬ĞÂµÄ work ²»ÄÜ±»Ö´ĞĞ
+    // (4.1) å¦‚æœæ˜¯ kernel freezeï¼Œ
+    // åœå·¥æœ‰ WQ_FREEZABLE æ ‡å¿—çš„ workqueue
+    // å°† wq çš„ pwq->max_active è®¾ç½®æˆ 0ï¼Œæ–°çš„ work ä¸èƒ½è¢«æ‰§è¡Œ
 	if (!user_only)
 		freeze_workqueues_begin();
 
 	while (true) {
 		todo = 0;
 		read_lock(&tasklist_lock);
-        // (4.2) ¶ÔÃ¿¸ö½ø³ÌÖ´ĞĞ freeze_task()
+        // (4.2) å¯¹æ¯ä¸ªè¿›ç¨‹æ‰§è¡Œ freeze_task()
 		for_each_process_thread(g, p) {
 			if (p == current || !freeze_task(p))
 				continue;
@@ -58,8 +58,8 @@ static int try_to_freeze_tasks(bool user_only)
 		}
 		read_unlock(&tasklist_lock);
 
-        // (4.3) Èç¹ûÊÇ kernel freeze£¬
-		// ÅĞ¶ÏÍ£¹¤µÄ workqueue ÖĞ²ĞÁôµÄ work ÓĞÃ»ÓĞÖ´ĞĞÍê
+        // (4.3) å¦‚æœæ˜¯ kernel freezeï¼Œ
+		// åˆ¤æ–­åœå·¥çš„ workqueue ä¸­æ®‹ç•™çš„ work æœ‰æ²¡æœ‰æ‰§è¡Œå®Œ
 		if (!user_only) {
 			wq_busy = freeze_workqueues_busy();
 			todo += wq_busy;
@@ -131,18 +131,18 @@ int freeze_processes(void)
 		return error;
 
 	/* Make sure this task doesn't get frozen */
-    // (1) ÖÃÎ» PF_SUSPEND_TASK£¬È·±£µ±Ç°½ø³Ì²»»á±» freeze
+    // (1) ç½®ä½ PF_SUSPEND_TASKï¼Œç¡®ä¿å½“å‰è¿›ç¨‹ä¸ä¼šè¢« freeze
 	current->flags |= PF_SUSPEND_TASK;
-    // (2) Ê¹ÓÃÈ«¾Ö freeze ±êÖ¾ system_freezing_cnt
+    // (2) ä½¿ç”¨å…¨å±€ freeze æ ‡å¿— system_freezing_cnt
 	if (!pm_freezing)
 		atomic_inc(&system_freezing_cnt);
 
 	pm_wakeup_clear();
 	pr_info("Freezing user space processes ... ");
-    // (3) Ê¹ÓÃÓÃ»§½ø³Ì freeze ±êÖ¾ pm_freezing
+    // (3) ä½¿ç”¨ç”¨æˆ·è¿›ç¨‹ freeze æ ‡å¿— pm_freezing
 	pm_freezing = true;
-    // (4) freeze user_only ½ø³Ì
-    // ÅĞ¶Ï½ø³ÌÊÇ·ñ¿ÉÒÔ±» freeze£¬»½ĞÑ½ø³Ì freeze ×Ô¼º
+    // (4) freeze user_only è¿›ç¨‹
+    // åˆ¤æ–­è¿›ç¨‹æ˜¯å¦å¯ä»¥è¢« freezeï¼Œå”¤é†’è¿›ç¨‹ freeze è‡ªå·±
 	error = try_to_freeze_tasks(true);
 	if (!error) {
 		__usermodehelper_set_disable_depth(UMH_DISABLED);

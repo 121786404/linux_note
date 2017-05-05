@@ -357,7 +357,7 @@ EXPORT_SYMBOL_GPL(platform_device_add_properties);
  * This is part 2 of platform_device_register(), though may be called
  * separately _iff_ pdev was allocated by platform_device_alloc().
  */
- /*×¢²áÉè±¸*/
+ /*æ³¨å†Œè®¾å¤‡*/
 int platform_device_add(struct platform_device *pdev)
 {
 	int i, ret;
@@ -365,14 +365,14 @@ int platform_device_add(struct platform_device *pdev)
 	if (!pdev)
 		return -EINVAL;
 
-	/*Èç¹ûÃ»¸¸Éè±¸£¬¾ÍÉèÖÃplatform_busÎª¸¸Éè±¸*/
+	/*å¦‚æœæ²¡çˆ¶è®¾å¤‡ï¼Œå°±è®¾ç½®platform_busä¸ºçˆ¶è®¾å¤‡*/
 	if (!pdev->dev.parent)
 		pdev->dev.parent = &platform_bus;
 
-	/*ÉèÖÃÉè±¸µÄbusÎªplatform_bus_type*/
+	/*è®¾ç½®è®¾å¤‡çš„busä¸ºplatform_bus_type*/
 	pdev->dev.bus = &platform_bus_type;
 
-	/*ÉèÖÃÉè±¸µÄÃû×Ö*/
+	/*è®¾ç½®è®¾å¤‡çš„åå­—*/
 	switch (pdev->id) {
 	default:
 		dev_set_name(&pdev->dev, "%s.%d", pdev->name,  pdev->id);
@@ -394,7 +394,7 @@ int platform_device_add(struct platform_device *pdev)
 		dev_set_name(&pdev->dev, "%s.%d.auto", pdev->name, pdev->id);
 		break;
 	}
-	/*°ÉÉè±¸I/O¶Ë¿ÚºÍI/OÄÚ´æ×ÊÔ´×¢²áµ½ÏµÍ³*/
+	/*å§è®¾å¤‡I/Oç«¯å£å’ŒI/Oå†…å­˜èµ„æºæ³¨å†Œåˆ°ç³»ç»Ÿ*/
 	for (i = 0; i < pdev->num_resources; i++) {
 		struct resource *p, *r = &pdev->resource[i];
 
@@ -419,7 +419,7 @@ int platform_device_add(struct platform_device *pdev)
 	pr_debug("Registering platform device '%s'. Parent at %s\n",
 		 dev_name(&pdev->dev), dev_name(pdev->dev.parent));
 
-	/*Ôö¼ÓÒ»¸öÉè±¸¶ÔÏó*/
+	/*å¢åŠ ä¸€ä¸ªè®¾å¤‡å¯¹è±¡*/
 	ret = device_add(&pdev->dev);
 	if (ret == 0)
 		return ret;
@@ -629,9 +629,9 @@ static void platform_drv_shutdown(struct device *_dev)
  * @drv: platform driver structure
  * @owner: owning module/driver
  */
- /* º¯Êı°ÑÇı¶¯µÄ×ÜÏßÉèÖÃÎªplatform×ÜÏß,
-  * È»ºóÒÀ´ÎÉèÖÃÇı¶¯µÄ¸÷¸öº¯ÊıÖ¸Õë
-  * ×îºóµ÷ÓÃdriver_registerº¯Êı×¢²áÇı¶¯
+ /* å‡½æ•°æŠŠé©±åŠ¨çš„æ€»çº¿è®¾ç½®ä¸ºplatformæ€»çº¿,
+  * ç„¶åä¾æ¬¡è®¾ç½®é©±åŠ¨çš„å„ä¸ªå‡½æ•°æŒ‡é’ˆ
+  * æœ€åè°ƒç”¨driver_registerå‡½æ•°æ³¨å†Œé©±åŠ¨
   */
 int __platform_driver_register(struct platform_driver *drv,
 				struct module *owner)
@@ -1147,7 +1147,7 @@ struct bus_type platform_bus_type = {
 };
 EXPORT_SYMBOL_GPL(platform_bus_type);
 
-/*×ÜÏß×¢²áº¯Êı*/
+/*æ€»çº¿æ³¨å†Œå‡½æ•°*/
 int __init platform_bus_init(void)
 {
 	int error;

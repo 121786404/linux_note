@@ -42,14 +42,14 @@ static inline unsigned long mmap_base(struct mm_struct *mm)
 	unsigned long gap = current->signal->rlim[RLIMIT_STACK].rlim_cur;
 	unsigned long random_factor = 0;
 
-	if (current->flags & PF_RANDOMIZE)/* Æô¶¯ÁËµØÖ·¿Õ¼äËæ»ú»¯¹¦ÄÜ */
-		/* µÃµ½Ëæ»úÒò×Ó */
+	if (current->flags & PF_RANDOMIZE)/* å¯åŠ¨äº†åœ°å€ç©ºé—´éšæœºåŒ–åŠŸèƒ½ */
+		/* å¾—åˆ°éšæœºå› å­ */
 		random_factor = get_random_int() % (1024*1024);
 
-	/* È·±£¶ÑÕ»ÖÁÉÙÕ¼ÓÃ128M */
+	/* ç¡®ä¿å †æ ˆè‡³å°‘å ç”¨128M */
 	if (gap < MIN_GAP)
 		gap = MIN_GAP;
-	else if (gap > MAX_GAP)/* ¶ÑÖÁÉÙÕ¼ÓÃ1/6µÄĞéÄâµØÖ·¿Õ¼ä */
+	else if (gap > MAX_GAP)/* å †è‡³å°‘å ç”¨1/6çš„è™šæ‹Ÿåœ°å€ç©ºé—´ */
 		gap = MAX_GAP;
 
 	return PAGE_ALIGN(TASK_SIZE - gap - random_factor);
@@ -60,7 +60,7 @@ static inline unsigned long mmap_base(struct mm_struct *mm)
  * process VM image, sets up which VM layout function to use:
  */
 /**
- * ÔÚ´´½¨½ø³ÌÊ±£¬È·¶¨ÈçºÎÎª½ø³ÌĞéÄâµØÖ·¿Õ¼ä½øĞĞ²¼¾Ö¡£
+ * åœ¨åˆ›å»ºè¿›ç¨‹æ—¶ï¼Œç¡®å®šå¦‚ä½•ä¸ºè¿›ç¨‹è™šæ‹Ÿåœ°å€ç©ºé—´è¿›è¡Œå¸ƒå±€ã€‚
  */
 void arch_pick_mmap_layout(struct mm_struct *mm)
 {
@@ -68,18 +68,18 @@ void arch_pick_mmap_layout(struct mm_struct *mm)
 	 * Fall back to the standard layout if the personality
 	 * bit is set, or if the expected stack growth is unlimited:
 	 */
-	if (sysctl_legacy_va_layout ||/* Ç¿ÖÆÊ¹ÓÃ¾ÉµÄ²¼¾Ö */
-			(current->personality & ADDR_COMPAT_LAYOUT) ||/* ĞèÒª¼æÈİ¾ÉµÄ¶ş½øÖÆÎÄ¼ş */
-			current->signal->rlim[RLIMIT_STACK].rlim_cur == RLIM_INFINITY) {/* ¶ÑÕ»¿Õ¼ä²»ÊÜÏŞÖÆ£¬ÎŞ·¨Ê¹ÓÃĞÂµÄ²¼¾Ö */
-		/* ¾­µä²¼¾ÖÖĞ£¬mmap¿Õ¼ä¿ªÊ¼ÓÚÓÃ»§Ì¬¿Õ¼äµÄ1/3´¦ */
+	if (sysctl_legacy_va_layout ||/* å¼ºåˆ¶ä½¿ç”¨æ—§çš„å¸ƒå±€ */
+			(current->personality & ADDR_COMPAT_LAYOUT) ||/* éœ€è¦å…¼å®¹æ—§çš„äºŒè¿›åˆ¶æ–‡ä»¶ */
+			current->signal->rlim[RLIMIT_STACK].rlim_cur == RLIM_INFINITY) {/* å †æ ˆç©ºé—´ä¸å—é™åˆ¶ï¼Œæ— æ³•ä½¿ç”¨æ–°çš„å¸ƒå±€ */
+		/* ç»å…¸å¸ƒå±€ä¸­ï¼Œmmapç©ºé—´å¼€å§‹äºç”¨æˆ·æ€ç©ºé—´çš„1/3å¤„ */
 		mm->mmap_base = TASK_UNMAPPED_BASE;
-		/* x86¼Ü¹¹ÏÂ£¬Ê¹ÓÃÄ¬ÈÏµÄget_unmapped_areaº¯Êı */
+		/* x86æ¶æ„ä¸‹ï¼Œä½¿ç”¨é»˜è®¤çš„get_unmapped_areaå‡½æ•° */
 		mm->get_unmapped_area = arch_get_unmapped_area;
 		mm->unmap_area = arch_unmap_area;
 	} else {
-		/* ĞÂ²¼¾ÖÏÂ£¬»ùµØÖ·¿¿½ü¶ÑÕ»µØÖ· */
+		/* æ–°å¸ƒå±€ä¸‹ï¼ŒåŸºåœ°å€é è¿‘å †æ ˆåœ°å€ */
 		mm->mmap_base = mmap_base(mm);
-		/* mmapÇøÓò´Ó¶¥ÏòµÍµØÖ·À©Õ¹ */
+		/* mmapåŒºåŸŸä»é¡¶å‘ä½åœ°å€æ‰©å±• */
 		mm->get_unmapped_area = arch_get_unmapped_area_topdown;
 		mm->unmap_area = arch_unmap_area_topdown;
 	}

@@ -53,7 +53,7 @@ static int som_core_dump(long signr, struct pt_regs *regs, unsigned long limit);
 #define SOM_PAGEOFFSET(_v) ((_v) & (SOM_PAGESIZE-1))
 #define SOM_PAGEALIGN(_v) (((_v) + SOM_PAGESIZE - 1) & ~(SOM_PAGESIZE - 1))
 
-/* 在PA-risc计算机上使用，特定于HP-UX */
+/* 鍦≒A-risc璁＄畻鏈轰笂浣跨敤锛岀壒瀹氫簬HP-UX */
 static struct linux_binfmt som_format = {
 	.module		= THIS_MODULE,
 	.load_binary	= load_som_binary,

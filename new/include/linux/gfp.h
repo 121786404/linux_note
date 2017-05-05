@@ -9,8 +9,8 @@
 
 
 /* 
- * ��'__'��ͷ��GFP����ֻ�������ڴ��������ڲ��Ĵ���ʹ�ã�
- * gfp_mask������"GFP_"����ʽ����
+ * 以'__'打头的GFP掩码只限于在内存管理组件内部的代码使用，
+ * gfp_mask掩码以"GFP_"的形式出现
  */
 
 struct vm_area_struct;
@@ -20,43 +20,43 @@ struct vm_area_struct;
  * include/trace/events/mmflags.h and tools/perf/builtin-kmem.c
  */
 /*
-GFP��д����˼Ϊ��ȡ����ҳget free page
+GFP缩写的意思为获取空闲页get free page
 
-�����ļ����ڴ���䳡����ʹ�õı�־
-    1) ȱҳ�쳣�����ڴ�ʱ��
+常见的几种内存分配场景及使用的标志
+    1) 缺页异常分配内存时：
         GFP_HIGHUSER | __GFP_ZERO | __GFP_MOVABLE   
-        ������ƶ���page�����ҽ�page����
+        分配可移动的page，并且将page清零
         do_page_fault() -> handle_pte_fault() -> do_anonymous_page() -> alloc_zeroed_user_highpage_movable()
-    2) �ļ�ӳ������ڴ�ʱ��
+    2) 文件映射分配内存时：
         GFP_HIGHUSER_MOVABLE    
-        ������ƶ���page 
+        分配可移动的page 
         do_page_fault() -> handle_pte_fault() -> do_anonymous_page() -> do_nonlinear_fault() -> __do_fault()
-    3) vmalloc�����ڴ�ʱ��
+    3) vmalloc分配内存时：
         GFP_KERNEL | __GFP_HIGHMEM   
-        ���ȴӸ߶��ڴ��з���
+        优先从高端内存中分配
         vmalloc() -> __vmalloc_node_flags(size, -1, GFP_KERNEL | __GFP_HIGHMEM)
 */
 /* Plain integer GFP bitmasks. Do not use this directly. */
 #define ___GFP_DMA		0x01u
 #define ___GFP_HIGHMEM		0x02u
 #define ___GFP_DMA32		0x04u
-#define ___GFP_MOVABLE		0x08u /* ҳ�ǿ��ƶ��� */
-#define ___GFP_RECLAIMABLE	0x10u /* ҳ�ǿɻ��յ� */
-#define ___GFP_HIGH		0x20u /* Ӧ�÷��ʽ�������أ� */
-#define ___GFP_IO		0x40u /* ������������IO�� */
-#define ___GFP_FS		0x80u /* ���Ե��õײ��ļ�ϵͳ�� */
-#define ___GFP_COLD		0x100u /* ��Ҫ�ǻ������ҳ */
-#define ___GFP_NOWARN		0x200u /* ��ֹ����ʧ�ܾ��� */
-#define ___GFP_REPEAT		0x400u /* ���Է��䣬����ʧ�� */
-#define ___GFP_NOFAIL		0x800u /* һֱ���ԣ�����ʧ�� */
-#define ___GFP_NORETRY		0x1000u /* �����ԣ�����ʧ�� */
-#define ___GFP_MEMALLOC		0x2000u /* ʹ�ý����������� */
-#define ___GFP_COMP		0x4000u /* ���Ӹ���ҳԪ���� */
-#define ___GFP_ZERO		0x8000u  /* �ɹ��򷵻�����ֽ�0��ҳ */
-#define ___GFP_NOMEMALLOC	0x10000u /* ��ʹ�ý����������� */
-#define ___GFP_HARDWALL		0x20000u /* ֻ�����ڽ����������е�CPU�������Ľ������ڴ� */
-#define ___GFP_THISNODE		0x40000u /* û�б��ý�㣬û�в��� */
-#define ___GFP_ATOMIC		0x80000u /* ����ԭ�ӷ��䣬���κ�����¶������ж�  */
+#define ___GFP_MOVABLE		0x08u /* 页是可移动的 */
+#define ___GFP_RECLAIMABLE	0x10u /* 页是可回收的 */
+#define ___GFP_HIGH		0x20u /* 应该访问紧急分配池？ */
+#define ___GFP_IO		0x40u /* 可以启动物理IO？ */
+#define ___GFP_FS		0x80u /* 可以调用底层文件系统？ */
+#define ___GFP_COLD		0x100u /* 需要非缓存的冷页 */
+#define ___GFP_NOWARN		0x200u /* 禁止分配失败警告 */
+#define ___GFP_REPEAT		0x400u /* 重试分配，可能失败 */
+#define ___GFP_NOFAIL		0x800u /* 一直重试，不会失败 */
+#define ___GFP_NORETRY		0x1000u /* 不重试，可能失败 */
+#define ___GFP_MEMALLOC		0x2000u /* 使用紧急分配链表 */
+#define ___GFP_COMP		0x4000u /* 增加复合页元数据 */
+#define ___GFP_ZERO		0x8000u  /* 成功则返回填充字节0的页 */
+#define ___GFP_NOMEMALLOC	0x10000u /* 不使用紧急分配链表 */
+#define ___GFP_HARDWALL		0x20000u /* 只允许在进程允许运行的CPU所关联的结点分配内存 */
+#define ___GFP_THISNODE		0x40000u /* 没有备用结点，没有策略 */
+#define ___GFP_ATOMIC		0x80000u /* 用于原子分配，在任何情况下都不能中断  */
 #define ___GFP_ACCOUNT		0x100000u
 #define ___GFP_NOTRACK		0x200000u
 #define ___GFP_DIRECT_RECLAIM	0x400000u
@@ -72,19 +72,19 @@ GFP��д����˼Ϊ��ȡ����ҳget free page
  * be used in bit comparisons.
  */
 /*
- ��ZONE_DMA�з����ڴ�
+ 从ZONE_DMA中分配内存
 */
 #define __GFP_DMA	((__force gfp_t)___GFP_DMA)
 /*
-��ZONE_HIGHMEM��ZONE_NORMAL�з����ڴ�
+从ZONE_HIGHMEM活ZONE_NORMAL中分配内存
 */
 #define __GFP_HIGHMEM	((__force gfp_t)___GFP_HIGHMEM)
 /*
-��ZONE_DMA32�з����ڴ�
+从ZONE_DMA32中分配内存
 */
 #define __GFP_DMA32	((__force gfp_t)___GFP_DMA32)
 /*
-��__GFP_MOVABLE�з����ڴ�
+从__GFP_MOVABLE中分配内存
 */
 #define __GFP_MOVABLE	((__force gfp_t)___GFP_MOVABLE)  /* ZONE_MOVABLE allowed */
 #define GFP_ZONEMASK	(__GFP_DMA|__GFP_HIGHMEM|__GFP_DMA32|__GFP_MOVABLE)
@@ -114,18 +114,18 @@ GFP��д����˼Ϊ��ȡ����ҳget free page
  * __GFP_ACCOUNT causes the allocation to be accounted to kmemcg.
  */
 /*
- �������ɻ��յ�page
+ 请求分配可回收的page
 */
 #define __GFP_RECLAIMABLE ((__force gfp_t)___GFP_RECLAIMABLE)
 #define __GFP_WRITE	((__force gfp_t)___GFP_WRITE)
 /*
-ֻ��NUMAϵͳ��������. 
-ֻ���ڵ�ǰ���̿����е�cpu�������ڴ�ڵ��Ϸ����ڴ棬
-������̿�������cpu�����У��ñ�־������
+只在NUMA系统上有意义. 
+只能在当前进程可运行的cpu关联的内存节点上分配内存，
+如果进程可在所有cpu上运行，该标志无意义
 */
 #define __GFP_HARDWALL   ((__force gfp_t)___GFP_HARDWALL)
 /*
-ֻ���ڵ�ǰ�ڵ��Ϸ����ڴ�
+只能在当前节点上分配内存
 */
 #define __GFP_THISNODE	((__force gfp_t)___GFP_THISNODE)
 #define __GFP_ACCOUNT	((__force gfp_t)___GFP_ACCOUNT)
@@ -151,12 +151,12 @@ GFP��д����˼Ϊ��ȡ����ҳget free page
  */
 #define __GFP_ATOMIC	((__force gfp_t)___GFP_ATOMIC)
 /*
-�������ǳ���Ҫ, ������__GFP_HIGH�����ں˼��е���Ҫ�ڴ�ʱ��
-���������������������ں˱���������״���������ڴ�ҳ
+如果请求非常重要, 则设置__GFP_HIGH，即内核急切地需要内存时。
+它被允许来消耗甚至被内核保留给紧急状况的最后的内存页
 */
 #define __GFP_HIGH	((__force gfp_t)___GFP_HIGH)
 #define __GFP_MEMALLOC	((__force gfp_t)___GFP_MEMALLOC)
-/* ��ʹ�ý����������� */
+/* 不使用紧急分配链表 */
 #define __GFP_NOMEMALLOC ((__force gfp_t)___GFP_NOMEMALLOC)
 
 /*
@@ -196,29 +196,29 @@ GFP��д����˼Ϊ��ȡ����ҳget free page
  *   implementation.
  */
 /* 
-�ڴ����Ĺ����пɽ���IO������
-Ҳ����˵��������������Ҫ����ҳ��
-�������øñ�־�����ܽ�������ҳд����� 
+内存分配的过程中可进行IO操作，
+也就是说分配过程中如果需要换出页，
+必须设置该标志，才能将换出的页写入磁盘 
 */
 #define __GFP_IO	((__force gfp_t)___GFP_IO)
 /*
-�����ں�ִ��VFS����. ����VFS������ϵ���ں���ϵͳ�б������, 
-��Ϊ���������ѭ���ݹ����
+允许内核执行VFS操作. 在与VFS层有联系的内核子系统中必须禁用, 
+因为这可能引起循环递归调用
 */
 #define __GFP_FS	((__force gfp_t)___GFP_FS)
 #define __GFP_DIRECT_RECLAIM	((__force gfp_t)___GFP_DIRECT_RECLAIM) /* Caller can reclaim */
 #define __GFP_KSWAPD_RECLAIM	((__force gfp_t)___GFP_KSWAPD_RECLAIM) /* kswapd can wake */
 #define __GFP_RECLAIM ((__force gfp_t)(___GFP_DIRECT_RECLAIM|___GFP_KSWAPD_RECLAIM))
 /*
-�ڷ���ʧ�ܺ��Զ����ԣ����ڳ������ɴ�֮���ֹͣ
+在分配失败后自动重试，但在尝试若干次之后会停止
 */
 #define __GFP_REPEAT	((__force gfp_t)___GFP_REPEAT)
 /*
-�ڷ���ʧ�ܺ�һֱ���ԣ�ֱ���ɹ�
+在分配失败后一直重试，直至成功
 */
 #define __GFP_NOFAIL	((__force gfp_t)___GFP_NOFAIL)
 /*
-�ڷ���ʧ�ܺ����ԣ���˿��ܷ���ʧ��
+在分配失败后不重试，因此可能分配失败
 */
 #define __GFP_NORETRY	((__force gfp_t)___GFP_NORETRY)
 
@@ -246,22 +246,22 @@ GFP��д����˼Ϊ��ȡ����ҳget free page
  *   node.
  */
 /*
- �����Ҫ���䲻��CPU���ٻ����еġ��䡱ҳʱ��������__GFP_COLD
- ����һ��ʱ��û��ʹ��. ���Է���ҳ�� DMA �������õ�, 
- ��ʱ�ڴ����������г��������õ�. 
+ 如果需要分配不在CPU高速缓存中的“冷”页时，则设置__GFP_COLD
+ 它在一段时间没被使用. 它对分配页作 DMA 读是有用的, 
+ 此时在处理器缓冲中出现是无用的. 
 */
 #define __GFP_COLD	((__force gfp_t)___GFP_COLD)
 /*
-�ڷ���ʧ��ʱ��ֹ�ں˹��Ͼ��档�ڼ��������ϸñ�־����
+在分配失败时禁止内核故障警告。在极少数场合该标志有用
 */
 #define __GFP_NOWARN	((__force gfp_t)___GFP_NOWARN)
 /*
-���ӻ��ҳԪ��, ��hugetlb�Ĵ����ڲ�ʹ��
+添加混合页元素, 在hugetlb的代码内部使用
 */
 #define __GFP_COMP	((__force gfp_t)___GFP_COMP)
-/* ����ȫ�����Ϊ0��page */
+/* 申请全部填充为0的page */
 #define __GFP_ZERO	((__force gfp_t)___GFP_ZERO)
-/* ���Է�����ڴ���и��� */
+/* 不对分配的内存进行跟踪 */
 #define __GFP_NOTRACK	((__force gfp_t)___GFP_NOTRACK)
 #define __GFP_NOTRACK_FALSE_POSITIVE (__GFP_NOTRACK)
 
@@ -326,65 +326,65 @@ GFP��д����˼Ϊ��ȡ����ҳget free page
 Get Free Pages = GFP
 */
 /*
- ����ԭ�ӷ��䣬�����ж�, ����˯�ߣ�������IO��VFS����
- ����ʹ�ý������������е��ڴ�, 
- �����־�����жϴ�������, �°벿, 
- �����������Լ���������˯�ߵĵط�
+ 用于原子分配，不能中断, 不能睡眠，不能有IO和VFS操作
+ 可能使用紧急分配链表中的内存, 
+ 这个标志用在中断处理程序, 下半部, 
+ 持有自旋锁以及其他不能睡眠的地方
 */
 #define GFP_ATOMIC	(__GFP_HIGH|__GFP_ATOMIC|__GFP_KSWAPD_RECLAIM)
 /*
-* ���ڴ治��ʱ������ͨ���ļ�ϵͳ��IO������ҳ�滻�����ͷ��ڴ�ռ䡣
-* �����ʱ���亯�������ǿ������
-* һ���ϵͳ���ô����У���ʹ�ô˷����־��
-* ��Ҳ������ķ����־
+* 当内存不足时，允许通过文件系统、IO操作将页面换出以释放内存空间。
+* 因此这时分配函数必须是可重入的
+* 一般的系统调用代码中，都使用此分配标志。
+* 这也是最常见的分配标志
 */
 #define GFP_KERNEL	(__GFP_RECLAIM | __GFP_IO | __GFP_FS)
 #define GFP_KERNEL_ACCOUNT (GFP_KERNEL | __GFP_ACCOUNT)
 /*
-��GFP_ATOMIC����, ��֮ͬ������, ���ò����˸������ڴ��, 
-����������ڴ����ʧ�ܵĿ�����
+与GFP_ATOMIC类似, 不同之处在于, 调用不会退给紧急内存池, 
+这就增加了内存分配失败的可能性
 */
 #define GFP_NOWAIT	(__GFP_KSWAPD_RECLAIM)
 /*
-������IO������
-���ڴ治��ʱ��������Ҫ���ڴ滻�����ⲿ�豸������ҪIO������
-�����ڽ���IO�����Ĺ��̣���Ҫ�����ڴ�ʱ����ָ���˱�־������������
+不允许IO操作。
+当内存不足时，可能需要将内存换出到外部设备，这需要IO操作。
+但是在进行IO操作的过程，需要申请内存时必须指定此标志，以免死锁。
 */
 #define GFP_NOIO	(__GFP_RECLAIM)
 /*
-�������ļ�ϵͳ������
-���ļ�ϵͳ�����У������ڴ���Ҫ�д˱�־��Ҳ��Ϊ�˱�������
+不允许文件系统操作。
+在文件系统代码中，申请内存需要有此标志。也是为了避免死锁
 */
 #define GFP_NOFS	(__GFP_RECLAIM | __GFP_IO)
 /**
- * ������GFP_KERNEL���������ڴ治��ʱ�������������ڴ���ա�
+ * 类似于GFP_KERNEL，并且在内存不足时，还允许进行内存回收。
  */
 #define GFP_TEMPORARY	(__GFP_RECLAIM | __GFP_IO | __GFP_FS | \
 			 __GFP_RECLAIMABLE)
 /**
- * ���������û����̵�ҳ�档��GFP_KERNEL��ȣ�
- ����__GFP_HARDWALL ֻ�ܴӽ��̿����е�node�Ϸ����ڴ档
+ * 分配用于用户进程的页面。与GFP_KERNEL相比，
+ 增加__GFP_HARDWALL 只能从进程可运行的node上分配内存。
  */
 #define GFP_USER	(__GFP_RECLAIM | __GFP_IO | __GFP_FS | __GFP_HARDWALL)
 /*
-���ڷ���������DMA���ڴ�, ��ǰ��__GFP_DMA��ͬ���, 
-GFP_DMA32Ҳ��__GFP_GMA32��ͬ���
+用于分配适用于DMA的内存, 当前是__GFP_DMA的同义词, 
+GFP_DMA32也是__GFP_GMA32的同义词
 */
 #define GFP_DMA		__GFP_DMA
 #define GFP_DMA32	__GFP_DMA32
 /*
-GFP_USER��һ����չ, ���������û����̵�ҳ�棬
-���ȴӸ߶�zone�з����ڴ�
+GFP_USER的一个扩展, 分配用于用户进程的页面，
+优先从高端zone中分配内存
 */
 #define GFP_HIGHUSER	(GFP_USER | __GFP_HIGHMEM)
 /*
-��;������GFP_HIGHUSER�������佫�������ڴ���ZONE_MOVABLE����
+用途类似于GFP_HIGHUSER，但分配将从虚拟内存域ZONE_MOVABLE进行
 */
 #define GFP_HIGHUSER_MOVABLE	(GFP_HIGHUSER | __GFP_MOVABLE)
 #define GFP_TRANSHUGE_LIGHT	((GFP_HIGHUSER_MOVABLE | __GFP_COMP | \
 			 __GFP_NOMEMALLOC | __GFP_NOWARN) & ~__GFP_RECLAIM)
 /**
- * �����ҳ������͸����ҳ��
+ * 分配的页面用于透明巨页。
  */
 #define GFP_TRANSHUGE	(GFP_TRANSHUGE_LIGHT | __GFP_DIRECT_RECLAIM)
 
@@ -392,7 +392,7 @@ GFP_USER��һ����չ, ���������û����̵�ҳ�棬
 #define GFP_MOVABLE_MASK (__GFP_RECLAIMABLE|__GFP_MOVABLE)
 #define GFP_MOVABLE_SHIFT 3
 
-// ת�������־����Ӧ��Ǩ������
+// 转换分配标志及对应的迁移类型
 static inline int gfpflags_to_migratetype(const gfp_t gfp_flags)
 {
 	VM_WARN_ON((gfp_flags & GFP_MOVABLE_MASK) == GFP_MOVABLE_MASK);
@@ -414,7 +414,7 @@ static inline bool gfpflags_allow_blocking(const gfp_t gfp_flags)
 }
 
 #ifdef CONFIG_HIGHMEM
-#define OPT_ZONE_HIGHMEM ZONE_HIGHMEM/*��ZONE_HIGHMEM��ʶ���ڴ������в��ҿ���ҳ*/
+#define OPT_ZONE_HIGHMEM ZONE_HIGHMEM/*在ZONE_HIGHMEM标识的内存区域中查找空闲页*/
 #else
 #define OPT_ZONE_HIGHMEM ZONE_NORMAL
 #endif
@@ -503,9 +503,9 @@ static inline bool gfpflags_allow_blocking(const gfp_t gfp_flags)
 	| 1 << (___GFP_MOVABLE | ___GFP_DMA32 | ___GFP_DMA | ___GFP_HIGHMEM)  \
 )
 
-/* ����gfp_mask�ƶ����Ҷ����з�������ҳ��
- * ���û����gfp_mask����ȷ�ƶ�__GFP_DMA����__GFP_HIGHMEM,��ôĬ����ZONE_NORMAL�з�������ҳ
- * ���ZONE_NORMAL�����п���ҳ���������㵱ǰ�ķ��䣬��ôҳ�������ᵽZONE_DMA���в��ҿ���ҳ�������ᵽZONE_HIGHMEM�в���*/
+/* 根据gfp_mask制定在囊二域中分配物理页面
+ * 如果没有在gfp_mask中明确制定__GFP_DMA或者__GFP_HIGHMEM,那么默认在ZONE_NORMAL中分配物理页
+ * 如果ZONE_NORMAL中现有空闲页不足以满足当前的分配，那么页分配器会到ZONE_DMA域中查找空闲页，而不会到ZONE_HIGHMEM中查找*/
 static inline enum zone_type gfp_zone(gfp_t flags)
 {
 	enum zone_type z;
@@ -606,7 +606,7 @@ extern struct page *alloc_pages_vma(gfp_t gfp_mask, int order,
 #define alloc_hugepage_vma(gfp_mask, vma, addr, order)	\
 	alloc_pages_vma(gfp_mask, order, vma, addr, numa_node_id(), true)
 #else
-/*ҳ�������,����2��order�η�������������ҳ�沢������ʼҳ�� pageʵ��*/
+/*页面分配器,分配2的order次方个连续的物理页面并返回起始页的 page实例*/
 #define alloc_pages(gfp_mask, order) \
 		alloc_pages_node(numa_node_id(), gfp_mask, order)
 #define alloc_pages_vma(gfp_mask, order, vma, addr, node, false)\
@@ -615,14 +615,14 @@ extern struct page *alloc_pages_vma(gfp_t gfp_mask, int order,
 	alloc_pages(gfp_mask, order)
 #endif
 
-/*ֻ���ڷ���һ������ҳ�棬alloc_page()��order=0ʱalloc_pages�ļ���ʽ��
-ֻ���䵥��ҳ��,���ϵͳû���㹻�Ŀռ�����alloc_page�ķ��䣬����������NULL*/
+/*只用于分配一个物理页面，alloc_page()是order=0时alloc_pages的简化形式，
+只分配单个页面,如果系统没有足够的空间满足alloc_page的分配，函数将返回NULL*/
 #define alloc_page(gfp_mask) alloc_pages(gfp_mask, 0)
 #define alloc_page_vma(gfp_mask, vma, addr)			\
 	alloc_pages_vma(gfp_mask, 0, vma, addr, numa_node_id(), false)
 #define alloc_page_vma_node(gfp_mask, vma, addr, node)		\
 	alloc_pages_vma(gfp_mask, 0, vma, addr, node, false)
-/*�ú��������ڸ߶��ڴ����ҳ��*/
+/*该函数不能在高端内存分配页面*/
 extern unsigned long __get_free_pages(gfp_t gfp_mask, unsigned int order);
 extern unsigned long get_zeroed_page(gfp_t gfp_mask);
 
@@ -630,12 +630,12 @@ void *alloc_pages_exact(size_t size, gfp_t gfp_mask);
 void free_pages_exact(void *virt, size_t size);
 void * __meminit alloc_pages_exact_nid(int nid, size_t size, gfp_t gfp_mask);
 
-/* ���ֻ����䵥������ҳ��������������������order=0ʱ
- * __get_free_pages�ļ���ʽ*/
+/* 如果只想分配单个物理页面可以用这个函数，他是order=0时
+ * __get_free_pages的简化形式*/
 #define __get_free_page(gfp_mask) \
 		__get_free_pages((gfp_mask), 0)
 
-/*���ڴ�ZONE_DMA�����з�������ҳ������ҳ���������Ե�ַ*/
+/*用于从ZONE_DMA区域中分配物理页，返回页面所在线性地址*/
 #define __get_dma_pages(gfp_mask, order) \
 		__get_free_pages((gfp_mask) | GFP_DMA, (order))
 

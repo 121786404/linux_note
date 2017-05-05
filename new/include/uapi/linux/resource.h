@@ -39,11 +39,11 @@ struct	rusage {
 	__kernel_long_t	ru_nivcsw;	/* involuntary " */
 };
 
-//×ÊÔ´ÏŞÖÆÃèÊö·û
+//èµ„æºé™åˆ¶æè¿°ç¬¦
 struct rlimit {
-	//µ±Ç°ÉúĞ§µÄÏŞÖÆÖµ£¬¿ÉÓÉÓÃ»§ĞŞ¸Ä
+	//å½“å‰ç”Ÿæ•ˆçš„é™åˆ¶å€¼ï¼Œå¯ç”±ç”¨æˆ·ä¿®æ”¹
 	__kernel_ulong_t	rlim_cur;
-	//×î´óÏŞÖÆÖµ
+	//æœ€å¤§é™åˆ¶å€¼
 	__kernel_ulong_t	rlim_max;
 };
 

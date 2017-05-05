@@ -9,11 +9,11 @@
 #define UIDHASH_BITS	(CONFIG_BASE_SMALL ? 3 : 8)
 #define UIDHASH_SZ	(1 << UIDHASH_BITS)
 
-/* ÓÃ»§ÃüÃû¿Õ¼ä */
+/* ç”¨æˆ·å‘½åç©ºé—´ */
 struct user_namespace {
-	/* ÒýÓÃ¼ÆÊý */
+	/* å¼•ç”¨è®¡æ•° */
 	struct kref		kref;
-	/* ¹þÏ£±í£¬Ã¿¸ö³ÉÔ±ÊÇuser_struct½á¹¹£¬¼ÇÂ¼Æä×ÊÔ´ÏûºÄ */
+	/* å“ˆå¸Œè¡¨ï¼Œæ¯ä¸ªæˆå‘˜æ˜¯user_structç»“æž„ï¼Œè®°å½•å…¶èµ„æºæ¶ˆè€— */
 	struct hlist_head	uidhash_table[UIDHASH_SZ];
 	struct user_struct	*root_user;
 };

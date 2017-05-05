@@ -116,14 +116,14 @@ struct nf_bridge_info {
 #endif
 
 /**
- * ±¨ÎÄ»º³åÇøÍ·²¿£¬ÊµÏÖÁËÒ»¸öµÈ´ı¶ÓÁĞ
+ * æŠ¥æ–‡ç¼“å†²åŒºå¤´éƒ¨ï¼Œå®ç°äº†ä¸€ä¸ªç­‰å¾…é˜Ÿåˆ—
  */
 struct sk_buff_head {
 	/* These two members must be first. */
 	struct sk_buff	*next;
-	struct sk_buff	*prev;/* Á´±íÍ· */
+	struct sk_buff	*prev;/* é“¾è¡¨å¤´ */
 
-	/* µÈ´ı¶ÓÁĞµÄ³¤¶È */
+	/* ç­‰å¾…é˜Ÿåˆ—çš„é•¿åº¦ */
 	__u32		qlen;
 	spinlock_t	lock;
 };
@@ -252,22 +252,22 @@ typedef unsigned char *sk_buff_data_t;
  */
 
 /**
- * Ì×½Ó×Ö±¨ÎÄ»º³åÇø
+ * å¥—æ¥å­—æŠ¥æ–‡ç¼“å†²åŒº
  */
 struct sk_buff {
 	/* These two members must be first. */
-	/* Í¨¹ıÕâÁ½¸ö×Ö¶Î½«»º³åÇø¼ÓÈëµ½Ë«Á´±íÖĞ */
+	/* é€šè¿‡è¿™ä¸¤ä¸ªå­—æ®µå°†ç¼“å†²åŒºåŠ å…¥åˆ°åŒé“¾è¡¨ä¸­ */
 	struct sk_buff		*next;
 	struct sk_buff		*prev;
 
-	/* ´¦Àí¸Ã±¨ÎÄµÄsocket */
+	/* å¤„ç†è¯¥æŠ¥æ–‡çš„socket */
 	struct sock		*sk;
-	/* ±¨ÎÄµ½´ïÊ±¼ä´Á */
+	/* æŠ¥æ–‡åˆ°è¾¾æ—¶é—´æˆ³ */
 	ktime_t			tstamp;
-	/* ´¦Àí±¨ÎÄµÄÍøÂçÉè±¸£¬´¦Àí±¨ÎÄÆÚ¼ä£¬Éè±¸¿ÉÄÜ»á¸Ä±ä! */
+	/* å¤„ç†æŠ¥æ–‡çš„ç½‘ç»œè®¾å¤‡ï¼Œå¤„ç†æŠ¥æ–‡æœŸé—´ï¼Œè®¾å¤‡å¯èƒ½ä¼šæ”¹å˜! */
 	struct net_device	*dev;
 
-	/* ´¦Àí±¨ÎÄµÄÂ·ÓÉ */
+	/* å¤„ç†æŠ¥æ–‡çš„è·¯ç”± */
 	struct  dst_entry	*dst;
 	struct	sec_path	*sp;
 
@@ -311,7 +311,7 @@ struct sk_buff {
 	struct nf_bridge_info	*nf_bridge;
 #endif
 
-	/* ÊäÈëÉè±¸µÄ½Ó¿ÚË÷Òı±àºÅ */
+	/* è¾“å…¥è®¾å¤‡çš„æ¥å£ç´¢å¼•ç¼–å· */
 	int			iif;
 #ifdef CONFIG_NETDEVICES_MULTIQUEUE
 	__u16			queue_mapping;
@@ -333,15 +333,15 @@ struct sk_buff {
 
 	__u32			mark;
 
-	/* ´«Êä²ã¡¢ÍøÂç²ã¡¢MACĞ­Òé²ãµÄÊ×²¿Î»ÖÃ */
+	/* ä¼ è¾“å±‚ã€ç½‘ç»œå±‚ã€MACåè®®å±‚çš„é¦–éƒ¨ä½ç½® */
 	sk_buff_data_t		transport_header;
 	sk_buff_data_t		network_header;
 	sk_buff_data_t		mac_header;
 	/* These elements must be at the end, see alloc_skb() for details.  */
-	/* Êı¾İÆğÊ¼¡¢½áÊøÖ¸Õë */
+	/* æ•°æ®èµ·å§‹ã€ç»“æŸæŒ‡é’ˆ */
 	sk_buff_data_t		tail;
 	sk_buff_data_t		end;
-	/* Ğ­ÒéÊı¾İÆğÊ¼¡¢½áÊøÎ»ÖÃ */
+	/* åè®®æ•°æ®èµ·å§‹ã€ç»“æŸä½ç½® */
 	unsigned char		*head,
 				*data;
 	unsigned int		truesize;

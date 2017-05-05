@@ -63,11 +63,11 @@ enum slab_state {
 extern enum slab_state slab_state;
 
 /* The slab cache mutex protects the management structures during changes */
-//±£»¤slab¹ÜÀí½á¹¹µÄËø¡£
+//ä¿æŠ¤slabç®¡ç†ç»“æ„çš„é”ã€‚
 extern struct mutex slab_mutex;
 
 /* The list of all slab caches on the system */
-//ÏµÍ³ÖĞËùÓĞslabÁ´±íÍ·
+//ç³»ç»Ÿä¸­æ‰€æœ‰slabé“¾è¡¨å¤´
 extern struct list_head slab_caches;
 
 /* The slab cache that manages slab cache information */
@@ -467,33 +467,33 @@ static inline void slab_post_alloc_hook(struct kmem_cache *s, gfp_t flags,
  * The slab lists for all objects.
  */
 /**
- * Ã¿¸öNUMAÄÚ´æ½ÚµãÖĞµÄslabÁ´±í
+ * æ¯ä¸ªNUMAå†…å­˜èŠ‚ç‚¹ä¸­çš„slabé“¾è¡¨
  */
 struct kmem_cache_node {
-	//±£´æ±¾ÃèÊö·ûµÄ×ÔĞıËø
+	//ä¿å­˜æœ¬æè¿°ç¬¦çš„è‡ªæ—‹é”
 	spinlock_t list_lock;
 
 #ifdef CONFIG_SLAB
-    /* Ö»Ê¹ÓÃÁË²¿·Ö¶ÔÏóµÄSLABÃèÊö·ûµÄË«ÏòÑ­»·Á´±í */
+    /* åªä½¿ç”¨äº†éƒ¨åˆ†å¯¹è±¡çš„SLABæè¿°ç¬¦çš„åŒå‘å¾ªç¯é“¾è¡¨ */
 	struct list_head slabs_partial;	/* partial list first, better asm code */
-    /* ²»°üº¬¿ÕÏĞ¶ÔÏóµÄSLABÃèÊö·ûµÄË«ÏòÑ­»·Á´±í */
+    /* ä¸åŒ…å«ç©ºé—²å¯¹è±¡çš„SLABæè¿°ç¬¦çš„åŒå‘å¾ªç¯é“¾è¡¨ */
 	struct list_head slabs_full;
-    /* Ö»°üº¬¿ÕÏĞ¶ÔÏóµÄSLABÃèÊö·ûµÄË«ÏòÑ­»·Á´±í */
+    /* åªåŒ…å«ç©ºé—²å¯¹è±¡çš„SLABæè¿°ç¬¦çš„åŒå‘å¾ªç¯é“¾è¡¨ */
 	struct list_head slabs_free;
 	unsigned long total_slabs;	/* length of all slab lists */
 	unsigned long free_slabs;	/* length of free slab list only */
-	/* ¸ßËÙ»º´æÖĞ¿ÕÏĞ¶ÔÏó¸öÊı(°üÀ¨slabs_partialÁ´±íÖĞºÍslabs_freeÁ´±íÖĞËùÓĞµÄ¿ÕÏĞ¶ÔÏó) */
+	/* é«˜é€Ÿç¼“å­˜ä¸­ç©ºé—²å¯¹è±¡ä¸ªæ•°(åŒ…æ‹¬slabs_partialé“¾è¡¨ä¸­å’Œslabs_freeé“¾è¡¨ä¸­æ‰€æœ‰çš„ç©ºé—²å¯¹è±¡) */
 	unsigned long free_objects;
-	/* ¸ßËÙ»º´æÖĞ¿ÕÏĞ¶ÔÏóµÄÉÏÏŞ */
+	/* é«˜é€Ÿç¼“å­˜ä¸­ç©ºé—²å¯¹è±¡çš„ä¸Šé™ */
 	unsigned int free_limit;
-    /* ÏÂÒ»¸ö±»·ÖÅäµÄSLABÊ¹ÓÃµÄÑÕÉ« */
+    /* ä¸‹ä¸€ä¸ªè¢«åˆ†é…çš„SLABä½¿ç”¨çš„é¢œè‰² */
 	unsigned int colour_next;	/* Per-node cache coloring */
-	/* Ö¸ÏòÕâ¸ö½áµãÉÏËùÓĞCPU¹²ÏíµÄÒ»¸ö±¾µØ¸ßËÙ»º´æ */
+	/* æŒ‡å‘è¿™ä¸ªç»“ç‚¹ä¸Šæ‰€æœ‰CPUå…±äº«çš„ä¸€ä¸ªæœ¬åœ°é«˜é€Ÿç¼“å­˜ */
 	struct array_cache *shared;	/* shared per node */
 	struct alien_cache **alien;	/* on other nodes */
-    /* Á½´Î»º´æÊÕËõÊ±µÄ¼ä¸ô£¬½µµÍ´ÎÊı£¬Ìá¸ßĞÔÄÜ */
+    /* ä¸¤æ¬¡ç¼“å­˜æ”¶ç¼©æ—¶çš„é—´éš”ï¼Œé™ä½æ¬¡æ•°ï¼Œæé«˜æ€§èƒ½ */
 	unsigned long next_reap;	/* updated without locking */
-    /* 0:ÊÕËõ  1:»ñÈ¡Ò»¸ö¶ÔÏó */
+    /* 0:æ”¶ç¼©  1:è·å–ä¸€ä¸ªå¯¹è±¡ */
 	int free_touched;		/* updated without locking */
 #endif
 

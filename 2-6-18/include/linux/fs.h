@@ -852,45 +852,45 @@ extern int send_sigurg(struct fown_struct *fown);
 #define MNT_DETACH	0x00000002	/* Just detach from the tree */
 #define MNT_EXPIRE	0x00000004	/* Mark for expiry */
 
-extern struct list_head super_blocks; //³¬¼¶¿éÁ´±íµÄ±íÍ·
+extern struct list_head super_blocks; //è¶…çº§å—é“¾è¡¨çš„è¡¨å¤´
 extern spinlock_t sb_lock;
 
 #define sb_entry(list)	list_entry((list), struct super_block, s_list)
 #define S_BIAS (1<<30)
 
-//³¬¼¶¿é--ÃèÊöÎÄ¼şÏµÍ³
+//è¶…çº§å—--æè¿°æ–‡ä»¶ç³»ç»Ÿ
 struct super_block {
 	struct list_head	s_list;		/* Keep this first */
 	dev_t			s_dev;		/* search index; _not_ kdev_t */
-	unsigned long		s_blocksize;  //ÎÄ¼şÏµÍ³¿éµÄ´óĞ¡ 
-	unsigned char		s_blocksize_bits; //ÎÄ¼şÏµÍ³¿é´óĞ¡µÄÎ»Êı(Èç¿é´óĞ¡Îª4KÊ±£¬¸ÃÖµÎª12)
+	unsigned long		s_blocksize;  //æ–‡ä»¶ç³»ç»Ÿå—çš„å¤§å° 
+	unsigned char		s_blocksize_bits; //æ–‡ä»¶ç³»ç»Ÿå—å¤§å°çš„ä½æ•°(å¦‚å—å¤§å°ä¸º4Kæ—¶ï¼Œè¯¥å€¼ä¸º12)
 	unsigned char		s_dirt;
-	unsigned long long	s_maxbytes;	/* ×î´óÎÄ¼şµÄ³ß´ç */
-	struct file_system_type	*s_type;  //Ö¸ÏòÃèÊöÎÄ¼şÏµÍ³ÀàĞÍµÄ½á¹¹ÌåµÄÖ¸Õë
-	struct super_operations	*s_op;	//Ìá¹©ÁË¶Ô³¬¼¶¿éµÄ²Ù×÷
+	unsigned long long	s_maxbytes;	/* æœ€å¤§æ–‡ä»¶çš„å°ºå¯¸ */
+	struct file_system_type	*s_type;  //æŒ‡å‘æè¿°æ–‡ä»¶ç³»ç»Ÿç±»å‹çš„ç»“æ„ä½“çš„æŒ‡é’ˆ
+	struct super_operations	*s_op;	//æä¾›äº†å¯¹è¶…çº§å—çš„æ“ä½œ
 	struct dquot_operations	*dq_op;
  	struct quotactl_ops	*s_qcop;
 	struct export_operations *s_export_op;
 	unsigned long		s_flags;
-	unsigned long		s_magic;	//Ä§ÊõÊı×Ö£¬Ã¿¸öÎÄ¼şÏµÍ³¶¼ÓĞÒ»¸öÄ§ÊõÊı×Ö
-	struct dentry		*s_root;	//Ö¸ÏòÎÄ¼şÏµÍ³µÄ¸ùdentry/*Ö¸Ïò¾ßÌåÎÄ¼şÏµÍ³°²×°µãµÄÄ¿Â¼Ïî*/
+	unsigned long		s_magic;	//é­”æœ¯æ•°å­—ï¼Œæ¯ä¸ªæ–‡ä»¶ç³»ç»Ÿéƒ½æœ‰ä¸€ä¸ªé­”æœ¯æ•°å­—
+	struct dentry		*s_root;	//æŒ‡å‘æ–‡ä»¶ç³»ç»Ÿçš„æ ¹dentry/*æŒ‡å‘å…·ä½“æ–‡ä»¶ç³»ç»Ÿå®‰è£…ç‚¹çš„ç›®å½•é¡¹*/
 	struct rw_semaphore	s_umount;
 	struct mutex		s_lock;
-	int			s_count;¡¡¡¡/*¶Ô³¬¼¶¿éµÄÊ¹ÓÃ¼ÆÊı*/¡¡//s_count×Ö¶ÎÓës_active×Ö¶ÎµÄ²»Í¬
+	int			s_count;ã€€ã€€/*å¯¹è¶…çº§å—çš„ä½¿ç”¨è®¡æ•°*/ã€€//s_countå­—æ®µä¸s_activeå­—æ®µçš„ä¸åŒ
 	int			s_syncing;
 	int			s_need_sync_fs;
 	atomic_t		s_active;
 	void                    *s_security;
 	struct xattr_handler	**s_xattr;
 
-	struct list_head	s_inodes;	/* Ö¸ÏòÎÄ¼şÏµÍ³ÄÚËùÓĞµÄinode(Ë«ÏòÁ´±í)£¬¿ÉÒÔÍ¨¹ıËü±éÀúinode¶ÔÏó */
-	struct list_head	s_dirty;	/* Ö¸ÏòËùÓĞdirtyµÄinode¶ÔÏó */
-	struct list_head	s_io;		/* ´æ·ÅÎÄ¼şÏµÍ³µÄ½«Òª»ØĞ´µÄËùÓĞinode(µÄÁ´±í)¡£ */
-	struct hlist_head	s_anon;		/* ÄäÃûÎÄ¼şÏµÍ³(nfs)µÄ³¬¼¶¿éËù¹¹³ÉµÄÁ´±í¡£anonymous dentries for (nfs) exporting */
+	struct list_head	s_inodes;	/* æŒ‡å‘æ–‡ä»¶ç³»ç»Ÿå†…æ‰€æœ‰çš„inode(åŒå‘é“¾è¡¨)ï¼Œå¯ä»¥é€šè¿‡å®ƒéå†inodeå¯¹è±¡ */
+	struct list_head	s_dirty;	/* æŒ‡å‘æ‰€æœ‰dirtyçš„inodeå¯¹è±¡ */
+	struct list_head	s_io;		/* å­˜æ”¾æ–‡ä»¶ç³»ç»Ÿçš„å°†è¦å›å†™çš„æ‰€æœ‰inode(çš„é“¾è¡¨)ã€‚ */
+	struct hlist_head	s_anon;		/* åŒ¿åæ–‡ä»¶ç³»ç»Ÿ(nfs)çš„è¶…çº§å—æ‰€æ„æˆçš„é“¾è¡¨ã€‚anonymous dentries for (nfs) exporting */
 	struct list_head	s_files;
 
-	struct block_device	*s_bdev;	//Ö¸ÏòÎÄ¼şÏµÍ³´æÔÚµÄ¿éÉè±¸
-	struct list_head	s_instances; //Í¨¹ıËü½«³¬¼¶¿é¶ÔÏóÁ´Èëµ½³¬¼¶¿éÁ´±íÖĞ
+	struct block_device	*s_bdev;	//æŒ‡å‘æ–‡ä»¶ç³»ç»Ÿå­˜åœ¨çš„å—è®¾å¤‡
+	struct list_head	s_instances; //é€šè¿‡å®ƒå°†è¶…çº§å—å¯¹è±¡é“¾å…¥åˆ°è¶…çº§å—é“¾è¡¨ä¸­
 	struct quota_info	s_dquot;	/* Diskquota specific options */
 
 	int			s_frozen;
@@ -1309,18 +1309,18 @@ find_exported_dentry(struct super_block *sb, void *obj, void *parent,
 		     int (*acceptable)(void *context, struct dentry *de),
 		     void *context);
 
-//ÃèÊöÎÄ¼şÏµÍ³ÀàĞÍ
+//æè¿°æ–‡ä»¶ç³»ç»Ÿç±»å‹
 struct file_system_type {
 	const char *name;
 	int fs_flags;
 	int (*get_sb) (struct file_system_type *, int,const char *, void *, struct vfsmount *);
 	void (*kill_sb) (struct super_block *);
 	struct module *owner;
-	struct file_system_type * next; //ÓÃÓÚ½«ÎÄ¼şÏµÍ³Á´ÈëÎÄ¼şÏµÍ³Á´±ífile_systemÖĞ
+	struct file_system_type * next; //ç”¨äºå°†æ–‡ä»¶ç³»ç»Ÿé“¾å…¥æ–‡ä»¶ç³»ç»Ÿé“¾è¡¨file_systemä¸­
 
-	/*fs_supersÎ¬»¤ÁËÎÄ¼şÏµÍ³µÄ³¬¼¶¿éÁ´±í¡£Ã¿¸öÎÄ¼şÏµÍ³¶¼ÓĞÒ»¸ö³¬¼¶¿é,µ«ÓĞĞ©ÎÄ¼şÏµÍ³¿ÉÄÜ±»°²×°
-	  ÔÚ²»Í¬µÄÉè±¸ÉÏ£¬¶øÇÒÃ¿¸ö¾ßÌåµÄÉè±¸¶¼ÓĞÒ»¸ö³¬¼¶¿é,ÕâĞ©³¬¼¶¿é¾ÍĞÎ³ÉÒ»¸öË«ÏòÁ´±í¡£*/
-	struct list_head fs_supers;	//Ö¸ÏòÎÄ¼şÏµÍ³µÄ³¬¼¶¿éÁ´±í
+	/*fs_supersç»´æŠ¤äº†æ–‡ä»¶ç³»ç»Ÿçš„è¶…çº§å—é“¾è¡¨ã€‚æ¯ä¸ªæ–‡ä»¶ç³»ç»Ÿéƒ½æœ‰ä¸€ä¸ªè¶…çº§å—,ä½†æœ‰äº›æ–‡ä»¶ç³»ç»Ÿå¯èƒ½è¢«å®‰è£…
+	  åœ¨ä¸åŒçš„è®¾å¤‡ä¸Šï¼Œè€Œä¸”æ¯ä¸ªå…·ä½“çš„è®¾å¤‡éƒ½æœ‰ä¸€ä¸ªè¶…çº§å—,è¿™äº›è¶…çº§å—å°±å½¢æˆä¸€ä¸ªåŒå‘é“¾è¡¨ã€‚*/
+	struct list_head fs_supers;	//æŒ‡å‘æ–‡ä»¶ç³»ç»Ÿçš„è¶…çº§å—é“¾è¡¨
 	struct lock_class_key s_lock_key;
 	struct lock_class_key s_umount_key;
 };
@@ -1437,7 +1437,7 @@ extern void __init vfs_caches_init_early(void);
 extern void __init vfs_caches_init(unsigned long);
 
 #define __getname()	kmem_cache_alloc(names_cachep, SLAB_KERNEL)
-#define __putname(name) kmem_cache_free(names_cachep, (void *)(name))//ÊÍ·Å´¢´æ¿Õ¼ä
+#define __putname(name) kmem_cache_free(names_cachep, (void *)(name))//é‡Šæ”¾å‚¨å­˜ç©ºé—´
 #ifndef CONFIG_AUDITSYSCALL
 #define putname(name)   __putname(name)
 #else

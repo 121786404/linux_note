@@ -26,11 +26,11 @@
 #include "internal.h"
 
 /**
- * memblock¹ÜÀíËã·¨: ÄÚ´æÉêÇëµÄÊ±ºò£¬½öÊÇ°Ñ±»ÉêÇëµ½µÄÄÚ´æ¼ÓÈëµ½
- * memblock.reservedÖĞ£¬²¢²»»áÔÚmemblock.memoryÀïÃæ½øĞĞÏà¹ØµÄÉ¾³ı»ò
- * ĞŞ¸Ä²Ù×÷£¬ÕâÊÇÎªºÎÉêÇëºÍÊÍ·ÅµÄ²Ù×÷¶¼»ùÓÚmemblock.reservedµÄÔ­Òò
+ * memblockç®¡ç†ç®—æ³•: å†…å­˜ç”³è¯·çš„æ—¶å€™ï¼Œä»…æ˜¯æŠŠè¢«ç”³è¯·åˆ°çš„å†…å­˜åŠ å…¥åˆ°
+ * memblock.reservedä¸­ï¼Œå¹¶ä¸ä¼šåœ¨memblock.memoryé‡Œé¢è¿›è¡Œç›¸å…³çš„åˆ é™¤æˆ–
+ * ä¿®æ”¹æ“ä½œï¼Œè¿™æ˜¯ä¸ºä½•ç”³è¯·å’Œé‡Šæ”¾çš„æ“ä½œéƒ½åŸºäºmemblock.reservedçš„åŸå› 
  */
-/* Í¨¹ıÈ«¾Ö±äÁ¿¶¨ÒåÎªmemblockµÄËã·¨¹ÜÀíÖĞµÄmemoryºÍreserved×¼±¸ÁËÄÚ´æ¿Õ¼ä */
+/* é€šè¿‡å…¨å±€å˜é‡å®šä¹‰ä¸ºmemblockçš„ç®—æ³•ç®¡ç†ä¸­çš„memoryå’Œreservedå‡†å¤‡äº†å†…å­˜ç©ºé—´ */
 static struct memblock_region memblock_memory_init_regions[INIT_MEMBLOCK_REGIONS] __initdata_memblock;
 static struct memblock_region memblock_reserved_init_regions[INIT_MEMBLOCK_REGIONS] __initdata_memblock;
 #ifdef CONFIG_HAVE_MEMBLOCK_PHYS_MAP
@@ -38,13 +38,13 @@ static struct memblock_region memblock_physmem_init_regions[INIT_PHYSMEM_REGIONS
 #endif
 
 /**
- * memblockËã·¨µÄÊµÏÖÊÇ£¬Ëü½«ËùÓĞ×´Ì¬¶¼±£´æÔÚÒ»¸öÈ«¾Ö±äÁ¿memblockÖĞ£¬
- * Ëã·¨µÄ³õÊ¼»¯ÒÔ¼°ÄÚ´æµÄÉêÇëÊÍ·Å¶¼ÊÇÔÚ½«ÄÚ´æ¿éµÄ×´Ì¬×ö±ä¸ü
+ * memblockç®—æ³•çš„å®ç°æ˜¯ï¼Œå®ƒå°†æ‰€æœ‰çŠ¶æ€éƒ½ä¿å­˜åœ¨ä¸€ä¸ªå…¨å±€å˜é‡memblockä¸­ï¼Œ
+ * ç®—æ³•çš„åˆå§‹åŒ–ä»¥åŠå†…å­˜çš„ç”³è¯·é‡Šæ”¾éƒ½æ˜¯åœ¨å°†å†…å­˜å—çš„çŠ¶æ€åšå˜æ›´
  */
 struct memblock memblock __initdata_memblock = {
 	.memory.regions		= memblock_memory_init_regions,
 	.memory.cnt		= 1,	/* empty dummy entry */
-	.memory.max		= INIT_MEMBLOCK_REGIONS, // µ±Ç°¼¯ºÏÖĞ×î´óÇøÓò¸öÊı
+	.memory.max		= INIT_MEMBLOCK_REGIONS, // å½“å‰é›†åˆä¸­æœ€å¤§åŒºåŸŸä¸ªæ•°
 
 	.reserved.regions	= memblock_reserved_init_regions,
 	.reserved.cnt		= 1,	/* empty dummy entry */
@@ -56,9 +56,9 @@ struct memblock memblock __initdata_memblock = {
 	.physmem.max		= INIT_PHYSMEM_REGIONS,
 #endif
 
-	/* ±íÊ¾ÄÚ´æÉêÇë×Ô¸ßµØÖ·ÏòµÍµØÖ· */
+	/* è¡¨ç¤ºå†…å­˜ç”³è¯·è‡ªé«˜åœ°å€å‘ä½åœ°å€ */
 	.bottom_up		= false,
-	/* current_limitÉèÎª~0£¬¼´0xFFFFFFFF */
+	/* current_limitè®¾ä¸º~0ï¼Œå³0xFFFFFFFF */
 	.current_limit		= MEMBLOCK_ALLOC_ANYWHERE,
 };
 
@@ -96,12 +96,12 @@ static inline phys_addr_t memblock_cap_size(phys_addr_t base, phys_addr_t *size)
 
 /*
  * Address comparison utilities
- * Á½¸öµØÖ·regionÊÇ·ñ½»²æ: 
+ * ä¸¤ä¸ªåœ°å€regionæ˜¯å¦äº¤å‰: 
  *  b1     b1+s1
  *  +--------+
  *        b2     b2+s2
  *        +--------+
- *  »òÕß:
+ *  æˆ–è€…:
  *  b2     b2+s2
  *  +--------+
  *        b1     b1+s1
@@ -114,7 +114,7 @@ static unsigned long __init_memblock memblock_addrs_overlap(phys_addr_t base1, p
 }
 
 /**
- * ÔÚtype²éÕÒÓë[base, base+size)ÖØµşµÄÇøÓò, ·µ»Øidx.
+ * åœ¨typeæŸ¥æ‰¾ä¸[base, base+size)é‡å çš„åŒºåŸŸ, è¿”å›idx.
  */
 bool __init_memblock memblock_overlaps_region(struct memblock_type *type,
 					phys_addr_t base, phys_addr_t size)
@@ -177,12 +177,12 @@ __memblock_find_range_bottom_up(phys_addr_t start, phys_addr_t end,
  * Found address on success, 0 on failure.
  */
 /*
- *Í¨¹ıÊ¹ÓÃfor_each_free_mem_range_reverseºê·â×°µ÷ÓÃ__next_free_mem_range_rev()
- *º¯Êı£¬´Ëº¯ÊıÖğÒ»½«memblock.memoryÀïÃæµÄÄÚ´æ¿éĞÅÏ¢ÌáÈ¡³öÀ´Óëmemblock.reserved
- *µÄ¸÷ÏîĞÅÏ¢½øĞĞ¼ìÑé£¬È·±£·µ»ØµÄthis_startºÍthis_end²»»áÓëreservedµÄÄÚ´æ
- *´æÔÚ½»²æÖØµşµÄÇé¿ö¡£È»ºóÍ¨¹ıclampÈ¡ÖĞ¼äÖµ£¬ÅĞ¶Ï´óĞ¡ÊÇ·ñÂú×ã£¬
- *Âú×ãµÄÇé¿öÏÂ£¬½«×ÔÄ©¶ËÏòÇ°£¨ÒòÎªÕâÊÇtop-downÉêÇë·½Ê½£©µÄsize´óĞ¡µÄ
- *¿Õ¼äµÄÆğÊ¼µØÖ·£¨Ç°Ìá¸ÃµØÖ·²»»á³¬³öthis_start£©·µ»Ø»ØÈ¥
+ *é€šè¿‡ä½¿ç”¨for_each_free_mem_range_reverseå®å°è£…è°ƒç”¨__next_free_mem_range_rev()
+ *å‡½æ•°ï¼Œæ­¤å‡½æ•°é€ä¸€å°†memblock.memoryé‡Œé¢çš„å†…å­˜å—ä¿¡æ¯æå–å‡ºæ¥ä¸memblock.reserved
+ *çš„å„é¡¹ä¿¡æ¯è¿›è¡Œæ£€éªŒï¼Œç¡®ä¿è¿”å›çš„this_startå’Œthis_endä¸ä¼šä¸reservedçš„å†…å­˜
+ *å­˜åœ¨äº¤å‰é‡å çš„æƒ…å†µã€‚ç„¶åé€šè¿‡clampå–ä¸­é—´å€¼ï¼Œåˆ¤æ–­å¤§å°æ˜¯å¦æ»¡è¶³ï¼Œ
+ *æ»¡è¶³çš„æƒ…å†µä¸‹ï¼Œå°†è‡ªæœ«ç«¯å‘å‰ï¼ˆå› ä¸ºè¿™æ˜¯top-downç”³è¯·æ–¹å¼ï¼‰çš„sizeå¤§å°çš„
+ *ç©ºé—´çš„èµ·å§‹åœ°å€ï¼ˆå‰æè¯¥åœ°å€ä¸ä¼šè¶…å‡ºthis_startï¼‰è¿”å›å›å»
  */
 static phys_addr_t __init_memblock
 __memblock_find_range_top_down(phys_addr_t start, phys_addr_t end,
@@ -231,14 +231,14 @@ __memblock_find_range_top_down(phys_addr_t start, phys_addr_t end,
  * Found address on success, 0 on failure.
  */
 /*
-Èç¹û´Ómemblock_alloc¹ıÀ´, end¾ÍÊÇMEMBLOCK_ALLOC_ACCESSIBLE,Õâ¸öÊ±ºò»áÉèÖÃÎªcurrent_limit.
+å¦‚æœä»memblock_allocè¿‡æ¥, endå°±æ˜¯MEMBLOCK_ALLOC_ACCESSIBLE,è¿™ä¸ªæ—¶å€™ä¼šè®¾ç½®ä¸ºcurrent_limit.
 
-Èç¹û²»Í¨¹ımemblock_alloc·ÖÅä, ÄÚ´æ·¶Î§¾ÍÊÇÖ¸¶¨µÄ·¶Î§. 
-½ô½Ó×Å¶Ôstart×öµ÷Õû£¬ÎªµÄÊÇ±ÜÃâÉêÇëµ½µÚÒ»¸öÒ³Ãæ
+å¦‚æœä¸é€šè¿‡memblock_allocåˆ†é…, å†…å­˜èŒƒå›´å°±æ˜¯æŒ‡å®šçš„èŒƒå›´. 
+ç´§æ¥ç€å¯¹startåšè°ƒæ•´ï¼Œä¸ºçš„æ˜¯é¿å…ç”³è¯·åˆ°ç¬¬ä¸€ä¸ªé¡µé¢
 
-memblock_bottom_up·µ»ØµÄÊÇmemblock.bottom_up£¬
-Ç°Ãæ³õÊ¼»¯µÄÊ±ºòÒ²ÖªµÀÕâ¸öÖµÊÇfalse£¨ÔÚnuma³õÊ¼»¯Ê±»áÉèÖÃÎªtrue£©£¬
-ËùÒÔ³õÊ¼»¯Ç°ÆÚÓ¦¸Ãµ÷ÓÃµÄÊÇ__memblock_find_range_top_downº¯ÊıÈ¥²éÕÒÄÚ´æ:
+memblock_bottom_upè¿”å›çš„æ˜¯memblock.bottom_upï¼Œ
+å‰é¢åˆå§‹åŒ–çš„æ—¶å€™ä¹ŸçŸ¥é“è¿™ä¸ªå€¼æ˜¯falseï¼ˆåœ¨numaåˆå§‹åŒ–æ—¶ä¼šè®¾ç½®ä¸ºtrueï¼‰ï¼Œ
+æ‰€ä»¥åˆå§‹åŒ–å‰æœŸåº”è¯¥è°ƒç”¨çš„æ˜¯__memblock_find_range_top_downå‡½æ•°å»æŸ¥æ‰¾å†…å­˜:
 */
 phys_addr_t __init_memblock memblock_find_in_range_node(phys_addr_t size,
 					phys_addr_t align, phys_addr_t start,
@@ -301,7 +301,7 @@ phys_addr_t __init_memblock memblock_find_in_range_node(phys_addr_t size,
  * Found address on success, 0 on failure.
  */
 /*
- ÔÚ¸ø¶¨µÄ·¶Î§ÄÚÕÒµ½Î´Ê¹ÓÃµÄÄÚ´æ
+ åœ¨ç»™å®šçš„èŒƒå›´å†…æ‰¾åˆ°æœªä½¿ç”¨çš„å†…å­˜
 */
 phys_addr_t __init_memblock memblock_find_in_range(phys_addr_t start,
 					phys_addr_t end, phys_addr_t size,
@@ -355,7 +355,7 @@ phys_addr_t __init_memblock get_allocated_memblock_reserved_regions_info(
 	return PAGE_ALIGN(sizeof(struct memblock_region) *
 			  memblock.reserved.max);
 }
-//  »ñÈ¡ÄÚ´æÇøÓòĞÅÏ¢
+//  è·å–å†…å­˜åŒºåŸŸä¿¡æ¯
 phys_addr_t __init_memblock get_allocated_memblock_memory_regions_info(
 					phys_addr_t *addr)
 {
@@ -564,16 +564,16 @@ static void __init_memblock memblock_insert_region(struct memblock_type *type,
  * 0 on success, -errno on failure.
  */
 /**
- * ½«¸ø¶¨µÄÎïÀíµØÖ·ËùÖ¸¶¨µÄmemory region¼ÓÈëµ½Ö¸¶¨µÄmemblock
- *£¨memblock.reserved»òÕßÊÇmemblock.memory£©ÖĞ¡£ĞÂ¼ÓÈëµÄ
- * memory regionĞèÒª¾­¹ı¼ì²é£¬Èç¹ûÓëÔ­ÏÈµÄmemory regionÓĞÖØµş£¬
- * ÔòĞèÒªºÏ²¢ÔÚÔ­ÏÈµÄmemory regionÖĞ£¬·ñÔòµÄ»°¾ÍĞÂ½¨Ò»¸ömemory region.
+ * å°†ç»™å®šçš„ç‰©ç†åœ°å€æ‰€æŒ‡å®šçš„memory regionåŠ å…¥åˆ°æŒ‡å®šçš„memblock
+ *ï¼ˆmemblock.reservedæˆ–è€…æ˜¯memblock.memoryï¼‰ä¸­ã€‚æ–°åŠ å…¥çš„
+ * memory regionéœ€è¦ç»è¿‡æ£€æŸ¥ï¼Œå¦‚æœä¸åŸå…ˆçš„memory regionæœ‰é‡å ï¼Œ
+ * åˆ™éœ€è¦åˆå¹¶åœ¨åŸå…ˆçš„memory regionä¸­ï¼Œå¦åˆ™çš„è¯å°±æ–°å»ºä¸€ä¸ªmemory region.
 
-Èç¹ûmemblockËã·¨¹ÜÀíÄÚ´æÎª¿ÕµÄÊ±ºò£¬Ôò½«µ±Ç°¿Õ¼äÌí¼Ó½øÈ¥
-²»Îª¿ÕµÄÇé¿öÏÂ£¬ÔòÏÈ¼ì²éÊÇ·ñ´æÔÚÄÚ´æÖØµşµÄÇé¿ö£¬
-Èç¹ûÓĞµÄ»°£¬ÔòÌŞ³ıÖØµş²¿·Ö£¬È»ºó½«ÆäÓà·ÇÖØµşµÄ²¿·ÖÌí¼Ó½øÈ¥
-Èç¹û³öÏÖregion[]Êı×é¿Õ¼ä²»¹»µÄÇé¿ö£¬ÔòÍ¨¹ımemblock_double_array()Ìí¼ÓĞÂµÄregion[]¿Õ¼ä
-×îºóÍ¨¹ımemblock_merge_regions()°Ñ½ô°¤×ÅµÄÄÚ´æºÏ²¢ÁË
+å¦‚æœmemblockç®—æ³•ç®¡ç†å†…å­˜ä¸ºç©ºçš„æ—¶å€™ï¼Œåˆ™å°†å½“å‰ç©ºé—´æ·»åŠ è¿›å»
+ä¸ä¸ºç©ºçš„æƒ…å†µä¸‹ï¼Œåˆ™å…ˆæ£€æŸ¥æ˜¯å¦å­˜åœ¨å†…å­˜é‡å çš„æƒ…å†µï¼Œ
+å¦‚æœæœ‰çš„è¯ï¼Œåˆ™å‰”é™¤é‡å éƒ¨åˆ†ï¼Œç„¶åå°†å…¶ä½™éé‡å çš„éƒ¨åˆ†æ·»åŠ è¿›å»
+å¦‚æœå‡ºç°region[]æ•°ç»„ç©ºé—´ä¸å¤Ÿçš„æƒ…å†µï¼Œåˆ™é€šè¿‡memblock_double_array()æ·»åŠ æ–°çš„region[]ç©ºé—´
+æœ€åé€šè¿‡memblock_merge_regions()æŠŠç´§æŒ¨ç€çš„å†…å­˜åˆå¹¶äº†
  */
 int __init_memblock memblock_add_range(struct memblock_type *type,
 				phys_addr_t base, phys_addr_t size,
@@ -582,8 +582,8 @@ int __init_memblock memblock_add_range(struct memblock_type *type,
 	bool insert = false;
 	phys_addr_t obase = base;
 /*
- »ñÈ¡ÄÚ´æÇøÓòµÄ½áÊøÎ»ÖÃ,
- memblock_cap_sizeº¯Êı»áÉèÖÃsize´óĞ¡È·±£base + size²»»áÒç³ö  
+ è·å–å†…å­˜åŒºåŸŸçš„ç»“æŸä½ç½®,
+ memblock_cap_sizeå‡½æ•°ä¼šè®¾ç½®sizeå¤§å°ç¡®ä¿base + sizeä¸ä¼šæº¢å‡º  
 */
 	phys_addr_t end = base + memblock_cap_size(base, &size);
 	int idx, nr_new;
@@ -593,7 +593,7 @@ int __init_memblock memblock_add_range(struct memblock_type *type,
 		return 0;
 
 	/* special case for empty array */
-	/* Èç¹ûmemblockËã·¨¹ÜÀíÄÚ´æÎª¿ÕµÄÊ±ºò£¬Ôò½«µ±Ç°¿Õ¼äÌí¼Ó½øÈ¥ */
+	/* å¦‚æœmemblockç®—æ³•ç®¡ç†å†…å­˜ä¸ºç©ºçš„æ—¶å€™ï¼Œåˆ™å°†å½“å‰ç©ºé—´æ·»åŠ è¿›å» */
 	if (type->regions[0].size == 0) {
 		WARN_ON(type->cnt != 1 || type->total_size);
 		type->regions[0].base = base;
@@ -613,8 +613,8 @@ repeat:
 	nr_new = 0;
 	
 	/*
-	 *²»Îª¿ÕµÄÇé¿öÏÂ£¬ÔòÏÈ¼ì²éÊÇ·ñ´æÔÚÄÚ´æÖØµşµÄÇé¿ö£¬
-	 *Èç¹ûÓĞµÄ»°£¬ÔòÌŞ³ıÖØµş²¿·Ö£¬È»ºó½«ÆäÓà·ÇÖØµşµÄ²¿·ÖÌí¼Ó½øÈ¥
+	 *ä¸ä¸ºç©ºçš„æƒ…å†µä¸‹ï¼Œåˆ™å…ˆæ£€æŸ¥æ˜¯å¦å­˜åœ¨å†…å­˜é‡å çš„æƒ…å†µï¼Œ
+	 *å¦‚æœæœ‰çš„è¯ï¼Œåˆ™å‰”é™¤é‡å éƒ¨åˆ†ï¼Œç„¶åå°†å…¶ä½™éé‡å çš„éƒ¨åˆ†æ·»åŠ è¿›å»
 	 */
 	for_each_memblock_type(type, rgn) {
 		phys_addr_t rbase = rgn->base;
@@ -641,28 +641,28 @@ repeat:
 		}
 		/* area below @rend is dealt with, forget about it */
 /*
-        Èç¹ûĞÂÄÚ´æÇøÓòÃ»ÓĞºÍÒÑ¾­´æ´¢ÔÚmemblockµÄÄÚ´æÇøÓòÖØµş, 
-        °Ñ¸ÃĞÂÄÚ´æÇøÓò²åÈëµ½memblockÖĞ. 
-        Èç¹ûÓĞÖØµşÍ¨Í¨¹ıÒ»¸öĞ¡ÇÉµÄÀ´Íê³É³åÍ»´¦Àí
+        å¦‚æœæ–°å†…å­˜åŒºåŸŸæ²¡æœ‰å’Œå·²ç»å­˜å‚¨åœ¨memblockçš„å†…å­˜åŒºåŸŸé‡å , 
+        æŠŠè¯¥æ–°å†…å­˜åŒºåŸŸæ’å…¥åˆ°memblockä¸­. 
+        å¦‚æœæœ‰é‡å é€šé€šè¿‡ä¸€ä¸ªå°å·§çš„æ¥å®Œæˆå†²çªå¤„ç†
 */
 		base = min(rend, end);
 	}
 /*
-ÖØµş¼ì²éÍê±Ïºó, ĞÂµÄÄÚ´æÇøÓòÒÑ¾­ÊÇÒ»¿é¸É¾»µÄ²»°üº¬ÖØµşÇøÓòµÄÄÚ´æ,
-°ÑĞÂµÄÄÚ´æÇøÓò²åÈëµ½memblockÖĞ°üº¬Á½²½£º
+é‡å æ£€æŸ¥å®Œæ¯•å, æ–°çš„å†…å­˜åŒºåŸŸå·²ç»æ˜¯ä¸€å—å¹²å‡€çš„ä¸åŒ…å«é‡å åŒºåŸŸçš„å†…å­˜,
+æŠŠæ–°çš„å†…å­˜åŒºåŸŸæ’å…¥åˆ°memblockä¸­åŒ…å«ä¸¤æ­¥ï¼š
 
-    °ÑĞÂµÄÄÚ´æÇøÓòÖĞ·ÇÖØµşµÄ²¿·Ö×÷Îª¶ÀÁ¢µÄÇøÓò¼ÓÈëµ½memblock
-    ºÏ²¢ËùÓĞÏàÁÚµÄÄÚ´æÇøÓò
+    æŠŠæ–°çš„å†…å­˜åŒºåŸŸä¸­éé‡å çš„éƒ¨åˆ†ä½œä¸ºç‹¬ç«‹çš„åŒºåŸŸåŠ å…¥åˆ°memblock
+    åˆå¹¶æ‰€æœ‰ç›¸é‚»çš„å†…å­˜åŒºåŸŸ
 
-Õâ¸ö¹ı³Ì·ÖÎªÁ½´ÎÑ­»·À´Íê³É, ÓÉÒ»¸ö±êÊ¶±äÁ¿insertºÍreport´úÂëÌø×ª±êÇ©¿ØÖÆ
+è¿™ä¸ªè¿‡ç¨‹åˆ†ä¸ºä¸¤æ¬¡å¾ªç¯æ¥å®Œæˆ, ç”±ä¸€ä¸ªæ ‡è¯†å˜é‡insertå’Œreportä»£ç è·³è½¬æ ‡ç­¾æ§åˆ¶
 
-    µÚÒ»´ÎÑ­»·µÄÊ±ºò, ¼ì²éĞÂÄÚ´æÇøÓòÊÇ·ñ¿ÉÒÔ·ÅÈëÄÚ´æ¿éÖĞ²¢µ÷ÓÃmemblock_double_array£¬ 
-    ¶øÓÉÓÚinsert = false, ÔòÖ´ĞĞ!insertÌõ¼şÓï¾ä±ê¼ÇµÄ´úÂë¿é, ²¢ÉèÖÃinsert = true, 
-    È»ºógoto Ìø×ªµ½report±êÇ©¼ÌĞø¿ªÊ¼µÚ¶ş´ÎÑ­»·
+    ç¬¬ä¸€æ¬¡å¾ªç¯çš„æ—¶å€™, æ£€æŸ¥æ–°å†…å­˜åŒºåŸŸæ˜¯å¦å¯ä»¥æ”¾å…¥å†…å­˜å—ä¸­å¹¶è°ƒç”¨memblock_double_arrayï¼Œ 
+    è€Œç”±äºinsert = false, åˆ™æ‰§è¡Œ!insertæ¡ä»¶è¯­å¥æ ‡è®°çš„ä»£ç å—, å¹¶è®¾ç½®insert = true, 
+    ç„¶ågoto è·³è½¬åˆ°reportæ ‡ç­¾ç»§ç»­å¼€å§‹ç¬¬äºŒæ¬¡å¾ªç¯
 
-    µÚ¶ş´ÎÑ­»·ÖĞ, insert = true, ÔòÖ´ĞĞÏàÓ¦µÄinsert == trueµÄ´úÂë¿é, 
-    ²¢ÇÒÖ´ĞĞmemblock_insert_region½«ĞÂÄÚ´æÇøÓò²åÈë,
-    ×îºóÖ´ĞĞmemblock_merge_regions(type)ºÏ²¢ÄÚ´æÇøÓò
+    ç¬¬äºŒæ¬¡å¾ªç¯ä¸­, insert = true, åˆ™æ‰§è¡Œç›¸åº”çš„insert == trueçš„ä»£ç å—, 
+    å¹¶ä¸”æ‰§è¡Œmemblock_insert_regionå°†æ–°å†…å­˜åŒºåŸŸæ’å…¥,
+    æœ€åæ‰§è¡Œmemblock_merge_regions(type)åˆå¹¶å†…å­˜åŒºåŸŸ
 */
 	/* insert the remaining portion */
 	if (base < end) {
@@ -680,17 +680,17 @@ repeat:
 	 * insertions; otherwise, merge and return.
 	 */
 /*
-ÕâÊÇµÚÒ»´ÎÑ­»·, ÎÒÃÇĞèÒª¼ì²éĞÂÄÚ´æÇøÓòÊÇ·ñ¿ÉÒÔ·ÅÈëÄÚ´æ¿éÖĞ²¢µ÷ÓÃmemblock_double_array:
+è¿™æ˜¯ç¬¬ä¸€æ¬¡å¾ªç¯, æˆ‘ä»¬éœ€è¦æ£€æŸ¥æ–°å†…å­˜åŒºåŸŸæ˜¯å¦å¯ä»¥æ”¾å…¥å†…å­˜å—ä¸­å¹¶è°ƒç”¨memblock_double_array:
 */
-	if (!insert) {/*  µÚÒ»´ÎÖ´ĞĞµÄµÄÊ±ºòinsert == false  */
-		/* Èç¹û³öÏÖregion[]Êı×é¿Õ¼ä²»¹»µÄÇé¿ö£¬ÔòÌí¼ÓĞÂregion[]¿Õ¼ä */
+	if (!insert) {/*  ç¬¬ä¸€æ¬¡æ‰§è¡Œçš„çš„æ—¶å€™insert == false  */
+		/* å¦‚æœå‡ºç°region[]æ•°ç»„ç©ºé—´ä¸å¤Ÿçš„æƒ…å†µï¼Œåˆ™æ·»åŠ æ–°region[]ç©ºé—´ */
 		while (type->cnt + nr_new > type->max)
-			if (memblock_double_array(type, obase, size) < 0) // memblock_double_arrayº¯Êı¼Ó±¶¸ø¶¨µÄÄÚ´æÇøÓò´óĞ¡£¬È»ºó°ÑinsertÉèÎªtrueÔÙ×ªµ½repeat±êÇ©.
+			if (memblock_double_array(type, obase, size) < 0) // memblock_double_arrayå‡½æ•°åŠ å€ç»™å®šçš„å†…å­˜åŒºåŸŸå¤§å°ï¼Œç„¶åæŠŠinsertè®¾ä¸ºtrueå†è½¬åˆ°repeatæ ‡ç­¾.
 				return -ENOMEM;
 		insert = true;
 		goto repeat;
 	} else {
-		/* °Ñ½ô°¤×ÅµÄÄÚ´æºÏ²¢ */
+		/* æŠŠç´§æŒ¨ç€çš„å†…å­˜åˆå¹¶ */
 		memblock_merge_regions(type);
 		return 0;
 	}
@@ -701,7 +701,7 @@ int __init_memblock memblock_add_node(phys_addr_t base, phys_addr_t size,
 {
 	return memblock_add_range(&memblock.memory, base, size, nid, 0);
 }
-// ÏòmemoryÇøÖĞÌí¼ÓÄÚ´æÇøÓò
+// å‘memoryåŒºä¸­æ·»åŠ å†…å­˜åŒºåŸŸ
 int __init_memblock memblock_add(phys_addr_t base, phys_addr_t size)
 {
 	phys_addr_t end = base + size - 1;
@@ -789,9 +789,9 @@ static int __init_memblock memblock_isolate_range(struct memblock_type *type,
 }
 
 /**
- * ´ÓÖ¸¶¨µÄmemblockÖĞÒÆ³ıÖ¸¶¨ÎïÀíµØÖ·ËùÖ¸¶¨µÄmemory region.
- * Èç¹ûËùÖ¸¶¨µÄÇøÓòÊÇ´æÔÚÇøÓòµÄÒ»²¿·Ö£¬ÔòÉæ¼°µ½µ÷Õûregion´óĞ¡£¬
- * »òÕß½«Ò»¸öregion²ğ·Ö³ÉÎªÁ½¸öregion.
+ * ä»æŒ‡å®šçš„memblockä¸­ç§»é™¤æŒ‡å®šç‰©ç†åœ°å€æ‰€æŒ‡å®šçš„memory region.
+ * å¦‚æœæ‰€æŒ‡å®šçš„åŒºåŸŸæ˜¯å­˜åœ¨åŒºåŸŸçš„ä¸€éƒ¨åˆ†ï¼Œåˆ™æ¶‰åŠåˆ°è°ƒæ•´regionå¤§å°ï¼Œ
+ * æˆ–è€…å°†ä¸€ä¸ªregionæ‹†åˆ†æˆä¸ºä¸¤ä¸ªregion.
  */
 static int __init_memblock memblock_remove_range(struct memblock_type *type,
 					  phys_addr_t base, phys_addr_t size)
@@ -807,7 +807,7 @@ static int __init_memblock memblock_remove_range(struct memblock_type *type,
 		memblock_remove_region(type, i);
 	return 0;
 }
-//  ÏòmemoryÇøÖĞÉ¾³ıÇøÓò
+//  å‘memoryåŒºä¸­åˆ é™¤åŒºåŸŸ
 int __init_memblock memblock_remove(phys_addr_t base, phys_addr_t size)
 {
 	return memblock_remove_range(&memblock.memory, base, size);
@@ -815,8 +815,8 @@ int __init_memblock memblock_remove(phys_addr_t base, phys_addr_t size)
 
 
 /**
- * Ê¹ÓÃ¸Ãº¯ÊıÀ´ÊÍ·ÅÓÉmemblock_allocÉêÇëµ½µÄÎïÀíÄÚ´æ£¬ÊÍ·ÅµÄÄÚ´æ
- * »á´Ómemblock.reservedÖĞÒÆ³ı£¬²¢¼ÓÈëmemblock.memoryÖĞ
+ * ä½¿ç”¨è¯¥å‡½æ•°æ¥é‡Šæ”¾ç”±memblock_allocç”³è¯·åˆ°çš„ç‰©ç†å†…å­˜ï¼Œé‡Šæ”¾çš„å†…å­˜
+ * ä¼šä»memblock.reservedä¸­ç§»é™¤ï¼Œå¹¶åŠ å…¥memblock.memoryä¸­
  */
 int __init_memblock memblock_free(phys_addr_t base, phys_addr_t size)
 {
@@ -829,14 +829,14 @@ int __init_memblock memblock_free(phys_addr_t base, phys_addr_t size)
 	return memblock_remove_range(&memblock.reserved, base, size);
 }
 /*
-ÎÒÃÇ»á·¢ÏÖÊ×ÏÈmemblock_reserveº¯ÊıÒ²ÊÇÍ¨¹ımemblock_add_rangeÀ´ÊµÏÖµÄ,
-ÎÒÃÇ°Ñmemblock_addµÄÊµÏÖÌù³öÀ´½øĞĞ¶Ô±È, 
-ÎÒÃÇ»á·¢ÏÖËûÃÇ¾ÍµÚÒ»¸ö²ÎÊı²»Ò»Ñù
+æˆ‘ä»¬ä¼šå‘ç°é¦–å…ˆmemblock_reserveå‡½æ•°ä¹Ÿæ˜¯é€šè¿‡memblock_add_rangeæ¥å®ç°çš„,
+æˆ‘ä»¬æŠŠmemblock_addçš„å®ç°è´´å‡ºæ¥è¿›è¡Œå¯¹æ¯”, 
+æˆ‘ä»¬ä¼šå‘ç°ä»–ä»¬å°±ç¬¬ä¸€ä¸ªå‚æ•°ä¸ä¸€æ ·
 
-memblock_reserveÊ¹ÓÃÈ«¾Ö±äÁ¿memblockµÄreservedÓò, 
-×îÖÕ½«·ÖÅäµ½µÄÄÚ´æ¿éĞÅÏ¢Ìí¼Óµ½reservedÇøÓòÖĞ
+memblock_reserveä½¿ç”¨å…¨å±€å˜é‡memblockçš„reservedåŸŸ, 
+æœ€ç»ˆå°†åˆ†é…åˆ°çš„å†…å­˜å—ä¿¡æ¯æ·»åŠ åˆ°reservedåŒºåŸŸä¸­
 
-memblock_addÔòÊ¹ÓÃÁËÈ«¾Ö±äÁ¿µÄmemoryÓò, ×îÖÕ½«ÄÚ´æ¿éÌí¼Óµ½ÁËmemoryÇøÓò
+memblock_addåˆ™ä½¿ç”¨äº†å…¨å±€å˜é‡çš„memoryåŸŸ, æœ€ç»ˆå°†å†…å­˜å—æ·»åŠ åˆ°äº†memoryåŒºåŸŸ
 */
 int __init_memblock memblock_reserve(phys_addr_t base, phys_addr_t size)
 {
@@ -1281,10 +1281,10 @@ static phys_addr_t __init memblock_alloc_range_nid(phys_addr_t size,
 	if (!align)
 		align = SMP_CACHE_BYTES;
 
-    // Ö¸¶¨ÄÚ´æÇøÓòºÍ´óĞ¡²éÕÒÄÚ´æÇøÓò
+    // æŒ‡å®šå†…å­˜åŒºåŸŸå’Œå¤§å°æŸ¥æ‰¾å†…å­˜åŒºåŸŸ
 	found = memblock_find_in_range_node(size, align, start, end, nid,
 					    flags);
-	/* Èç¹û·ÖÅä³É¹¦, ½«¶ÔÓ¦ÄÚ´æ¿éÖÃÎªÒÑ·ÖÅä: ¼´Ìí¼Óµ½memblock.reservedÖĞ */
+	/* å¦‚æœåˆ†é…æˆåŠŸ, å°†å¯¹åº”å†…å­˜å—ç½®ä¸ºå·²åˆ†é…: å³æ·»åŠ åˆ°memblock.reservedä¸­ */
 	if (found && !memblock_reserve(found, size)) {
 		/*
 		 * The min_count is set to 0 so that memblock allocations are
@@ -1329,7 +1329,7 @@ again:
 
 phys_addr_t __init __memblock_alloc_base(phys_addr_t size, phys_addr_t align, phys_addr_t max_addr)
 {
-	/* NUMA_NO_NODEÈë²Î±íÊ¾ÎŞNUMAµÄ½Úµã, ÒòÎªµ±Ç°»¹Ã»³õÊ¼»¯µ½ÄÇÒ»²½ */
+	/* NUMA_NO_NODEå…¥å‚è¡¨ç¤ºæ— NUMAçš„èŠ‚ç‚¹, å› ä¸ºå½“å‰è¿˜æ²¡åˆå§‹åŒ–åˆ°é‚£ä¸€æ­¥ */
 	return memblock_alloc_base_nid(size, align, max_addr, NUMA_NO_NODE,
 				       MEMBLOCK_NONE);
 }
@@ -1348,13 +1348,13 @@ phys_addr_t __init memblock_alloc_base(phys_addr_t size, phys_addr_t align, phys
 }
 
 /**
- * Ê¹ÓÃ¸Ãº¯Êı¿ÉÒÔÏòkernelÉêÇëÒ»¿é¿ÉÓÃµÄÎïÀíÄÚ´æ¡£Êµ¼ÊµÄ²Ù×÷ÊÇ
- * ÔÚmemblock.memoryÖĞÕÒµ½ºÏÊÊµÄÄÚ´æ£¬½«Æä´Ómemblock.memoryÈ¥³ı£¬
- * ¼ÓÈëµ½memblock.reservedÖĞÒÔ±ê¼ÇÆäÒÑ¾­±»Ê¹ÓÃ¡£
+ * ä½¿ç”¨è¯¥å‡½æ•°å¯ä»¥å‘kernelç”³è¯·ä¸€å—å¯ç”¨çš„ç‰©ç†å†…å­˜ã€‚å®é™…çš„æ“ä½œæ˜¯
+ * åœ¨memblock.memoryä¸­æ‰¾åˆ°åˆé€‚çš„å†…å­˜ï¼Œå°†å…¶ä»memblock.memoryå»é™¤ï¼Œ
+ * åŠ å…¥åˆ°memblock.reservedä¸­ä»¥æ ‡è®°å…¶å·²ç»è¢«ä½¿ç”¨ã€‚
  */
 phys_addr_t __init memblock_alloc(phys_addr_t size, phys_addr_t align)
 {
-	/* MEMBLOCK_ALLOC_ACCESSIBLE±íÊ¾ÉêÇëÄÚ´æ¿É·ÃÎÊ */
+	/* MEMBLOCK_ALLOC_ACCESSIBLEè¡¨ç¤ºç”³è¯·å†…å­˜å¯è®¿é—® */
 	return memblock_alloc_base(size, align, MEMBLOCK_ALLOC_ACCESSIBLE);
 }
 
@@ -1779,7 +1779,7 @@ bool __init_memblock memblock_is_region_reserved(phys_addr_t base, phys_addr_t s
 	return memblock_overlaps_region(&memblock.reserved, base, size);
 }
 
-/* ¸Ãº¯ÊıÖ÷ÒªÓÃÓÚ¶Ômemblock.memory×öĞŞÕû£¬ÌŞ³ı²»¶ÔÆëµÄ²¿·Ö */
+/* è¯¥å‡½æ•°ä¸»è¦ç”¨äºå¯¹memblock.memoryåšä¿®æ•´ï¼Œå‰”é™¤ä¸å¯¹é½çš„éƒ¨åˆ† */
 void __init_memblock memblock_trim_memory(phys_addr_t align)
 {
 	phys_addr_t start, end, orig_start, orig_end;

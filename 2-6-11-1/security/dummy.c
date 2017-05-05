@@ -29,8 +29,8 @@
 #include <linux/ptrace.h>
 #include <linux/file.h>
 
-/* °²È«½á¹¹ÌåµÄËùÓĞÄ¬ÈÏ»Øµ÷¶¼Îª¿Õ
-  * Ò²¾ÍÊÇÉ¶Ò²²»×ö 
+/* å®‰å…¨ç»“æ„ä½“çš„æ‰€æœ‰é»˜è®¤å›è°ƒéƒ½ä¸ºç©º
+  * ä¹Ÿå°±æ˜¯å•¥ä¹Ÿä¸åš 
   */
 
 static int dummy_ptrace (struct task_struct *parent, struct task_struct *child)
@@ -850,7 +850,7 @@ struct security_operations dummy_security_ops;
 	} while (0)
 
                      
-/* Èç¹û°²È«½á¹¹ÌåµÄ×Ö¶ÎÎª¿Õ£¬ÔòÉèÖÃÎªÏµÍ³ÖĞÄ¬ÈÏµÄ
+/* å¦‚æœå®‰å…¨ç»“æ„ä½“çš„å­—æ®µä¸ºç©ºï¼Œåˆ™è®¾ç½®ä¸ºç³»ç»Ÿä¸­é»˜è®¤çš„
   */
 void security_fixup_ops (struct security_operations *ops)
 {

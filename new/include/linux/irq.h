@@ -140,17 +140,17 @@ struct irq_domain;
  * @ipi_offset:		Offset of first IPI target cpu in @affinity. Optional.
  */
 struct irq_common_data {
-	//×´Ì¬
+	//çŠ¶æ€
 	unsigned int		__private state_use_accessors;
 #ifdef CONFIG_NUMA
-	//ÓÃÓÚ¸ºÔØÆ½ºâ
+	//ç”¨äºè´Ÿè½½å¹³è¡¡
 	unsigned int		node;
 #endif
-	//ÖĞ¶ÏË½ÓĞÊı¾İ
+	//ä¸­æ–­ç§æœ‰æ•°æ®
 	void			*handler_data;
-	//msiÃèÊö·û
+	//msiæè¿°ç¬¦
 	struct msi_desc		*msi_desc;
-	//ÖĞ¶ÏÇ×ºÍĞÔ
+	//ä¸­æ–­äº²å’Œæ€§
 	cpumask_var_t		affinity;
 #ifdef CONFIG_GENERIC_IRQ_IPI
 	unsigned int		ipi_offset;
@@ -172,23 +172,23 @@ struct irq_common_data {
  *			methods, to allow shared chip implementations
  */
 struct irq_data {
-	//Ô¤ÏÈ¼ÆËãºÃµÄ£¬·ÃÎÊ¼Ä´æÆ÷µÄÎ»Í¼¡£
+	//é¢„å…ˆè®¡ç®—å¥½çš„ï¼Œè®¿é—®å¯„å­˜å™¨çš„ä½å›¾ã€‚
 	u32			mask;
-	//ÖĞ¶Ï±àºÅ
+	//ä¸­æ–­ç¼–å·
 	unsigned int		irq;
-	//Ó²¼şÖĞ¶Ï±àºÅ
+	//ç¡¬ä»¶ä¸­æ–­ç¼–å·
 	unsigned long		hwirq;
-	//Ö¸ÏòËùÓĞÖĞ¶ÏĞ¾Æ¬¹²ÏíÊı¾İµÄÖ¸Õë
+	//æŒ‡å‘æ‰€æœ‰ä¸­æ–­èŠ¯ç‰‡å…±äº«æ•°æ®çš„æŒ‡é’ˆ
 	struct irq_common_data	*common;
-	//ÖĞ¶Ï¿ØÖÆĞ¾Æ¬
+	//ä¸­æ–­æ§åˆ¶èŠ¯ç‰‡
 	struct irq_chip		*chip;
-	//½«Ó²¼şÖĞ¶Ï±àºÅ×ª»»ÎªÖĞ¶Ï±àºÅµÄÓò
+	//å°†ç¡¬ä»¶ä¸­æ–­ç¼–å·è½¬æ¢ä¸ºä¸­æ–­ç¼–å·çš„åŸŸ
 	struct irq_domain	*domain;
 #ifdef	CONFIG_IRQ_DOMAIN_HIERARCHY
-	//ÔÚÖ§³Ö¶à¼¶¿ØÖÆÓòµÄÊ±ºò£¬Ö¸ÏòÉÏ¼¶½á¹¹
+	//åœ¨æ”¯æŒå¤šçº§æ§åˆ¶åŸŸçš„æ—¶å€™ï¼ŒæŒ‡å‘ä¸Šçº§ç»“æ„
 	struct irq_data		*parent_data;
 #endif
-	//Æ½Ì¨ÌØ¶¨µÄÖĞ¶Ï¿ØÖÆÆ÷Êı¾İ
+	//å¹³å°ç‰¹å®šçš„ä¸­æ–­æ§åˆ¶å™¨æ•°æ®
 	void			*chip_data;
 };
 
@@ -393,33 +393,33 @@ static inline irq_hw_number_t irqd_to_hwirq(struct irq_data *d)
  */
 struct irq_chip {
 	struct device	*parent_device;
-	/*¸ÃÖĞ¶Ï¿ØÖÆÆ÷µÄÃû×Ö£¬ÏÔÊ¾ÔÚ/proc/interrupts*/
+	/*è¯¥ä¸­æ–­æ§åˆ¶å™¨çš„åå­—ï¼Œæ˜¾ç¤ºåœ¨/proc/interrupts*/
 	const char	*name;
-	/*Æô¶¯ÖĞ¶Ï*/
+	/*å¯åŠ¨ä¸­æ–­*/
 	unsigned int	(*irq_startup)(struct irq_data *data);
-		/*¹Ø±ÕÖĞ¶Ï*/
+		/*å…³é—­ä¸­æ–­*/
 	void		(*irq_shutdown)(struct irq_data *data);
-	/*Ê¹ÄÜÖĞ¶Ï*/
+	/*ä½¿èƒ½ä¸­æ–­*/
 	void		(*irq_enable)(struct irq_data *data);
-		/*½ûÖ¹ÖĞ¶Ï*/
+		/*ç¦æ­¢ä¸­æ–­*/
 	void		(*irq_disable)(struct irq_data *data);
-        /* ÖĞ¶ÏÓ¦´ğº¯Êı£¬¾ÍÊÇÇå³ıÖĞ¹Û±êÖ¾*/
+        /* ä¸­æ–­åº”ç­”å‡½æ•°ï¼Œå°±æ˜¯æ¸…é™¤ä¸­è§‚æ ‡å¿—*/
 	void		(*irq_ack)(struct irq_data *data);
 	void		(*irq_mask)(struct irq_data *data);
-	/*ÆÁ±ÎÖĞ¶ÏÓ¦´ğº¯Êı£¬Ò»°ãÓÃÓÚµçÆ¿´¥·¢·½Ê½£¬ĞèÒªÏÈÆÁ±ÎÔÙÓ¦´ğ*/
+	/*å±è”½ä¸­æ–­åº”ç­”å‡½æ•°ï¼Œä¸€èˆ¬ç”¨äºç”µç“¶è§¦å‘æ–¹å¼ï¼Œéœ€è¦å…ˆå±è”½å†åº”ç­”*/
 	void		(*irq_mask_ack)(struct irq_data *data);
-	/*¿ªÆôÖĞ¶Ï*/
+	/*å¼€å¯ä¸­æ–­*/
 	void		(*irq_unmask)(struct irq_data *data);
 	void		(*irq_eoi)(struct irq_data *data);
 
 	int		(*irq_set_affinity)(struct irq_data *data, const struct cpumask *dest, bool force);
 	int		(*irq_retrigger)(struct irq_data *data);
-		/* ÉèÖÃÖĞ¶ÏÀàĞÍ£¬ÆäÖĞ°üÀ¨ÉèÖÃGPIO¿ÚÎªÖĞ¶ÏÊäÈë*/
+		/* è®¾ç½®ä¸­æ–­ç±»å‹ï¼Œå…¶ä¸­åŒ…æ‹¬è®¾ç½®GPIOå£ä¸ºä¸­æ–­è¾“å…¥*/
 	int		(*irq_set_type)(struct irq_data *data, unsigned int flow_type);
 	int		(*irq_set_wake)(struct irq_data *data, unsigned int on);
-    /*ÉÏËøº¯Êı*/
+    /*ä¸Šé”å‡½æ•°*/
 	void		(*irq_bus_lock)(struct irq_data *data);
-		/*½âËø*/
+		/*è§£é”*/
 	void		(*irq_bus_sync_unlock)(struct irq_data *data);
 
 	void		(*irq_cpu_online)(struct irq_data *data);

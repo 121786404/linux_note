@@ -88,19 +88,19 @@ static void sched_info_arrive(struct rq *rq, struct task_struct *t)
 {
 	unsigned long long now = rq_clock(rq), delta = 0;
 
-    /*Èç¹û±»ÇĞ»»½øÀ´Ç°ÔÚÔËĞĞ½ø³ÌÖĞÅÅ¶Ó*/
+    /*å¦‚æœè¢«åˆ‡æ¢è¿›æ¥å‰åœ¨è¿è¡Œè¿›ç¨‹ä¸­æ’é˜Ÿ*/
 	if (t->sched_info.last_queued)
-        /*¼ÆËãÅÅ¶ÓµÈ´ıµÄÊ±¼ä³¤¶È*/  
+        /*è®¡ç®—æ’é˜Ÿç­‰å¾…çš„æ—¶é—´é•¿åº¦*/  
 		delta = now - t->sched_info.last_queued;
-    /*ÒòÎª½ø³Ì½«±»ÇĞ»»½øÀ´ÔËĞĞ£¬Éè¶¨last_queuedÎª0*/  
+    /*å› ä¸ºè¿›ç¨‹å°†è¢«åˆ‡æ¢è¿›æ¥è¿è¡Œï¼Œè®¾å®šlast_queuedä¸º0*/  
 	sched_info_reset_dequeued(t);
-    /*¸üĞÂ½ø³ÌÔÚÔËĞĞ¶ÓÁĞÀïÃæµÈ´ıµÄÊ±¼ä*/ 
+    /*æ›´æ–°è¿›ç¨‹åœ¨è¿è¡Œé˜Ÿåˆ—é‡Œé¢ç­‰å¾…çš„æ—¶é—´*/ 
 	t->sched_info.run_delay += delta;
-    /*¸üĞÂ×îºóÒ»´ÎÔËĞĞµÄÊ±¼ä*/
+    /*æ›´æ–°æœ€åä¸€æ¬¡è¿è¡Œçš„æ—¶é—´*/
 	t->sched_info.last_arrival = now;
-    /*cpuÉÏÔËĞĞµÄ´ÎÊı¼ÓÒ»*/ 
+    /*cpuä¸Šè¿è¡Œçš„æ¬¡æ•°åŠ ä¸€*/ 
 	t->sched_info.pcount++;
-    /*¸üĞÂrqÖĞrq_sched_infoÖĞµÄ¶ÔÓ¦µÄ±äÁ¿*/
+    /*æ›´æ–°rqä¸­rq_sched_infoä¸­çš„å¯¹åº”çš„å˜é‡*/
 	rq_sched_info_arrive(rq, delta);
 }
 
@@ -126,16 +126,16 @@ static inline void sched_info_queued(struct rq *rq, struct task_struct *t)
  */
 static inline void sched_info_depart(struct rq *rq, struct task_struct *t)
 {
-    /*¼ÆËãÔÚ½ø³ÌÔÚrqÖĞÔËĞĞµÄÊ±¼ä³¤¶È*/  
+    /*è®¡ç®—åœ¨è¿›ç¨‹åœ¨rqä¸­è¿è¡Œçš„æ—¶é—´é•¿åº¦*/  
 	unsigned long long delta = rq_clock(rq) -
 					t->sched_info.last_arrival;
 
-    /*¸üĞÂRunQueueÖĞµÄTaskËùµÃµ½CPUˆÌĞĞ•régµÄÀÛ¼ÓÖµ.*/
+    /*æ›´æ–°RunQueueä¸­çš„Taskæ‰€å¾—åˆ°CPUåŸ·è¡Œæ™‚é–“çš„ç´¯åŠ å€¼.*/
 	rq_sched_info_depart(rq, delta);
 
-    /*Èç¹û±»ÇĞ»»³öÈ¥½ø³ÌµÄ×´Ì¬ÊÇÔËĞĞ×´Ì¬ 
-        ÄÇÃ´½«½ø³Ìsched_info.last_queuedÉèÖÃÎªrqµÄclock 
-        last_queuedÎª×îºóÒ»´ÎÅÅ¶ÓµÈ´ıÔËĞĞµÄÊ±¼ä*/ 
+    /*å¦‚æœè¢«åˆ‡æ¢å‡ºå»è¿›ç¨‹çš„çŠ¶æ€æ˜¯è¿è¡ŒçŠ¶æ€ 
+        é‚£ä¹ˆå°†è¿›ç¨‹sched_info.last_queuedè®¾ç½®ä¸ºrqçš„clock 
+        last_queuedä¸ºæœ€åä¸€æ¬¡æ’é˜Ÿç­‰å¾…è¿è¡Œçš„æ—¶é—´*/ 
 	if (t->state == TASK_RUNNING)
 		sched_info_queued(rq, t);
 }
@@ -154,14 +154,14 @@ __sched_info_switch(struct rq *rq,
 	 * stats about how efficient we were at scheduling the idle
 	 * process, however.
 	 */
-    /*Èç¹û±»ÇĞ»»³öÈ¥µÄ½ø³Ì²»ÊÇidle½ø³Ì*/
+    /*å¦‚æœè¢«åˆ‡æ¢å‡ºå»çš„è¿›ç¨‹ä¸æ˜¯idleè¿›ç¨‹*/
 	if (prev != rq->idle)
-        /*¸üĞÂprev½ø³ÌºÍËû¶ÔÓ¦rqµÄÏà¹Ø±äÁ¿*/
+        /*æ›´æ–°prevè¿›ç¨‹å’Œä»–å¯¹åº”rqçš„ç›¸å…³å˜é‡*/
 		sched_info_depart(rq, prev);
 
-    /*Èç¹ûÇĞ»»½øÀ´µÄ½ø³Ì²»ÊÇidle½ø³Ì*/ 
+    /*å¦‚æœåˆ‡æ¢è¿›æ¥çš„è¿›ç¨‹ä¸æ˜¯idleè¿›ç¨‹*/ 
 	if (next != rq->idle)
-        /*¸üĞÂnext½ø³ÌºÍ¶ÔÓ¦¶ÓÁĞµÄÏà¹Ø±äÁ¿*/
+        /*æ›´æ–°nextè¿›ç¨‹å’Œå¯¹åº”é˜Ÿåˆ—çš„ç›¸å…³å˜é‡*/
 		sched_info_arrive(rq, next);
 }
 static inline void

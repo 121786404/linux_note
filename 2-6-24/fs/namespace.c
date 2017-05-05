@@ -166,9 +166,9 @@ static void detach_mnt(struct vfsmount *mnt, struct nameidata *old_nd)
 void mnt_set_mountpoint(struct vfsmount *mnt, struct dentry *dentry,
 			struct vfsmount *child_mnt)
 {
-	/* Ìí¼Ó¸¸ÎÄ¼şÏµÍ³µÄÒıÓÃ¼ÆÊı²¢½«ÆäÉèÖÃµ½×°ÔØµãµÄ¸¸½á¹¹×Ö¶ÎÖĞ */
+	/* æ·»åŠ çˆ¶æ–‡ä»¶ç³»ç»Ÿçš„å¼•ç”¨è®¡æ•°å¹¶å°†å…¶è®¾ç½®åˆ°è£…è½½ç‚¹çš„çˆ¶ç»“æ„å­—æ®µä¸­ */
 	child_mnt->mnt_parent = mntget(mnt);
-	/* ÉèÖÃ×°ÔØµãÎ»ÖÃ */
+	/* è®¾ç½®è£…è½½ç‚¹ä½ç½® */
 	child_mnt->mnt_mountpoint = dget(dentry);
 	dentry->d_mounted++;
 }
@@ -575,7 +575,7 @@ static int do_umount(struct vfsmount *mnt, int flags)
 	 */
 
 	lock_kernel();
-	if (sb->s_op->umount_begin)/* ÔÚumountÇ°£¬µ÷ÓÃ´Ë»Øµ÷½øĞĞÔ¤´¦Àí¡£ */
+	if (sb->s_op->umount_begin)/* åœ¨umountå‰ï¼Œè°ƒç”¨æ­¤å›è°ƒè¿›è¡Œé¢„å¤„ç†ã€‚ */
 		sb->s_op->umount_begin(mnt, flags);
 	unlock_kernel();
 
@@ -609,9 +609,9 @@ static int do_umount(struct vfsmount *mnt, int flags)
 	event++;
 
 	retval = -EBUSY;
-	/* Ç¿ÖÆĞ¶ÔØ»òÕßÃ»ÓĞË­ĞèÒª¸ÃÎÄ¼şÏµÍ³ */
+	/* å¼ºåˆ¶å¸è½½æˆ–è€…æ²¡æœ‰è°éœ€è¦è¯¥æ–‡ä»¶ç³»ç»Ÿ */
 	if (flags & MNT_DETACH || !propagate_mount_busy(mnt, 2)) {
-		if (!list_empty(&mnt->mnt_list))/* µİ¼õmount¼ÆÊı£¬²¢´ÓÄÚºËÁ´±íÖĞÕª³ı */
+		if (!list_empty(&mnt->mnt_list))/* é€’å‡mountè®¡æ•°ï¼Œå¹¶ä»å†…æ ¸é“¾è¡¨ä¸­æ‘˜é™¤ */
 			umount_tree(mnt, 1, &umount_list);
 		retval = 0;
 	}
@@ -619,7 +619,7 @@ static int do_umount(struct vfsmount *mnt, int flags)
 	if (retval)
 		security_sb_umount_busy(mnt);
 	up_write(&namespace_sem);
-	/* »Ö¸´»·¾³µ½mountÇ°µÄ×´Ì¬ */
+	/* æ¢å¤ç¯å¢ƒåˆ°mountå‰çš„çŠ¶æ€ */
 	release_mounts(&umount_list);
 	return retval;
 }
@@ -633,19 +633,19 @@ static int do_umount(struct vfsmount *mnt, int flags)
  */
 
 /**
- * umountÏµÍ³µ÷ÓÃ
+ * umountç³»ç»Ÿè°ƒç”¨
  */
 asmlinkage long sys_umount(char __user * name, int flags)
 {
 	struct nameidata nd;
 	int retval;
 
-	/* ¸ù¾İÓÃ»§Ì¬²ÎÊı£¬µ÷ÓÃdo_path_lookup²éÕÒ×°ÔØµã */
+	/* æ ¹æ®ç”¨æˆ·æ€å‚æ•°ï¼Œè°ƒç”¨do_path_lookupæŸ¥æ‰¾è£…è½½ç‚¹ */
 	retval = __user_walk(name, LOOKUP_FOLLOW, &nd);
 	if (retval)
 		goto out;
 	retval = -EINVAL;
-	if (nd.dentry != nd.mnt->mnt_root)/* ²»ÊÇ×°ÔØµã? */
+	if (nd.dentry != nd.mnt->mnt_root)/* ä¸æ˜¯è£…è½½ç‚¹? */
 		goto dput_and_out;
 	if (!check_mnt(nd.mnt))
 		goto dput_and_out;
@@ -654,7 +654,7 @@ asmlinkage long sys_umount(char __user * name, int flags)
 	if (!capable(CAP_SYS_ADMIN))
 		goto dput_and_out;
 
-	/* ½øĞĞÊµ¼ÊµÄumount²Ù×÷ */
+	/* è¿›è¡Œå®é™…çš„umountæ“ä½œ */
 	retval = do_umount(nd.mnt, flags);
 dput_and_out:
 	path_release_on_umount(&nd);
@@ -860,9 +860,9 @@ static int attach_recursive_mnt(struct vfsmount *source_mnt,
 		attach_mnt(source_mnt, nd);
 		touch_mnt_namespace(current->nsproxy->mnt_ns);
 	} else {
-		/* ½«vfsmountÓëdentry¹ØÁªÆğÀ´ */
+		/* å°†vfsmountä¸dentryå…³è”èµ·æ¥ */
 		mnt_set_mountpoint(dest_mnt, dest_dentry, source_mnt);
-		/* ½«×°ÔØµãÌí¼Óµ½È«¾ÖÉ¢ÁĞ±í¼°¸¸ÎÄ¼şÏµÍ³µÄÁ´±íÖĞ */
+		/* å°†è£…è½½ç‚¹æ·»åŠ åˆ°å…¨å±€æ•£åˆ—è¡¨åŠçˆ¶æ–‡ä»¶ç³»ç»Ÿçš„é“¾è¡¨ä¸­ */
 		commit_tree(source_mnt);
 	}
 
@@ -877,7 +877,7 @@ static int attach_recursive_mnt(struct vfsmount *source_mnt,
 static int graft_tree(struct vfsmount *mnt, struct nameidata *nd)
 {
 	int err;
-	if (mnt->mnt_sb->s_flags & MS_NOUSER)/* Èç¹ûÊÇÄÚºËÎÄ¼şÏµÍ³£¬Èç¹ÜµÀ£¬Ôò²»ÄÜÓÉÓÃ»§Ì¬×°ÔØ£¬ÍË³ö */
+	if (mnt->mnt_sb->s_flags & MS_NOUSER)/* å¦‚æœæ˜¯å†…æ ¸æ–‡ä»¶ç³»ç»Ÿï¼Œå¦‚ç®¡é“ï¼Œåˆ™ä¸èƒ½ç”±ç”¨æˆ·æ€è£…è½½ï¼Œé€€å‡º */
 		return -EINVAL;
 
 	if (S_ISDIR(nd->dentry->d_inode->i_mode) !=
@@ -895,7 +895,7 @@ static int graft_tree(struct vfsmount *mnt, struct nameidata *nd)
 
 	err = -ENOENT;
 	if (IS_ROOT(nd->dentry) || !d_unhashed(nd->dentry))
-		err = attach_recursive_mnt(mnt, nd, NULL);/* ½«ÎÄ¼şÏµÍ³Ìí¼Óµ½¸¸ÎÄ¼şÏµÍ³µÄÃüÃû¿Õ¼ä */
+		err = attach_recursive_mnt(mnt, nd, NULL);/* å°†æ–‡ä»¶ç³»ç»Ÿæ·»åŠ åˆ°çˆ¶æ–‡ä»¶ç³»ç»Ÿçš„å‘½åç©ºé—´ */
 out_unlock:
 	mutex_unlock(&nd->dentry->d_inode->i_mutex);
 	if (!err)
@@ -1104,14 +1104,14 @@ static int do_new_mount(struct nameidata *nd, char *type, int flags,
 		return -EPERM;
 
 	/**
-	 * ÕÒµ½Æ¥ÅäµÄÎÄ¼şÏµÍ³£¬Èç¹ûÃ»ÓĞÆ¥ÅäµÄÎÄ¼şÏµÍ³£¬Ôò¼ÓÔØÏàÓ¦µÄÄ£¿é 
-	 * µ÷ÓÃÌØ¶¨ÎÄ¼şÏµÍ³µÄget_sb¶ÁÈ¡Ïà¹Ø³¬¼¶¿é
+	 * æ‰¾åˆ°åŒ¹é…çš„æ–‡ä»¶ç³»ç»Ÿï¼Œå¦‚æœæ²¡æœ‰åŒ¹é…çš„æ–‡ä»¶ç³»ç»Ÿï¼Œåˆ™åŠ è½½ç›¸åº”çš„æ¨¡å— 
+	 * è°ƒç”¨ç‰¹å®šæ–‡ä»¶ç³»ç»Ÿçš„get_sbè¯»å–ç›¸å…³è¶…çº§å—
 	 */
 	mnt = do_kern_mount(type, flags, name, data);
 	if (IS_ERR(mnt))
 		return PTR_ERR(mnt);
 
-	/* ½«ÎÄ¼şÏµÍ³¼ÓÔØµ½ÏµÍ³ÖĞ */
+	/* å°†æ–‡ä»¶ç³»ç»ŸåŠ è½½åˆ°ç³»ç»Ÿä¸­ */
 	return do_add_mount(mnt, nd, mnt_flags, NULL);
 }
 
@@ -1135,15 +1135,15 @@ int do_add_mount(struct vfsmount *newmnt, struct nameidata *nd,
 	/* Refuse the same filesystem on the same mount point */
 	err = -EBUSY;
 	if (nd->mnt->mnt_sb == newmnt->mnt_sb &&
-	    nd->mnt->mnt_root == nd->dentry)/* Í¬Ò»¸ö×°ÔØµã£¬²»ÄÜ¶à´Î½«Í¬Ò»¸öÎÄ¼şÏµÍ³×°ÔØµ½Í¬Ò»¸öÄ¿Â¼ */
+	    nd->mnt->mnt_root == nd->dentry)/* åŒä¸€ä¸ªè£…è½½ç‚¹ï¼Œä¸èƒ½å¤šæ¬¡å°†åŒä¸€ä¸ªæ–‡ä»¶ç³»ç»Ÿè£…è½½åˆ°åŒä¸€ä¸ªç›®å½• */
 		goto unlock;
 
 	err = -EINVAL;
-	if (S_ISLNK(newmnt->mnt_root->d_inode->i_mode))/* ²»ÄÜ×°ÔØµ½Á´½ÓµãÉÏ */
+	if (S_ISLNK(newmnt->mnt_root->d_inode->i_mode))/* ä¸èƒ½è£…è½½åˆ°é“¾æ¥ç‚¹ä¸Š */
 		goto unlock;
 
 	newmnt->mnt_flags = mnt_flags;
-	/* ×°ÔØÎÄ¼şÏµÍ³ */
+	/* è£…è½½æ–‡ä»¶ç³»ç»Ÿ */
 	if ((err = graft_tree(newmnt, nd)))
 		goto unlock;
 
@@ -1459,16 +1459,16 @@ long do_mount(char *dev_name, char *dir_name, char *type_page,
 	if (retval)
 		goto dput_out;
 
-	if (flags & MS_REMOUNT)/* ÖØĞÂ¼ÓÔØÎÄ¼şÏµÍ³ */
+	if (flags & MS_REMOUNT)/* é‡æ–°åŠ è½½æ–‡ä»¶ç³»ç»Ÿ */
 		retval = do_remount(&nd, flags & ~MS_REMOUNT, mnt_flags,
 				    data_page);
-	else if (flags & MS_BIND)/* Í¨¹ıloopback±êÖ¾¼ÓÔØÎÄ¼şÏµÍ³£¬Èç°ó¶¨isoÎÄ¼ş */
+	else if (flags & MS_BIND)/* é€šè¿‡loopbackæ ‡å¿—åŠ è½½æ–‡ä»¶ç³»ç»Ÿï¼Œå¦‚ç»‘å®šisoæ–‡ä»¶ */
 		retval = do_loopback(&nd, dev_name, flags & MS_REC);
 	else if (flags & (MS_SHARED | MS_PRIVATE | MS_SLAVE | MS_UNBINDABLE))
 		retval = do_change_type(&nd, flags);
-	else if (flags & MS_MOVE)/* ÒÆ¶¯Ò»¸öÒÑ¾­×°ÔØµÄÎÄ¼şÏµÍ³ */
+	else if (flags & MS_MOVE)/* ç§»åŠ¨ä¸€ä¸ªå·²ç»è£…è½½çš„æ–‡ä»¶ç³»ç»Ÿ */
 		retval = do_move_mount(&nd, dev_name);
-	else/* ÆÕÍ¨¼ÓÔØ²Ù×÷ */
+	else/* æ™®é€šåŠ è½½æ“ä½œ */
 		retval = do_new_mount(&nd, type_page, flags, mnt_flags,
 				      dev_name, data_page);
 dput_out:
@@ -1565,7 +1565,7 @@ struct mnt_namespace *copy_mnt_ns(unsigned long flags, struct mnt_namespace *ns,
 }
 
 /**
- * mountÏµÍ³µ÷ÓÃ
+ * mountç³»ç»Ÿè°ƒç”¨
  */
 asmlinkage long sys_mount(char __user * dev_name, char __user * dir_name,
 			  char __user * type, unsigned long flags,
@@ -1577,7 +1577,7 @@ asmlinkage long sys_mount(char __user * dev_name, char __user * dir_name,
 	unsigned long dev_page;
 	char *dir_page;
 
-	/* ´ÓÓÃ»§Ì¬¸´ÖÆ¼ÓÔØÑ¡Ïî */
+	/* ä»ç”¨æˆ·æ€å¤åˆ¶åŠ è½½é€‰é¡¹ */
 	retval = copy_mount_options(type, &type_page);
 	if (retval < 0)
 		return retval;
@@ -1595,12 +1595,12 @@ asmlinkage long sys_mount(char __user * dev_name, char __user * dir_name,
 	if (retval < 0)
 		goto out3;
 
-	/* »ñÈ¡´óÄÚºËËø */
+	/* è·å–å¤§å†…æ ¸é” */
 	lock_kernel();
-	/* do_mountÍê³ÉÊµ¼ÊµÄ¼ÓÔØ */
+	/* do_mountå®Œæˆå®é™…çš„åŠ è½½ */
 	retval = do_mount((char *)dev_page, dir_page, (char *)type_page,
 			  flags, (void *)data_page);
-	unlock_kernel();/* ÊÍ·Å´óÄÚºËËø */
+	unlock_kernel();/* é‡Šæ”¾å¤§å†…æ ¸é” */
 	free_page(data_page);
 
 out3:

@@ -15,7 +15,7 @@
 struct kobject;
 struct module;
 
-/* ÄÚºË¶ÔÏóµÄÊôĞÔ½á¹¹ */
+/* å†…æ ¸å¯¹è±¡çš„å±æ€§ç»“æ„ */
 struct attribute {
 	char			* name;
 	struct module 		* owner;
@@ -66,15 +66,15 @@ struct sysfs_ops {
 	ssize_t	(*store)(struct kobject *,struct attribute *,const char *, size_t);
 };
 
-/* sysfsÎÄ¼şÏµÍ³Ä¿Â¼½á¹¹ */
+/* sysfsæ–‡ä»¶ç³»ç»Ÿç›®å½•ç»“æ„ */
 struct sysfs_dirent {
 	atomic_t		s_count;
-	struct list_head	s_sibling;          /* ĞÖµÜÁ´±í */
-	struct list_head	s_children;      /* ×ÓÄ¿Â¼Á´±í */
-	void 			* s_element;           /* Èç¹ûÊÇÄÚºËÄ£¿é£¬ÔòÖ¸ÏòµÄÊÇÄÚºË¶ÔÏó */
+	struct list_head	s_sibling;          /* å…„å¼Ÿé“¾è¡¨ */
+	struct list_head	s_children;      /* å­ç›®å½•é“¾è¡¨ */
+	void 			* s_element;           /* å¦‚æœæ˜¯å†…æ ¸æ¨¡å—ï¼Œåˆ™æŒ‡å‘çš„æ˜¯å†…æ ¸å¯¹è±¡ */
 	int			s_type;
 	umode_t			s_mode;
-	struct dentry		* s_dentry;          /* ¶ÔÓ¦Í¨ÓÃµÄÄ¿Â¼Ïî */
+	struct dentry		* s_dentry;          /* å¯¹åº”é€šç”¨çš„ç›®å½•é¡¹ */
 };
 
 #define SYSFS_ROOT		0x0001

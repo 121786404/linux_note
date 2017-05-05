@@ -1,17 +1,17 @@
 /**
- *1. bdi��ʲô?
- *  bdi�����ô洢�豸���򵥵�˵�����ܹ������洢���ݵ��豸������Щ�豸�洢�������ܹ���֤��
- *�������Դ�ر�ʱҲ����ʧ������˵�������̴洢�豸�������洢�豸��USB�洢�豸��Ӳ�̴洢�豸
- *������ν�ı��ô洢�豸�����涼��bdi��ָʾ�������ڴ���Ȼ����
- *2. bdi����ģ��  
- *  ������ڴ���˵��bdi�豸�����������Ӳ�̴洢�豸���Ķ�д�ٶ��Ƿǳ����ģ����Ϊ�����ϵͳ
- *�������ܣ�Linuxϵͳ��bdi�豸�Ķ�д���ݽ����˻��壬��Щ��д�����ݻ���ʱ�������ڴ���Ա���
- *ÿ�ζ�ֱ�Ӳ���bdi�豸���������Ҫ��һ����ʱ��������ÿ��5�롢�����ݴﵽ��һ���ı��ʵȣ�����
- *��ͬ����bdi�豸�����򳤾õĴ����ڴ������׶�ʧ���������ͻȻ崻���������
- *  һ��Linuxϵͳ����غܶ�bdi�豸����bdi�豸ע�ᣨ������bdi_register(��)��ʱ��
- *��Щbdi�豸������������ʽ��֯��ȫ�ֱ���bdi_list�£�����һ���Ƚ��ر��bdi�豸���⣬������
- *default bdi�豸��default_backing_dev_info���������˱��ӽ���bdi_list�������½�һ��
- *bdi-default�ں˽���.
+ *1. bdi是什么?
+ *  bdi，备用存储设备，简单点说就是能够用来存储数据的设备，而这些设备存储的数据能够保证在
+ *计算机电源关闭时也不丢失。这样说来，软盘存储设备、光驱存储设备、USB存储设备、硬盘存储设备
+ *都是所谓的备用存储设备（后面都用bdi来指示），而内存显然不是
+ *2. bdi工作模型  
+ *  相对于内存来说，bdi设备（比如最常见的硬盘存储设备）的读写速度是非常慢的，因此为了提高系统
+ *整体性能，Linux系统对bdi设备的读写内容进行了缓冲，那些读写的数据会临时保存在内存里，以避免
+ *每次都直接操作bdi设备，但这就需要在一定的时机（比如每隔5秒、脏数据达到的一定的比率等）把它
+ *们同步到bdi设备，否则长久的呆在内存里容易丢失（比如机器突然宕机、重启）
+ *  一个Linux系统会挂载很多bdi设备，在bdi设备注册（函数：bdi_register(…)）时，
+ *这些bdi设备会以链表的形式组织在全局变量bdi_list下，除了一个比较特别的bdi设备以外，它就是
+ *default bdi设备（default_backing_dev_info），它除了被加进到bdi_list，还会新建一个
+ *bdi-default内核进程.
  */
 
 #include <linux/wait.h>
@@ -46,7 +46,7 @@ LIST_HEAD(bdi_list);
 
 /* bdi_wq serves all asynchronous writeback tasks */
 /*
- * ���������첽��д����Ĺ�������
+ * 用于所有异步回写任务的工作队列
  */
 struct workqueue_struct *bdi_wq;
 
@@ -174,7 +174,7 @@ static ssize_t read_ahead_kb_store(struct device *dev,
 	if (ret < 0)
 		return ret;
 
-	/* ���뵥λת��Ϊ: per page */
+	/* 读入单位转换为: per page */
 	bdi->ra_pages = read_ahead_kb >> (PAGE_SHIFT - 10);
 
 	return count;
@@ -969,7 +969,7 @@ int bdi_setup_and_register(struct backing_dev_info *bdi, char *name)
 EXPORT_SYMBOL(bdi_setup_and_register);
 
 /**
- * ӵ���ȴ�����, �ֱ����ڶ���д
+ * 拥塞等待队列, 分别用于读和写
  */
 static wait_queue_head_t congestion_wqh[2] = {
 		__WAIT_QUEUE_HEAD_INITIALIZER(congestion_wqh[0]),

@@ -121,7 +121,7 @@ static inline void force_quiescent_state(struct rcu_data *rdp,
  * sections are delimited by rcu_read_lock() and rcu_read_unlock(),
  * and may be nested.
  */
-/* ×¢²áÒ»¸öº¯Êı£¬ÔÚËùÓĞÕë¶Ô¹²Ïí×ÊÔ´µÄ¶Á·ÃÎÊÍê³ÉÒÔºó£¬µ÷ÓÃ»Øµ÷º¯Êı¡£ */
+/* æ³¨å†Œä¸€ä¸ªå‡½æ•°ï¼Œåœ¨æ‰€æœ‰é’ˆå¯¹å…±äº«èµ„æºçš„è¯»è®¿é—®å®Œæˆä»¥åï¼Œè°ƒç”¨å›è°ƒå‡½æ•°ã€‚ */
 void fastcall call_rcu(struct rcu_head *head,
 				void (*func)(struct rcu_head *rcu))
 {
@@ -623,7 +623,7 @@ static void wakeme_after_rcu(struct rcu_head  *head)
  * If your read-side code is not protected by rcu_read_lock(), do -not-
  * use synchronize_rcu().
  */
-/* µÈ´ıËùÓĞµÄrcu¶ÁÕß¾­ÀúÒ»´Î¾²Ö¹×´Ì¬£¬È»ºó²ÅÄÜÊÍ·ÅÖ®Ç°·ÖÅäµÄ£¬²¢ÇÒÊÜrcu±£»¤µÄÊı¾İ½á¹¹ */
+/* ç­‰å¾…æ‰€æœ‰çš„rcuè¯»è€…ç»å†ä¸€æ¬¡é™æ­¢çŠ¶æ€ï¼Œç„¶åæ‰èƒ½é‡Šæ”¾ä¹‹å‰åˆ†é…çš„ï¼Œå¹¶ä¸”å—rcuä¿æŠ¤çš„æ•°æ®ç»“æ„ */
 void synchronize_rcu(void)
 {
 	struct rcu_synchronize rcu;

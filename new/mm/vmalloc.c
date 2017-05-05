@@ -188,7 +188,7 @@ static int vmap_page_range_noflush(unsigned long start, unsigned long end,
 {
 	pgd_t *pgd;
 	/**
-	 * ���Ƚ��ڴ����Ŀ�ʼ��ĩβ�����Ե�ַ������ֲ�����addr��end
+	 * 首先将内存区的开始和末尾的线性地址分配给局部变量addr和end
 	 */
 	unsigned long next;
 	unsigned long addr = start;
@@ -197,11 +197,11 @@ static int vmap_page_range_noflush(unsigned long start, unsigned long end,
 
 	BUG_ON(addr >= end);
 	/**
-	 * ʹ��pgd_offset_k��������ں�ҳȫ��Ŀ¼�е�Ŀ¼���Ŀ¼���Ӧ���ڴ�����ʼ���Ե�ַ��
+	 * 使用pgd_offset_k来获得主内核页全局目录中的目录项。该目录项对应于内存区起始线性地址。
 	 */
 	pgd = pgd_offset_k(addr);
 	/**
-	 * ��ѭ��Ϊÿ��ҳ����ҳ���
+	 * 此循环为每个页框建立页表项。
 	 */
 	do {
 		next = pgd_addr_end(addr, end);
@@ -220,11 +220,11 @@ static int vmap_page_range(unsigned long start, unsigned long end,
 
 	ret = vmap_page_range_noflush(start, end, prot, pages);
 	/*
-	 * ��Щ��ϵ�ṹ���޸�ҳ������Ҫˢ��CPU���ٻ��档����ں˵�����
-	 * flush_cache_vmap()���䶨�����ض�����ϵ�ṹ�ġ�ȡ���ڲ�ͬ��CPU���ͣ�
-	 * ���п��ܰ�������ˢ�����ٻ���ĵײ�����䣬��flush_cache_all()
-	 * �ĵ���(���û�к�������ѡ���Ե�ˢ������ӳ������)��
-	 * ���CPU�������ڸ��ٻ���ˢ����Ҳ�����ǿչ��̣�IA-32����������
+	 * 有些体系结构在修改页表后需要刷出CPU高速缓存。因此内核调用了
+	 * flush_cache_vmap()，其定义是特定于体系结构的。取决于不同的CPU类型，
+	 * 其中可能包括用于刷出高速缓存的底层汇编语句，对flush_cache_all()
+	 * 的调用(如果没有函数可以选择性地刷出虚拟映射区域)，
+	 * 如果CPU不依赖于高速缓存刷出，也可能是空过程，IA-32就是这样。
 	 */
 	flush_cache_vmap(start, end);
 	return ret;
@@ -366,7 +366,7 @@ static BLOCKING_NOTIFIER_HEAD(vmap_notify_list);
  * Allocate a region of KVA of the specified size and alignment, within the
  * vstart and vend.
  */
- /* ����ָ���ĳ��ȺͶ���Ҫ����KVA�ռ��з���һ�ο��ÿռ� */
+ /* 根据指定的长度和对齐要求，在KVA空间中分配一段可用空间 */
 static struct vmap_area *alloc_vmap_area(unsigned long size,
 				unsigned long align,
 				unsigned long vstart, unsigned long vend,
@@ -378,10 +378,10 @@ static struct vmap_area *alloc_vmap_area(unsigned long size,
 	int purged = 0;
 	struct vmap_area *first;
     /**
-         * �⼸��������ǲ�����ˡ�Ĵ���:
-         *        ����Ϊ0
-         *        ���Ȳ���ҳ���������
-         *        ���Ȳ���2��n�η�
+         * 这几种情况都是不可饶恕的错误:
+         *        长度为0
+         *        长度不是页面的整数倍
+         *        长度不是2的n次方
          */
 
 	BUG_ON(!size);
@@ -389,9 +389,9 @@ static struct vmap_area *alloc_vmap_area(unsigned long size,
 	BUG_ON(!is_power_of_2(align));
 
 	might_sleep();
-    /* KVA��ַ�ռ�ͨ��vmap_area�ṹ���й�����
-    �������һ��vmap_area��������
-    ��vm_struct��ͬ��vm_struct��������һ����vmalloc��Ӧ�ĵ�ַ�ռ� */
+    /* KVA地址空间通过vmap_area结构进行管理，
+    这里分配一个vmap_area描述符。
+    与vm_struct不同，vm_struct仅仅代表一个与vmalloc对应的地址空间 */
 	va = kmalloc_node(sizeof(struct vmap_area),
 			gfp_mask & GFP_RECLAIM_MASK, node);
 	if (unlikely(!va))
@@ -404,7 +404,7 @@ static struct vmap_area *alloc_vmap_area(unsigned long size,
 	kmemleak_scan_area(&va->rb_node, SIZE_MAX, gfp_mask & GFP_RECLAIM_MASK);
 
 retry:
-    /* ��ñ���KVA������������� */
+    /* 获得保护KVA红黑树的自旋锁 */
 	spin_lock(&vmap_area_lock);
 	/*
 	 * Invalidate cache if we have more permissive parameters.
@@ -428,66 +428,66 @@ nocache:
 	cached_align = align;
 
 	/* find starting point for our search */
-	/* ���ϴη��������ʼ������ */
+	/* 从上次分配的区域开始向后查找 */
 	if (free_vmap_cache) {
-	/* �õ��ϴη����KVA������ */
+	/* 得到上次分配的KVA描述符 */
 		first = rb_entry(free_vmap_cache, struct vmap_area, rb_node);
-    /* �ϴη���Ľ�����ַ���϶��룬�õ����ο��õĵ�ַ */
+    /* 上次分配的结束地址向上对齐，得到本次可用的地址 */
 		addr = ALIGN(first->va_end, align);
-		/* ���õ�ַС�����ǵ���ʼ��ַ������ʧЧ */
+		/* 可用地址小于我们的起始地址，缓存失效 */
 		if (addr < vstart)
 			goto nocache;
 	 /**
-         * �����˵����ַ�ռ䲻�㡣 
-         * �����ƺ������е����⣬��Ϊ���ϴη���Ľ�㿪ʼ�����ҿ��ÿռ䣬��ʹ����Ŀ��ÿռ䲻�㣬Ҳ���ܱ�ʾ���û�п��ÿռ��ˡ�
-         * ��Ϊǰ���Ѿ�����Ŀռ�֮��Ӧ�û��пն���
-         * ʵ�����ں�����������û�����⡣���Ķ�ʱע�⡣
+         * 溢出，说明地址空间不足。 
+         * 初看似乎这里有点问题，因为从上次分配的结点开始向后查找可用空间，即使后面的可用空间不足，也不能表示真的没有可用空间了。
+         * 因为前面已经分配的空间之间应该还有空洞。
+         * 实际上内核这样处理是没有问题。请阅读时注意。
          */
 		if (addr + size < addr)
 			goto overflow;
 
 	} else {
-	/* �������ַ���϶��룬��vmalloc��˵��vstart��ʾ����ʹ�õ������ַ�ռ���ʼ��ַ */
+	/* 将虚拟地址向上对齐，对vmalloc来说，vstart表示可以使用的虚拟地址空间起始地址 */
 		addr = ALIGN(vstart, align);
-		/* ����̫�����������������˳�����������Է�ֹ��ȫ��������� */
+		/* 长度太长，造成整形溢出，退出。这类检查可以防止安全方面的问题 */
 		if (addr + size < addr)
 			goto overflow;
-        /* ��ȡKVA(Ӧ����ָkernel vitural address)������ĸ����Ӹ���ʼ������ */
+        /* 获取KVA(应该是指kernel vitural address)红黑树的根，从根开始遍历树 */
 		n = vmap_area_root.rb_node;
 		first = NULL;
-        /* ��������� */
+        /* 遍历红黑树 */
 		while (n) {
 			struct vmap_area *tmp;
-			/* ��ȡ��ǰ������ڵ��Ӧ��vmap_area������ */
+			/* 获取当前红黑树节点对应的vmap_area描述符 */
 			tmp = rb_entry(n, struct vmap_area, rb_node);
 			if (tmp->va_end >= addr) {
-			/* �����������ַ��������Ҫ��������ʼ��ַ */
+			/* 该区域结束地址大于我们要搜索的起始地址 */
 				first = tmp;
 				if (tmp->va_start <= addr)
-				/* ��������ʼ��ַС������Ҫ��������ʼ��ַ */
-                /* ��������£�˵�����ǿ��Դӵ�ǰ�ڵ㿪ʼ���ҵ�ַ�ռ��� */
+				/* 该区域起始地址小于我们要搜索的起始地址 */
+                /* 这种情况下，说明我们可以从当前节点开始查找地址空间了 */
 					break;
-				/* ����˵���ýڵ㻹λ�ڽϸ߶ˣ������ƶ���������ڵ��ϣ����Ҹ�С������ */
+				/* 否则，说明该节点还位于较高端，我们移动到树的左节点上，查找更小的区域 */
 				n = n->rb_left;
 			} else
-			/* ����˵���ýڵ���������򻹱Ƚ�С��������Ҫ�ƶ����ҽڵ��ϣ����Ҹ�������� */
+			/* 否则说明该节点代表的区域还比较小，我们需要移动到右节点上，查找更大的区域 */
 				n = n->rb_right;
 		}
-        /* ����Ҫ���ҵ�������ڵ�ǰ�������е�����˵�����ǵĵ�ַ���仹û�б�ռ�� */
+        /* 我们要查找的区域大于当前树中所有的区域，说明我们的地址区间还没有被占用 */
 		if (!first)
 			goto found;
 	}
 
 	/* from the starting point, walk areas until a suitable hole is found */
-    /* ���е����˵������Ҫ���ҵ�����λ�ں����������Χ�ڣ��ӵ�ǰ�ڵ㿪ʼ���������ʴ�С������ն� */
+    /* 运行到这里，说明我们要查找的区间位于红黑树的区域范围内，从当前节点开始，搜索合适大小的区间空洞 */
 	while (addr + size > first->va_start && addr + size <= vend) {
-	/* Ҫ��ĵ�ַ�ռ��뵱ǰ�ڵ��ص���˵����Ҫ����ƶ��ڵ㣬���Ҹ��߷�Χ�ĵ�ַ�ռ� */
+	/* 要求的地址空间与当前节点重叠，说明需要向后移动节点，查找更高范围的地址空间 */
 		if (addr + cached_hole_size < first->va_start)
-		/* ���ݵ�ǰ��ַ����ǰ�������ʼ��ַ֮���о��룬����ն���С */
+		/* 根据当前地址到当前区间的起始地址之间有距离，计算空洞大小 */
 			cached_hole_size = first->va_start - addr;
-        /* ���õ�ַ�ǵ�ǰ���������ַ���϶���ĵ�ַ */
+        /* 可用地址是当前区间结束地址向上对齐的地址 */
 		addr = ALIGN(first->va_end, align);
-		/* ��������ˣ��˳���˵���ռ䲻�㡣 */
+		/* 整形溢出了，退出。说明空间不足。 */
 		if (addr + size < addr)
 			goto overflow;
 
@@ -498,18 +498,18 @@ nocache:
 	}
 
 found:
-    /* ���õ�ַ���Ϸ��䳤�ȳ����˷��䷶Χ��˵����ַ�ռ䲻���ˣ��˳� */
+    /* 可用地址加上分配长度超过了分配范围，说明地址空间不足了，退出 */
 	if (addr + size > vend)
 		goto overflow;
-    /* ���е����˵���ҵ����ʵĵ�ַ���䣬��ʼ��KVA���ݽṹ */
+    /* 运行到这里，说明找到合适的地址区间，初始化KVA数据结构 */
 	va->va_start = addr;
 	va->va_end = addr + size;
 	va->flags = 0;
-	/* �������vmap_area���뵽������У�������һ�ε�ַ�ռ��Ѿ���KVA�з����ȥ�� */
+	/* 将分配的vmap_area插入到红黑树中，代表这一段地址空间已经从KVA中分配出去了 */
 	__insert_vmap_area(va);
-	/* ��¼�±��η���Ŀռ䣬�´η���ɴӸýڵ㿪ʼ��������������ٶ��� */
+	/* 记录下本次分配的空间，下次分配可从该节点开始搜索，提高搜索速度用 */
 	free_vmap_cache = &va->rb_node;
-	/* �ͷ�KVA������������� */
+	/* 释放KVA红黑树的自旋锁 */
 	spin_unlock(&vmap_area_lock);
 
 	BUG_ON(!IS_ALIGNED(va->va_start, align));
@@ -517,17 +517,17 @@ found:
 	BUG_ON(va->va_end > vend);
 
 	return va;
-    /* ���е����˵����ַ�ռ䲻�� */
+    /* 运行到这里，说明地址空间不足 */
 overflow:
-    /* �����ͷ������� */
+    /* 首先释放自旋锁 */
 	spin_unlock(&vmap_area_lock);
-	/* ������ǻ�û�н���KVA��ַ�ռ�����(������˵Ļ������ǿ���������һЩ���ÿռ�) */
+	/* 如果我们还没有进行KVA地址空间清理(如果幸运的话，我们可以清理出一些可用空间) */
 	if (!purged) {
-	/* ������ģʽ��û�м�ʱ�ͷŵ�KVA�ռ䣬�ں��о����õ���ģʽ�����ܷ����ԭ�� */
+	/* 清理懒模式下没有及时释放的KVA空间，内核中经常用到懒模式，性能方面的原因 */
 		purge_vmap_area_lazy();
-		/* ���ñ�־����ʾ�����Ѿ�������KVA�ռ��� */
+		/* 设置标志，表示我们已经清理过KVA空间了 */
 		purged = 1;
-		 /* ����һ�Σ�����������ٷ��ش��� */
+		 /* 再试一次，如果还不行再返回错误 */
 		goto retry;
 	}
 
@@ -539,11 +539,11 @@ overflow:
 			goto retry;
 		}
 	}
-    /* ���е����˵��ʵ��û�п��ÿռ��ˣ���ӡһ�¾�����Ϣ��ע����������printk_ratelimit����ֹDos���� */
+    /* 运行到这里，说明实在没有可用空间了，打印一下警告信息。注意这里用了printk_ratelimit，防止Dos攻击 */
 	if (printk_ratelimit())
 		pr_warn("vmap allocation for size %lu failed: use vmalloc=<size> to increase size\n",
 			size);
-    /* û�з��䵽���ÿռ䣬�ͷ���ʱ�����KVA������ */
+    /* 没有分配到可用空间，释放临时分配的KVA描述符 */
 	kfree(va);
 	return ERR_PTR(-EBUSY);
 }
@@ -1263,12 +1263,12 @@ void __init vm_area_register_early(struct vm_struct *vm, size_t align)
 
 void __init vmalloc_init(void)
 {
-	//vmalloc�õ��ĺ��������������
+	//vmalloc用到的红黑树和链表对象
 	struct vmap_area *va;
 	struct vm_struct *tmp;
 	int i;
 
-	//������cpu�ϵ�ÿCPU����vmap_block_queue���г�ʼ����
+	//对所有cpu上的每CPU变量vmap_block_queue进行初始化。
 	for_each_possible_cpu(i) {
 		struct vmap_block_queue *vbq;
 		struct vfree_deferred *p;
@@ -1282,9 +1282,9 @@ void __init vmalloc_init(void)
 	}
 
 	/* Import existing vmlist entries. */
-	//�����Ѿ����ڵ�vmlist
+	//遍历已经存在的vmlist
 	for (tmp = vmlist; tmp; tmp = tmp->next) {
-		//Ϊ��Щ�ڵ㹹�������
+		//为这些节点构建红黑树
 		va = kzalloc(sizeof(struct vmap_area), GFP_NOWAIT);
 		va->flags = VM_VM_AREA;
 		va->va_start = (unsigned long)tmp->addr;
@@ -1362,9 +1362,9 @@ void unmap_kernel_range(unsigned long addr, unsigned long size)
 EXPORT_SYMBOL_GPL(unmap_kernel_range);
 
 /*
- * �ں˵���map_vm_area����ɢ�������ڴ�ҳ����ӳ�䵽�����vmalloc����
- * �ú�����������������ڴ�ҳ���ڸ���ҳĿ¼/ҳ���з��������Ŀ¼��/���
- �ڵ�ǰ���̵�ҳ�����н������ݽṹ����ˢ����tlbʹpteҳ������Ч
+ * 内核调用map_vm_area将分散的物理内存页连续映射到虚拟的vmalloc区域。
+ * 该函数遍历分配的物理内存页，在各级页目录/页表中分配所需的目录项/表项。
+ 在当前进程的页表项中建立数据结构，并刷新了tlb使pte页表项生效
  */
 int map_vm_area(struct vm_struct *area, pgprot_t prot, struct page **pages)
 {
@@ -1409,8 +1409,8 @@ static struct vm_struct *__get_vm_area_node(unsigned long size,
 	struct vmap_area *va;
 	struct vm_struct *area;
 /*
-    ���������ַ�ռ��������п������ڵ�ַ�ռ���Ŷ����½��̱�������
-    ���vmalloc�������������ж������ģ��������Ƿ����ж������ģ�����������crash
+    由于虚拟地址空间分配过程中可能由于地址空间紧张而导致进程被阻塞，
+    因此vmalloc函数不能用于中断上下文，这里检查是否处于中断上下文，如果是则进入crash
 */
 	BUG_ON(in_interrupt());
 	size = PAGE_ALIGN(size);
@@ -1418,34 +1418,34 @@ static struct vm_struct *__get_vm_area_node(unsigned long size,
 		return NULL;
 
 /*
-    ����ϲ������ͨ��ioremap�����
+    如果上层调用是通过ioremap进入的
 */
 	if (flags & VM_IOREMAP)
-	/* ��ʼ��ַ�Է����С�ı߽���룬Ҳ����˵���������1M��2M֮����ڴ棬����1MΪ�߽���� */
+	/* 起始地址以分配大小的边界对齐，也就是说，如果分配1M到2M之间的内存，则以1M为边界对齐 */
 		align = 1ul << clamp_t(int, get_count_order_long(size),
 				       PAGE_SHIFT, IOREMAP_MAX_ORDER);
 /*
-    ����һ��vm_struct���ݽṹ��������һ��vmalloc��ַ�ռ�  
+    分配一个vm_struct数据结构，它代表一段vmalloc地址空间  
 */
 	area = kzalloc_node(sizeof(*area), gfp_mask & GFP_RECLAIM_MASK, node);
 	if (unlikely(!area))
 		return NULL;
 
 /*
-����������һ��ҳ�棬��Ϊ���ڶ��vmalloc��ַ�ռ�֮�䣬
-����һ�οն�,��Щ�ն�û�з���ʵ�ʵ�����ҳ�棬
-Ҳû�н��������ַӳ�䣬����н��̷���vmalloc������ڴ�Խ�磬
-��ᴥ�δ���
+将长度增加一个页面，是为了在多个vmalloc地址空间之间，
+增加一段空洞,这些空洞没有分配实际的物理页面，
+也没有进行虚拟地址映射，如果有进程访问vmalloc分配的内存越界，
+则会触段错误
 */
 	if (!(flags & VM_NO_GUARD))
 		/*
-		 * ���ڸ���vmalloc������֮����Ҫ����1ҳ(����ҳ)��Ϊ
-		 * ��ȫ϶���ں������ʵ������Ҫ������ڴ泤�ȡ�
+		 * 由于各个vmalloc子区域之间需要插入1页(警戒页)作为
+		 * 安全隙，内核首先适当提高需要分配的内存长度。
 		 */
 		size += PAGE_SIZE;
 
 	/*
-	 * ����vmlist�����б�Ԫ�أ�ֱ���ҵ�һ���ʵ�����
+	 * 遍历vmlist的所有表元素，直至找到一个适当的项
 	 */
 	va = alloc_vmap_area(size, align, start, end, node, gfp_mask);
 	if (IS_ERR(va)) {
@@ -1525,9 +1525,9 @@ struct vm_struct *find_vm_area(const void *addr)
  *	on SMP machines, except for its size or flags.
  */
 /*
- * remove_vm_area()������һ���ִ���������vmalloc��ַ�ռ�ɾ�����ú���
- * ��Ҫ��ɾ���������������ʼ��ַ��Ϊһ��������Ϊ�ҵ����������ں˱�������
- * ɨ��vmlist������Ԫ�أ�ֱ���ҵ�ƥ���ߡ�����������Ӧ��vm_areaʵ��������ɾ����
+ * remove_vm_area()函数将一个现存的子区域从vmalloc地址空间删除。该函数
+ * 需要待删除子区域的虚拟起始地址作为一个参数。为找到该子区域，内核必须依次
+ * 扫描vmlist的链表元素，直至找到匹配者。接下来将对应的vm_area实例从链表删除。
  */
 struct vm_struct *remove_vm_area(const void *addr)
 {
@@ -1554,15 +1554,15 @@ struct vm_struct *remove_vm_area(const void *addr)
 }
 
 /*
- * addr��ʾҪ�ͷŵ��������ʼ��ַ��deallocate_pagesָ�����Ƿ���
- * ��������ص������ڴ�ҳ����Ϊ���ϵͳ��
- * vfree()����һ����������Ϊ1����vunmap()����Ϊ0����Ϊ������
- * �����ֻɾ��ӳ�䣬��������ص������ڴ�ҳ���ظ����ϵͳ��
+ * addr表示要释放的区域的起始地址，deallocate_pages指定了是否将与
+ * 该区域相关的物理内存页返回为伙伴系统。
+ * vfree()将后一个参数设置为1，而vunmap()设置为0，因为在这种
+ * 情况下只删除映射，而不将相关的物理内存页返回给伙伴系统。
  *
- * ��vfree����vunmap���ã����ͷŷ�����������ڴ�����
- * addr-Ҫ�ͷŵ��ڴ�������ʼ��ַ��
- * deallocate_pages-�����ӳ���ҳ����Ҫ�ͷŵ�����ҳ���������
- *      ����λ(��vfree���ñ�����ʱ)��������λ(��vunmap����ʱ)
+ * 被vfree或者vunmap调用，来释放非连续分配的内存区。
+ * addr-要释放的内存区的起始地址。
+ * deallocate_pages-如果被映射的页框需要释放到分区页框分配器，
+ *      就置位(当vfree调用本函数时)。否则不置位(被vunmap调用时)
  */
 static void __vunmap(const void *addr, int deallocate_pages)
 {
@@ -1571,66 +1571,66 @@ static void __vunmap(const void *addr, int deallocate_pages)
 	if (!addr)
 		return;
 /*
-��ַû��ҳ���룬Ҳ���Ϸ���
-��Ϊvmalloc��vmap��ӳ���ַ����ҳ������  
+地址没有页对齐，也不合法，
+因为vmalloc和vmap的映射地址都是页面对齐的  
 */
 	if (WARN(!PAGE_ALIGNED(addr), "Trying to vfree() bad address (%p)\n",
 			addr))
 		return;
 
-	/* ɾ�������ַ���� */
+	/* 删除虚拟地址区域 */
 	/**
-	 * ����remove_vm_area�õ�vm_struct�������ĵ�ַ��
-	 * ������������ڴ����е����Ե�ַ��Ӧ���ں˵�ҳ���
+	 * 调用remove_vm_area得到vm_struct描述符的地址。
+	 * 并清除非连续内存区中的线性地址对应的内核的页表项。
 	 */
-	 /* ��KVA��vmlist���Ƴ������ַ�� */
+	 /* 从KVA和vmlist中移除虚拟地址块 */
 	area = remove_vm_area(addr);
-	/* Ҫɾ�������򲻴��� */
+	/* 要删除的区域不存在 */
 	if (unlikely(!area)) {
 /*
-	��������ַ��û��λ��vmlist�У�
-	��ô˵�������ߴ����˴���ĵ�ַ������
-	���߶���ͷ�ͬһ��ַ  
+	如果虚拟地址块没有位于vmlist中，
+	那么说明调用者传入了错误的地址参数，
+	或者多次释放同一地址  
 */
-    /* ��������ַ��û��λ��KVA�У���ô˵�������ߴ����˴���ĵ�ַ���������߶���ͷ�ͬһ��ַ�� */
+    /* 如果虚拟地址块没有位于KVA中，那么说明调用者传入了错误的地址参数，或者多次释放同一地址。 */
 
 		WARN(1, KERN_ERR "Trying to vfree() nonexistent vm area (%p)\n",
 				addr);
 		return;
 	}
 /*
-������صĴ���
+调试相关的代码
 */
 	debug_check_no_locks_freed(addr, get_vm_area_size(area));
 	debug_check_no_obj_freed(addr, get_vm_area_size(area));
 
 	/**
-	 * ���deallocate_pages����λ��ɨ��ָ��ҳ��������area->nr_pages
+	 * 如果deallocate_pages被置位，扫描指向页描述符的area->nr_pages
 	 */
-	/* ��Ҫ�ͷ�����ҳ�� */
+	/* 需要释放物理页面 */
 	if (deallocate_pages) {
    /*
-        ��������vfree������vunmap����Ҫ������ص������ڴ�����ϵͳ
+        调用者是vfree而不是vunmap，需要返还相关的物理内存给伙伴系统
     */
 		int i;
 
-		/* ������������ҳ�沢�ͷŸ����ϵͳ */
+		/* 遍历所有物理页面并释放给伙伴系统 */
 		for (i = 0; i < area->nr_pages; i++) {
 			struct page *page = area->pages[i];
 
 			BUG_ON(!page);
 			/**
-			 * ��ÿһ������Ԫ�أ�����__free_page�����ͷ�ҳ�򵽷���ҳ���������
+			 * 对每一个数组元素，调用__free_page函数释放页框到分区页框分配器。
 			 */
 			__free_pages(page, 0);
 		}
 /*
-�ͷ�vm_struct������
+释放vm_struct描述符
 */
 		kvfree(area->pages);
 	}
 
-	/* �ͷ�vm_struct�ṹ */
+	/* 释放vm_struct结构 */
 	kfree(area);
 	return;
 }
@@ -1682,7 +1682,7 @@ void vfree_atomic(const void *addr)
  *	NOTE: assumes that the object at *addr has a size >= sizeof(llist_node)
  */
 /*
- * �����ͷ�vmalloc()��vmalloc_32()���������
+ * 用于释放vmalloc()和vmalloc_32()分配的区域
  */
 void vfree(const void *addr)
 {
@@ -1693,7 +1693,7 @@ void vfree(const void *addr)
 	if (!addr)
 		return;
 /*
-__vunmap�����������ж��б�����
+__vunmap函数不能在中断中被调用
 */
 	if (unlikely(in_interrupt()))
 		__vfree_deferred(addr);
@@ -1712,7 +1712,7 @@ EXPORT_SYMBOL(vfree);
  *	Must not be called in interrupt context.
  */
 /*
- * �����ͷ���vmap()��ioremap()������ӳ�䡣
+ * 用于释放由vmap()或ioremap()创建的映射。
  */
 void vunmap(const void *addr)
 {
@@ -1734,19 +1734,19 @@ EXPORT_SYMBOL(vunmap);
  *	space.
  */
 /*
- vmapʹ��һ��page������Ϊ��㣬���������������ڴ�����
- ��vmalloc��ȣ��⺯�����õ������ڴ�λ�ò�����ʽ����ģ�
- ����Ҫ���з���ã���Ϊ�������ݡ�
- ����ӳ�����ͨ��vm_mapʵ���е�VM_MAP��־���
+ vmap使用一个page数组作为起点，来创建虚拟连续内存区。
+ 与vmalloc相比，这函数所用的物理内存位置不是隐式分配的，
+ 而需要先行分配好，作为参数传递。
+ 此类映射可以通过vm_map实例中的VM_MAP标志辨别。
 */
 /*
- * vmap()ʹ��һ��page������Ϊ��㣬���������������ڴ�����
- * ��vmalloc()��ȣ��ú������õ������ڴ�λ�ò�����ʽ����ģ�����Ҫ
- * ���з���ã���Ϊ�������ݡ�����ӳ���ͨ��vm_mapʵ���е�VM_MAP��־���
+ * vmap()使用一个page数组作为起点，来创建虚拟连续内存区。
+ * 与vmalloc()相比，该函数所用的物理内存位置不是隐式分配的，而需要
+ * 先行分配好，作为参数传递。此类映射可通过vm_map实例中的VM_MAP标志辨别。
  *
- * ����ӳ��������ڴ������Ѿ������ҳ�򡣱����ϣ��ú�������һ��ָ��ҳ��������
- * ָ����Ϊ����������get_vm_area�õ�һ���µ�vm_struct��������Ȼ�����
- * map_vm_area��ӳ��ҳ����˸ú�����vmalloc���ƣ����ǲ�����ҳ��
+ * 它将映射非连续内存区中已经分配的页框。本质上，该函数接收一组指向页描述符的
+ * 指针作为参数，调用get_vm_area得到一个新的vm_struct描述符。然后调用
+ * map_vm_area来映射页框。因此该函数与vmalloc类似，但是不分配页框。
  */
 void *vmap(struct page **pages, unsigned int count,
 		unsigned long flags, pgprot_t prot)
@@ -1756,19 +1756,19 @@ void *vmap(struct page **pages, unsigned int count,
 
 	might_sleep();
 
-	/* �������Բ��Ϸ� */
+	/* 参数明显不合法 */
 	if (count > totalram_pages)
 		return NULL;
 
 	size = (unsigned long)count << PAGE_SHIFT;
-	/* ���������ַ�ռ� */
+	/* 分配虚拟地址空间 */
 	area = get_vm_area_caller(size, flags, __builtin_return_address(0));
 	if (!area)
 		return NULL;
 
-	/* �������ַ�ռ�ӳ�䵽������ַ */
+	/* 将虚拟地址空间映射到物理地址 */
 	if (map_vm_area(area, prot, pages)) {
-		/* ӳ��ʧ�ܣ�������е�ӳ�� */
+		/* 映射失败，解决已有的映射 */
 		vunmap(area->addr);
 		return NULL;
 	}
@@ -1780,7 +1780,7 @@ EXPORT_SYMBOL(vmap);
 static void *__vmalloc_node(unsigned long size, unsigned long align,
 			    gfp_t gfp_mask, pgprot_t prot,
 			    int node, const void *caller);
-/* Ϊvmalloc���������ڴ沢������ʵӳ�� */
+/* 为vmalloc分配物理内存并进行虚实映射 */
 static void *__vmalloc_area_node(struct vm_struct *area, gfp_t gfp_mask,
 				 pgprot_t prot, int node)
 {
@@ -1789,99 +1789,99 @@ static void *__vmalloc_area_node(struct vm_struct *area, gfp_t gfp_mask,
 	const gfp_t nested_gfp = (gfp_mask & GFP_RECLAIM_MASK) | __GFP_ZERO;
 	const gfp_t alloc_mask = gfp_mask | __GFP_NOWARN;
 
-	/* ��������Ҫ������ҳ��������ע��Ҫ�޳�����ҳ */
-	/* ���������Ҫ�����ҳ����������ȥPAGE_SIZE����Ϊ���������ַ�ռ�ʱ��ָ����һ���ն�ҳ���ֹԽ�� */
+	/* 计算所需要的物理页面数量，注意要剔除保护页 */
+	/* 这里计算需要分配的页面数量，减去PAGE_SIZE是因为分配虚拟地址空间时多指定了一个空洞页面防止越界 */
 	nr_pages = get_vm_area_size(area) >> PAGE_SHIFT;
 /*
-	���������ҳ��������Ҫ��¼��һ����ʱ������ȥ��
-	����������������ĳ���  
+	分配的物理页面描述符要记录到一个临时数组中去，
+	这里计算这个数据组的长度  
 */
 	array_size = (nr_pages * sizeof(struct page *));
 /*
-    ��¼�¸����������ҳ�������ͷ�ʱҪʹ��
+    记录下该区域的物理页面数，释放时要使用
 */
 	area->nr_pages = nr_pages;
 	/* Please note that the recursion is strictly bounded. */
-	/* ��ַ�ռ�̫����������Ҫ����һ��ҳ�汣��ҳ��ָ�� */
+	/* 地址空间太大，以至于需要多于一个页面保存页面指针 */
 	if (array_size > PAGE_SIZE) {
 /*
-	�����ʱ�������һ��ҳ��,	ͨ��vmalloc_node���������ʱ����
+	如果临时数组大于一个页面,	通过vmalloc_node分配这个临时数组
 */
 		pages = __vmalloc_node(array_size, 1, nested_gfp|__GFP_HIGHMEM,
 				PAGE_KERNEL, node, area->caller);
 	} else {
 /*
-	�����ʱ����С��һ��ҳ�棬��ͨ��kmalloc��slab�з����������
+	如果临时数组小于一个页面，则通过kmalloc从slab中分配这个数组
 */
 		pages = kmalloc_node(array_size, nested_gfp, node);
 	}
 /*
-	��¼��������ҳ������
+	记录区域物理页面数组
 */
 	area->pages = pages;
-	/* ��������ʧ�� */
+	/* 分配数组失败 */
 	if (!area->pages) {
 /*
-	������ʱ����ʧ�ܣ��黹vm�����ַ�ռ� 
+	分配临时数组失败，归还vm虚拟地址空间 
 */
 		remove_vm_area(area->addr);
 		kfree(area);
 		return NULL;
 	}
 
-	/* ����ҳ�� */
+	/* 分配页面 */
 	/**
-	 * �ظ�����alloc_page��Ϊ�ڴ�������nr_pages��ҳ�򡣲��Ѷ�Ӧ��ҳ������
-	 * �ŵ�area->pages�С�����ʹ��area->pages��������Ϊ:ҳ���������
-	 * ZONE_HIGHMEM�ڴ����������ʱ���ǲ�һ��ӳ�䵽һ�����Ե�ַ�ϡ�
+	 * 重复调用alloc_page，为内存区分配nr_pages个页框。并把对应的页描述符
+	 * 放到area->pages中。必须使用area->pages数组是因为:页框可能属于
+	 * ZONE_HIGHMEM内存管理区，此时它们不一定映射到一个线性地址上。
 	 */
 	for (i = 0; i < area->nr_pages; i++) {
 		struct page *page;
 
 		/*
-		 * �����ʾָ���˷���ҳ֡�Ľ�㣬���ں˵���alloc_pages_node()��
-		 * ����ʹ��alloc_page()�ӵ�ǰ������ҳ֡��
+		 * 如果显示指定了分配页帧的结点，则内核调用alloc_pages_node()。
+		 * 否则，使用alloc_page()从当前结点分配页帧。
 		 */
 		if (node == NUMA_NO_NODE)
-        /* û��ָ�����ĸ�NUMA�ڵ��з���ҳ�� */
-        /* ������һ��ҳ�� */
+        /* 没有指定在哪个NUMA节点中分配页面 */
+        /* 随便分配一个页面 */
 			page = alloc_page(alloc_mask);
 		else
-        /* ��ָ��NUMA�ڵ��з���ҳ�� */
+        /* 在指定NUMA节点中分配页面 */
 			page = alloc_pages_node(node, alloc_mask, 0);
 
 		if (unlikely(!page)) {
 /*
-		����ҳ��ʧ��,		��¼�¸������гɹ������ҳ������
-		��ת��fail�ͷ��Ѿ������ҳ��
+		分配页面失败,		记录下该区域中成功分配的页面数，
+		跳转到fail释放已经分配的页面
 */
 			/* Successfully allocated i pages, free them in __vunmap() */
 			area->nr_pages = i;
 			goto fail;
 		}
-		/* ��¼�·����ҳ�������� */
+		/* 记录下分配的页面描述符 */
 		area->pages[i] = page;
 		if (gfpflags_allow_blocking(gfp_mask))
 			cond_resched();
 	}
 
 	/*
-	 * �ں˵���map_vm_area����ɢ�������ڴ�ҳ����ӳ�䵽�����vmalloc����
-	 * �ú�����������������ڴ�ҳ���ڸ���ҳĿ¼/ҳ���з��������Ŀ¼��/���
+	 * 内核调用map_vm_area将分散的物理内存页连续映射到虚拟的vmalloc区域。
+	 * 该函数遍历分配的物理内存页，在各级页目录/页表中分配所需的目录项/表项。
 	 *
-	 * �����Ѿ��õ���һ�����������Ե�ַ�ռ䣬���ҷ�����һ���������ҳ����ӳ��
-	 * ��Щ��ַ����Ҫ�޸��ں�ҳ��������߶�Ӧ����������map_vm_area�Ĺ�����
+	 * 现在已经得到了一个连续的线性地址空间，并且分配了一组非连续的页框来映射
+	 * 这些地址。需要修改内核页表项，将二者对应起来。这是map_vm_area的工作。
 	 */
-	 /* ������ʵ��ַӳ�� */
+	 /* 进行虚实地址映射 */
 	if (map_vm_area(area, prot, pages))
 		goto fail;
 	return area->addr;
-/* ���������ڴ�ʧ�ܣ�������ʵӳ��ʧ�� */
+/* 分配物理内存失败，或者虚实映射失败 */
 fail:
 	warn_alloc(gfp_mask, NULL,
 			  "vmalloc: allocation failure, allocated %ld of %ld bytes",
 			  (area->nr_pages*PAGE_SIZE), area->size);
-    /* �ͷ��Ѿ������ҳ�沢�����ʵӳ�� */
+    /* 释放已经分配的页面并解除虚实映射 */
 	vfree(area->addr);
 	return NULL;
 }
@@ -1903,9 +1903,9 @@ fail:
  *	kernel virtual space, using a pagetable protection of @prot.
  */
 /*
- * __get_vm_area_node()��vmalloc��ַ�ռ����ҵ�һ���ʵ���
- * ���򡣽������������ڴ�������ҳ�������Щҳ������ӳ�䵽
- * vmalloc�����У����������ڴ�Ĺ���������ˡ�
+ * __get_vm_area_node()在vmalloc地址空间中找到一个适当的
+ * 区域。接下来从物理内存分配各个页，最后将这些页连续地映射到
+ * vmalloc区域中，分配虚拟内存的工作就完成了。
  */
 void *__vmalloc_node_range(unsigned long size, unsigned long align,
 			unsigned long start, unsigned long end, gfp_t gfp_mask,
@@ -1917,26 +1917,26 @@ void *__vmalloc_node_range(unsigned long size, unsigned long align,
 	unsigned long real_size = size;
 
 /*
-vmalloc����Ĵ�С������ҳ��������������ｫ���ȶ��뵽ҳ��
+vmalloc分配的大小必须是页面的整数倍，这里将长度对齐到页面
 */
 	size = PAGE_ALIGN(size);
 /*
-	���䳤��Ϊ0�����߳��ȴ�����������������ʧ��  
+	分配长度为0，或者长度大于限制数，都返回失败  
 */
 	if (!size || (size >> PAGE_SHIFT) > totalram_pages)
 		goto fail;
 /*
-    ��vmalloc��ַ�������ҵ����ʵ�����
-    ����ͨ������vmlist������ʵ�ֵ�  
+    在vmalloc地址区间中找到合适的区域，
+    这是通过遍历vmlist链表来实现的  
 */
 	area = __get_vm_area_node(size, align, VM_ALLOC | VM_UNINITIALIZED |
 				vm_flags, start, end, node, gfp_mask, caller);
 /*
-	vmalloc�����ַ�ռ䲻�㣬�����Ƿ���ĳ���̫�󣬷���ʧ��
+	vmalloc虚拟地址空间不足，可能是分配的长度太大，返回失败
 */
 	if (!area)
 		goto fail;
-    /* �����������ҳ�棬������pteҳ����ӳ�� */
+    /* 这里分配物理页面，并进行pte页表项映射 */
 	addr = __vmalloc_area_node(area, gfp_mask, prot, node);
 	if (!addr)
 		return NULL;
@@ -1953,9 +1953,9 @@ vmalloc����Ĵ�С������ҳ��������������ｫ���ȶ��뵽ҳ��
 	 * __get_vm_area_node() contains a reference to the virtual address of
 	 * the vmalloc'ed block.
 	 */
-	 /* ���Դ��룬�ں��ڴ�й©��� */
+	 /* 调试代码，内核内存泄漏检测 */
 	kmemleak_alloc(addr, real_size, 2, gfp_mask);
-    /* ����ӳ��������ַ */
+    /* 返回映射的虚拟地址 */
 	return addr;
 
 fail:
@@ -2009,34 +2009,34 @@ static inline void *__vmalloc_node_flags(unsigned long size,
  *	use __vmalloc() instead.
  */
 /*
- * �ӻ��ϵͳ�����ڴ�ʱ������ҳ���䣬������һ�η���һ��顣����vmalloc��
- * һ���ؼ����档�������ȷ�ŷ������ڴ�������ô��û�б�Ҫʹ��vmalloc()��
- * �Ͼ��ú���������Ŀ�ľ����ڷ������ڴ�飬������Ϊ�ڴ���Ƭ��Ե�ʣ�
- * �ڴ���е�ҳ֡���ܲ��������ġ������䵥λ��ֵþ�����С(���仰˵����ҳΪ��λ)��
- * ����ȷ���������ڴ���������Ƭ������£�vmalloc()��Ȼ���Թ�����
+ * 从伙伴系统分配内存时，是逐页分配，而不是一次分配一大块。这是vmalloc的
+ * 一个关键方面。如果可以确信分配大的内存区，那么就没有必要使用vmalloc()。
+ * 毕竟该函数的所有目的就在于分配大的内存块，尽管因为内存碎片的缘故，
+ * 内存块中的页帧可能不是连续的。将分配单位拆分得尽可能小(换句话说，以页为单位)，
+ * 可以确保在物理内存有严重碎片的情况下，vmalloc()仍然可以工作。
  
 vmalloc()
-��������ϴ���ڴ�ռ䣬�������ж���ʹ��
-1. ���ֽ�Ϊ��λ���з���
-2. ������ڴ������ַ��������������ַ������
-3. һ������£�ֻ��Ӳ���豸����Ҫ������ַ�������ڴ棬
-    ��ΪӲ���豸����������MMU֮�⣬�������˽������ַ��
-    ��Ϊ�������ϵĿ��ǣ��ں���һ��ʹ�� kmalloc()��
-    ��ֻ������Ҫ��ô���ڴ�ʱ��ʹ��vmalloc()��
-    ���統ģ�鱻��̬���ص��ں˵���ʱ��
-    �Ͱ�ģ��װ�ص���vmalloc()���� ���ڴ��ϡ�
-4.void vfree(void *addr)�������������˯�ߣ���˲��ܴ��ж������ĵ��á�
+用于申请较大的内存空间，不能在中断中使用
+1. 以字节为单位进行分配
+2. 分配的内存虚拟地址上连续，物理地址不连续
+3. 一般情况下，只有硬件设备才需要物理地址连续的内存，
+    因为硬件设备往往存在于MMU之外，根本不了解虚拟地址；
+    但为了性能上的考虑，内核中一般使用 kmalloc()，
+    而只有在需要获得大块内存时才使用vmalloc()，
+    例如当模块被动态加载到内核当中时，
+    就把模块装载到由vmalloc()分配 的内存上。
+4.void vfree(void *addr)，这个函数可以睡眠，因此不能从中断上下文调用。
 */
 void *vmalloc(unsigned long size)
 {
 	/*
-	 * ����vmalloc��ҳ����ؽ��Ļ��ϵͳ�Ƴ���
-	 * �ڵ���ʱ��vmalloc()��gfp_mask����Ϊ
-	 * GFP_KERNEL | __GFP_HIGHMEM���ں�ͨ���ò���
-	 * ָʾ�ڴ������ϵͳ�����ܴ�ZONE_HIGHMEM�ڴ���
-	 * ����ҳ֡��������:�Ͷ��ڴ����ҳ֡��Ϊ����
-	 * ��˲�Ӧ���˷ѵ�vmalloc�ķ����У��ڴ�ʹ�ø߶�
-	 * �ڴ����ҳ֡��ȫ��������Ҫ��
+	 * 用于vmalloc的页从相关结点的伙伴系统移除。
+	 * 在调用时，vmalloc()将gfp_mask设置为
+	 * GFP_KERNEL | __GFP_HIGHMEM，内核通过该参数
+	 * 指示内存管理子系统尽可能从ZONE_HIGHMEM内存域
+	 * 分配页帧。理由是:低端内存域的页帧更为宝贵，
+	 * 因此不应该浪费到vmalloc的分配中，在此使用高端
+	 * 内存域的页帧完全可以满足要求。
 	 */
 	return __vmalloc_node_flags(size, NUMA_NO_NODE,
 				    GFP_KERNEL | __GFP_HIGHMEM);
@@ -2159,11 +2159,11 @@ void *vmalloc_exec(unsigned long size)
  *	page level allocator and map them into contiguous kernel virtual space.
  */
 /*
- vmalloc_32�Ĺ�����ʽ��vmalloc��ͬ��
- ����ȷ����ʹ�õ������ڴ����ǿ�������ͨ32λָ��Ѱַ��
- ���ĳ����ϵ�ṹ��Ѱַ�������������ֳ�����ķ�Χ��
- ��ô���ֱ�֤�ͺ���Ҫ��
- ���磬��������PAE��IA-32ϵͳ�ϣ��������
+ vmalloc_32的工作方式与vmalloc相同，
+ 但会确保所使用的物理内存总是可以用普通32位指针寻址。
+ 如果某种体系结构的寻址能力超出基于字长计算的范围，
+ 那么这种保证就很重要。
+ 例如，在启用了PAE的IA-32系统上，就是如此
 */
 void *vmalloc_32(unsigned long size)
 {

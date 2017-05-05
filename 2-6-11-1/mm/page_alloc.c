@@ -40,7 +40,7 @@
 /* MCD - HACK: Find somewhere to initialize this EARLY, or make this initializer cleaner */
 nodemask_t node_online_map = { { [0] = 1UL } };
 nodemask_t node_possible_map = NODE_MASK_ALL;
-/* ÄÚ´æ½ÚµãÁ´±í£¬Ö¸ÏòÁ´Ê× */
+/* å†…å­˜èŠ‚ç‚¹é“¾è¡¨ï¼ŒæŒ‡å‘é“¾é¦– */
 struct pglist_data *pgdat_list;          
 unsigned long totalram_pages;
 unsigned long totalhigh_pages;
@@ -67,7 +67,7 @@ EXPORT_SYMBOL(zone_table);
 
 static char *zone_names[MAX_NR_ZONES] = { "DMA", "Normal", "HighMem" };
 
-/* ÄÚºË±£ÁôÒ³¿ò³ØµÄ´óĞ¡£¬ÒÔ×Ö½ÚÎªµ¥Î» */
+/* å†…æ ¸ä¿ç•™é¡µæ¡†æ± çš„å¤§å°ï¼Œä»¥å­—èŠ‚ä¸ºå•ä½ */
 int min_free_kbytes = 1024;
 
 unsigned long __initdata nr_kernel_pages;
@@ -76,9 +76,9 @@ unsigned long __initdata nr_all_pages;
 /*
  * Temporary debugging check for pages not lying within a given zone.
  */
-/* pageÊÇzone¹ÜÀíÇøÖĞµÄÒ»¸öÒ³ÃèÊö·û£¬
-  * ¸Ãº¯ÊıµÄ×÷ÓÃ¾ÍÊÇÅĞ¶Ï¸ÃÒ³ÃèÊö·ûÊÇ·ñÔÚ 
-  * ¸Ã¹ÜÀíÇø¶ÔÓ¦µÄÒ²ÃèÊö·û·¶Î§ÄÚ 
+/* pageæ˜¯zoneç®¡ç†åŒºä¸­çš„ä¸€ä¸ªé¡µæè¿°ç¬¦ï¼Œ
+  * è¯¥å‡½æ•°çš„ä½œç”¨å°±æ˜¯åˆ¤æ–­è¯¥é¡µæè¿°ç¬¦æ˜¯å¦åœ¨ 
+  * è¯¥ç®¡ç†åŒºå¯¹åº”çš„ä¹Ÿæè¿°ç¬¦èŒƒå›´å†… 
   */
 static int bad_range(struct zone *zone, struct page *page)
 {
@@ -371,21 +371,21 @@ void __free_pages_ok(struct page *page, unsigned int order)
  *
  * -- wli
  */
-/* ²ÎÊılow±íÊ¾Êµ¼ÊĞèÒªµÄorder´óĞ¡£¬
-  * ¶øhigh±íÊ¾Êµ¼Ê´ÓÄÄ¸öorderÁ¬Ğø¿éÖĞ·ÖÅä,
-  * Èç¹ûµ±Ç°µÄorder´óĞ¡µÄÁ¬Ğø¿éÃ»ÓĞ£¬Ôò»áÏòorder+1 
-  * Á¬Ğø¿éÖĞÑ°ÕÒ£¬È»ºóÒ»²¿·Ö·ÖÅä³öÈ¥£¬Ê£ÏÂÒ»²¿·Ö 
-  * Ò»´Î·Åµ½ºÏÊÊµÄorderµ±ÖĞ 
+/* å‚æ•°lowè¡¨ç¤ºå®é™…éœ€è¦çš„orderå¤§å°ï¼Œ
+  * è€Œhighè¡¨ç¤ºå®é™…ä»å“ªä¸ªorderè¿ç»­å—ä¸­åˆ†é…,
+  * å¦‚æœå½“å‰çš„orderå¤§å°çš„è¿ç»­å—æ²¡æœ‰ï¼Œåˆ™ä¼šå‘order+1 
+  * è¿ç»­å—ä¸­å¯»æ‰¾ï¼Œç„¶åä¸€éƒ¨åˆ†åˆ†é…å‡ºå»ï¼Œå‰©ä¸‹ä¸€éƒ¨åˆ† 
+  * ä¸€æ¬¡æ”¾åˆ°åˆé€‚çš„orderå½“ä¸­ 
   */
 static inline struct page *
 expand(struct zone *zone, struct page *page,
  	int low, int high, struct free_area *area)
 {
-        /* ±íÊ¾ÊÇÁ¬Ğøsize¸öÒ³µÄÄÚ´æ */
+        /* è¡¨ç¤ºæ˜¯è¿ç»­sizeä¸ªé¡µçš„å†…å­˜ */
 	unsigned long size = 1 << high;
 
-        /* Èç¹ûhigh > lowÔò±íÊ¾Á¬ĞøµÄ´óÄÚ´æ¿éĞèÒª²ğ·Ö
-          * ¶àÓàµÄÄÚ´æÔòÌí¼Óµ½order¸üĞ¡µÄÁ¬ĞøÄÚ´æÁ´±íµ±ÖĞ
+        /* å¦‚æœhigh > lowåˆ™è¡¨ç¤ºè¿ç»­çš„å¤§å†…å­˜å—éœ€è¦æ‹†åˆ†
+          * å¤šä½™çš„å†…å­˜åˆ™æ·»åŠ åˆ°orderæ›´å°çš„è¿ç»­å†…å­˜é“¾è¡¨å½“ä¸­
           */
 
 	while (high > low) {
@@ -393,7 +393,7 @@ expand(struct zone *zone, struct page *page,
 		high--;
 		size >>= 1;
 		BUG_ON(bad_range(zone, &page[size]));
-                /* °Ñ*/
+                /* æŠŠ*/
 		list_add(&page[size].lru, &area->free_list);
 		area->nr_free++;
 		set_page_order(&page[size], high);
@@ -447,9 +447,9 @@ static void prep_new_page(struct page *page, int order)
  * Do the hard work of removing an element from the buddy allocator.
  * Call me with the zone->lock already held.
  */
-/* ÓÃÀ´ÔÚ¹ÜÀíÇøÖĞÕÒµ½Ò»¸ö2µÄorder´ÎÒ³µÄ¿ÕÏĞ¿é£¬
-  * Èç¹ûÒ³¿ò·ÖÅä³É¹¦£¬¾Í·µ»ØµÚÒ»¸ö±»·ÖÅäÒ³¿òµÄÒ³ÃèÊö·û 
-  * Õâ¾ÍÊÇlinuxµÄ»ï°éÏµÍ³(buddy system) 
+/* ç”¨æ¥åœ¨ç®¡ç†åŒºä¸­æ‰¾åˆ°ä¸€ä¸ª2çš„orderæ¬¡é¡µçš„ç©ºé—²å—ï¼Œ
+  * å¦‚æœé¡µæ¡†åˆ†é…æˆåŠŸï¼Œå°±è¿”å›ç¬¬ä¸€ä¸ªè¢«åˆ†é…é¡µæ¡†çš„é¡µæè¿°ç¬¦ 
+  * è¿™å°±æ˜¯linuxçš„ä¼™ä¼´ç³»ç»Ÿ(buddy system) 
   */
 static struct page *__rmqueue(struct zone *zone, unsigned int order)
 {
@@ -462,13 +462,13 @@ static struct page *__rmqueue(struct zone *zone, unsigned int order)
 		if (list_empty(&area->free_list))
 			continue;
 
-                /* »ñÈ¡Ò²ÃèÊö·û£¬Í¬Ê±½«page´ÓlruÁ´±íÖĞÉ¾³ı,
-                  * ×¢ÒâÕâÀïÊÇÊ¹ÓÃlruÀ´±íÊ¾¿ÕÏĞ¿éÖ®¼äµÄÁ¬½Ó¹ØÏµ
+                /* è·å–ä¹Ÿæè¿°ç¬¦ï¼ŒåŒæ—¶å°†pageä»lrué“¾è¡¨ä¸­åˆ é™¤,
+                  * æ³¨æ„è¿™é‡Œæ˜¯ä½¿ç”¨lruæ¥è¡¨ç¤ºç©ºé—²å—ä¹‹é—´çš„è¿æ¥å…³ç³»
                   */
 		page = list_entry(area->free_list.next, struct page, lru);
 		list_del(&page->lru);
 		rmv_page_order(page);
-                /* Á¬Ğøorder¿ÕÏĞ¿éµÄÊıÁ¿¼õ1£¬¹ÜÀíÇøÖĞÔòÒª¼õÉÙ2µÄorder´Î */
+                /* è¿ç»­orderç©ºé—²å—çš„æ•°é‡å‡1ï¼Œç®¡ç†åŒºä¸­åˆ™è¦å‡å°‘2çš„orderæ¬¡ */
 		area->nr_free--;
 		zone->free_pages -= 1UL << order;
 		return expand(zone, page, order, current_order, area);
@@ -640,7 +640,7 @@ static inline void prep_zero_page(struct page *page, int order, int gfp_flags)
  * we cheat by calling it from here, in the order > 0 path.  Saves a branch
  * or two.
  */
-/* ´ÓÄÚ´æÇøÖĞ·ÖÅäÄÚ´æ */
+/* ä»å†…å­˜åŒºä¸­åˆ†é…å†…å­˜ */
 static struct page *
 buffered_rmqueue(struct zone *zone, int order, int gfp_flags)
 {
@@ -719,7 +719,7 @@ int zone_watermark_ok(struct zone *z, int order, unsigned long mark,
 /*
  * This is the 'heart' of the zoned buddy allocator.
  */
-/* ÔÚ¸Ãº¯ÊıÖĞ²ÎÊızonelist¾Í´ú±íÒ»ÖĞÄÚ´æµÄ·ÖÅä²ßÂÔ
+/* åœ¨è¯¥å‡½æ•°ä¸­å‚æ•°zonelistå°±ä»£è¡¨ä¸€ä¸­å†…å­˜çš„åˆ†é…ç­–ç•¥
   */
 struct page * fastcall
 __alloc_pages(unsigned int gfp_mask, unsigned int order,
@@ -752,13 +752,13 @@ __alloc_pages(unsigned int gfp_mask, unsigned int order,
 		return NULL;
 	}
 
-        /* »ñÈ¡zones[0]¹ÜÀíÇøÔÚµ±Ç°½ÚµãÖĞµÄ¹ÜÀíÇøË÷Òı */
+        /* è·å–zones[0]ç®¡ç†åŒºåœ¨å½“å‰èŠ‚ç‚¹ä¸­çš„ç®¡ç†åŒºç´¢å¼• */
 	classzone_idx = zone_idx(zones[0]);
 
  restart:
 	/* Go through the zonelist once, looking for a zone with enough free */
-        /* É¨ÃèÕâÖÖÄÚ´æ·ÖÅä²ßÂÔµÄÄÚ´æÇø£¬
-          * Èç¹û·ÖÅä³É¹¦ÔòÖ±½Ó·µ»Ø 
+        /* æ‰«æè¿™ç§å†…å­˜åˆ†é…ç­–ç•¥çš„å†…å­˜åŒºï¼Œ
+          * å¦‚æœåˆ†é…æˆåŠŸåˆ™ç›´æ¥è¿”å› 
           */
 	for (i = 0; (z = zones[i]) != NULL; i++) {
 
@@ -766,7 +766,7 @@ __alloc_pages(unsigned int gfp_mask, unsigned int order,
 				       classzone_idx, 0, 0))
 			continue;
                 
-                /* ´Ó¹ÜÀíÇøÖĞ·ÖÅäÄÚ´æ */
+                /* ä»ç®¡ç†åŒºä¸­åˆ†é…å†…å­˜ */
 		page = buffered_rmqueue(z, order, gfp_mask);
 		if (page)
 			goto got_pg;
@@ -834,7 +834,7 @@ rebalance:
 				continue;
 
 			page = buffered_rmqueue(z, order, gfp_mask);
-                        /* ´Ë´¦±íÊ¾Èç¹ûÒÑ¾­³É¹¦·ÖÅäµ½ÁËÄÚ´æ£¬ÔòÖ±½ÓÍË³ö */
+                        /* æ­¤å¤„è¡¨ç¤ºå¦‚æœå·²ç»æˆåŠŸåˆ†é…åˆ°äº†å†…å­˜ï¼Œåˆ™ç›´æ¥é€€å‡º */
 			if (page)
 				goto got_pg;
 		}
@@ -896,7 +896,7 @@ EXPORT_SYMBOL(__alloc_pages);
 /*
  * Common helper functions.
  */
-/* ·ÖÅä2µÄorder´ÎÒ³µÄÎïÀíÄÚ´æ */
+/* åˆ†é…2çš„orderæ¬¡é¡µçš„ç‰©ç†å†…å­˜ */
 fastcall unsigned long __get_free_pages(unsigned int gfp_mask, unsigned int order)
 {
 	struct page * page;
@@ -1397,7 +1397,7 @@ static int __init find_next_best_node(int node, nodemask_t *used_node_mask)
 	return best_node;
 }
 
-/* ¹¹½¨´æ´¢½ÚµãµÄzonelist£¬Ò²¾ÍÊÇÄÚ´æÇøµÄ·ÖÅä²ßÂÔ */
+/* æ„å»ºå­˜å‚¨èŠ‚ç‚¹çš„zonelistï¼Œä¹Ÿå°±æ˜¯å†…å­˜åŒºçš„åˆ†é…ç­–ç•¥ */
 static void __init build_zonelists(pg_data_t *pgdat)
 {
 	int i, j, k, node, local_node;
@@ -1431,8 +1431,8 @@ static void __init build_zonelists(pg_data_t *pgdat)
 		for (i = 0; i < GFP_ZONETYPES; i++) {
 			zonelist = pgdat->node_zonelists + i;
 			for (j = 0; zonelist->zones[j] != NULL; j++);
-                        /* Ä¬ÈÏÊÇ´ÓNORMALÄÚ´æÇøÖĞ·ÖÅä£¬
-                          * È»ºó¾ÍÊÇDMA£¬×îºóÊÇHIGHT
+                        /* é»˜è®¤æ˜¯ä»NORMALå†…å­˜åŒºä¸­åˆ†é…ï¼Œ
+                          * ç„¶åå°±æ˜¯DMAï¼Œæœ€åæ˜¯HIGHT
                           */
 			k = ZONE_NORMAL;
 			if (i & __GFP_HIGHMEM)
@@ -1492,7 +1492,7 @@ static void __init build_zonelists(pg_data_t *pgdat)
 
 #endif	/* CONFIG_NUMA */
 
-/* ³õÊ¼»¯ËùÓĞ´æ´¢½ÚµãµÄzonelist */
+/* åˆå§‹åŒ–æ‰€æœ‰å­˜å‚¨èŠ‚ç‚¹çš„zonelist */
 void __init build_all_zonelists(void)
 {
 	int i;

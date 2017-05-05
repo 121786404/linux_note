@@ -56,7 +56,7 @@ static inline int get_hub_status_data(struct uhci_hcd *uhci, char *buf)
 {
 	int port;
 	/**
-	 * ÕâÀïÎÒÃÇÖ»¹ØĞÄRWC×´Ì¬¸Ä±äÎ»¡£
+	 * è¿™é‡Œæˆ‘ä»¬åªå…³å¿ƒRWCçŠ¶æ€æ”¹å˜ä½ã€‚
 	 */
 	int mask = RWC_BITS;
 
@@ -71,12 +71,12 @@ static inline int get_hub_status_data(struct uhci_hcd *uhci, char *buf)
 
 	*buf = 0;
 	/**
-	 * ±éÀúRoot HUBµÄ¸÷¸ö¶Ë¿Ú¡£
+	 * éå†Root HUBçš„å„ä¸ªç«¯å£ã€‚
 	 */
 	for (port = 0; port < uhci->rh_numports; ++port) {
 		/**
-		 * ¶ÁÈ¡¶Ë¿Ú×´Ì¬¡£
-		 * Èç¹û¶Ë¿Ú¼Ä´æÆ÷±íÃ÷ÓĞÄÚÈİ£¬»òÕßĞèÒª¹ÒÆğ¸Ã¶Ë¿Ú£¬¶¼±íÃ÷ÓĞÊÂ¼şĞèÒª´¦Àí£¬½«bufÏàÓ¦Î»ÖÃ1.
+		 * è¯»å–ç«¯å£çŠ¶æ€ã€‚
+		 * å¦‚æœç«¯å£å¯„å­˜å™¨è¡¨æ˜æœ‰å†…å®¹ï¼Œæˆ–è€…éœ€è¦æŒ‚èµ·è¯¥ç«¯å£ï¼Œéƒ½è¡¨æ˜æœ‰äº‹ä»¶éœ€è¦å¤„ç†ï¼Œå°†bufç›¸åº”ä½ç½®1.
 		 */
 		if ((inw(uhci->io_addr + USBPORTSC1 + port * 2) & mask) ||
 				test_bit(port, &uhci->port_c_suspend))
@@ -205,12 +205,12 @@ static int uhci_hub_status_data(struct usb_hcd *hcd, char *buf)
 	uhci_check_ports(uhci);
 
 	/**
-	 * ROOT HUBÊÇ·ñÓĞ¶Ë¿ÚĞèÒª´¦Àí¡£
+	 * ROOT HUBæ˜¯å¦æœ‰ç«¯å£éœ€è¦å¤„ç†ã€‚
 	 */
 	status = get_hub_status_data(uhci, buf);
 
 	/**
-	 * ¸ù¾İ¿ØÖÆÆ÷×´Ì¬½øĞĞ´¦Àí¡£
+	 * æ ¹æ®æ§åˆ¶å™¨çŠ¶æ€è¿›è¡Œå¤„ç†ã€‚
 	 */
 	switch (uhci->rh_state) {
 	    case UHCI_RH_SUSPENDING:
@@ -229,12 +229,12 @@ static int uhci_hub_status_data(struct usb_hcd *hcd, char *buf)
 	    case UHCI_RH_RUNNING:
 		/* are any devices attached? */
 		/**
-		 * ÓĞ¶Ë¿ÚÁ¬½ÓÉÏÉè±¸ÁË¡£
+		 * æœ‰ç«¯å£è¿æ¥ä¸Šè®¾å¤‡äº†ã€‚
 		 */
 		if (!any_ports_active(uhci)) {
 			uhci->rh_state = UHCI_RH_RUNNING_NODEVS;
 			/**
-			 * 1Ãëºó×Ô¶¯Í£Ö¹Éè±¸¡£
+			 * 1ç§’åè‡ªåŠ¨åœæ­¢è®¾å¤‡ã€‚
 			 */
 			uhci->auto_stop_time = jiffies + HZ;
 		}
@@ -259,7 +259,7 @@ done:
 
 /* size of returned buffer is part of USB spec */
 /**
- * UHCIÖ÷»ú¿ØÖÆÆ÷¿ØÖÆÇëÇó¡£
+ * UHCIä¸»æœºæ§åˆ¶å™¨æ§åˆ¶è¯·æ±‚ã€‚
  */
 static int uhci_hub_control(struct usb_hcd *hcd, u16 typeReq, u16 wValue,
 			u16 wIndex, char *buf, u16 wLength)
@@ -272,7 +272,7 @@ static int uhci_hub_control(struct usb_hcd *hcd, u16 typeReq, u16 wValue,
 	unsigned long flags;
 
 	/**
-	 * HCD²»¿ÉÓÃ¡£
+	 * HCDä¸å¯ç”¨ã€‚
 	 */
 	if (!test_bit(HCD_FLAG_HW_ACCESSIBLE, &hcd->flags) || uhci->dead)
 		return -ETIMEDOUT;
@@ -301,12 +301,12 @@ static int uhci_hub_control(struct usb_hcd *hcd, u16 typeReq, u16 wValue,
 		/* UHCI doesn't support C_RESET (always false) */
 		wPortChange = lstatus = 0;
 		/**
-		 * ¶Ë¿ÚÁ¬½ÓÓĞ±ä»¯¡£
+		 * ç«¯å£è¿æ¥æœ‰å˜åŒ–ã€‚
 		 */
 		if (status & USBPORTSC_CSC)
 			wPortChange |= USB_PORT_STAT_C_CONNECTION;
 		/**
-		 * ÔÊĞí»òÕß½ûÖ¹ÁË¶Ë¿Ú¡£
+		 * å…è®¸æˆ–è€…ç¦æ­¢äº†ç«¯å£ã€‚
 		 */
 		if (status & USBPORTSC_PEC)
 			wPortChange |= USB_PORT_STAT_C_ENABLE;
@@ -358,7 +358,7 @@ static int uhci_hub_control(struct usb_hcd *hcd, u16 typeReq, u16 wValue,
 			goto err;
 
 		/**
-		 * ¸ù¾İ¿ØÖÆÃüÁîµÄÀàĞÍÉèÖÃ¶Ë¿ÚÌØÕ÷¡£SET_RH_PORTSTATÊÇ¾ßÌåµÄÉèÖÃºê¡£
+		 * æ ¹æ®æ§åˆ¶å‘½ä»¤çš„ç±»å‹è®¾ç½®ç«¯å£ç‰¹å¾ã€‚SET_RH_PORTSTATæ˜¯å…·ä½“çš„è®¾ç½®å®ã€‚
 		 */
 		switch (wValue) {
 		case USB_PORT_FEAT_SUSPEND:
@@ -369,7 +369,7 @@ static int uhci_hub_control(struct usb_hcd *hcd, u16 typeReq, u16 wValue,
 
 			/* Reset terminates Resume signalling */
 			/**
-			 * ¼ÈÈ»¸´Î»ÁË£¬¾ÍÒªÍ£Ö¹suspendÏà¹ØµÄ²Ù×÷¡£
+			 * æ—¢ç„¶å¤ä½äº†ï¼Œå°±è¦åœæ­¢suspendç›¸å…³çš„æ“ä½œã€‚
 			 */
 			uhci_finish_suspend(uhci, port, port_addr);
 

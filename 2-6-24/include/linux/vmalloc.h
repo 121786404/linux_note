@@ -7,14 +7,14 @@
 struct vm_area_struct;
 
 /* bits in vm_struct->flags */
-/* Õâ¶ÎÇøÓòÊÇÓÉioremap²úÉúµÄ */
+/* è¿™æ®µåŒºåŸŸæ˜¯ç”±ioremapäº§ç”Ÿçš„ */
 #define VM_IOREMAP	0x00000001	/* ioremap() and friends */
-/* Õâ¶ÎÇøÓòÊÇÓÉvmalloc²úÉúµÄ */
+/* è¿™æ®µåŒºåŸŸæ˜¯ç”±vmallocäº§ç”Ÿçš„ */
 #define VM_ALLOC	0x00000002	/* vmalloc() */
-/* Õâ¶ÎÇøÓòÊÇÓÉvmap²úÉúµÄ£¬ÓëvmallocµÄÇø±ğÔÚÓÚ£¬ÆäÎïÀíÒ³ÓÉµ÷ÓÃÕß¹ÜÀí */
+/* è¿™æ®µåŒºåŸŸæ˜¯ç”±vmapäº§ç”Ÿçš„ï¼Œä¸vmallocçš„åŒºåˆ«åœ¨äºï¼Œå…¶ç‰©ç†é¡µç”±è°ƒç”¨è€…ç®¡ç† */
 #define VM_MAP		0x00000004	/* vmap()ed pages */
 #define VM_USERMAP	0x00000008	/* suitable for remap_vmalloc_range */
-/* Õâ¶ÎÇøÓòÓÃÓÚvmallocÄÚ²¿Ê¹ÓÃ£¬ÀıÈç£¬ÓÃÓÚ±£´ævmallocÒ³ÃæÖ¸Õë */
+/* è¿™æ®µåŒºåŸŸç”¨äºvmallocå†…éƒ¨ä½¿ç”¨ï¼Œä¾‹å¦‚ï¼Œç”¨äºä¿å­˜vmallocé¡µé¢æŒ‡é’ˆ */
 #define VM_VPAGES	0x00000010	/* buffer for pages was vmalloc'ed */
 /* bits [20..32] reserved for arch specific ioremap internals */
 
@@ -27,23 +27,23 @@ struct vm_area_struct;
 #endif
 
 /**
- * ¹ÜÀívmallocĞéÄâµØÖ·¿Õ¼äµÄÊı¾İ½á¹¹¡£´ú±íÁËÒ»´Îvmalloc·ÖÅäµÄĞéÄâµØÖ·¿Õ¼ä¡£
+ * ç®¡ç†vmallocè™šæ‹Ÿåœ°å€ç©ºé—´çš„æ•°æ®ç»“æ„ã€‚ä»£è¡¨äº†ä¸€æ¬¡vmallocåˆ†é…çš„è™šæ‹Ÿåœ°å€ç©ºé—´ã€‚
  */
 struct vm_struct {
 	/* keep next,addr,size together to speedup lookups */
-	/* ÓÃÓÚ½«vm_structÓëÏÂÒ»¸övm_struct½á¹¹Á¬½ÓÆğÀ´ */
+	/* ç”¨äºå°†vm_structä¸ä¸‹ä¸€ä¸ªvm_structç»“æ„è¿æ¥èµ·æ¥ */
 	struct vm_struct	*next;
-	/* ÆğÊ¼µØÖ· */
+	/* èµ·å§‹åœ°å€ */
 	void			*addr;
-	/* ³¤¶È */
+	/* é•¿åº¦ */
 	unsigned long		size;
-	/* ÄÚ´æÇøÓò±êÖ¾£¬ÈçVM_ALLOC */
+	/* å†…å­˜åŒºåŸŸæ ‡å¿—ï¼Œå¦‚VM_ALLOC */
 	unsigned long		flags;
-	/* ÕâÊÇÒ»¸öÖ¸ÏòpageÖ¸ÕëµÄÊı×é¡£Êı×éÃ¿Ò»Ïî±íÊ¾Ó³Éäµ½ĞéÄâÖ·¿Õ¼äµÄÎïÀíÄÚ´æÒ³ */
+	/* è¿™æ˜¯ä¸€ä¸ªæŒ‡å‘pageæŒ‡é’ˆçš„æ•°ç»„ã€‚æ•°ç»„æ¯ä¸€é¡¹è¡¨ç¤ºæ˜ å°„åˆ°è™šæ‹Ÿå€ç©ºé—´çš„ç‰©ç†å†…å­˜é¡µ */
 	struct page		**pages;
-	/* pagesÊı×éÖĞµÄÊıÄ¿ */
+	/* pagesæ•°ç»„ä¸­çš„æ•°ç›® */
 	unsigned int		nr_pages;
-	/* ioremapÓ³ÉäµÄÎïÀíµØÖ· */
+	/* ioremapæ˜ å°„çš„ç‰©ç†åœ°å€ */
 	unsigned long		phys_addr;
 };
 

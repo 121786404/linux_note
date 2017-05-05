@@ -253,7 +253,7 @@ extern struct lockdep_map rcu_lock_map;
  * exactly which pointers are protected by RCU.
  */
 
-/* ÔÚ»ñµÃrcu¶ÁËøµÄÇé¿öÏÂ£¬ÒıÓÃÊÜrcu±£»¤µÄÖ¸Õë */
+/* åœ¨è·å¾—rcuè¯»é”çš„æƒ…å†µä¸‹ï¼Œå¼•ç”¨å—rcuä¿æŠ¤çš„æŒ‡é’ˆ */
 #define rcu_dereference(p)     ({ \
 				typeof(p) _________p1 = ACCESS_ONCE(p); \
 				smp_read_barrier_depends(); \
@@ -272,7 +272,7 @@ extern struct lockdep_map rcu_lock_map;
  * call documents which pointers will be dereferenced by RCU read-side
  * code.
  */
-/* ¹«²¼Ò»¸öĞÂÖ¸Õë¡£Ê×ÏÈÓ¦µ±½«Ö¸ÕëÖ¸ÏòµÄÊı¾İ½á¹¹ÉèÖÃºÃÖµ£¬ÔÙµ÷ÓÃ´Ë¹ı³ÌĞŞ¸ÄÖ¸Õë */
+/* å…¬å¸ƒä¸€ä¸ªæ–°æŒ‡é’ˆã€‚é¦–å…ˆåº”å½“å°†æŒ‡é’ˆæŒ‡å‘çš„æ•°æ®ç»“æ„è®¾ç½®å¥½å€¼ï¼Œå†è°ƒç”¨æ­¤è¿‡ç¨‹ä¿®æ”¹æŒ‡é’ˆ */
 #define rcu_assign_pointer(p, v)	({ \
 						smp_wmb(); \
 						(p) = (v); \

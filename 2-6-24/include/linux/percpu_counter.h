@@ -15,17 +15,17 @@
 
 #ifdef CONFIG_SMP
 
-/* Ã¿CPU½üËÆ¼ÆÊıÖµ */
+/* æ¯CPUè¿‘ä¼¼è®¡æ•°å€¼ */
 struct percpu_counter {
-	/* ÓÃÓÚÍ¬²½¶Ôcount×Ö¶ÎµÄ¶ÁĞ´²Ù×÷ */
+	/* ç”¨äºåŒæ­¥å¯¹countå­—æ®µçš„è¯»å†™æ“ä½œ */
 	spinlock_t lock;
-	/* ¾«È·¼ÆÊıÖµ */
+	/* ç²¾ç¡®è®¡æ•°å€¼ */
 	s64 count;
 #ifdef CONFIG_HOTPLUG_CPU
-	/* ÓÃÓÚ½«±¾½á¹¹Á´½Óµ½È«¾ÖÁ´±íÖĞ */
+	/* ç”¨äºå°†æœ¬ç»“æ„é“¾æ¥åˆ°å…¨å±€é“¾è¡¨ä¸­ */
 	struct list_head list;	/* All percpu_counters are on a list */
 #endif
-	/* Ã¿CPU¼ÆÊı£¬µ±ÖµÃ»ÓĞ³¬¹ı·§ÖµÊ±£¬¸üĞÂ´Ë¼ÆÊı¡£³¬¹ı·§ÖµÊ±£¬²Å½«¼ÆÊı¸üĞÂµ½count×Ö¶Î */
+	/* æ¯CPUè®¡æ•°ï¼Œå½“å€¼æ²¡æœ‰è¶…è¿‡é˜€å€¼æ—¶ï¼Œæ›´æ–°æ­¤è®¡æ•°ã€‚è¶…è¿‡é˜€å€¼æ—¶ï¼Œæ‰å°†è®¡æ•°æ›´æ–°åˆ°countå­—æ®µ */
 	s32 *counters;
 };
 
@@ -42,7 +42,7 @@ void percpu_counter_set(struct percpu_counter *fbc, s64 amount);
 void __percpu_counter_add(struct percpu_counter *fbc, s64 amount, s32 batch);
 s64 __percpu_counter_sum(struct percpu_counter *fbc);
 
-/* ¶Ô½üËÆ¼ÆÊıÖµ½øĞĞ¼ÆÊı£¬Ôö¼ÓÒ»¸öÖµ¡£Èç¹ûÃ¿CPUÖµ³¬¹ıFBC_BATCH£¬½«Æä¸üĞÂµ½¾«È·¼ÆÊıÖµÖĞ */
+/* å¯¹è¿‘ä¼¼è®¡æ•°å€¼è¿›è¡Œè®¡æ•°ï¼Œå¢åŠ ä¸€ä¸ªå€¼ã€‚å¦‚æœæ¯CPUå€¼è¶…è¿‡FBC_BATCHï¼Œå°†å…¶æ›´æ–°åˆ°ç²¾ç¡®è®¡æ•°å€¼ä¸­ */
 static inline void percpu_counter_add(struct percpu_counter *fbc, s64 amount)
 {
 	__percpu_counter_add(fbc, amount, FBC_BATCH);
@@ -59,7 +59,7 @@ static inline s64 percpu_counter_sum(struct percpu_counter *fbc)
 	return __percpu_counter_sum(fbc);
 }
 
-/* ¶ÁÈ¡¼ÆÊıÆ÷µÄµ±Ç°Öµ£¬²»¿¼ÂÇÃ¿CPU¼ÆÊıÖµ */
+/* è¯»å–è®¡æ•°å™¨çš„å½“å‰å€¼ï¼Œä¸è€ƒè™‘æ¯CPUè®¡æ•°å€¼ */
 static inline s64 percpu_counter_read(struct percpu_counter *fbc)
 {
 	return fbc->count;

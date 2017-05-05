@@ -1214,7 +1214,7 @@ drop:
 }
 
 /**
- * UDP±¨ÎÄ½ÓÊÕÖ÷º¯Êı
+ * UDPæŠ¥æ–‡æ¥æ”¶ä¸»å‡½æ•°
  */
 int udp_rcv(struct sk_buff *skb)
 {

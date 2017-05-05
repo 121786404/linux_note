@@ -841,17 +841,17 @@ void update_process_times(int user_tick)
 
 	/* Note: this timer irq context must be accounted for as well. */
 	/**
-	 * ¼ÇÂ¼½ø³ÌÔÚÓÃ»§Ì¬ºÍÄÚºËÌ¬ÔËĞĞµÄCPUÊ±¼ä£¬¼´ĞŞ¸ÄÈÎÎñµÄutimeºÍstime³ÉÔ±¡£
-	 * Èç¹û½ø³ÌÔËĞĞÊ±¼ä³¬¹ıRlimitµÄÏŞÖÆ£¬»¹»áÏòËü·¢ËÍSIGXCPUĞÅºÅ¡£
+	 * è®°å½•è¿›ç¨‹åœ¨ç”¨æˆ·æ€å’Œå†…æ ¸æ€è¿è¡Œçš„CPUæ—¶é—´ï¼Œå³ä¿®æ”¹ä»»åŠ¡çš„utimeå’Œstimeæˆå‘˜ã€‚
+	 * å¦‚æœè¿›ç¨‹è¿è¡Œæ—¶é—´è¶…è¿‡Rlimitçš„é™åˆ¶ï¼Œè¿˜ä¼šå‘å®ƒå‘é€SIGXCPUä¿¡å·ã€‚
 	 */
 	account_process_tick(p, user_tick);
-	/* ¼¤»îµÍ·Ö±æÂÊÊ±ÖÓ´¦Àí³ÌĞò */
+	/* æ¿€æ´»ä½åˆ†è¾¨ç‡æ—¶é’Ÿå¤„ç†ç¨‹åº */
 	run_local_timers();
-	if (rcu_pending(cpu))/* ´¦Àírcu»Øµ÷ */
+	if (rcu_pending(cpu))/* å¤„ç†rcuå›è°ƒ */
 		rcu_check_callbacks(cpu, user_tick);
-	/* µ÷¶ÈÆ÷Ê±ÖÓ´¦Àí */
+	/* è°ƒåº¦å™¨æ—¶é’Ÿå¤„ç† */
 	scheduler_tick();
-	/* ´¦Àíposix¶¨Ê±Æ÷ */
+	/* å¤„ç†posixå®šæ—¶å™¨ */
 	run_posix_cpu_timers(p);
 }
 
@@ -905,8 +905,8 @@ static void run_timer_softirq(struct softirq_action *h)
 
 	hrtimer_run_queues();
 
-	if (time_after_eq(jiffies, base->timer_jiffies))/* ÓĞµÍ·Ö±æÂÊ¶¨Ê±Æ÷µ½ÆÚ */
-		__run_timers(base);/* ÔËĞĞ¶¨Ê±Æ÷ */
+	if (time_after_eq(jiffies, base->timer_jiffies))/* æœ‰ä½åˆ†è¾¨ç‡å®šæ—¶å™¨åˆ°æœŸ */
+		__run_timers(base);/* è¿è¡Œå®šæ—¶å™¨ */
 }
 
 /*
@@ -914,9 +914,9 @@ static void run_timer_softirq(struct softirq_action *h)
  */
 void run_local_timers(void)
 {
-	/* ½ö½öÔÚÖĞ¶ÏÉÏÏÂÎÄ¼¤»îÈíÖĞ¶Ï£¬È»ºóÓÉrun_timer_softirqÖ´ĞĞ */
+	/* ä»…ä»…åœ¨ä¸­æ–­ä¸Šä¸‹æ–‡æ¿€æ´»è½¯ä¸­æ–­ï¼Œç„¶åç”±run_timer_softirqæ‰§è¡Œ */
 	raise_softirq(TIMER_SOFTIRQ);
-	/* ´¦Àísoftlockup£¬¼ì²é¹ı³¤Ê±¼äµÄµ÷¶ÈÑÓ³Ù */
+	/* å¤„ç†softlockupï¼Œæ£€æŸ¥è¿‡é•¿æ—¶é—´çš„è°ƒåº¦å»¶è¿Ÿ */
 	softlockup_tick();
 }
 
@@ -926,9 +926,9 @@ void run_local_timers(void)
  */
 static inline void update_times(unsigned long ticks)
 {
-	/* ¸üĞÂÇ½ÉÏÊ±¼ä£¬¼´ÏµÍ³Æô¶¯ºó¾­¹ıµÄÊ±¼ä */
+	/* æ›´æ–°å¢™ä¸Šæ—¶é—´ï¼Œå³ç³»ç»Ÿå¯åŠ¨åç»è¿‡çš„æ—¶é—´ */
 	update_wall_time();
-	/* ¸üĞÂ¸ºÔØ£¬È·¶¨ÔÚ1·ÖÖÓ¡¢5·ÖÖÓ¡¢15·ÖÖÓÄÚ£¬ÓĞ¶àÉÙ¸ö¾ÍĞ÷×´Ì¬µÄ½ø³ÌÔÚµÈ´ı */
+	/* æ›´æ–°è´Ÿè½½ï¼Œç¡®å®šåœ¨1åˆ†é’Ÿã€5åˆ†é’Ÿã€15åˆ†é’Ÿå†…ï¼Œæœ‰å¤šå°‘ä¸ªå°±ç»ªçŠ¶æ€çš„è¿›ç¨‹åœ¨ç­‰å¾… */
 	calc_load(ticks);
 }
 
@@ -940,9 +940,9 @@ static inline void update_times(unsigned long ticks)
 
 void do_timer(unsigned long ticks)
 {
-	/* ¸üĞÂjiffies */
+	/* æ›´æ–°jiffies */
 	jiffies_64 += ticks;
-	/* ¸üĞÂ½ø³ÌÍ³¼Æ */
+	/* æ›´æ–°è¿›ç¨‹ç»Ÿè®¡ */
 	update_times(ticks);
 }
 

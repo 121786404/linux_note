@@ -266,7 +266,7 @@ static int find_group_dir(struct super_block *sb, struct inode *parent)
 #define BLOCK_COST 256
 
 /**
- * µ±Ä¿Â¼Ã»ÓĞÎ»ÓÚ¸ùÄ¿Â¼ÏÂÊ±£¬¸ù¾İorlovËã·¨²éÕÒinodeºÏÊÊµÄ¿é×é
+ * å½“ç›®å½•æ²¡æœ‰ä½äºæ ¹ç›®å½•ä¸‹æ—¶ï¼Œæ ¹æ®orlovç®—æ³•æŸ¥æ‰¾inodeåˆé€‚çš„å—ç»„
  */
 static int find_group_orlov(struct super_block *sb, struct inode *parent)
 {
@@ -276,15 +276,15 @@ static int find_group_orlov(struct super_block *sb, struct inode *parent)
 	int ngroups = sbi->s_groups_count;
 	int inodes_per_group = EXT2_INODES_PER_GROUP(sb);
 	int freei;
-	int avefreei;/* ¸÷×éÖĞ£¬Æ½¾ùµÄ¿ÕÏĞinodeÊıÄ¿ */
+	int avefreei;/* å„ç»„ä¸­ï¼Œå¹³å‡çš„ç©ºé—²inodeæ•°ç›® */
 	int free_blocks;
-	int avefreeb;/* ¸÷×éÖĞ£¬¿ÕÏĞ¿éÊıÄ¿ */
+	int avefreeb;/* å„ç»„ä¸­ï¼Œç©ºé—²å—æ•°ç›® */
 	int blocks_per_dir;
 	int ndirs;
 	/**
-	 * max_dirs±íÊ¾Ò»¸ö¿é×éÖĞÄ¿Â¼inodeµÄÉÏÏŞ 
-	 * min_inodesºÍmin_blocks¶¨ÒåÁË´´½¨Ä¿Â¼Ç°£¬¿ÕÏĞinodeºÍ¿ÕÏĞ¿éµÄ×îĞ¡ÊıÄ¿¡£
-	 * debt½éÓÚ0-255Ö®¼ä¡£Ã¿¸ö¿é×éÓĞÒ»¸ödebtÖµ¡£´´½¨Ä¿Â¼¼Ó1£¬´´½¨ÆäËûÎÄ¼ş¼õ1.
+	 * max_dirsè¡¨ç¤ºä¸€ä¸ªå—ç»„ä¸­ç›®å½•inodeçš„ä¸Šé™ 
+	 * min_inodeså’Œmin_blockså®šä¹‰äº†åˆ›å»ºç›®å½•å‰ï¼Œç©ºé—²inodeå’Œç©ºé—²å—çš„æœ€å°æ•°ç›®ã€‚
+	 * debtä»‹äº0-255ä¹‹é—´ã€‚æ¯ä¸ªå—ç»„æœ‰ä¸€ä¸ªdebtå€¼ã€‚åˆ›å»ºç›®å½•åŠ 1ï¼Œåˆ›å»ºå…¶ä»–æ–‡ä»¶å‡1.
 	 */
 	int max_debt, max_dirs, min_blocks, min_inodes;
 	int group = -1, i;
@@ -296,16 +296,16 @@ static int find_group_orlov(struct super_block *sb, struct inode *parent)
 	avefreeb = free_blocks / ngroups;
 	ndirs = percpu_counter_read_positive(&sbi->s_dirs_counter);
 
-	if ((parent == sb->s_root->d_inode) ||/* ÔÚ¸ùÄ¿Â¼ÏÂ´´½¨×ÓÄ¿Â¼ */
-	    (EXT2_I(parent)->i_flags & EXT2_TOPDIR_FL)) {/* ²»Ê¹ÓÃorlovËã·¨·ÖÅäinode */
+	if ((parent == sb->s_root->d_inode) ||/* åœ¨æ ¹ç›®å½•ä¸‹åˆ›å»ºå­ç›®å½• */
+	    (EXT2_I(parent)->i_flags & EXT2_TOPDIR_FL)) {/* ä¸ä½¿ç”¨orlovç®—æ³•åˆ†é…inode */
 		struct ext2_group_desc *best_desc = NULL;
 		int best_ndir = inodes_per_group;
 		int best_group = -1;
 
-		/* »ñµÃÒ»¸öËæ»úÊı */
+		/* è·å¾—ä¸€ä¸ªéšæœºæ•° */
 		get_random_bytes(&group, sizeof(group));
 		parent_group = (unsigned)group % ngroups;
-		for (i = 0; i < ngroups; i++) {/* ´ÓËæ»úÑ¡È¡µÄ¿é×é¿ªÊ¼£¬²éÕÒÂú×ãÒªÇóµÄ¿é×é */
+		for (i = 0; i < ngroups; i++) {/* ä»éšæœºé€‰å–çš„å—ç»„å¼€å§‹ï¼ŒæŸ¥æ‰¾æ»¡è¶³è¦æ±‚çš„å—ç»„ */
 			group = (parent_group + i) % ngroups;
 			desc = ext2_get_group_desc (sb, group, NULL);
 			if (!desc || !desc->bg_free_inodes_count)
@@ -345,48 +345,48 @@ static int find_group_orlov(struct super_block *sb, struct inode *parent)
 	if (max_debt == 0)
 		max_debt = 1;
 
-	/* ´Ó¸¸Ä¿Â¼ËùÔÚµÄ×é¿ªÊ¼±éÀú£¬¾¡Á¿Ê¹inodeÓë¸¸Ä¿Â¼Î»ÓÚÍ¬Ò»¸ö×éÖĞ */
+	/* ä»çˆ¶ç›®å½•æ‰€åœ¨çš„ç»„å¼€å§‹éå†ï¼Œå°½é‡ä½¿inodeä¸çˆ¶ç›®å½•ä½äºåŒä¸€ä¸ªç»„ä¸­ */
 	for (i = 0; i < ngroups; i++) {
 		group = (parent_group + i) % ngroups;
 		desc = ext2_get_group_desc (sb, group, NULL);
-		if (!desc || !desc->bg_free_inodes_count)/* Ã»ÓĞ¿ÕÏĞinodeÁË */
+		if (!desc || !desc->bg_free_inodes_count)/* æ²¡æœ‰ç©ºé—²inodeäº† */
 			continue;
 		if (sbi->s_debts[group] >= max_debt)
 			continue;
-		/* Ä¿Â¼Ã»ÓĞ³¬¹ıÏŞÖÆ£¬ÔòÑ¡ÖĞ¸Ã×é£¬·ñÔòÌøµ½ÏÂÒ»¸ö×éÖĞ */
+		/* ç›®å½•æ²¡æœ‰è¶…è¿‡é™åˆ¶ï¼Œåˆ™é€‰ä¸­è¯¥ç»„ï¼Œå¦åˆ™è·³åˆ°ä¸‹ä¸€ä¸ªç»„ä¸­ */
 		if (le16_to_cpu(desc->bg_used_dirs_count) >= max_dirs)
 			continue;
-		/* ¿ÕÏĞinodeºÍ¿ÕÏĞ¿éÈç¹ûÒ²´ïµ½ÒªÇó£¬²ÅÑ¡ÖĞ¸Ã×é */
+		/* ç©ºé—²inodeå’Œç©ºé—²å—å¦‚æœä¹Ÿè¾¾åˆ°è¦æ±‚ï¼Œæ‰é€‰ä¸­è¯¥ç»„ */
 		if (le16_to_cpu(desc->bg_free_inodes_count) < min_inodes)
 			continue;
 		if (le16_to_cpu(desc->bg_free_blocks_count) < min_blocks)
 			continue;
-		goto found;/* ¸Ã×é¾¡¿ÉÄÜÓë¸¸Ä¿Â¼Î»ÓÚÍ¬Ò»¸ö¿é×é£¬·µ»Ø¸Ã¿é×é */
+		goto found;/* è¯¥ç»„å°½å¯èƒ½ä¸çˆ¶ç›®å½•ä½äºåŒä¸€ä¸ªå—ç»„ï¼Œè¿”å›è¯¥å—ç»„ */
 	}
 
-/* Ã»ÓĞÂú×ãĞèÒªµÄ¿é×é£¬Ê¹ÓÃ±¸ÓÃËã·¨²éÕÒ */
+/* æ²¡æœ‰æ»¡è¶³éœ€è¦çš„å—ç»„ï¼Œä½¿ç”¨å¤‡ç”¨ç®—æ³•æŸ¥æ‰¾ */
 fallback:
-	/* ´Óµ±Ç°×é¿ªÊ¼±éÀúËùÓĞ¿é×é */
+	/* ä»å½“å‰ç»„å¼€å§‹éå†æ‰€æœ‰å—ç»„ */
 	for (i = 0; i < ngroups; i++) {
 		group = (parent_group + i) % ngroups;
 		desc = ext2_get_group_desc (sb, group, NULL);
-		if (!desc || !desc->bg_free_inodes_count)/* ¸Ã¿é×éÃ»ÓĞ¿ÉÓÃinodeÁË */
+		if (!desc || !desc->bg_free_inodes_count)/* è¯¥å—ç»„æ²¡æœ‰å¯ç”¨inodeäº† */
 			continue;
-		/* ¸Ã×é¿ÕÏĞinode³¬¹ıÆ½¾ùÖµ */
+		/* è¯¥ç»„ç©ºé—²inodeè¶…è¿‡å¹³å‡å€¼ */
 		if (le16_to_cpu(desc->bg_free_inodes_count) >= avefreei)
 			goto found;
 	}
 
-	if (avefreei) {/* ËùÓĞ×éµÄ¿ÕÏĞinode¶¼µÈÓÚÆ½¾ùÊı */
+	if (avefreei) {/* æ‰€æœ‰ç»„çš„ç©ºé—²inodeéƒ½ç­‰äºå¹³å‡æ•° */
 		/*
 		 * The free-inodes counter is approximate, and for really small
 		 * filesystems the above test can fail to find any blockgroups
 		 */
-		avefreei = 0;/* ½«Æ½¾ùÊıĞŞ¸ÄÎª0£¬·µ»Ø¼ÌĞø²éÕÒ£¬Ó¦µ±²éÕÒµ½µ±Ç°×é¡£ */
+		avefreei = 0;/* å°†å¹³å‡æ•°ä¿®æ”¹ä¸º0ï¼Œè¿”å›ç»§ç»­æŸ¥æ‰¾ï¼Œåº”å½“æŸ¥æ‰¾åˆ°å½“å‰ç»„ã€‚ */
 		goto fallback;
 	}
 
-	/* ËùÓĞ×é¶¼Ã»ÓĞ¿ÕÏĞinodeÁË£¬·µ»ØÊ§°Ü */
+	/* æ‰€æœ‰ç»„éƒ½æ²¡æœ‰ç©ºé—²inodeäº†ï¼Œè¿”å›å¤±è´¥ */
 	return -1;
 
 found:
@@ -453,7 +453,7 @@ found:
 	return group;
 }
 
-/* ·ÖÅäÒ»¸öĞÂµÄinode */
+/* åˆ†é…ä¸€ä¸ªæ–°çš„inode */
 struct inode *ext2_new_inode(struct inode *dir, int mode)
 {
 	struct super_block *sb;

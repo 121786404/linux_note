@@ -842,7 +842,7 @@ const char * __init of_flat_dt_get_machine_name(void)
  * compatible string in the FDT.
  */
 /*
- ÔÚmachineÃèÊö·ûµÄÁĞ±íÖĞscan£¬ÕÒµ½×îºÏÊÊµÄÄÇ¸ömachineÃèÊö·û
+ åœ¨machineæè¿°ç¬¦çš„åˆ—è¡¨ä¸­scanï¼Œæ‰¾åˆ°æœ€åˆé€‚çš„é‚£ä¸ªmachineæè¿°ç¬¦
 */
 const void * __init of_flat_dt_match_machine(const void *default_match,
 		const void * (*get_next_compat)(const char * const**))

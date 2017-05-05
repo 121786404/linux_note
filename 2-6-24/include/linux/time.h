@@ -192,11 +192,11 @@ static inline void timespec_add_ns(struct timespec *a, u64 ns)
  * Names of the interval timers, and structure
  * defining a timer setting:
  */
-/* 测量实际流逝的时间，在超时后向应用发出信号 */
+/* 娴嬮噺瀹為檯娴侀�濈殑鏃堕棿锛屽湪瓒呮椂鍚庡悜搴旂敤鍙戝嚭淇″彿 */
 #define	ITIMER_REAL		0
-/* 计算用户态花费的时间，作为定时器超时时间 */
+/* 璁＄畻鐢ㄦ埛鎬佽姳璐圭殑鏃堕棿锛屼綔涓哄畾鏃跺櫒瓒呮椂鏃堕棿 */
 #define	ITIMER_VIRTUAL		1
-/* 计算用户态和内核态花费的时间，作为定时器超时时间 */
+/* 璁＄畻鐢ㄦ埛鎬佸拰鍐呮牳鎬佽姳璐圭殑鏃堕棿锛屼綔涓哄畾鏃跺櫒瓒呮椂鏃堕棿 */
 #define	ITIMER_PROF		2
 
 struct itimerspec {

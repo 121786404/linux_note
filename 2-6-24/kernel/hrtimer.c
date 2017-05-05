@@ -1037,7 +1037,7 @@ EXPORT_SYMBOL_GPL(hrtimer_get_res);
  * Called with interrupts disabled
  */
 /**
- * ¸ß¾«¶ÈÊ±ÖÓÖĞ¶Ï´¦Àí³ÌĞò
+ * é«˜ç²¾åº¦æ—¶é’Ÿä¸­æ–­å¤„ç†ç¨‹åº
  */
 void hrtimer_interrupt(struct clock_event_device *dev)
 {
@@ -1051,32 +1051,32 @@ void hrtimer_interrupt(struct clock_event_device *dev)
 	dev->next_event.tv64 = KTIME_MAX;
 
  retry:
-	now = ktime_get();/* »ñµÃµ±Ç°¸ß¾«¶ÈÊ±¼ä */
+	now = ktime_get();/* è·å¾—å½“å‰é«˜ç²¾åº¦æ—¶é—´ */
 
 	expires_next.tv64 = KTIME_MAX;
 
 	base = cpu_base->clock_base;
 
-	/* ±éÀú±¾CPUÁ½¸öºìºÚÊ÷:µ¥µ÷¶¨Ê±Æ÷ºÍ¾ø¶ÔÊ±¼ä¶¨Ê±Æ÷ */
+	/* éå†æœ¬CPUä¸¤ä¸ªçº¢é»‘æ ‘:å•è°ƒå®šæ—¶å™¨å’Œç»å¯¹æ—¶é—´å®šæ—¶å™¨ */
 	for (i = 0; i < HRTIMER_MAX_CLOCK_BASES; i++) {
 		ktime_t basenow;
 		struct rb_node *node;
 
-		spin_lock(&cpu_base->lock);/* »ñµÃºìºÚÊ÷Ëø */
+		spin_lock(&cpu_base->lock);/* è·å¾—çº¢é»‘æ ‘é” */
 
-		/* ĞŞÕıÆ«ÒÆÁ¿ */
+		/* ä¿®æ­£åç§»é‡ */
 		basenow = ktime_add(now, base->offset);
 
-		while ((node = base->first)) {/* ±éÀúºìºÚÊ÷ËùÓĞ½Úµã */
+		while ((node = base->first)) {/* éå†çº¢é»‘æ ‘æ‰€æœ‰èŠ‚ç‚¹ */
 			struct hrtimer *timer;
 
 			timer = rb_entry(node, struct hrtimer, node);
 
-			/* µ±Ç°½ÚµãÎ´µ½ÆÚ */
+			/* å½“å‰èŠ‚ç‚¹æœªåˆ°æœŸ */
 			if (basenow.tv64 < timer->expires.tv64) {
 				ktime_t expires;
 
-				/* ¼ÆËãÏÂ´Îµ½ÆÚÊ±¼ä */
+				/* è®¡ç®—ä¸‹æ¬¡åˆ°æœŸæ—¶é—´ */
 				expires = ktime_sub(timer->expires,
 						    base->offset);
 				if (expires.tv64 < expires_next.tv64)
@@ -1086,21 +1086,21 @@ void hrtimer_interrupt(struct clock_event_device *dev)
 
 			/* Move softirq callbacks to the pending list */
 			/**
-			 * ÔËĞĞµ½ÕâÀï£¬ËµÃ÷µ±Ç°¶¨Ê±Æ÷ÒÑ¾­µ½ÆÚ
-			 * Ê×ÏÈÅĞ¶Ï¸Ã¶¨Ê±Æ÷ÊÇ·ñÓ¦µ±ÔÚÈíÖĞ¶ÏÖĞÔËĞĞ
+			 * è¿è¡Œåˆ°è¿™é‡Œï¼Œè¯´æ˜å½“å‰å®šæ—¶å™¨å·²ç»åˆ°æœŸ
+			 * é¦–å…ˆåˆ¤æ–­è¯¥å®šæ—¶å™¨æ˜¯å¦åº”å½“åœ¨è½¯ä¸­æ–­ä¸­è¿è¡Œ
 			 */
 			if (timer->cb_mode == HRTIMER_CB_SOFTIRQ) {
-				/* ´ÓºìºÚÊ÷ÖĞÒÆ³ı */
+				/* ä»çº¢é»‘æ ‘ä¸­ç§»é™¤ */
 				__remove_hrtimer(timer, base,
 						 HRTIMER_STATE_PENDING, 0);
-				/* Ìí¼Óµ½´ıÔËĞĞÁ´±íÖĞ */
+				/* æ·»åŠ åˆ°å¾…è¿è¡Œé“¾è¡¨ä¸­ */
 				list_add_tail(&timer->cb_entry,
 					      &base->cpu_base->cb_pending);
-				raise = 1;/* ±íÊ¾ĞèÒª´¥·¢ÈíÖĞ¶Ï */
+				raise = 1;/* è¡¨ç¤ºéœ€è¦è§¦å‘è½¯ä¸­æ–­ */
 				continue;
 			}
 
-			/* µ±Ç°¶¨Ê±Æ÷ĞèÒªÔÚÓ²ÖĞ¶ÏÉÏÏÂÎÄÖĞÔËĞĞ */
+			/* å½“å‰å®šæ—¶å™¨éœ€è¦åœ¨ç¡¬ä¸­æ–­ä¸Šä¸‹æ–‡ä¸­è¿è¡Œ */
 			__remove_hrtimer(timer, base,
 					 HRTIMER_STATE_CALLBACK, 0);
 			timer_stats_account_hrtimer(timer);
@@ -1111,30 +1111,30 @@ void hrtimer_interrupt(struct clock_event_device *dev)
 			 * the event hardware. This happens at the end
 			 * of this function anyway.
 			 */
-			/* ÔËĞĞ¶¨Ê±Æ÷£¬²¢ÇÒ¸Ã¶¨Ê±Æ÷ĞèÒªÖØÆô */
+			/* è¿è¡Œå®šæ—¶å™¨ï¼Œå¹¶ä¸”è¯¥å®šæ—¶å™¨éœ€è¦é‡å¯ */
 			if (timer->function(timer) != HRTIMER_NORESTART) {
 				BUG_ON(timer->state != HRTIMER_STATE_CALLBACK);
-				/* ½«¶¨Ê±Æ÷ÖØĞÂÌí¼Óµ½ºìºÚÊ÷ÖĞ */
+				/* å°†å®šæ—¶å™¨é‡æ–°æ·»åŠ åˆ°çº¢é»‘æ ‘ä¸­ */
 				enqueue_hrtimer(timer, base, 0);
 			}
 			timer->state &= ~HRTIMER_STATE_CALLBACK;
 		}
-		spin_unlock(&cpu_base->lock);/* ÊÍ·Å×ÔĞıËø */
+		spin_unlock(&cpu_base->lock);/* é‡Šæ”¾è‡ªæ—‹é” */
 		base++;
 	}
 
 	cpu_base->expires_next = expires_next;
 
 	/* Reprogramming necessary ? */
-	/* ÈÔÈ»»¹ÓĞ¶¨Ê±Æ÷ */
+	/* ä»ç„¶è¿˜æœ‰å®šæ—¶å™¨ */
 	if (expires_next.tv64 != KTIME_MAX) {
-		/* ¶ÔÓ²¼ş½øĞĞÖØĞÂ±à³Ì£¬Ê¹ÆäÔÚÏÂÒ»¸ö¶¨Ê±Æ÷µ½ÆÚÊ±´¥·¢ÖĞ¶Ï */
+		/* å¯¹ç¡¬ä»¶è¿›è¡Œé‡æ–°ç¼–ç¨‹ï¼Œä½¿å…¶åœ¨ä¸‹ä¸€ä¸ªå®šæ—¶å™¨åˆ°æœŸæ—¶è§¦å‘ä¸­æ–­ */
 		if (tick_program_event(expires_next, 0))
-			goto retry;/* Èç¹û±à³ÌÊ§°Ü£¬ËµÃ÷ÏÂÒ»¸ö¶¨Ê±Æ÷ÒÑ¾­µ½ÆÚÁË£¬ÖØÆôÕû¸ö´¦ÀíÁ÷³Ì */
+			goto retry;/* å¦‚æœç¼–ç¨‹å¤±è´¥ï¼Œè¯´æ˜ä¸‹ä¸€ä¸ªå®šæ—¶å™¨å·²ç»åˆ°æœŸäº†ï¼Œé‡å¯æ•´ä¸ªå¤„ç†æµç¨‹ */
 	}
 
 	/* Raise softirq ? */
-	if (raise)/* Èç¹ûĞèÒª´¥·¢ÈíÖĞ¶Ï£¬Ôò´¥·¢Ëü£¬¼ÌĞøÔÚÈíÖĞ¶ÏÖĞ´¦Àí¸ß¾«¶È¶¨Ê±Æ÷ */
+	if (raise)/* å¦‚æœéœ€è¦è§¦å‘è½¯ä¸­æ–­ï¼Œåˆ™è§¦å‘å®ƒï¼Œç»§ç»­åœ¨è½¯ä¸­æ–­ä¸­å¤„ç†é«˜ç²¾åº¦å®šæ—¶å™¨ */
 		raise_softirq(HRTIMER_SOFTIRQ);
 }
 
@@ -1193,21 +1193,21 @@ static inline void run_hrtimer_queue(struct hrtimer_cpu_base *cpu_base,
 	struct rb_node *node;
 	struct hrtimer_clock_base *base = &cpu_base->clock_base[index];
 
-	if (!base->first)/* Èç¹ûÃ»ÓĞµ½ÆÚ¶¨Ê±Æ÷£¬ÔòÍË³ö */
+	if (!base->first)/* å¦‚æœæ²¡æœ‰åˆ°æœŸå®šæ—¶å™¨ï¼Œåˆ™é€€å‡º */
 		return;
 
-	if (base->get_softirq_time)/* »ñµÃÈíÖĞ¶ÏÊ±¼ä£¬ÒÔ´ËÎª»ù´¡½øĞĞ¶¨Ê±Æ÷µ½ÆÚ±È½ÏÊ±¼ä */
+	if (base->get_softirq_time)/* è·å¾—è½¯ä¸­æ–­æ—¶é—´ï¼Œä»¥æ­¤ä¸ºåŸºç¡€è¿›è¡Œå®šæ—¶å™¨åˆ°æœŸæ¯”è¾ƒæ—¶é—´ */
 		base->softirq_time = base->get_softirq_time();
 
-	spin_lock_irq(&cpu_base->lock);/* ¹ØÖĞ¶Ï²¢»ñµÃ×ÔĞıËø */
+	spin_lock_irq(&cpu_base->lock);/* å…³ä¸­æ–­å¹¶è·å¾—è‡ªæ—‹é” */
 
-	while ((node = base->first)) {/* ´ÓµÚÒ»¸ö¶¨Ê±Æ÷¿ªÊ¼±éÀúºìºÚÊ÷ */
+	while ((node = base->first)) {/* ä»ç¬¬ä¸€ä¸ªå®šæ—¶å™¨å¼€å§‹éå†çº¢é»‘æ ‘ */
 		struct hrtimer *timer;
 		enum hrtimer_restart (*fn)(struct hrtimer *);
 		int restart;
 
 		timer = rb_entry(node, struct hrtimer, node);
-		/* µ±Ç°½ÚµãÎ´µ½ÆÚ£¬ÍË³ö */
+		/* å½“å‰èŠ‚ç‚¹æœªåˆ°æœŸï¼Œé€€å‡º */
 		if (base->softirq_time.tv64 <= timer->expires.tv64)
 			break;
 
@@ -1216,18 +1216,18 @@ static inline void run_hrtimer_queue(struct hrtimer_cpu_base *cpu_base,
 #endif
 		timer_stats_account_hrtimer(timer);
 
-		/* ½«½Úµã´ÓºìºÚÊ÷ÖĞÉ¾³ı */
+		/* å°†èŠ‚ç‚¹ä»çº¢é»‘æ ‘ä¸­åˆ é™¤ */
 		fn = timer->function;
 		__remove_hrtimer(timer, base, HRTIMER_STATE_CALLBACK, 0);
 		spin_unlock_irq(&cpu_base->lock);
 
-		/* ¿ªÖĞ¶Ïºóµ÷ÓÃ»Øµ÷º¯Êı */
+		/* å¼€ä¸­æ–­åè°ƒç”¨å›è°ƒå‡½æ•° */
 		restart = fn(timer);
 
 		spin_lock_irq(&cpu_base->lock);
 
 		timer->state &= ~HRTIMER_STATE_CALLBACK;
-		if (restart != HRTIMER_NORESTART) {/* ĞèÒªÖØÆô¶¨Ê±Æ÷£¬½«ËüÌí¼Óµ½ºìºÚÊ÷ÖĞ */
+		if (restart != HRTIMER_NORESTART) {/* éœ€è¦é‡å¯å®šæ—¶å™¨ï¼Œå°†å®ƒæ·»åŠ åˆ°çº¢é»‘æ ‘ä¸­ */
 			BUG_ON(hrtimer_active(timer));
 			enqueue_hrtimer(timer, base, 0);
 		}
@@ -1243,14 +1243,14 @@ static inline void run_hrtimer_queue(struct hrtimer_cpu_base *cpu_base,
  * not been done yet.
  */
 /**
- * ÔÚÃ»ÓĞ¸ß¾«¶ÈÊ±ÖÓÊ±£¬ÓÉ´Ëº¯ÊıÔÚÈíÖĞ¶ÏÉÏÏÂÎÄ´¦Àí¸ß¾«¶È¶¨Ê±Æ÷
+ * åœ¨æ²¡æœ‰é«˜ç²¾åº¦æ—¶é’Ÿæ—¶ï¼Œç”±æ­¤å‡½æ•°åœ¨è½¯ä¸­æ–­ä¸Šä¸‹æ–‡å¤„ç†é«˜ç²¾åº¦å®šæ—¶å™¨
  */
 void hrtimer_run_queues(void)
 {
 	struct hrtimer_cpu_base *cpu_base = &__get_cpu_var(hrtimer_bases);
 	int i;
 
-	/* Èç¹ûÃ»ÓĞ»î¶¯¶¨Ê±Æ÷£¬Ö±½ÓÍË³ö */
+	/* å¦‚æœæ²¡æœ‰æ´»åŠ¨å®šæ—¶å™¨ï¼Œç›´æ¥é€€å‡º */
 	if (hrtimer_hres_active())
 		return;
 
@@ -1266,10 +1266,10 @@ void hrtimer_run_queues(void)
 		if (hrtimer_switch_to_hres())
 			return;
 
-	/* »ñµÃÈíÖĞ¶ÏÊ±¼ä */
+	/* è·å¾—è½¯ä¸­æ–­æ—¶é—´ */
 	hrtimer_get_softirq_time(cpu_base);
 
-	/* ´¦ÀíÁ½¸öºìºÚÊ÷ÉÏµÄµ½ÆÚ¶¨Ê±Æ÷ */
+	/* å¤„ç†ä¸¤ä¸ªçº¢é»‘æ ‘ä¸Šçš„åˆ°æœŸå®šæ—¶å™¨ */
 	for (i = 0; i < HRTIMER_MAX_CLOCK_BASES; i++)
 		run_hrtimer_queue(cpu_base, i);
 }

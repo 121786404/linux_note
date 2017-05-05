@@ -11,8 +11,8 @@
 #include <linux/ns_common.h>
 
 struct pidmap {
-       atomic_t nr_free;  // ±íÊ¾»¹ÄÜ·ÖÅäµÄpidµÄÊıÁ¿
-       void *page;        // Ö¸ÏòµÄÊÇ´æ·ÅpidµÄÎïÀíÒ³
+       atomic_t nr_free;  // è¡¨ç¤ºè¿˜èƒ½åˆ†é…çš„pidçš„æ•°é‡
+       void *page;        // æŒ‡å‘çš„æ˜¯å­˜æ”¾pidçš„ç‰©ç†é¡µ
 };
 
 #define BITS_PER_PAGE		(PAGE_SIZE * 8)
@@ -23,31 +23,31 @@ struct fs_pin;
 
 struct pid_namespace {
     /*
-        ±íÊ¾Ö¸Ïòpid_namespaceµÄ¸öÊı
+        è¡¨ç¤ºæŒ‡å‘pid_namespaceçš„ä¸ªæ•°
     */
 	struct kref kref;
 	/*
-    pidmap½á¹¹Ìå±íÊ¾·ÖÅäpidµÄÎ»Í¼¡£µ±ĞèÒª·ÖÅäÒ»¸öĞÂµÄpidÊ±Ö»Ğè²éÕÒÎ»Í¼£¬
-    ÕÒµ½bitÎª0µÄÎ»ÖÃ²¢ÖÃ1£¬È»ºó¸üĞÂÍ³¼ÆÊı¾İÓò£¨nr_free)
+    pidmapç»“æ„ä½“è¡¨ç¤ºåˆ†é…pidçš„ä½å›¾ã€‚å½“éœ€è¦åˆ†é…ä¸€ä¸ªæ–°çš„pidæ—¶åªéœ€æŸ¥æ‰¾ä½å›¾ï¼Œ
+    æ‰¾åˆ°bitä¸º0çš„ä½ç½®å¹¶ç½®1ï¼Œç„¶åæ›´æ–°ç»Ÿè®¡æ•°æ®åŸŸï¼ˆnr_free)
 	*/
 	struct pidmap pidmap[PIDMAP_ENTRIES];
 	struct rcu_head rcu;
 	int last_pid;
 	unsigned int nr_hashed;
-	/*µ±Ç°ÃüÃû¿Õ¼äµÄinit½ø³Ì£¬Ã¿¸öÃüÃû¿Õ¼ä¶¼ÓĞÒ»¸ö×÷ÓÃÏàµ±ÓÚÈ«¾Öinit½ø³ÌµÄ½ø³Ì*/
+	/*å½“å‰å‘½åç©ºé—´çš„initè¿›ç¨‹ï¼Œæ¯ä¸ªå‘½åç©ºé—´éƒ½æœ‰ä¸€ä¸ªä½œç”¨ç›¸å½“äºå…¨å±€initè¿›ç¨‹çš„è¿›ç¨‹*/
 	struct task_struct *child_reaper;
 	/*
-      Ö¸Ïò·ÖÅäpidµÄslabµÄµØÖ·
+      æŒ‡å‘åˆ†é…pidçš„slabçš„åœ°å€
 	*/
 	struct kmem_cache *pid_cachep;
 	/*
-	µ±Ç°ÃüÃû¿Õ¼äµÄµÈ¼¶£¬³õÊ¼ÃüÃû¿Õ¼äµÄlevelÎª0£¬
-	ËüµÄ×ÓÃüÃû¿Õ¼älevelÎª1£¬ÒÀ´ÎµİÔö£¬
-	¶øÇÒ×ÓÃüÃû¿Õ¼ä¶Ô¸¸ÃüÃû¿Õ¼äÊÇ¿É¼ûµÄ
-	´Ó¸ø¶¨µÄlevelÉèÖÃ£¬ÄÚºË¼´¿ÉÍÆ¶Ï½ø³Ì»á¹ØÁªµ½¶àÉÙ¸öID
+	å½“å‰å‘½åç©ºé—´çš„ç­‰çº§ï¼Œåˆå§‹å‘½åç©ºé—´çš„levelä¸º0ï¼Œ
+	å®ƒçš„å­å‘½åç©ºé—´levelä¸º1ï¼Œä¾æ¬¡é€’å¢ï¼Œ
+	è€Œä¸”å­å‘½åç©ºé—´å¯¹çˆ¶å‘½åç©ºé—´æ˜¯å¯è§çš„
+	ä»ç»™å®šçš„levelè®¾ç½®ï¼Œå†…æ ¸å³å¯æ¨æ–­è¿›ç¨‹ä¼šå…³è”åˆ°å¤šå°‘ä¸ªID
 	*/
 	unsigned int level;
-	/*¸¸ÃüÃû¿Õ¼ä*/
+	/*çˆ¶å‘½åç©ºé—´*/
 	struct pid_namespace *parent;
 #ifdef CONFIG_PROC_FS
 	struct vfsmount *proc_mnt;

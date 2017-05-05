@@ -34,9 +34,9 @@ asmlinkage long sys_pipe(int __user *fildes)
 }
 
 /**
- * ½¨Á¢ÎÄ¼şÓ³Éä
- * flags:Ó³Éä±êÖ¾£¬ÈçMAP_FIXED
- * prot:·ÃÎÊÈ¨ÏŞ£¬ÈçPROT_EXEC
+ * å»ºç«‹æ–‡ä»¶æ˜ å°„
+ * flags:æ˜ å°„æ ‡å¿—ï¼Œå¦‚MAP_FIXED
+ * prot:è®¿é—®æƒé™ï¼Œå¦‚PROT_EXEC
  */
 asmlinkage long sys_mmap(unsigned long addr, unsigned long len, unsigned long prot, unsigned long flags,
 	unsigned long fd, unsigned long off)
@@ -51,18 +51,18 @@ asmlinkage long sys_mmap(unsigned long addr, unsigned long len, unsigned long pr
 	error = -EBADF;
 	file = NULL;
 	flags &= ~(MAP_EXECUTABLE | MAP_DENYWRITE);
-	if (!(flags & MAP_ANONYMOUS)) {/* ²»ÊÇÄäÃûÓ³Éä£¬±íÊ¾Ó³Éäµ½ÎÄ¼ş */
+	if (!(flags & MAP_ANONYMOUS)) {/* ä¸æ˜¯åŒ¿åæ˜ å°„ï¼Œè¡¨ç¤ºæ˜ å°„åˆ°æ–‡ä»¶ */
 		file = fget(fd);
-		if (!file)/* ÎÄ¼ş¾ä±úÎŞĞ§ */
+		if (!file)/* æ–‡ä»¶å¥æŸ„æ— æ•ˆ */
 			goto out;
 	}
-	/* »ñÈ¡mmap_semĞÅºÅÁ¿ */
+	/* è·å–mmap_semä¿¡å·é‡ */
 	down_write(&current->mm->mmap_sem);
-	/* do_mmap_pgoffÍê³ÉÊµ¼ÊµÄÓ³Éä¹¤×÷ */
+	/* do_mmap_pgoffå®Œæˆå®é™…çš„æ˜ å°„å·¥ä½œ */
 	error = do_mmap_pgoff(file, addr, len, prot, flags, off >> PAGE_SHIFT);
 	up_write(&current->mm->mmap_sem);
 
-	if (file)/* µİ¼õÎÄ¼şÒıÓÃ */
+	if (file)/* é€’å‡æ–‡ä»¶å¼•ç”¨ */
 		fput(file);
 out:
 	return error;

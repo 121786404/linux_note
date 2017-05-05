@@ -28,11 +28,11 @@ static inline int task_is_pdflush(struct task_struct *task)
  * fs/fs-writeback.c
  */
 enum writeback_sync_modes {
-	/* Í¬Ìá½»Í¬²½ÇëÇó£¬²»µÈ´ıÍ¬²½Íê³É */
+	/* åŒæäº¤åŒæ­¥è¯·æ±‚ï¼Œä¸ç­‰å¾…åŒæ­¥å®Œæˆ */
 	WB_SYNC_NONE,	/* Don't wait on anything */
-	/* µÈ´ıËùÓĞÊı¾İÍ¬²½Íê±Ï */
+	/* ç­‰å¾…æ‰€æœ‰æ•°æ®åŒæ­¥å®Œæ¯• */
 	WB_SYNC_ALL,	/* Wait on every mapping */
-	/* ÓÃÓÚsyncÏµÍ³µ÷ÓÃ£¬ÀàËÆÓÚWB_SYNC_NONE¡£ÔÚÍ¬²½Ê±£¬²¢²»½«½ÚµãÒÆ¶¯µ½s_io_more£¬¶øÊÇ½«Ëü·Åµ½ÔàÁ´±íÖĞ */
+	/* ç”¨äºsyncç³»ç»Ÿè°ƒç”¨ï¼Œç±»ä¼¼äºWB_SYNC_NONEã€‚åœ¨åŒæ­¥æ—¶ï¼Œå¹¶ä¸å°†èŠ‚ç‚¹ç§»åŠ¨åˆ°s_io_moreï¼Œè€Œæ˜¯å°†å®ƒæ”¾åˆ°è„é“¾è¡¨ä¸­ */
 	WB_SYNC_HOLD,	/* Hold the inode on sb_dirty for sys_sync() */
 };
 
@@ -42,21 +42,21 @@ enum writeback_sync_modes {
  * in a manner such that unspecified fields are set to zero.
  */
 /**
- * ÓÃÓÚ¿ØÖÆÔàÒ³»ØĞ´£¬ÒÔ¼°·µ»Ø»ØĞ´½á¹ûµÄÊı¾İ½á¹¹¡£
+ * ç”¨äºæ§åˆ¶è„é¡µå›å†™ï¼Œä»¥åŠè¿”å›å›å†™ç»“æœçš„æ•°æ®ç»“æ„ã€‚
  */
 struct writeback_control {
-	/* »ØĞ´Éè±¸ĞÅÏ¢£¬Ö»»ØĞ´¸ÃÉè±¸ÉÏµÄÔà½Úµã */
+	/* å›å†™è®¾å¤‡ä¿¡æ¯ï¼Œåªå›å†™è¯¥è®¾å¤‡ä¸Šçš„è„èŠ‚ç‚¹ */
 	struct backing_dev_info *bdi;	/* If !NULL, only write back this
 					   queue */
-	/* Í¬²½Ä£Ê½ */
+	/* åŒæ­¥æ¨¡å¼ */
 	enum writeback_sync_modes sync_mode;
-	/* Èç¹ûÔàµÄ»º´æÊı¾İ£¬±äÔàÊ±¼ä³¬¹ı´ËÊ±¼ä£¬½«»ØĞ´ */
+	/* å¦‚æœè„çš„ç¼“å­˜æ•°æ®ï¼Œå˜è„æ—¶é—´è¶…è¿‡æ­¤æ—¶é—´ï¼Œå°†å›å†™ */
 	unsigned long *older_than_this;	/* If !NULL, only write back inodes
 					   older than this */
-	/* »ØĞ´µÄÊıÁ¿£¬³¬¹ı´ËÊıÁ¿½«²»ÔÙ»ØĞ´ */
+	/* å›å†™çš„æ•°é‡ï¼Œè¶…è¿‡æ­¤æ•°é‡å°†ä¸å†å›å†™ */
 	long nr_to_write;		/* Write this many pages, and decrement
 					   this for each page written */
-	/* Î´±»»ØĞ´µÄÒ³ÊıÁ¿ */
+	/* æœªè¢«å›å†™çš„é¡µæ•°é‡ */
 	long pages_skipped;		/* Pages which were not written */
 
 	/*
@@ -67,17 +67,17 @@ struct writeback_control {
 	loff_t range_start;
 	loff_t range_end;
 
-	/* ÒòĞ´¶ÓÁĞÔÚÓöµ½ÓµÈûÊ±ÊÇ·ñ×èÈû */
+	/* å› å†™é˜Ÿåˆ—åœ¨é‡åˆ°æ‹¥å¡æ—¶æ˜¯å¦é˜»å¡ */
 	unsigned nonblocking:1;		/* Don't get stuck on request queues */
-	/* Í¨Öª¸ß²ã£¬»ØĞ´ÆÚ¼ä·¢ÉúÁËÓµÈû */
+	/* é€šçŸ¥é«˜å±‚ï¼Œå›å†™æœŸé—´å‘ç”Ÿäº†æ‹¥å¡ */
 	unsigned encountered_congestion:1; /* An output: a queue is full */
-	/* ÖÜÆÚĞÔ»ØĞ´£¬ÓÉpdflush·¢³ö */
+	/* å‘¨æœŸæ€§å›å†™ï¼Œç”±pdflushå‘å‡º */
 	unsigned for_kupdate:1;		/* A kupdate writeback */
-	/* ÓÉÄÚ´æ»ØÊÕÒıÆğµÄ»ØĞ´ */
+	/* ç”±å†…å­˜å›æ”¶å¼•èµ·çš„å›å†™ */
 	unsigned for_reclaim:1;		/* Invoked from the page allocator */
-	/* ÓÉdo_writepagesÒıÆğµÄ»ØĞ´ */
+	/* ç”±do_writepageså¼•èµ·çš„å›å†™ */
 	unsigned for_writepages:1;	/* This is a writepages() call */
-	/* ÊÇ·ñÖ»»ØĞ´ÓÉrange_startºÍrange_endÏŞ¶¨µÄ·¶Î§¡£Èç¹ûÎª1£¬±íÊ¾¿ÉÄÜ¶à´Î±éÀúÒ³¡£ */
+	/* æ˜¯å¦åªå›å†™ç”±range_startå’Œrange_endé™å®šçš„èŒƒå›´ã€‚å¦‚æœä¸º1ï¼Œè¡¨ç¤ºå¯èƒ½å¤šæ¬¡éå†é¡µã€‚ */
 	unsigned range_cyclic:1;	/* range_start is cyclic */
 };
 

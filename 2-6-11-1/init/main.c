@@ -371,12 +371,12 @@ static void __init smp_init(void)
 static void noinline rest_init(void)
 	__releases(kernel_lock)
 {
-        /* Æô¶¯ÄÚºËÏß³Ì */
+        /* å¯åŠ¨å†…æ ¸çº¿ç¨‹ */
 	kernel_thread(init, NULL, CLONE_FS | CLONE_SIGHAND);
 	numa_default_policy();
 	unlock_kernel();
 	preempt_enable_no_resched();
-        /* ÈÃ0½ø³Ì¿Õ×ª */
+        /* è®©0è¿›ç¨‹ç©ºè½¬ */
 	cpu_idle();
 } 
 
@@ -414,7 +414,7 @@ void __init parse_early_param(void)
 /*
  *	Activate the first processor.
  */
-/* ÄÚºËÆô¶¯º¯Êı */
+/* å†…æ ¸å¯åŠ¨å‡½æ•° */
 asmlinkage void __init start_kernel(void)
 {
 	char * command_line;
@@ -446,7 +446,7 @@ asmlinkage void __init start_kernel(void)
 	 * fragile until we cpu_idle() for the first time.
 	 */
 	preempt_disable();
-        /* ³õÊ¼»¯´æ´¢½Úµãzonelist */
+        /* åˆå§‹åŒ–å­˜å‚¨èŠ‚ç‚¹zonelist */
 	build_all_zonelists();
 	page_alloc_init();
 	printk("Kernel command line: %s\n", saved_command_line);
@@ -458,7 +458,7 @@ asmlinkage void __init start_kernel(void)
 	trap_init();
 	rcu_init();
 	init_IRQ();
-	/* pidhash±íµÄ³õÊ¼»¯ */
+	/* pidhashè¡¨çš„åˆå§‹åŒ– */
 	pidhash_init();
 	init_timers();
 	softirq_init();
@@ -484,13 +484,13 @@ asmlinkage void __init start_kernel(void)
 #endif
 	vfs_caches_init_early();
 	mem_init();
-        /* ¸ßËÙ»º´æ³õÊ¼»¯ */
+        /* é«˜é€Ÿç¼“å­˜åˆå§‹åŒ– */
 	kmem_cache_init();
 	numa_policy_init();
 	if (late_time_init)
 		late_time_init();
 	calibrate_delay();
-	/* ½ø³ÌpidÓ³ÉäµÄ³õÊ¼»¯ */
+	/* è¿›ç¨‹pidæ˜ å°„çš„åˆå§‹åŒ– */
 	pidmap_init();
 	pgtable_cache_init();
 	prio_tree_init();
@@ -504,14 +504,14 @@ asmlinkage void __init start_kernel(void)
 	buffer_init();
 	unnamed_dev_init();
 	security_init();
-        /* VFSµÄÏà¹Ø³õÊ¼»¯£¬Èçrootfs */
+        /* VFSçš„ç›¸å…³åˆå§‹åŒ–ï¼Œå¦‚rootfs */
 	vfs_caches_init(num_physpages);
 	radix_tree_init();
 	signals_init();
 	/* rootfs populating might need page-writeback */
 	page_writeback_init();
 #ifdef CONFIG_PROC_FS
-        /* ³õÊ¼»¯procÎÄ¼şÏµÍ³ */
+        /* åˆå§‹åŒ–procæ–‡ä»¶ç³»ç»Ÿ */
 	proc_root_init();
 #endif
 	check_bugs();
@@ -519,7 +519,7 @@ asmlinkage void __init start_kernel(void)
 	acpi_early_init(); /* before LAPIC and SMP init */
 
 	/* Do the rest non-__init'ed, we're now alive */
-        /*  ÔÚ¸Ãº¯ÊıÖĞ´´½¨ÄÚºËinitÏß³Ì */
+        /*  åœ¨è¯¥å‡½æ•°ä¸­åˆ›å»ºå†…æ ¸initçº¿ç¨‹ */
 	rest_init();
 }
 
@@ -536,7 +536,7 @@ struct task_struct *child_reaper = &init_task;
 
 extern initcall_t __initcall_start[], __initcall_end[];
 
-/* µ÷ÓÃÄ£¿é³õÊ¼»¯º¯Êı£¬Èçmodule_init */
+/* è°ƒç”¨æ¨¡å—åˆå§‹åŒ–å‡½æ•°ï¼Œå¦‚module_init */
 static void __init do_initcalls(void)
 {
 	initcall_t *call;
@@ -551,7 +551,7 @@ static void __init do_initcalls(void)
 			printk("\n");
 		}
 
-                /* ¿ªÊ¼ÕæÕıµÄµ÷ÓÃÄ£¿é³õÊ¼»¯º¯Êı */
+                /* å¼€å§‹çœŸæ­£çš„è°ƒç”¨æ¨¡å—åˆå§‹åŒ–å‡½æ•° */
 		(*call)();
 
 		msg = NULL;
@@ -593,10 +593,10 @@ static void __init do_basic_setup(void)
 #endif
 
 	/* Networking initialization needs a process context */ 
-        /* ÍøÂç³õÊ¼»¯ */
+        /* ç½‘ç»œåˆå§‹åŒ– */
 	sock_init();
 
-        /* ´ÓÕâÀï»áµ÷ÓÃµ½module_initÖĞ×¢²áµÄº¯Êı */
+        /* ä»è¿™é‡Œä¼šè°ƒç”¨åˆ°module_initä¸­æ³¨å†Œçš„å‡½æ•° */
 	do_initcalls();
 }
 

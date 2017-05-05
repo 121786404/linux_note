@@ -31,7 +31,7 @@ static struct bio *get_swap_bio(gfp_t gfp_flags,
 
 	bio = bio_alloc(gfp_flags, 1);
 	if (bio) {
-		/* ËÑË÷Çø¼äÁ´±í£¬²éÕÒ²ÛÎ»Óë´ÅÅÌ¿éÖ®¼äµÄÓ³Éä */
+		/* æœç´¢åŒºé—´é“¾è¡¨ï¼ŒæŸ¥æ‰¾æ§½ä½ä¸ç£ç›˜å—ä¹‹é—´çš„æ˜ å°„ */
 		bio->bi_iter.bi_sector = map_swap_page(page, &bio->bi_bdev);
 		bio->bi_iter.bi_sector <<= PAGE_SHIFT - 9;
 		bio->bi_end_io = end_io;
@@ -43,9 +43,9 @@ static struct bio *get_swap_bio(gfp_t gfp_flags,
 }
 
 /**
- * Ò³½»»»IO½áÊøºó£¬¾Í»áµ÷ÓÃend_swap_bio_write
- * Õâ¸öº¯Êı»½ĞÑÕıµÈ´ıÒ³PG_writeback±êÖ¾Çå0µÄËùÓĞ½ø³Ì¡£
- * Ëü»¹»áÇå³ıPG_writeback±êÖ¾ºÍ»ùÊ÷ÖĞµÄÏà¹Ø±ê¼Ç¡£²¢ÊÍ·ÅÓÃÓÚIO´«ÊäµÄBIOÃèÊö·û¡£
+ * é¡µäº¤æ¢IOç»“æŸåï¼Œå°±ä¼šè°ƒç”¨end_swap_bio_write
+ * è¿™ä¸ªå‡½æ•°å”¤é†’æ­£ç­‰å¾…é¡µPG_writebackæ ‡å¿—æ¸…0çš„æ‰€æœ‰è¿›ç¨‹ã€‚
+ * å®ƒè¿˜ä¼šæ¸…é™¤PG_writebackæ ‡å¿—å’ŒåŸºæ ‘ä¸­çš„ç›¸å…³æ ‡è®°ã€‚å¹¶é‡Šæ”¾ç”¨äºIOä¼ è¾“çš„BIOæè¿°ç¬¦ã€‚
  */
 void end_swap_bio_write(struct bio *bio)
 {
@@ -240,9 +240,9 @@ bad_bmap:
  * them here and get rid of the unnecessary final write.
  */
 /**
- * ½«Ò³ÃæÊı¾İĞ´Èëµ½½»»»ÇøÖ¸¶¨Î»ÖÃ¡£shrink_listº¯Êı¼¤»î½»»»Ò³µÄIO´«Êä¹ı³Ì¡£
- * Ëü¼ì²éÒ³¿òµÄPG_dirty±êÖ¾£¬È»ºóÖ´ĞĞpageoutº¯Êı¡£½»»»¸ßËÙ»º´æµÄwritepage
- * ·½·¨Îª±¾º¯Êı¡£Òò´Ë£¬×îÖÕµÄIO´«Êä¹ı³ÌÓÉ±¾º¯ÊıÍê³É¡£
+ * å°†é¡µé¢æ•°æ®å†™å…¥åˆ°äº¤æ¢åŒºæŒ‡å®šä½ç½®ã€‚shrink_listå‡½æ•°æ¿€æ´»äº¤æ¢é¡µçš„IOä¼ è¾“è¿‡ç¨‹ã€‚
+ * å®ƒæ£€æŸ¥é¡µæ¡†çš„PG_dirtyæ ‡å¿—ï¼Œç„¶åæ‰§è¡Œpageoutå‡½æ•°ã€‚äº¤æ¢é«˜é€Ÿç¼“å­˜çš„writepage
+ * æ–¹æ³•ä¸ºæœ¬å‡½æ•°ã€‚å› æ­¤ï¼Œæœ€ç»ˆçš„IOä¼ è¾“è¿‡ç¨‹ç”±æœ¬å‡½æ•°å®Œæˆã€‚
  */
 int swap_writepage(struct page *page, struct writeback_control *wbc)
 {
@@ -325,8 +325,8 @@ int __swap_writepage(struct page *page, struct writeback_control *wbc,
 
 	ret = 0;
 	/**
-	 * Îª½»»»Ò³Éú³ÉÒ»¸öbio£¬²¢ÕıÈ·Ìî³äËùĞèµÄ²ÎÊı£¬·ÖÅä²¢³õÊ¼»¯Ò»¸öBIOÃèÊö·û¡£
-	 * ´Ó»»³öÒ³±êÊ¶·ûËã³ö½»»»ÇøÃèÊö·ûµØÖ·¡£È»ºóËÑË÷½»»»×ÓÇøÁ´±í£¬ÒÔÕÒµ½Ò³²ÛµÄ´ÅÅÌÉÈÇø¡£
+	 * ä¸ºäº¤æ¢é¡µç”Ÿæˆä¸€ä¸ªbioï¼Œå¹¶æ­£ç¡®å¡«å……æ‰€éœ€çš„å‚æ•°ï¼Œåˆ†é…å¹¶åˆå§‹åŒ–ä¸€ä¸ªBIOæè¿°ç¬¦ã€‚
+	 * ä»æ¢å‡ºé¡µæ ‡è¯†ç¬¦ç®—å‡ºäº¤æ¢åŒºæè¿°ç¬¦åœ°å€ã€‚ç„¶åæœç´¢äº¤æ¢å­åŒºé“¾è¡¨ï¼Œä»¥æ‰¾åˆ°é¡µæ§½çš„ç£ç›˜æ‰‡åŒºã€‚
 	 */
 	bio = get_swap_bio(GFP_NOIO, page, end_write_func);
 	if (bio == NULL) {
@@ -338,14 +338,14 @@ int __swap_writepage(struct page *page, struct writeback_control *wbc,
 	bio->bi_opf = REQ_OP_WRITE | wbc_to_write_flags(wbc);
 	count_vm_event(PSWPOUT);
 	/**
-	 * ÉèÖÃÒ³µÄµÄwriteback±êÖ¾¡£
+	 * è®¾ç½®é¡µçš„çš„writebackæ ‡å¿—ã€‚
 	 */
 	set_page_writeback(page);
 	unlock_page(page);
 	/**
-	 * Ìá½»Ğ´ÇëÇó¡£ µ±IO´«ÊäÍê±Ïºó£¬Ö´ĞĞend_swap_bio_write£¬
-	 * ¸Ãº¯Êı»½ĞÑµÈ´ıÒ³PG_writeback±êÖ¾Çå0µÄËùÓĞ½ø³Ì¡£
-	 * Çå³ıPG_writeback±êÖ¾ºÍ»ùÊ÷ÖĞµÄÏà¹Ø±êÖ¾£¬²¢ÊÍ·ÅIOÃèÊö·û¡£
+	 * æäº¤å†™è¯·æ±‚ã€‚ å½“IOä¼ è¾“å®Œæ¯•åï¼Œæ‰§è¡Œend_swap_bio_writeï¼Œ
+	 * è¯¥å‡½æ•°å”¤é†’ç­‰å¾…é¡µPG_writebackæ ‡å¿—æ¸…0çš„æ‰€æœ‰è¿›ç¨‹ã€‚
+	 * æ¸…é™¤PG_writebackæ ‡å¿—å’ŒåŸºæ ‘ä¸­çš„ç›¸å…³æ ‡å¿—ï¼Œå¹¶é‡Šæ”¾IOæè¿°ç¬¦ã€‚
 	 */
 	submit_bio(bio);
 out:
@@ -389,7 +389,7 @@ int swap_readpage(struct page *page)
 	}
 
 	ret = 0;
-	/* Éú³É¶ÁÇëÇóBIO */
+	/* ç”Ÿæˆè¯»è¯·æ±‚BIO */
 	bio = get_swap_bio(GFP_KERNEL, page, end_swap_bio_read);
 	if (bio == NULL) {
 		unlock_page(page);
@@ -398,7 +398,7 @@ int swap_readpage(struct page *page)
 	}
 	bio_set_op_attrs(bio, REQ_OP_READ, 0);
 	count_vm_event(PSWPIN);
-	/* Ìá½»¶ÁÇëÇó */
+	/* æäº¤è¯»è¯·æ±‚ */
 	submit_bio(bio);
 out:
 	return ret;

@@ -31,15 +31,15 @@
 /* counter to tag the hotplug event, read only except for the kobject core */
 extern u64 hotplug_seqnum;
 
-/* ÄÚºË¶ÔÏó½á¹¹ */
+/* å†…æ ¸å¯¹è±¡ç»“æž„ */
 struct kobject {
-	char			* k_name;  /* ÄÚºË¶ÔÏóÃû³Æ */
+	char			* k_name;  /* å†…æ ¸å¯¹è±¡åç§° */
 	char			name[KOBJ_NAME_LEN];    /* */
 	struct kref		kref;
-	struct list_head	entry;            /* ºÍksetÖÐµÄlistÐÎ³ÉÁ´±í */
+	struct list_head	entry;            /* å’Œksetä¸­çš„listå½¢æˆé“¾è¡¨ */
 	struct kobject		* parent;
-	struct kset		* kset;               /* Ö¸ÏòËùÊôµÄkset */
-	struct kobj_type	* ktype;        /* ¼ÇÂ¼kobjectÀàÐÍ */
+	struct kset		* kset;               /* æŒ‡å‘æ‰€å±žçš„kset */
+	struct kobj_type	* ktype;        /* è®°å½•kobjectç±»åž‹ */
 	struct dentry		* dentry;
 };
 
@@ -67,11 +67,11 @@ extern void kobject_put(struct kobject *);
 
 extern char * kobject_get_path(struct kobject *, int);
 
-/* ÄÚºË¶ÔÏóÀàÐÍ½á¹¹ */
+/* å†…æ ¸å¯¹è±¡ç±»åž‹ç»“æž„ */
 struct kobj_type {
-	void (*release)(struct kobject *);         /* ÄÚºË¶ÔÏóµÄÊÍ·Åº¯Êý */
-	struct sysfs_ops	* sysfs_ops;      /* sysfsÎÄ¼þ²Ù×÷ */
-	struct attribute	** default_attrs;  /* ÄÚºË¶ÔÏóµÄÄ¬ÈÏÊôÐÔ */
+	void (*release)(struct kobject *);         /* å†…æ ¸å¯¹è±¡çš„é‡Šæ”¾å‡½æ•° */
+	struct sysfs_ops	* sysfs_ops;      /* sysfsæ–‡ä»¶æ“ä½œ */
+	struct attribute	** default_attrs;  /* å†…æ ¸å¯¹è±¡çš„é»˜è®¤å±žæ€§ */
 };
 
 
@@ -93,7 +93,7 @@ struct kobj_type {
  *      reported, as well as to add its own "data" elements to the
  *      environment being passed to the hotplug helper.
  */
-/* ÈÈ²å°Î²Ù×÷·û */
+/* çƒ­æ’æ‹”æ“ä½œç¬¦ */
 struct kset_hotplug_ops {
 	int (*filter)(struct kset *kset, struct kobject *kobj);
 	char *(*name)(struct kset *kset, struct kobject *kobj);
@@ -101,15 +101,15 @@ struct kset_hotplug_ops {
 			int num_envp, char *buffer, int buffer_size);
 };
 
-/* Ã¿¸ökset½á¹¹¶¼±ØÐëÊôÓÚÒ»¸östruct subsystem½á¹¹ */
+/* æ¯ä¸ªksetç»“æž„éƒ½å¿…é¡»å±žäºŽä¸€ä¸ªstruct subsystemç»“æž„ */
 struct kset {
-	struct subsystem	* subsys;       /* ¶ÔÓ¦µÄ×ÓÏµÍ³ */
-	struct kobj_type	* ktype;        /* ¶ÔÓ¦ÄÚºË¶ÔÏóµÄÀàÐÍ */
-	struct list_head	list;     /* ÐÎ³ÉkobjectµÄÁ´±í */
-	/* ksetÄÚÇ¶µÄkobject²»¼ÓÈëlistÁ´±íµ±ÖÐ£¬
-	  * µ«ÊÇlistÁ´±íµ±ÖÐµÄËùÓÐkobjectµÄparent¶¼ 
-	  * Ö¸Ïò¸ÃÄÚÇ¶µÄkobject£¬¸ÃÄÚÇ¶µÄkobjectµÄparent 
-	  * ¿ÉÄÜÖ¸ÏòÁíÍâÒ»¸öksetµÄÄÚÇ¶kobject 
+	struct subsystem	* subsys;       /* å¯¹åº”çš„å­ç³»ç»Ÿ */
+	struct kobj_type	* ktype;        /* å¯¹åº”å†…æ ¸å¯¹è±¡çš„ç±»åž‹ */
+	struct list_head	list;     /* å½¢æˆkobjectçš„é“¾è¡¨ */
+	/* ksetå†…åµŒçš„kobjectä¸åŠ å…¥listé“¾è¡¨å½“ä¸­ï¼Œ
+	  * ä½†æ˜¯listé“¾è¡¨å½“ä¸­çš„æ‰€æœ‰kobjectçš„parentéƒ½ 
+	  * æŒ‡å‘è¯¥å†…åµŒçš„kobjectï¼Œè¯¥å†…åµŒçš„kobjectçš„parent 
+	  * å¯èƒ½æŒ‡å‘å¦å¤–ä¸€ä¸ªksetçš„å†…åµŒkobject 
 	  */
 	struct kobject		kobj;    
 	struct kset_hotplug_ops	* hotplug_ops;
@@ -121,29 +121,29 @@ extern int kset_add(struct kset * k);
 extern int kset_register(struct kset * k);
 extern void kset_unregister(struct kset * k);
 
-/* »ñÈ¡kobject¶ÔÓ¦µÄkset */
+/* èŽ·å–kobjectå¯¹åº”çš„kset */
 static inline struct kset * to_kset(struct kobject * kobj)
 {
 	return kobj ? container_of(kobj,struct kset,kobj) : NULL;
 }
 
-/* Ïàµ±ÓÚ¸øksetÖÐµÄkobjectÔö¼ÓÁËÒýÓÃ¼ÆÊý
+/* ç›¸å½“äºŽç»™ksetä¸­çš„kobjectå¢žåŠ äº†å¼•ç”¨è®¡æ•°
   */
 static inline struct kset * kset_get(struct kset * k)
 {
 	return k ? to_kset(kobject_get(&k->kobj)) : NULL;
 }
 
-/* ÊÍ·ÅksetÖÐÄÚÇ¶µÄÄÚºË¶ÔÏóÒýÓÃ¼ÆÊý */
+/* é‡Šæ”¾ksetä¸­å†…åµŒçš„å†…æ ¸å¯¹è±¡å¼•ç”¨è®¡æ•° */
 static inline void kset_put(struct kset * k)
 {
 	kobject_put(&k->kobj);
 }
 
-/* »ñÈ¡ÄÚºË¶ÔÏóµÄÀàÐÍ */
+/* èŽ·å–å†…æ ¸å¯¹è±¡çš„ç±»åž‹ */
 static inline struct kobj_type * get_ktype(struct kobject * k)
 {
-        /* Èç¹û¶ÔÓ¦µÄksetÖÐ¶ÔÏóÀàÐÍ²»Îª¿Õ£¬Ôò·µ»Ø¸ÃÀàÐÍ */
+        /* å¦‚æžœå¯¹åº”çš„ksetä¸­å¯¹è±¡ç±»åž‹ä¸ä¸ºç©ºï¼Œåˆ™è¿”å›žè¯¥ç±»åž‹ */
 	if (k->kset && k->kset->ktype)
 		return k->kset->ktype;
 	else 

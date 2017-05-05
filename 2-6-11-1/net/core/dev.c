@@ -954,14 +954,14 @@ int dev_close(struct net_device *dev)
  *	view of the network device list.
  */
 
-/* ×¢²áÍøÂçÉè±¸Í¨ÖªÁ´ */
+/* æ³¨å†Œç½‘ç»œè®¾å¤‡é€šçŸ¥é“¾ */
 int register_netdevice_notifier(struct notifier_block *nb)
 {
 	struct net_device *dev;
 	int err;
 
 	rtnl_lock();
-        /* ×¢²áÉè±¸Í¨ÖªÁ´£¬Èç¹û³É¹¦ÔòÍ¨ÖªÆäËûËùÓÐÉè±¸ */
+        /* æ³¨å†Œè®¾å¤‡é€šçŸ¥é“¾ï¼Œå¦‚æžœæˆåŠŸåˆ™é€šçŸ¥å…¶ä»–æ‰€æœ‰è®¾å¤‡ */
 	err = notifier_chain_register(&netdev_chain, nb);
 	if (!err) {
 		for (dev = dev_base; dev; dev = dev->next) {

@@ -37,7 +37,7 @@ struct	rusage {
 	long	ru_nivcsw;		/* involuntary " */
 };
 
-/* 资源限制结构 */
+/* 璧勬簮闄愬埗缁撴瀯 */
 struct rlimit {
 	unsigned long	rlim_cur;
 	unsigned long	rlim_max;

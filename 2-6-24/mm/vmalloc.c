@@ -23,7 +23,7 @@
 
 DEFINE_RWLOCK(vmlist_lock);
 
-/* ËùÓĞ·ÇÁ¬ĞøÓ³ÉäÇøÓò½á¹¹µÄÁ´±íÍ· */
+/* æ‰€æœ‰éè¿ç»­æ˜ å°„åŒºåŸŸç»“æ„çš„é“¾è¡¨å¤´ */
 struct vm_struct *vmlist;
 
 static void *__vmalloc_node(unsigned long size, gfp_t gfp_mask, pgprot_t prot,
@@ -200,36 +200,36 @@ static struct vm_struct *__get_vm_area_node(unsigned long size, unsigned long fl
 	/*
 	 * We always allocate a guard page.
 	 */
-	/* ÔÚvmallocµÄ×ÓÇøÓòÖ®¼ä£¬²åÈëÒ»¸ö¿ÕÒ³£¬×÷Îª±£»¤Ò³£¬·ÀÖ¹Ô½½ç */
+	/* åœ¨vmallocçš„å­åŒºåŸŸä¹‹é—´ï¼Œæ’å…¥ä¸€ä¸ªç©ºé¡µï¼Œä½œä¸ºä¿æŠ¤é¡µï¼Œé˜²æ­¢è¶Šç•Œ */
 	size += PAGE_SIZE;
 
-	/* »ñÈ¡±£»¤·ÇÁ¬ĞøÓ³ÉäÇøĞéÄâµØÖ·Á´±íµÄËø */
+	/* è·å–ä¿æŠ¤éè¿ç»­æ˜ å°„åŒºè™šæ‹Ÿåœ°å€é“¾è¡¨çš„é” */
 	write_lock(&vmlist_lock);
-	/* ±éÀúÁ´±íÖĞµÄËùÓĞÔªËØ£¬ÕÒµ½ºÏÊÊµÄĞéÄâµØÖ·¿Õ¼ä */
+	/* éå†é“¾è¡¨ä¸­çš„æ‰€æœ‰å…ƒç´ ï¼Œæ‰¾åˆ°åˆé€‚çš„è™šæ‹Ÿåœ°å€ç©ºé—´ */
 	for (p = &vmlist; (tmp = *p) != NULL ;p = &tmp->next) {
-		/* µ±Ç°Çø¼äÆğÊ¼µØÖ·Ğ¡ÓÚÆğÊ¼µØÖ· */
+		/* å½“å‰åŒºé—´èµ·å§‹åœ°å€å°äºèµ·å§‹åœ°å€ */
 		if ((unsigned long)tmp->addr < addr) {
-			/* ÆğÊ¼µØÖ·Î»ÓÚÇø¼äÄÚ²¿ */
+			/* èµ·å§‹åœ°å€ä½äºåŒºé—´å†…éƒ¨ */
 			if((unsigned long)tmp->addr + tmp->size >= addr)
-				/* µ÷ÕûÆğÊ¼µØÖ·Îªµ±Ç°Çø¼äÒÔºó */
+				/* è°ƒæ•´èµ·å§‹åœ°å€ä¸ºå½“å‰åŒºé—´ä»¥å */
 				addr = ALIGN(tmp->size + 
 					     (unsigned long)tmp->addr, align);
 			continue;
 		}
-		/* ÕûĞÎÒç³öÁË£¬ËµÃ÷Ã»ÓĞºÏÊÊµÄ¿é£¬ÍË³ö */
+		/* æ•´å½¢æº¢å‡ºäº†ï¼Œè¯´æ˜æ²¡æœ‰åˆé€‚çš„å—ï¼Œé€€å‡º */
 		if ((size + addr) < addr)
 			goto out;
-		/* ÓĞÂú×ãÒªÇóµÄ¿Õ¼äÇø¼ä */
+		/* æœ‰æ»¡è¶³è¦æ±‚çš„ç©ºé—´åŒºé—´ */
 		if (size + addr <= (unsigned long)tmp->addr)
 			goto found;
-		/* ´Óµ±Ç°Çø¼äºóÃæ¿ªÊ¼¼ÌĞø²éÕÒ */
+		/* ä»å½“å‰åŒºé—´åé¢å¼€å§‹ç»§ç»­æŸ¥æ‰¾ */
 		addr = ALIGN(tmp->size + (unsigned long)tmp->addr, align);
-		if (addr > end - size)/* ÕÒÍêÁË£¬ÈÔÈ»Ã»ÓĞºÏÊÊµÄÇø¼ä */
+		if (addr > end - size)/* æ‰¾å®Œäº†ï¼Œä»ç„¶æ²¡æœ‰åˆé€‚çš„åŒºé—´ */
 			goto out;
 	}
 
 found:
-	/* ·µ»ØÕÒµ½µÄÇø¼ä */
+	/* è¿”å›æ‰¾åˆ°çš„åŒºé—´ */
 	area->next = *p;
 	*p = area;
 
@@ -239,13 +239,13 @@ found:
 	area->pages = NULL;
 	area->nr_pages = 0;
 	area->phys_addr = 0;
-	/* ÊÍ·ÅĞ´Ëø */
+	/* é‡Šæ”¾å†™é” */
 	write_unlock(&vmlist_lock);
 
 	return area;
 
 out:
-	/* Ã»ÓĞºÏÊÊµÄÇø¼ä£¬ÊÍ·ÅĞ´Ëø²¢ÍË³ö */
+	/* æ²¡æœ‰åˆé€‚çš„åŒºé—´ï¼Œé‡Šæ”¾å†™é”å¹¶é€€å‡º */
 	write_unlock(&vmlist_lock);
 	kfree(area);
 	if (printk_ratelimit())
@@ -254,7 +254,7 @@ out:
 }
 
 /**
- * ÔÚstartºÍendÖ®¼ä£¬·ÖÅäÒ»¶Î¿ÉÓÃµÄĞéÄâµØÖ·¿Õ¼ä
+ * åœ¨startå’Œendä¹‹é—´ï¼Œåˆ†é…ä¸€æ®µå¯ç”¨çš„è™šæ‹Ÿåœ°å€ç©ºé—´
  */
 struct vm_struct *__get_vm_area(unsigned long size, unsigned long flags,
 				unsigned long start, unsigned long end)
@@ -273,7 +273,7 @@ EXPORT_SYMBOL_GPL(__get_vm_area);
  *	on success or %NULL on failure.
  */
 /**
- * Îªvmalloc·ÖÅäÒ»¶ÎÁ¬ĞøµÄĞéÄâµØÖ·¿Õ¼ä
+ * ä¸ºvmallocåˆ†é…ä¸€æ®µè¿ç»­çš„è™šæ‹Ÿåœ°å€ç©ºé—´
  */
 struct vm_struct *get_vm_area(unsigned long size, unsigned long flags)
 {
@@ -305,23 +305,23 @@ static struct vm_struct *__remove_vm_area(void *addr)
 {
 	struct vm_struct **p, *tmp;
 
-	/* ±éÀúĞéÄâµØÖ·¿Õ¼ä */
+	/* éå†è™šæ‹Ÿåœ°å€ç©ºé—´ */
 	for (p = &vmlist ; (tmp = *p) != NULL ;p = &tmp->next) {
-		 if (tmp->addr == addr)/* ÕÒµ½µØÖ· */
+		 if (tmp->addr == addr)/* æ‰¾åˆ°åœ°å€ */
 			 goto found;
 	}
-	return NULL;/* Ã»ÓĞÕÒµ½µØÖ·£¬Ê§°Ü */
+	return NULL;/* æ²¡æœ‰æ‰¾åˆ°åœ°å€ï¼Œå¤±è´¥ */
 
 found:
-	/* ½â³ıÄÚ´æµØÖ·¿Õ¼äÓëÎïÀíÒ³ÃæÖ®¼äµÄÓ³Éä¹ØÏµ */
+	/* è§£é™¤å†…å­˜åœ°å€ç©ºé—´ä¸ç‰©ç†é¡µé¢ä¹‹é—´çš„æ˜ å°„å…³ç³» */
 	unmap_vm_area(tmp);
-	/* ´ÓÁ´±íÖĞÉ¾³ıÇø¼ä */
+	/* ä»é“¾è¡¨ä¸­åˆ é™¤åŒºé—´ */
 	*p = tmp->next;
 
 	/*
 	 * Remove the guard page.
 	 */
-	/* ĞŞ¸ÄÇø¼ä³¤¶È£¬ÔÚÓ³ÉäÊ±ÎÒÃÇÎªÆäÌí¼ÓÁËÒ»¸ö±£»¤Ò³ */
+	/* ä¿®æ”¹åŒºé—´é•¿åº¦ï¼Œåœ¨æ˜ å°„æ—¶æˆ‘ä»¬ä¸ºå…¶æ·»åŠ äº†ä¸€ä¸ªä¿æŠ¤é¡µ */
 	tmp->size -= PAGE_SIZE;
 	return tmp;
 }
@@ -335,30 +335,30 @@ found:
  *	on SMP machines, except for its size or flags.
  */
 /**
- * ´ÓvmallocĞéÄâµØÖ·¿Õ¼äÁ´±íÖĞÉ¾³ıÒ»¸öÇø¼ä
+ * ä»vmallocè™šæ‹Ÿåœ°å€ç©ºé—´é“¾è¡¨ä¸­åˆ é™¤ä¸€ä¸ªåŒºé—´
  */
 struct vm_struct *remove_vm_area(void *addr)
 {
 	struct vm_struct *v;
-	/* »ñÈ¡Ğ´Ëø */
+	/* è·å–å†™é” */
 	write_lock(&vmlist_lock);
-	/* É¾³ıÇø¼ä */
+	/* åˆ é™¤åŒºé—´ */
 	v = __remove_vm_area(addr);
-	/* ÊÍ·ÅĞ´Ëø */
+	/* é‡Šæ”¾å†™é” */
 	write_unlock(&vmlist_lock);
 	return v;
 }
 
 /**
- * ÊÍ·ÅÓÉvmalloc,vmap,ioremap·ÖÅäµÄÄÚ´æ
- * addr:	ÒªÊÍ·ÅµÄÇøÓòÆğÊ¼µØÖ·
- * deallocate_pages: ÊÇ·ñ½«ÎïÀíÒ³Ãæ·µ»¹¸ø»ï°éÏµÍ³
+ * é‡Šæ”¾ç”±vmalloc,vmap,ioremapåˆ†é…çš„å†…å­˜
+ * addr:	è¦é‡Šæ”¾çš„åŒºåŸŸèµ·å§‹åœ°å€
+ * deallocate_pages: æ˜¯å¦å°†ç‰©ç†é¡µé¢è¿”è¿˜ç»™ä¼™ä¼´ç³»ç»Ÿ
  */
 static void __vunmap(void *addr, int deallocate_pages)
 {
 	struct vm_struct *area;
 
-	/* ºÏ·¨ĞÔ¼ì²é */
+	/* åˆæ³•æ€§æ£€æŸ¥ */
 	if (!addr)
 		return;
 
@@ -368,9 +368,9 @@ static void __vunmap(void *addr, int deallocate_pages)
 		return;
 	}
 
-	/* É¾³ıĞéÄâµØÖ·ÇøÓò */
+	/* åˆ é™¤è™šæ‹Ÿåœ°å€åŒºåŸŸ */
 	area = remove_vm_area(addr);
-	if (unlikely(!area)) {/* ÒªÉ¾³ıµÄÇøÓò²»´æÔÚ */
+	if (unlikely(!area)) {/* è¦åˆ é™¤çš„åŒºåŸŸä¸å­˜åœ¨ */
 		printk(KERN_ERR "Trying to vfree() nonexistent vm area (%p)\n",
 				addr);
 		WARN_ON(1);
@@ -379,23 +379,23 @@ static void __vunmap(void *addr, int deallocate_pages)
 
 	debug_check_no_locks_freed(addr, area->size);
 
-	if (deallocate_pages) {/* ĞèÒªÊÍ·ÅÎïÀíÒ³Ãæ */
+	if (deallocate_pages) {/* éœ€è¦é‡Šæ”¾ç‰©ç†é¡µé¢ */
 		int i;
 
-		/* ±éÀúËùÓĞÎïÀíÒ³Ãæ²¢ÊÍ·Å¸ø»ï°éÏµÍ³ */
+		/* éå†æ‰€æœ‰ç‰©ç†é¡µé¢å¹¶é‡Šæ”¾ç»™ä¼™ä¼´ç³»ç»Ÿ */
 		for (i = 0; i < area->nr_pages; i++) {
 			BUG_ON(!area->pages[i]);
 			__free_page(area->pages[i]);
 		}
 
-		/* Ò³ÃæÖ¸ÕëÊı×éÊÇÍ¨¹ıvmalloc·ÖÅäµÄ */
+		/* é¡µé¢æŒ‡é’ˆæ•°ç»„æ˜¯é€šè¿‡vmallocåˆ†é…çš„ */
 		if (area->flags & VM_VPAGES)
-			vfree(area->pages);/* ½«Ö¸ÕëÊı×éÊÍ·Å */
+			vfree(area->pages);/* å°†æŒ‡é’ˆæ•°ç»„é‡Šæ”¾ */
 		else
-			kfree(area->pages);/* Ö¸ÕëÊı×éÊÇÍ¨¹ıkmalloc·ÖÅäµÄ£¬ÊÍ·Å»Øslab¹ÜÀíÏµÍ³ */
+			kfree(area->pages);/* æŒ‡é’ˆæ•°ç»„æ˜¯é€šè¿‡kmallocåˆ†é…çš„ï¼Œé‡Šæ”¾å›slabç®¡ç†ç³»ç»Ÿ */
 	}
 
-	/* ÊÍ·Åvm_struct½á¹¹ */
+	/* é‡Šæ”¾vm_structç»“æ„ */
 	kfree(area);
 	return;
 }
@@ -411,7 +411,7 @@ static void __vunmap(void *addr, int deallocate_pages)
  *	Must not be called in interrupt context.
  */
 /**
- * ÊÍ·ÅÓÉvmalloc¡¢vmalloc_32·ÖÅäµÄÄÚ´æ
+ * é‡Šæ”¾ç”±vmallocã€vmalloc_32åˆ†é…çš„å†…å­˜
  */
 void vfree(void *addr)
 {
@@ -430,7 +430,7 @@ EXPORT_SYMBOL(vfree);
  *	Must not be called in interrupt context.
  */
 /**
- * ÊÍ·ÅÓÉvmapºÍioremapÓ³ÉäµÄÄÚ´æ
+ * é‡Šæ”¾ç”±vmapå’Œioremapæ˜ å°„çš„å†…å­˜
  */
 void vunmap(void *addr)
 {
@@ -450,24 +450,24 @@ EXPORT_SYMBOL(vunmap);
  *	space.
  */
 /**
- * ÓëvmallocÀàËÆ£¬µ«ÊÇÓÉµ÷ÓÃÕß·ÖÅäÎïÀíÄÚ´æ¡£
+ * ä¸vmallocç±»ä¼¼ï¼Œä½†æ˜¯ç”±è°ƒç”¨è€…åˆ†é…ç‰©ç†å†…å­˜ã€‚
  */
 void *vmap(struct page **pages, unsigned int count,
 		unsigned long flags, pgprot_t prot)
 {
 	struct vm_struct *area;
 
-	/* ²ÎÊıÃ÷ÏÔ²»ºÏ·¨ */
+	/* å‚æ•°æ˜æ˜¾ä¸åˆæ³• */
 	if (count > num_physpages)
 		return NULL;
 
-	/* ·ÖÅäĞéÄâµØÖ·¿Õ¼ä */
+	/* åˆ†é…è™šæ‹Ÿåœ°å€ç©ºé—´ */
 	area = get_vm_area((count << PAGE_SHIFT), flags);
 	if (!area)
 		return NULL;
-	/* ½«ĞéÄâµØÖ·¿Õ¼äÓ³Éäµ½ÎïÀíµØÖ· */
+	/* å°†è™šæ‹Ÿåœ°å€ç©ºé—´æ˜ å°„åˆ°ç‰©ç†åœ°å€ */
 	if (map_vm_area(area, prot, &pages)) {
-		/* Ó³ÉäÊ§°Ü£¬½â¾öÒÑÓĞµÄÓ³Éä */
+		/* æ˜ å°„å¤±è´¥ï¼Œè§£å†³å·²æœ‰çš„æ˜ å°„ */
 		vunmap(area->addr);
 		return NULL;
 	}
@@ -482,40 +482,40 @@ void *__vmalloc_area_node(struct vm_struct *area, gfp_t gfp_mask,
 	struct page **pages;
 	unsigned int nr_pages, array_size, i;
 
-	/* ¼ÆËãËùĞèÒªµÄÎïÀíÒ³ÃæÊıÁ¿£¬×¢ÒâÒªÌŞ³ı±£»¤Ò³ */
+	/* è®¡ç®—æ‰€éœ€è¦çš„ç‰©ç†é¡µé¢æ•°é‡ï¼Œæ³¨æ„è¦å‰”é™¤ä¿æŠ¤é¡µ */
 	nr_pages = (area->size - PAGE_SIZE) >> PAGE_SHIFT;
-	/* ¼ÆËã±£´æÒ³ÃæµØÖ·µÄÊı×é³¤¶È */
+	/* è®¡ç®—ä¿å­˜é¡µé¢åœ°å€çš„æ•°ç»„é•¿åº¦ */
 	array_size = (nr_pages * sizeof(struct page *));
 
 	area->nr_pages = nr_pages;
 	/* Please note that the recursion is strictly bounded. */
-	if (array_size > PAGE_SIZE) {/* µØÖ·¿Õ¼äÌ«´ó£¬ÒÔÖÁÓÚĞèÒª¶àÓÚÒ»¸öÒ³Ãæ±£´æÒ³ÃæÖ¸Õë */
-		/* Í¨¹ıvmalloc·ÖÅäÒ³ÃæÖ¸ÕëÊı×é */
+	if (array_size > PAGE_SIZE) {/* åœ°å€ç©ºé—´å¤ªå¤§ï¼Œä»¥è‡³äºéœ€è¦å¤šäºä¸€ä¸ªé¡µé¢ä¿å­˜é¡µé¢æŒ‡é’ˆ */
+		/* é€šè¿‡vmallocåˆ†é…é¡µé¢æŒ‡é’ˆæ•°ç»„ */
 		pages = __vmalloc_node(array_size, gfp_mask | __GFP_ZERO,
 					PAGE_KERNEL, node);
 		area->flags |= VM_VPAGES;
 	} else {
-		/* Í¨¹ıkmalloc·ÖÅäÊı×éÖ¸Õë */
+		/* é€šè¿‡kmallocåˆ†é…æ•°ç»„æŒ‡é’ˆ */
 		pages = kmalloc_node(array_size,
 				(gfp_mask & GFP_RECLAIM_MASK) | __GFP_ZERO,
 				node);
 	}
 	area->pages = pages;
-	if (!area->pages) {/* ·ÖÅäÊı×éÊ§°Ü */
-		/* ÊÍ·ÅĞéÄâµØÖ·¿Õ¼ä */
+	if (!area->pages) {/* åˆ†é…æ•°ç»„å¤±è´¥ */
+		/* é‡Šæ”¾è™šæ‹Ÿåœ°å€ç©ºé—´ */
 		remove_vm_area(area->addr);
 		kfree(area);
 		return NULL;
 	}
 
-	/* ·ÖÅäÒ³Ãæ */
+	/* åˆ†é…é¡µé¢ */
 	for (i = 0; i < area->nr_pages; i++) {
-		/* ·ÖÅäÒ³Ãæ */
+		/* åˆ†é…é¡µé¢ */
 		if (node < 0)
 			area->pages[i] = alloc_page(gfp_mask);
 		else
 			area->pages[i] = alloc_pages_node(node, gfp_mask, 0);
-		/* ·ÖÅäÒ³ÃæÊ§°Ü£¬¼ÇÂ¼ÏÂ³É¹¦·ÖÅäµÄÒ³ÃæÊıÁ¿£¬ÓÃÓÚºóĞøÊÍ·ÅÒ³Ãæ */
+		/* åˆ†é…é¡µé¢å¤±è´¥ï¼Œè®°å½•ä¸‹æˆåŠŸåˆ†é…çš„é¡µé¢æ•°é‡ï¼Œç”¨äºåç»­é‡Šæ”¾é¡µé¢ */
 		if (unlikely(!area->pages[i])) {
 			/* Successfully allocated i pages, free them in __vunmap() */
 			area->nr_pages = i;
@@ -523,13 +523,13 @@ void *__vmalloc_area_node(struct vm_struct *area, gfp_t gfp_mask,
 		}
 	}
 
-	/* ½«ĞéÄâµØÖ·ÓëÒ³ÃæÓ³ÉäÆğÀ´ */
+	/* å°†è™šæ‹Ÿåœ°å€ä¸é¡µé¢æ˜ å°„èµ·æ¥ */
 	if (map_vm_area(area, prot, &pages))
 		goto fail;
 	return area->addr;
 
 fail:
-	/* Ã»ÓĞ·ÖÅäµ½ºÏÊÊµÄÒ³Ãæ£¬ÊÍ·ÅµØÖ·¿Õ¼ä²¢·µ»ØNULL */
+	/* æ²¡æœ‰åˆ†é…åˆ°åˆé€‚çš„é¡µé¢ï¼Œé‡Šæ”¾åœ°å€ç©ºé—´å¹¶è¿”å›NULL */
 	vfree(area->addr);
 	return NULL;
 }
@@ -556,16 +556,16 @@ static void *__vmalloc_node(unsigned long size, gfp_t gfp_mask, pgprot_t prot,
 	struct vm_struct *area;
 
 	size = PAGE_ALIGN(size);
-	/* ²ÎÊı¼ì²é */
+	/* å‚æ•°æ£€æŸ¥ */
 	if (!size || (size >> PAGE_SHIFT) > num_physpages)
 		return NULL;
 
-	/* Ñ°ÕÒÒ»¿é¿ÉÓÃµÄĞéÄâµØÖ·¿Õ¼ä */
+	/* å¯»æ‰¾ä¸€å—å¯ç”¨çš„è™šæ‹Ÿåœ°å€ç©ºé—´ */
 	area = get_vm_area_node(size, VM_ALLOC, node, gfp_mask);
 	if (!area)
 		return NULL;
 
-	/* ·ÖÅäËùĞèµÄÄÚ´æÒ³Ãæ£¬²¢½«ÆäÓ³Éäµ½ĞéÄâµØÖ·¿Õ¼äÖĞ */
+	/* åˆ†é…æ‰€éœ€çš„å†…å­˜é¡µé¢ï¼Œå¹¶å°†å…¶æ˜ å°„åˆ°è™šæ‹Ÿåœ°å€ç©ºé—´ä¸­ */
 	return __vmalloc_area_node(area, gfp_mask, prot, node);
 }
 
@@ -585,7 +585,7 @@ EXPORT_SYMBOL(__vmalloc);
  *	use __vmalloc() instead.
  */
 /**
- * ·ÖÅäÒ»¶Î²»Á¬ĞøµÄÎïÀíµØÖ·¿Õ¼ä£¬²¢Ó³Éäµ½Ò»¶ÎĞéÄâµØÖ·¿Õ¼äÖĞÈ¥
+ * åˆ†é…ä¸€æ®µä¸è¿ç»­çš„ç‰©ç†åœ°å€ç©ºé—´ï¼Œå¹¶æ˜ å°„åˆ°ä¸€æ®µè™šæ‹Ÿåœ°å€ç©ºé—´ä¸­å»
  */
 void *vmalloc(unsigned long size)
 {
@@ -669,7 +669,7 @@ void *vmalloc_exec(unsigned long size)
  *	Allocate enough 32bit PA addressable pages to cover @size from the
  *	page level allocator and map them into contiguous kernel virtual space.
  */
-/* ÓëvmallocÀàËÆ£¬µ«ÊÇÎïÀíµØÖ·¿ÉÒÔ±£Ö¤ÊÇµÍÓÚ32Î»µÄ */
+/* ä¸vmallocç±»ä¼¼ï¼Œä½†æ˜¯ç‰©ç†åœ°å€å¯ä»¥ä¿è¯æ˜¯ä½äº32ä½çš„ */
 void *vmalloc_32(unsigned long size)
 {
 	return __vmalloc(size, GFP_VMALLOC32, PAGE_KERNEL);

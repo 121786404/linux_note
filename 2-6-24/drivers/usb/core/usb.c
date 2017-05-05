@@ -82,7 +82,7 @@ MODULE_PARM_DESC(autosuspend, "default autosuspend delay");
  * on this device or you have locked the device!
  */
 /**
- * ÅäÖÃÀïÃæµÄ½Ó¿ÚÊı×éÃ»ÓĞ°´ÕÕ½Ó¿ÚºÅÅÅĞò£¬ÒªÕÒµ½Ä³¸ö½Ó¿Ú£¬Ê¹ÓÃ±¾½Ó¿Ú¡£
+ * é…ç½®é‡Œé¢çš„æ¥å£æ•°ç»„æ²¡æœ‰æŒ‰ç…§æ¥å£å·æ’åºï¼Œè¦æ‰¾åˆ°æŸä¸ªæ¥å£ï¼Œä½¿ç”¨æœ¬æ¥å£ã€‚
  */
 struct usb_interface *usb_ifnum_to_if(const struct usb_device *dev,
 				      unsigned ifnum)
@@ -273,10 +273,10 @@ static unsigned usb_bus_is_wusb(struct usb_bus *bus)
  * This call may not be used in a non-sleeping context.
  */
 /**
- * ·ÖÅäÒ»¸öUSBÉè±¸½á¹¹¡£
- *		parent:			Éè±¸Á¬½ÓµÄHUB
- *		bus:			Éè±¸Á¬½ÓµÄ×ÜÏß¡£
- *		port1:			Éè±¸Á¬½ÓµÄ¶Ë¿Ú¡£
+ * åˆ†é…ä¸€ä¸ªUSBè®¾å¤‡ç»“æ„ã€‚
+ *		parent:			è®¾å¤‡è¿æ¥çš„HUB
+ *		bus:			è®¾å¤‡è¿æ¥çš„æ€»çº¿ã€‚
+ *		port1:			è®¾å¤‡è¿æ¥çš„ç«¯å£ã€‚
  */
 struct usb_device *
 usb_alloc_dev(struct usb_device *parent, struct usb_bus *bus, unsigned port1)
@@ -286,17 +286,17 @@ usb_alloc_dev(struct usb_device *parent, struct usb_bus *bus, unsigned port1)
 	unsigned root_hub = 0;
 
 	/**
-	 * Îª½á¹¹ÉêÇëÒ»¿éÄÚ´æ²¢Çå0¡£
+	 * ä¸ºç»“æ„ç”³è¯·ä¸€å—å†…å­˜å¹¶æ¸…0ã€‚
 	 */
 	dev = kzalloc(sizeof(*dev), GFP_KERNEL);
 	/**
-	 * ÄÚ´æ²»×ã¡£
+	 * å†…å­˜ä¸è¶³ã€‚
 	 */
 	if (!dev)
 		return NULL;
 
 	/**
-	 * ÕÒµ½×ÜÏß¶ÔÓ¦µÄÖ÷»ú¿ØÖÆÆ÷²¢ÒıÓÃËü£¬Èç¹ûÊ§°ÜÒ²·µ»Ø¡£
+	 * æ‰¾åˆ°æ€»çº¿å¯¹åº”çš„ä¸»æœºæ§åˆ¶å™¨å¹¶å¼•ç”¨å®ƒï¼Œå¦‚æœå¤±è´¥ä¹Ÿè¿”å›ã€‚
 	 */
 	if (!usb_get_hcd(bus_to_hcd(bus))) {
 		kfree(dev);
@@ -304,19 +304,19 @@ usb_alloc_dev(struct usb_device *parent, struct usb_bus *bus, unsigned port1)
 	}
 
 	/**
-	 * µ÷ÓÃÉè±¸Ä£ĞÍµÄ³õÊ¼»¯º¯Êı£¬³õÊ¼»¯Éè±¸¡£
+	 * è°ƒç”¨è®¾å¤‡æ¨¡å‹çš„åˆå§‹åŒ–å‡½æ•°ï¼Œåˆå§‹åŒ–è®¾å¤‡ã€‚
 	 */
 	device_initialize(&dev->dev);
 	/**
-	 * ³õÊ¼»¯Éè±¸µÄ×ÜÏßÀàĞÍÎªusb_bus_type
+	 * åˆå§‹åŒ–è®¾å¤‡çš„æ€»çº¿ç±»å‹ä¸ºusb_bus_type
 	 */
 	dev->dev.bus = &usb_bus_type;
 	/**
-	 * ÉèÖÃÀàĞÍÎªusb_device_type£¬±íÊ¾ÕâÊÇÉè±¸Çı¶¯¡£
+	 * è®¾ç½®ç±»å‹ä¸ºusb_device_typeï¼Œè¡¨ç¤ºè¿™æ˜¯è®¾å¤‡é©±åŠ¨ã€‚
 	 */
 	dev->dev.type = &usb_device_type;
 	/**
-	 * ¸ù¾İÖ÷»ú¿ØÖÆÆ÷µÄDMAÑÚÂëÉèÖÃÉè±¸µÄDMAÑÚÂë¡£
+	 * æ ¹æ®ä¸»æœºæ§åˆ¶å™¨çš„DMAæ©ç è®¾ç½®è®¾å¤‡çš„DMAæ©ç ã€‚
 	 */
 	dev->dev.dma_mask = bus->controller->dma_mask;
 	set_dev_node(&dev->dev, dev_to_node(bus->controller));
@@ -324,7 +324,7 @@ usb_alloc_dev(struct usb_device *parent, struct usb_bus *bus, unsigned port1)
 	atomic_set(&dev->urbnum, 0);
 
 	/**
-	 * ³õÊ¼»¯¶Ëµã0.
+	 * åˆå§‹åŒ–ç«¯ç‚¹0.
 	 */
 	INIT_LIST_HEAD(&dev->ep0.urb_list);
 	dev->ep0.desc.bLength = USB_DT_ENDPOINT_SIZE;
@@ -342,28 +342,28 @@ usb_alloc_dev(struct usb_device *parent, struct usb_bus *bus, unsigned port1)
 	 * cardbus or pci hotplugging, and so on.
 	 */
 	/**
-	 * Root HUBÃ»ÓĞparent
+	 * Root HUBæ²¡æœ‰parent
 	 */
 	if (unlikely(!parent)) {
 		/**
-		 * ½«ÆädevpathÉèÖÃÎª0.
+		 * å°†å…¶devpathè®¾ç½®ä¸º0.
 		 */
 		dev->devpath[0] = '0';
 
 		/**
-		 * ¸¸Éè±¸ÉèÖÃÎªÖ÷»ú¿ØÖÆÆ÷¡£
+		 * çˆ¶è®¾å¤‡è®¾ç½®ä¸ºä¸»æœºæ§åˆ¶å™¨ã€‚
 		 */
 		dev->dev.parent = bus->controller;
 		sprintf(&dev->dev.bus_id[0], "usb%d", bus->busnum);
-	} else {/* ²»ÊÇRoot HUB */
+	} else {/* ä¸æ˜¯Root HUB */
 		/* match any labeling on the hubs; it's one-based */
 		/**
-		 * ¸¸Éè±¸ÊÇRoot HUB¡£
+		 * çˆ¶è®¾å¤‡æ˜¯Root HUBã€‚
 		 */
 		if (parent->devpath[0] == '0')
 			snprintf(dev->devpath, sizeof dev->devpath,
 				"%d", port1);
-		else/* ¸¸Éè±¸²»ÊÇRoot HUB£¬ÔòÔÚÆäºó¼Ó"."¼°¶Ë¿ÚºÅ */
+		else/* çˆ¶è®¾å¤‡ä¸æ˜¯Root HUBï¼Œåˆ™åœ¨å…¶ååŠ "."åŠç«¯å£å· */
 			snprintf(dev->devpath, sizeof dev->devpath,
 				"%s.%d", parent->devpath, port1);
 
@@ -378,14 +378,14 @@ usb_alloc_dev(struct usb_device *parent, struct usb_bus *bus, unsigned port1)
 	dev->bus = bus;
 	dev->parent = parent;
 	/**
-	 * ³õÊ¼»¯usbfsµÄ¶ÓÁĞ¡£
+	 * åˆå§‹åŒ–usbfsçš„é˜Ÿåˆ—ã€‚
 	 */
 	INIT_LIST_HEAD(&dev->filelist);
 
 #ifdef	CONFIG_PM
 	mutex_init(&dev->pm_mutex);
 	/**
-	 * ³õÊ¼»¯´¦Àí×Ô¶¯¹ÒÆğµÄ¹¤×÷¶ÓÁĞ¡£
+	 * åˆå§‹åŒ–å¤„ç†è‡ªåŠ¨æŒ‚èµ·çš„å·¥ä½œé˜Ÿåˆ—ã€‚
 	 */
 	INIT_DELAYED_WORK(&dev->autosuspend, usb_autosuspend_work);
 	dev->autosuspend_delay = usb_autosuspend_delay * HZ;
@@ -960,7 +960,7 @@ static int __init usb_init(void)
 {
 	int retval;
 	/**
-	 * Í¨¹ıÆô¶¯²ÎÊı½ûÖ¹ÁËUSB¡£
+	 * é€šè¿‡å¯åŠ¨å‚æ•°ç¦æ­¢äº†USBã€‚
 	 */
 	if (nousb) {
 		pr_info("%s: USB support disabled\n", usbcore_name);
@@ -968,37 +968,37 @@ static int __init usb_init(void)
 	}
 
 	/**
-	 * µçÔ´¹ÜÀíÖ§³Ö¡£
+	 * ç”µæºç®¡ç†æ”¯æŒã€‚
 	 */
 	retval = ksuspend_usb_init();
 	if (retval)
 		goto out;
 	/**
-	 * ×¢²áUSB×ÜÏß¡£
+	 * æ³¨å†ŒUSBæ€»çº¿ã€‚
 	 */
 	retval = bus_register(&usb_bus_type);
 	if (retval) 
 		goto bus_register_failed;
 	/**
-	 * ³õÊ¼»¯USBÖ÷»ú¿ØÖÆÆ÷¡£
+	 * åˆå§‹åŒ–USBä¸»æœºæ§åˆ¶å™¨ã€‚
 	 */
 	retval = usb_host_init();
 	if (retval)
 		goto host_init_failed;
 	/**
-	 * USB×ÜÏßÒ²ÊÇÒ»¸öÉè±¸£¬±ØĞëµ¥¶À×¢²á£¬ÕâÀïÊÇ×÷Îª´®ĞĞÉè±¸½øĞĞ×¢²áµÄ¡£
+	 * USBæ€»çº¿ä¹Ÿæ˜¯ä¸€ä¸ªè®¾å¤‡ï¼Œå¿…é¡»å•ç‹¬æ³¨å†Œï¼Œè¿™é‡Œæ˜¯ä½œä¸ºä¸²è¡Œè®¾å¤‡è¿›è¡Œæ³¨å†Œçš„ã€‚
 	 */
 	retval = usb_major_init();
 	if (retval)
 		goto major_init_failed;
 	/**
-	 * usbfsµÄ³õÊ¼»¯¡£
+	 * usbfsçš„åˆå§‹åŒ–ã€‚
 	 */
 	retval = usb_register(&usbfs_driver);
 	if (retval)
 		goto driver_register_failed;
 	/**
-	 * ÕâÀï»á×¢²áUSB_DEVICE_MAJORÖ÷Éè±¸ºÅ£¬¹©ÓÃ»§Ì¬Çı¶¯Ö±½Ó¿ØÖÆUSB¶øÊ¹ÓÃ¡£
+	 * è¿™é‡Œä¼šæ³¨å†ŒUSB_DEVICE_MAJORä¸»è®¾å¤‡å·ï¼Œä¾›ç”¨æˆ·æ€é©±åŠ¨ç›´æ¥æ§åˆ¶USBè€Œä½¿ç”¨ã€‚
 	 */
 	retval = usb_devio_init();
 	if (retval)
@@ -1007,13 +1007,13 @@ static int __init usb_init(void)
 	if (retval)
 		goto fs_init_failed;
 	/**
-	 * USB HUBµÄ³õÊ¼»¯¡£
+	 * USB HUBçš„åˆå§‹åŒ–ã€‚
 	 */
 	retval = usb_hub_init();
 	if (retval)
 		goto hub_init_failed;
 	/**
-	 * ×¢²áUSBÉè±¸Çı¶¯£¬ÕâÀïÊÇÕû¸öUSBÉè±¸£¬¶ø²»ÊÇÄ³¸öÉè±¸½Ó¿ÚµÄÇı¶¯¡£
+	 * æ³¨å†ŒUSBè®¾å¤‡é©±åŠ¨ï¼Œè¿™é‡Œæ˜¯æ•´ä¸ªUSBè®¾å¤‡ï¼Œè€Œä¸æ˜¯æŸä¸ªè®¾å¤‡æ¥å£çš„é©±åŠ¨ã€‚
 	 */
 	retval = usb_register_device_driver(&usb_generic_driver, THIS_MODULE);
 	if (!retval)

@@ -21,7 +21,7 @@
 
 /* Free memory management - zoned buddy allocator.  */
 #ifndef CONFIG_FORCE_MAX_ZONEORDER
-#define MAX_ORDER 11 // һ�η�����������ҳ�������2^11=2048
+#define MAX_ORDER 11 // 一次分配可以请求的页数最大是2^11=2048
 #else
 #define MAX_ORDER CONFIG_FORCE_MAX_ZONEORDER
 #endif
@@ -33,34 +33,34 @@
  * coalesce naturally under reasonable reclaim pressure and those which
  * will not.
  */
-/* �ں���Ϊ����8��ҳ���Ǵ���ڴ���� */
+/* 内核认为超过8个页算是大的内存分配 */
 #define PAGE_ALLOC_COSTLY_ORDER 3
 
 enum {
 /*
-�������ƶ�, �ں��д󲿷�������������
+不可以移动, 内核中大部分数据是这样的
 */
 	MIGRATE_UNMOVABLE,
 /*
-���ܹ�ֱ���ƶ�,���ǿ���ɾ��,
-����������Դ�ĳЩԴ��������.���ļ�����ӳ���ҳ�����������
+不能够直接移动,但是可以删除,
+而内容则可以从某些源重新生成.如文件数据映射的页面则归属此类
 */
 	MIGRATE_MOVABLE,
 /*
-�����ƶ���������û�̬�������е��û��ռ�ҳ����Ϊ����.
-������ͨ��ҳ��ӳ�����,���临�Ƶ���λ�ú�,
-����ӳ�����,����ӳ��,Ӧ�ó����ǲ���֪��.
+可以移动。分配给用户态程序运行的用户空间页面则为该类.
+由于是通过页面映射而得,将其复制到新位置后,
+更新映射表项,重新映射,应用程序是不感知的.
 */
 	MIGRATE_RECLAIMABLE,
 /*
-      ��һ���ֽ���,С��������Ķ�����pcplist�ϵ�
-	��per_cpu_pageset, ��������ʾÿCPUҳ����ٻ�������ݽṹ�е�������Ǩ��������Ŀ
+      是一个分界数,小于这个数的都是在pcplist上的
+	是per_cpu_pageset, 即用来表示每CPU页框高速缓存的数据结构中的链表的迁移类型数目
 */
 	MIGRATE_PCPTYPES,	/* the number of types on the pcp lists */
 /*
-	= MIGRATE_PCPTYPES, �ں���������£��ں���Ҫ����һ���߽׵�ҳ���
-	����������.���������ض����ƶ��Ե��б���������ڴ�ʧ�ܣ�
-	���ֽ�������¿ɴ�MIGRATE_HIGHATOMIC�з����ڴ�
+	= MIGRATE_PCPTYPES, 在罕见的情况下，内核需要分配一个高阶的页面块
+	而不能休眠.如果向具有特定可移动性的列表请求分配内存失败，
+	这种紧急情况下可从MIGRATE_HIGHATOMIC中分配内存
 */
 	MIGRATE_HIGHATOMIC = MIGRATE_PCPTYPES,
 #ifdef CONFIG_CMA
@@ -78,22 +78,22 @@ enum {
 	 * a single pageblock.
 	 */
 /*
-     �����ڴ���䣬
-     ���ڱ���Ԥ������ڴ浼��ϵͳ�����ڴ���ٶ�ʵ�ֵģ�
-     ����������ʹ���ڴ�ʱ�����������û�ʹ�ã�
-     ����Ҫʱ��ͨ�����ջ���Ǩ�Ƶķ�ʽ���ڴ��ڳ�����
+     连续内存分配，
+     用于避免预留大块内存导致系统可用内存减少而实现的，
+     即当驱动不使用内存时，将其分配给用户使用，
+     而需要时则通过回收或者迁移的方式将内存腾出来。
 */
 	MIGRATE_CMA,
 #endif
 #ifdef CONFIG_MEMORY_ISOLATION
 /*
-��һ���������������, ���ڿ�ԽNUMA����ƶ������ڴ�ҳ. 
-�ڴ���ϵͳ��, �������ڽ������ڴ�ҳ�ƶ����ӽ���ʹ�ø�ҳ��Ƶ����CPU
+是一个特殊的虚拟区域, 用于跨越NUMA结点移动物理内存页. 
+在大型系统上, 它有益于将物理内存页移动到接近于使用该页最频繁的CPU
 */
 	MIGRATE_ISOLATE,	/* can't allocate from here */
 #endif
 /*
-ֻ�Ǳ�ʾǨ�����͵���Ŀ, Ҳ���������������
+只是表示迁移类型的数目, 也不代表具体的区域
 */
 	MIGRATE_TYPES
 };
@@ -124,15 +124,15 @@ extern int page_group_by_mobility_disabled;
 
 struct free_area {
 /*
-���������ӿ���ҳ������. ҳ����������С��ͬ�������ڴ���
+是用于连接空闲页的链表. 页链表包含大小相同的连续内存区
 */
 	struct list_head	free_list[MIGRATE_TYPES]; 
 /*
-ָ���˵�ǰ�ڴ����п���ҳ�����Ŀ��
-��0���ڴ�����ҳ���㣬
-��1���ڴ�������ҳ�Ե���Ŀ��
-��2���ڴ�������4ҳ���ϵ���Ŀ��
-��������
+指定了当前内存区中空闲页块的数目（
+对0阶内存区逐页计算，
+对1阶内存区计算页对的数目，
+对2阶内存区计算4页集合的数目，
+依次类推
 */
     unsigned long		nr_free;
 };
@@ -147,13 +147,13 @@ struct pglist_data;
 */
 #if defined(CONFIG_SMP)
 /*
-____cacheline_internodealigned_in_smp չ��Ϊ
+____cacheline_internodealigned_in_smp 展开为
 __attribute__((__aligned__(1 << (INTERNODE_CACHE_SHIFT))))
 #define INTERNODE_CACHE_SHIFT L1_CACHE_SHIFT
 #define L1_CACHE_SHIFT		CONFIG_ARM_L1_CACHE_SHIFT
 #define CONFIG_ARM_L1_CACHE_SHIFT 6
-��ʾ64����
-char x[0] ��һ���������飬�����������64�ֽڶ��룬�Զ�������С
+表示64对齐
+char x[0] 是一个柔性数组，编译器会根据64字节对齐，自动决定大小
 */
 struct zone_padding {
 	char x[0];
@@ -242,23 +242,23 @@ enum node_stat_item {
 #define LRU_ACTIVE 1
 #define LRU_FILE 2
 /*
-Active/inactive memory������û�������ռ�õ��ڴ���Եģ�
-�ں�ռ�õ��ڴ棨����slab���������С�
+Active/inactive memory是针对用户进程所占用的内存而言的，
+内核占用的内存（包括slab）不在其中。
 
-���Inactive list�ܴ󣬱����ڱ�Ҫʱ���Ի��յ�ҳ��ܶࣻ
+如果Inactive list很大，表明在必要时可以回收的页面很多；
 
 */
 enum lru_list {
 	LRU_INACTIVE_ANON = LRU_BASE,
 	/*
-      anonymous pages ���ļ��޹ص��ڴ棨������̵Ķ�ջ����malloc������ڴ棩
-      anonymous pages �ڷ�����ҳʱ���ǶԽ��������ж�/д����
+      anonymous pages 与文件无关的内存（比如进程的堆栈，用malloc申请的内存）
+      anonymous pages 在发生换页时，是对交换区进行读/写操作
 	*/
 	LRU_ACTIVE_ANON = LRU_BASE + LRU_ACTIVE,  
 	LRU_INACTIVE_FILE = LRU_BASE + LRU_FILE,
     /*
-        File-backed pages ���ļ��������ڴ棨��������ļ��������ļ�����Ӧ���ڴ�ҳ��
-        File-backed pages �ڷ�����ҳ(page-in��page-out)ʱ���Ǵ�����Ӧ���ļ������д��
+        File-backed pages 与文件关联的内存（比如程序文件、数据文件所对应的内存页）
+        File-backed pages 在发生换页(page-in或page-out)时，是从它对应的文件读入或写出
       */
 	LRU_ACTIVE_FILE = LRU_BASE + LRU_FILE + LRU_ACTIVE, 
 	LRU_UNEVICTABLE,
@@ -295,7 +295,7 @@ struct zone_reclaim_stat {
 struct lruvec {
 	struct list_head		lists[NR_LRU_LISTS];
 	/**
-          * ҳ�����״̬��
+          * 页面回收状态。
           */
 	struct zone_reclaim_stat	reclaim_stat;
 	/* Evictions & activations on the inactive file list */
@@ -324,22 +324,22 @@ typedef unsigned __bitwise isolate_mode_t;
 
 enum zone_watermarks {
 /*
-������ҳ��������ﵽpage_min���궨��������ʱ�� 
-˵��ҳ�����ǳ�����, ����ҳ��Ķ�����kswapd�߳�ͬ������.
-WMARK_MIN����ʾ��page������ֵ�������ڴ��ʼ���Ĺ����е���free_area_init_core
-�м���ġ������ֵ�Ǹ���zone�е�page����������һ��>1��ϵ����ȷ���ġ�
-ͨ����������ʼ����ZoneSizeInPages/12
+当空闲页面的数量达到page_min所标定的数量的时候， 
+说明页面数非常紧张, 分配页面的动作和kswapd线程同步运行.
+WMARK_MIN所表示的page的数量值，是在内存初始化的过程中调用free_area_init_core
+中计算的。这个数值是根据zone中的page的数量除以一个>1的系数来确定的。
+通常是这样初始化的ZoneSizeInPages/12
 */
 	WMARK_MIN,
 /*
-������ҳ��������ﵽWMARK_LOW���궨��������ʱ��
-˵��ҳ��տ�ʼ����, ��kswapd�߳̽������ѣ�����ʼ�ͷŻ���ҳ��
+当空闲页面的数量达到WMARK_LOW所标定的数量的时候，
+说明页面刚开始紧张, 则kswapd线程将被唤醒，并开始释放回收页面
 */
 	WMARK_LOW,
 /*
-������ҳ��������ﵽpage_high���궨��������ʱ�� 
-˵���ڴ�ҳ��������, ����Ҫ����, kswapd�߳̽��������ߣ�
-ͨ�������ֵ��page_min��3��
+当空闲页面的数量达到page_high所标定的数量的时候， 
+说明内存页面数充足, 不需要回收, kswapd线程将重新休眠，
+通常这个数值是page_min的3倍
 */
 	WMARK_HIGH,
 	NR_WMARK
@@ -349,24 +349,24 @@ WMARK_MIN����ʾ��page������ֵ�������ڴ��ʼ���Ĺ����е���free_area_init_core
 #define low_wmark_pages(z) (z->watermark[WMARK_LOW])
 #define high_wmark_pages(z) (z->watermark[WMARK_HIGH])
 /*
-ÿ��zone������һ������ṹ���ڻ���ҳ�ķ���, 
-����һ��ͽи��ٻ���.
+每个zone都会有一个这个结构用于缓存页的分配, 
+中文一般就叫高速缓存.
 */
 struct per_cpu_pages {
-	//��ǰ����
+	//当前数量
 	int count;		/* number of pages in the list */
-	//��ˮ�ߣ����ڴ������ڴ滹�����ϵͳ
+	//高水线，高于此数将内存还给伙伴系统
 	int high;		/* high watermark, emptying needed */
-	//һ�������Ӻ�ɾ����ҳ������
+	//一次性添加和删除的页面数量
 	int batch;		/* chunk size for buddy add/remove */
 
 	/* Lists of pages, one per migrate type stored on the pcp-lists */
-	//�����ҳ����
+	//缓存的页链表
 	struct list_head lists[MIGRATE_PCPTYPES];
 };
 
 /**
- * ÿ��zone�����pageset����ҳ��
+ * 每个zone上面的pageset缓存页。
  */
 struct per_cpu_pageset {
 	struct per_cpu_pages pcp;
@@ -387,31 +387,31 @@ struct per_cpu_nodestat {
 #endif /* !__GENERATING_BOUNDS.H */
 
 /*
-ʵ�ʵļ������ϵ�ṹ��Ӳ�����������, ��������ҳ�����ʹ�õķ�ʽ. 
-������, Linux�ں˱��봦��80x86��ϵ�ṹ������Ӳ��Լ��.
-ISA���ߵ�ֱ���ڴ�洢DMA��������һ���ϸ������ : ����ֻ�ܶ�RAM��ǰ16MB����Ѱַ
-�ھ��д�����RAM���ִ�32λ�������, CPU����ֱ�ӷ������е�������ַ, 
-��Ϊ���Ե�ַ�ռ�̫С, �ں˲�����ֱ��ӳ�����������ڴ浽���Ե�ַ�ռ�, 
-���Linux�ں˶Բ�ͬ������ڴ���Ҫ���ò�ͬ�Ĺ�����ʽ��ӳ�䷽ʽ, 
-����ں˽�������ַ���߳���zone_t��ʾ�Ĳ�ͬ��ַ����
+实际的计算机体系结构有硬件的诸多限制, 这限制了页框可以使用的方式. 
+尤其是, Linux内核必须处理80x86体系结构的两种硬件约束.
+ISA总线的直接内存存储DMA处理器有一个严格的限制 : 他们只能对RAM的前16MB进行寻址
+在具有大容量RAM的现代32位计算机中, CPU不能直接访问所有的物理地址, 
+因为线性地址空间太小, 内核不可能直接映射所有物理内存到线性地址空间, 
+因此Linux内核对不同区域的内存需要采用不同的管理方式和映射方式, 
+因此内核将物理地址或者成用zone_t表示的不同地址区域
 
-��ͳX86_32λϵͳ��, ǰ16M���ָ�ZONE_DMA, 
-�����������ҳ���������ʽ�Ļ���ISAS���豸ͨ��DMAʹ�á�ֱ���ڴ����(DMA)��,
- ZONE_DMA��ZONE_NORMAL����������ڴ�ĳ���ҳ��, 
-ͨ�����������Ե�ӳ�䵽���е�ַ�ĵ�4��GB, �ں˾Ϳ���ֱ�ӽ��з���, 
-�෴ZONE_HIGHME�������ڴ�ҳ�������ں�ֱ�ӷ���, 
-��������Ҳ���Ե�ӳ�䵽�����е�ַ�ռ�ĵ�4��GB. 
+传统X86_32位系统中, 前16M划分给ZONE_DMA, 
+该区域包含的页框可以由老式的基于ISAS的设备通过DMA使用”直接内存访问(DMA)”,
+ ZONE_DMA和ZONE_NORMAL区域包含了内存的常规页框, 
+通过把他们线性的映射到现行地址的第4个GB, 内核就可以直接进行访问, 
+相反ZONE_HIGHME包含的内存页不能由内核直接访问, 
+尽管他们也线性地映射到了现行地址空间的第4个GB. 
 
 
-64λϵͳ��, ������Ҫ�߶��ڴ�, ��ΪAM64��linux����4��ҳ����
-֧�ֵ���������ڴ�Ϊ64TB, ���������ַ�ռ�Ļ��֣�
-��0x0000,0000,0000,0000 �C 0x0000,7fff,ffff,f000��128T��ַ�����û��ռ䣻
-��0xffff,8000,0000,0000���ϵ�128TΪϵͳ�ռ��ַ, 
-��Զ���ڵ�ǰ����ϵͳ�е��ڴ�ռ�, 
-������е�������ַ������ֱ��ӳ�䵽�ں���, 
-����Ҫ�߶��ڴ������ӳ��.
+64位系统中, 并不需要高端内存, 因为AM64的linux采用4级页表，
+支持的最大物理内存为64TB, 对于虚拟地址空间的划分，
+将0x0000,0000,0000,0000 – 0x0000,7fff,ffff,f000这128T地址用于用户空间；
+而0xffff,8000,0000,0000以上的128T为系统空间地址, 
+这远大于当前我们系统中的内存空间, 
+因此所有的物理地址都可以直接映射到内核中, 
+不需要高端内存的特殊映射.
 
-����Arm ʵ����ֻ��ZONE_NORMAL��ZONE_MOVABLE 
+对于Arm 实际上只有ZONE_NORMAL和ZONE_MOVABLE 
 */
 enum zone_type {
 #ifdef CONFIG_ZONE_DMA
@@ -420,14 +420,14 @@ enum zone_type {
 	 * to do DMA to all of addressable memory (ZONE_NORMAL). Then we
 	 * carve out the portion of memory that is needed for these devices.
 	 * The range is arch specific.
-	 * ����Щ�豸����ʹ�����е�ZONE_NORMAL�����е��ڴ�ռ���DMA����ʱ��
-	 * �Ϳ���ʹ��ZONE_DMA����ʾ���ڴ�����������ô���ⲿ�ֿռ仮�ֳ���
-	 * ר������DMA���ʵ��ڴ�ռ䡣
-	 * ������Ŀռ�����Ǵ�������ϵ�ṹ��ص�
+	 * 当有些设备不能使用所有的ZONE_NORMAL区域中的内存空间作DMA访问时，
+	 * 就可以使用ZONE_DMA所表示的内存区域，于是我么把这部分空间划分出来
+	 * 专门用作DMA访问的内存空间。
+	 * 该区域的空间访问是处理器体系结构相关的
 	 *
-	 * Some examples(һЩ����)
+	 * Some examples(一些例子)
 	 *
-	 * Architecture(��ϵ�ܹ�) Limit(����)
+	 * Architecture(体系架构) Limit(限制)
 	 * ---------------------------
 	 * parisc, ia64, sparc	<4G
 	 * s390			<2G
@@ -438,13 +438,13 @@ enum zone_type {
 	 * 			<16M.
 	 */
 /*
-������ʺ�DMA���ڴ���. ������ĳ��������ڴ���������.
- �������ڹ��ϵ�ISA�豸ǿ�ӵı߽�. 
-����Ϊ�˼�����, �ִ��ļ����Ҳ�����ܴ�Ӱ��
+标记了适合DMA的内存域. 该区域的长度依赖于处理器类型.
+ 这是由于古老的ISA设备强加的边界. 
+但是为了兼容性, 现代的计算机也可能受此影响
 
-ARM���е�ַ�����Խ���DMA�����Ը�ֵ���Ժܴ�
-���߸ɴ಻����DMA���͵��ڴ���
-����IA-32�Ĵ������ϣ�һ�㶨��Ϊ16M
+ARM所有地址都可以进行DMA，所以该值可以很大，
+或者干脆不定义DMA类型的内存域。
+而在IA-32的处理器上，一般定义为16M
 */
 	ZONE_DMA,
 #endif
@@ -453,19 +453,19 @@ ARM���е�ַ�����Խ���DMA�����Ը�ֵ���Ժܴ�
 	 * x86_64 needs two ZONE_DMAs because it supports devices that are
 	 * only able to do DMA to the lower 16M but also 32 bit devices that
 	 * can only do DMA areas below 4G.
-	 * X86_64�ܹ���Ϊ����֧��ֻ��ʹ�õ���16MB�ռ��DMA�豸�⣬
-	 * ��֧�ֿ��Է���4GB���¿ռ��32λDMA�豸��������Ҫ����ZONE_DMA
-	 * �ڴ�����
+	 * X86_64架构因为除了支持只能使用低于16MB空间的DMA设备外，
+	 * 还支持可以访问4GB以下空间的32位DMA设备，所以需要两个ZONE_DMA
+	 * 内存区域
 	 */
 /*
-�����ʹ��32λ��ַ�ֿ�Ѱַ, �ʺ�DMA���ڴ���. ��Ȼ, 
-ֻ����53λϵͳ��ZONE_DMA32�ź�ZONE_DMA������, 
-��32λϵͳ��, �������ǿյ�, ������Ϊ0MB, ��Alpha��AMD64ϵͳ��, 
-���ڴ�ĳ��ȿ����Ǵ�0��4GB
+标记了使用32位地址字可寻址, 适合DMA的内存域. 显然, 
+只有在53位系统中ZONE_DMA32才和ZONE_DMA有区别, 
+在32位系统中, 本区域是空的, 即长度为0MB, 在Alpha和AMD64系统上, 
+该内存的长度可能是从0到4GB
 
-ֻ��64λϵͳ����Ч��ΪһЩ32λ����DMAʱ�����ڴ档
-��������ڴ����4G����ֵΪ4G��
-������ʵ�ʵ������ڴ��С��ͬ��
+只在64位系统上有效，为一些32位外设DMA时分配内存。
+如果物理内存大于4G，该值为4G，
+否则与实际的物理内存大小相同。
 */
 	ZONE_DMA32,
 #endif
@@ -473,19 +473,19 @@ ARM���е�ַ�����Խ���DMA�����Ը�ֵ���Ժܴ�
 	 * Normal addressable memory is in ZONE_NORMAL. DMA operations can be
 	 * performed on pages in ZONE_NORMAL if the DMA devices support
 	 * transfers to all addressable memory.
-	 * �����ڴ����������ZONE_NORMAL��ʶ�����DMA�豸�����ڴ�����
-	 * ���ڴ���ʣ�Ҳ����ʹ�ñ�����
+	 * 常规内存访问区域由ZONE_NORMAL标识，如果DMA设备可以在次区域
+	 * 作内存访问，也可以使用本区域
 	 */
 /*
-����˿�ֱ��ӳ�䵽�ڴ�ε���ͨ�ڴ���. 
-������������ϵ�ṹ�ϱ�֤����ڵ�Ψһ�ڴ�����, 
-���޷���֤�õ�ַ��Χ��Ӧ��ʵ�ʵ�������ַ. 
+标记了可直接映射到内存段的普通内存域. 
+这是在所有体系结构上保证会存在的唯一内存区域, 
+但无法保证该地址范围对应了实际的物理地址. 
 
-����, ���AMD64ϵͳֻ����2G�ڴ�, ��ô���е��ڴ涼����ZONE_DMA32��Χ, 
-��ZONE_NORMAL��Ϊ��
+例如, 如果AMD64系统只有两2G内存, 那么所有的内存都属于ZONE_DMA32范围, 
+而ZONE_NORMAL则为空
 
-��64λϵͳ�ϣ���������ڴ�С��4G�����ڴ���Ϊ�ա�
-����32λϵͳ�ϣ���ֵ���Ϊ896M
+在64位系统上，如果物理内存小于4G，该内存域为空。
+而在32位系统上，该值最大为896M
 */
 	ZONE_NORMAL,
 #ifdef CONFIG_HIGHMEM
@@ -496,36 +496,36 @@ ARM���е�ַ�����Խ���DMA�����Ը�ֵ���Ժܴ�
 	 * 900MB. The kernel will set up special mappings (page
 	 * table entries on i386) for each page that the kernel needs to
 	 * access.
-	 * �߶��ڴ�������ZONE_HIGHMEM��ʶ���������޷����ں������ַ�ռ�ֱ��
-	 * ������ӳ�䣬����Ϊ���ʸ�������뾭�ں��������ҳӳ�䣬������i386
-	 * ��ϵ�ϣ��ں˿ռ�1GB����ȥ����һЩ�������ܶ�������ַ��������ӳ���
-	 * �ռ��Լֻ��896MB����ʱ����896MB���ϵ�������ַ�ռ�ͽ�ZONE_HIGHMEM
-	 * ����
+	 * 高端内存区域用ZONE_HIGHMEM标识，该区域无法从内核虚拟地址空间直接
+	 * 做线性映射，所以为访问该区域必须经内核作特殊的页映射，比如在i386
+	 * 体系上，内核空间1GB，除去其他一些开销，能对物理地址进行线性映射的
+	 * 空间大约只有896MB，此时高于896MB以上的物理地址空间就叫ZONE_HIGHMEM
+	 * 区域
 	 */
 /*
-����˳����ں������ַ�ռ�������ڴ��, 
-�����ε�ַ���ܱ��ں�ֱ��ӳ��
+标记了超出内核虚拟地址空间的物理内存段, 
+因此这段地址不能被内核直接映射
 
-32λϵͳ��, Linux�ں������ַ�ռ�ֻ��1G, 
-��0~895M���986MB������DMA��ֱ��ӳ��, ʣ��������ڴ汻��Ϊ�߶��ڴ�. 
-���ں�����ν���ʣ��128MB�߶��ڴ��ַ�ռ������ʵ�ַ��ʿ������������ڴ棿
-���ں�����ʸ���896MB������ַ�ڴ�ʱ����0xF8000000 ~ 0xFFFFFFFF��ַ�ռ䷶Χ
-����һ����Ӧ��С���е��߼���ַ�ռ䣬����һ�ᡣ
-��������߼���ַ�ռ䣬����ӳ�䵽����ʵ��Ƕ������ڴ棨������ں�PTEҳ�������
-��ʱ��һ�ᣬ�����黹����������Ҳ���Խ�����ε�ַ�ռ�������������ڴ棬
-ʵ����ʹ�����޵ĵ�ַ�ռ䣬�����������������ڴ�
+32位系统中, Linux内核虚拟地址空间只有1G, 
+而0~895M这个986MB被用于DMA和直接映射, 剩余的物理内存被成为高端内存. 
+那内核是如何借助剩余128MB高端内存地址空间是如何实现访问可以所有物理内存？
+当内核想访问高于896MB物理地址内存时，从0xF8000000 ~ 0xFFFFFFFF地址空间范围
+内找一段相应大小空闲的逻辑地址空间，借用一会。
+借用这段逻辑地址空间，建立映射到想访问的那段物理内存（即填充内核PTE页面表），
+临时用一会，用完后归还。这样别人也可以借用这段地址空间访问其他物理内存，
+实现了使用有限的地址空间，访问所有所有物理内存
 */
 	ZONE_HIGHMEM,
 #endif
 /*
-α�ڴ���
-�ڷ�ֹ�����ڴ���Ƭ�Ļ���memory migration����Ҫʹ�ø��ڴ���. 
-���Խ������ַ��Ӧ��������ַ����Ǩ��
+伪内存域
+在防止物理内存碎片的机制memory migration中需要使用该内存域. 
+可以将虚拟地址对应的物理地址进行迁移
 */
 	ZONE_MOVABLE,
 #ifdef CONFIG_ZONE_DEVICE
 /*
-Ϊ֧���Ȳ���豸�������Non Volatile Memory����ʧ���ڴ�
+为支持热插拔设备而分配的Non Volatile Memory非易失性内存
 */
 	ZONE_DEVICE,
 #endif
@@ -535,34 +535,34 @@ ARM���е�ַ�����Խ���DMA�����Ը�ֵ���Ժܴ�
 
 #ifndef __GENERATING_BOUNDS_H
 /*
-ΪʲôҪ��cache line���ж����أ�
-��Ϊzone�ṹ��ᱻƵ�����ʵ����ڶ�˻����£�
-���ж��CPUͬʱ����ͬһ���ṹ�壬
-Ϊ�˱���˴˼�ĸ��ţ������ÿ�η��ʽ��м�����
+为什么要按cache line进行对齐呢？
+因为zone结构体会被频繁访问到，在多核环境下，
+会有多个CPU同时访问同一个结构体，
+为了避免彼此间的干扰，必须对每次访问进行加锁。
 
-��ô�ǲ���Ҫ������zone�����أ�һ������סzone�����еĳ�Ա��
-��Ӧ�ò�������Ч�ķ���������֪��zone�ṹ��ܴ�
-����zone��Ƶ��������������������һ��ҳ����䣬����ҳ����գ�
-�����ֳ������Է��ʽṹ��zone�в�ͬ�ĳ�Ա��
-���һ������סzone�����г�Ա�Ļ���
-��һ��cpu���ڴ���ҳ���������飬
-��һ��cpu��Ҫ����ҳ����յĴ�����
-ȴ��Ϊ��һ��cpu��ס��zone�����г�Ա��ֻ�õȴ���
-�ڶ���CPU��֪����ʱ���ԡ���ȫ�ġ����л��մ���
-����Ϊ��һ��CPU�����������մ�����صĳ�Ա��
-ȴҲֻ�ܸ��ż����ɼ�������Ӧ�ý�����ϸ�֡�
-zone�ж�������������lock�Լ�lru_lock��lock��ҳ������йأ�
-lru_lock��ҳ������йء�����������������Ȼ��
-ÿ���������Ƶĳ�Ա��ø�������һ��
-����Ǹ�����ͬһ��cache line�С�
-��CPU��ĳ����������������ʱ��CPU�Ὣ�����ڴ���ص�cache�У�
-��Ϊ����cache lineΪ��λ���м��أ�
-�������������ŵĳ�ԱҲ�����ص�ͬһcache line�С�
-CPU��������Ҫ������صĳ�Աʱ����Щ��Ա�Ѿ���cache line���ˡ�
+那么是不是要对整个zone加锁呢？一把锁锁住zone中所有的成员？
+这应该不是最有效的方法。我们知道zone结构体很大，
+访问zone最频繁的有两个两个场景，一是页面分配，二是页面回收，
+这两种场景各自访问结构体zone中不同的成员。
+如果一把锁锁住zone中所有成员的话，
+当一个cpu正在处理页面分配的事情，
+另一个cpu想要进行页面回收的处理，
+却因为第一个cpu锁住了zone中所有成员而只好等待。
+第二个CPU明知道此时可以“安全的”进行回收处理
+（因为第一个CPU不会访问与回收处理相关的成员）
+却也只能干着急。可见，我们应该将锁再细分。
+zone中定义了两把锁，lock以及lru_lock，lock与页面分配有关，
+lru_lock与页面回收有关。定义了两把锁，自然，
+每把锁所控制的成员最好跟锁呆在一起，
+最好是跟锁在同一个cache line中。
+当CPU对某个锁进行上锁处理时，CPU会将锁从内存加载到cache中，
+因为是以cache line为单位进行加载，
+所以与锁紧挨着的成员也被加载到同一cache line中。
+CPU上完锁想要访问相关的成员时，这些成员已经在cache line中了。
 
-����padding�������ռ��һЩ�ֽڣ�
-���ں���zone�ṹ���ʵ��������̫��(UMA��ֻ������)��
-���Ч�ʵ���������ʧ���ռ���ֵ�õ�
+增加padding，会额外占用一些字节，
+但内核中zone结构体的实例并不会太多(UMA下只有三个)，
+相比效率的提升，损失这点空间是值得的
 
 */
 struct zone {
@@ -570,10 +570,10 @@ struct zone {
 
 	/* zone watermarks, access with *_wmark_pages(zone) macros */
     /*
-    �ں��߳�kswapd��⵽��ͬ��ˮ��ֵ����в�ͬ�Ĵ���
-    �������ҳ����pages_high = watermark[WMARK_HIGH], �ڴ���״̬���룬����Ҫ�����ڴ����
-    �������ҳ����pages_low = watermark[WMARK_LOW], ��ʼ�����ڴ���գ���page������Ӳ��.
-    �������ҳ����pages_min = watermark[WMARK_MIN], �ڴ���յ�ѹ�����أ���Ϊ�ڴ����еĿ���page���Ѿ������ˣ�����ӿ�����ڴ����
+    内核线程kswapd检测到不同的水线值会进行不同的处理
+    如果空闲页多于pages_high = watermark[WMARK_HIGH], 内存域状态理想，不需要进行内存回收
+    如果空闲页低于pages_low = watermark[WMARK_LOW], 开始进行内存回收，将page换出到硬盘.
+    如果空闲页低于pages_min = watermark[WMARK_MIN], 内存回收的压力很重，因为内存域中的可用page数已经很少了，必须加快进行内存回收
     */
 	unsigned long watermark[NR_WMARK];
 
@@ -589,60 +589,60 @@ struct zone {
 	 * changes.
 	 */
     /*
-      Ϊ�����ڴ���ָ���ı����ڴ棬���ڷ��䲻��ʧ�ܵĹؼ����ڴ���� 
-      ���߶��ڴ桢normal�ڴ��������޷����䵽�ڴ�ʱ����Ҫ��normal��DMA�����з����ڴ档
-      Ϊ�˱���DMA�������Ĺ⣬��Ҫ���Ᵽ��һЩ�ڴ湩����ʹ�á�
-      ���ֶξ���ָ���ϼ��ڴ����˵����ڴ���ʱ����Ҫ���Ᵽ�����ڴ�������
+      为各个内存域指定的保留内存，用于分配不能失败的关键性内存分配 
+      当高端内存、normal内存区域中无法分配到内存时，需要从normal、DMA区域中分配内存。
+      为了避免DMA区域被消耗光，需要额外保留一些内存供驱动使用。
+      该字段就是指从上级内存区退到回内存区时，需要额外保留的内存数量。
 
-      �ں�Ϊ�ڴ�������һ������ֵ���Ĳ�νṹ��
-      ������ġ����۶ȡ�����Ϊ��ZONE_HIGHMEM > ZONE_NORMAL > ZONE_DMA��
-      �߶��ڴ����������۵ģ���Ϊ�ں�û���κβ��������ڴӸ�zone�з����ڴ棬
-      ����߶��ڴ��þ������ں�û���κθ����ã���Ҳ�����ȷ���߶��ڴ��ԭ��
-      ��ͨ�ڴ���������ͬ����Ϊ���е��ں����ݶ������ڸ�����
-      ����þ��ں˽����ٽ������������������
-      DMA�ڴ��������ģ���Ϊ�����������ٺ����ױ��þ���
-      ���ұ��������������DMA������һ���þ���ʧȥ�������轻����������
-      ����ں��ڽ����ڴ����ʱ�����ȴӸ߶��ڴ���з��䣬
-      �������ͨ�ڴ棬������DMA�ڴ�
+      内核为内存域定义了一个“价值”的层次结构，
+      按分配的“廉价度”依次为：ZONE_HIGHMEM > ZONE_NORMAL > ZONE_DMA。
+      高端内存域是最廉价的，因为内核没有任何部分依赖于从该zone中分配内存，
+      如果高端内存用尽，对内核没有任何副作用，这也是优先分配高端内存的原因。
+      普通内存域有所不同，因为所有的内核数据都保存在该区域，
+      如果用尽内核将面临紧急情况，甚至崩溃。
+      DMA内存域是最昂贵的，因为它不但数量少很容易被用尽，
+      而且被用于与外设进行DMA交互，一旦用尽则失去了与外设交互的能力。
+      因此内核在进行内存分配时，优先从高端内存进行分配，
+      其次是普通内存，最后才是DMA内存
       */
 	long lowmem_reserve[MAX_NR_ZONES];
 
 #ifdef CONFIG_NUMA
-    /* ��zone������node��node id */
+    /* 该zone所属的node的node id */
 	int node;  
 #endif
-    /*  ָ�����zone���ڵ�pglist_data����  */
+    /*  指向这个zone所在的pglist_data对象  */
     /**
-         * �����������ԵĽڵ㡣ͨ�����ֶο����ҵ�ͬһ�ڵ�������Ĺ�������
+         * 管理区所属性的节点。通过此字段可以找到同一节点的其他的管理区。
       */
 	struct pglist_data	*zone_pgdat;
-	//ÿCPU��ҳ�滺�档
+	//每CPU的页面缓存。
     /*
-        �ں˾���������ͷŵ���ҳ��. Ϊ����������,
-        ÿ���ڴ��������������һ��Per-CPU ��ҳ����ٻ���. 
-        ���С�ÿCPU���ٻ��桱����һЩԤ�ȷ����ҳ��, 
-        ���Ǳ��������㱾��CPU�����ĵ�һ�ڴ�����
+        内核经常请求和释放单个页框. 为了提升性能,
+        每个内存管理区都定义了一个Per-CPU 的页面高速缓存. 
+        所有”每CPU高速缓存”包含一些预先分配的页框, 
+        他们被定义满足本地CPU发出的单一内存请求
 
-        �����������ʵ��ÿ��CPU����/��ҳ֡�б���
-        �ں�ʹ����Щ�б����������������ʵ�ֵġ����ʡ�ҳ��
-        ������ҳ֡��Ӧ�ĸ��ٻ���״̬��ͬ��
-        ��Щҳ֡�ܿ����ڸ��ٻ����У���˿��Կ��ٷ��ʣ��ʳ�֮Ϊ�ȵģ�
-        δ�����ҳ֡�����ԣ���֮Ϊ��ġ�
+        这个数组用于实现每个CPU的热/冷页帧列表。
+        内核使用这些列表来保存可用于满足实现的“新鲜”页。
+        但冷热页帧对应的高速缓存状态不同：
+        有些页帧很可能在高速缓存中，因此可以快速访问，故称之为热的；
+        未缓存的页帧与此相对，称之为冷的。
         
-        page���������ݽṹ�����ڲ���һ��page���б�(list)��������
-        ÿ��CPUά��һ��page list�������������ĳ�ͻ��
-        �������Ĵ�С��NR_CPUS(CPU���������йأ����ֵ�Ǳ����ʱ��ȷ����
+        page管理的数据结构对象，内部有一个page的列表(list)来管理。
+        每个CPU维护一个page list，避免自旋锁的冲突。
+        这个数组的大小和NR_CPUS(CPU的数量）有关，这个值是编译的时候确定的
 
-         Ϊʲô��per-cpu? 
-         ��Ϊÿ��cpu���ɴӵ�ǰzone�з����ڴ棬��pageset����ʵ�ֵ�һ�����ܾ�������������ͷ�
-         �޸�Ϊper-cpu�ɼ�С���cpu�������ڴ�ʱ��������
+         为什么是per-cpu? 
+         因为每个cpu都可从当前zone中分配内存，而pageset本身实现的一个功能就是批量申请和释放
+         修改为per-cpu可减小多个cpu在申请内存时的所竞争
       */
     /**
-      * ÿCPU��ҳ�滺�档
-      * �����䵥��ҳ��ʱ�����ȴӸû����з���ҳ�档��������:
-      *              ����ʹ��ȫ�ֵ���
-      *              ����ͬһ��ҳ�淴������ͬ��CPU���䣬���𻺴��е�ʧЧ��
-      *              ���⽫�������еĴ��ָ����Ƭ��
+      * 每CPU的页面缓存。
+      * 当分配单个页面时，首先从该缓存中分配页面。这样可以:
+      *              避免使用全局的锁
+      *              避免同一个页面反复被不同的CPU分配，引起缓存行的失效。
+      *              避免将管理区中的大块分割成碎片。
       */
 	struct per_cpu_pageset __percpu *pageset;
 
@@ -652,36 +652,36 @@ struct zone {
 	 * In SPARSEMEM, this map is stored in struct mem_section
 	 */
 /*
-    ���ڴ��ͷ�ʱ��Ϊ���ܹ����ٵĽ��ڴ�鷵�ص���ȷ��Ǩ�������ϣ�
-    �ں��ṩ��һ��ר�ŵ��ֶ�pageblock_flags��
-    �������ٰ���pageblock_nr_pages��ҳ���ڴ���Ǩ�����ͣ�
-    �����ô�ҳ�������pageblock_nr_pages���ҳ��С��2M����ͬ��
-    ����pageblock_nr_pages=2^(MAX_ORDER-1)=2^10��page��
+    在内存释放时，为了能够快速的将内存块返回到正确的迁移链表上，
+    内核提供了一个专门的字段pageblock_flags，
+    用来跟踪包含pageblock_nr_pages个页的内存块的迁移类型，
+    在启用大页的情况下pageblock_nr_pages与大页大小（2M）相同，
+    否则pageblock_nr_pages=2^(MAX_ORDER-1)=2^10个page。
 
-    pageblock_flags��һ������λ�ռ䣬ÿ3λ����֤�ܱ�ʾ5��Ǩ�����ͣ���Ӧһ���ڴ�飻
-    ��ʹ��SPARSEMEM��ϡ���ڴ�ģ�ͣ���ϵͳ�ϣ�pageblock_flags��������struct mem_section�У�
-    ��������struct zone�С�
+    pageblock_flags是一个比特位空间，每3位（保证能表示5种迁移类型）对应一个内存块；
+    在使能SPARSEMEM（稀疏内存模型）的系统上，pageblock_flags被定义在struct mem_section中，
+    否则定义在struct zone中。
 
-    ����˵����
-    1) pageblock_flags�Ŀռ��Ǹ����ڴ��С�����ڴ��ʼ��ʱ�ͷ���õģ�
-        ���ı���λ���ǿ��õģ���page�Ƿ��ɻ��ϵͳ�����޹ء�
-    2) ����set_pageblock_migratetype(page, migratetype)����������pageΪ�׵��ڴ���Ǩ�����ͣ�
-        ��get_pageblock_migratetype(page)���ڻ�ȡ��pageΪ�׵��ڴ���Ǩ�����͡�
-    3) ����ҳ�ʼ�������Ϊ���ƶ��ġ�
-    4) �����ڴ�ʱ�������Ҫ�ӱ����б������룬�ں��������������ڴ�顣
-        ����ƻ�����1��page�Ĳ����ƶ��ڴ�飬���Ȳ����Ƿ����2^10��page�Ŀɻ����ڴ�飬
-        ����������ٲ����Ƿ����2^9��page�Ŀɻ����ڴ�飬ֱ��2^0��
-        ��������Ϊ�˾���������ɻ��պͿ��ƶ��ڴ����������Ƭ��
+    几点说明：
+    1) pageblock_flags的空间是根据内存大小，在内存初始化时就分配好的，
+        它的比特位总是可用的，与page是否由伙伴系统管理无关。
+    2) 函数set_pageblock_migratetype(page, migratetype)用于设置以page为首的内存块的迁移类型，
+        而get_pageblock_migratetype(page)用于获取以page为首的内存块的迁移类型。
+    3) 所有页最开始都被标记为可移动的。
+    4) 分配内存时，如果需要从备用列表中申请，内核优先申请更大的内存块。
+        比如计划申请1个page的不可移动内存块，优先查找是否存在2^10个page的可回收内存块，
+        如果不存在再查找是否存在2^9个page的可回收内存块，直到2^0。
+        这样做是为了尽量避免向可回收和可移动内存块中引入碎片。
 */
 	unsigned long		*pageblock_flags;
 #endif /* CONFIG_SPARSEMEM */
 
 	/* zone_start_pfn == zone_start_paddr >> PAGE_SHIFT */
-    // ֻ�ڴ���ĵ�һ��ҳ֡
+    // 只内存域的第一个页帧
 /*
-��node_start_pfn�ĺ���һ����
-�����Ա�����ڱ�ʾzone�еĿ�ʼ�Ǹ�page�������ڴ��е�λ�õ�present_pages�� 
-spanned_pages: ��node�е����Ƶĳ�Ա����һ��
+和node_start_pfn的含义一样。
+这个成员是用于表示zone中的开始那个page在物理内存中的位置的present_pages， 
+spanned_pages: 和node中的类似的成员含义一样
 */
 	unsigned long		zone_start_pfn;
 
@@ -726,13 +726,13 @@ spanned_pages: ��node�е����Ƶĳ�Ա����һ��
 	 * adjust_managed_page_count() should be used instead of directly
 	 * touching zone->managed_pages and totalram_pages.
 	 */
-	//��zone������ҳ������
+	//该zone管理的页面数量
 	unsigned long		managed_pages;
-    /*  ��ҳ���������ն�  */
+    /*  总页数，包含空洞  */
 	unsigned long		spanned_pages;
-	/*  ����ҳ�����������ն�  */
+	/*  可用页数，不包含空洞  */
 	unsigned long		present_pages;  
-    // zone�����֣��ַ�����ʾ�� ��DMA������Normal�� �͡�HighMem��
+    // zone的名字，字符串表示： “DMA”，”Normal” 和”HighMem”
 	const char		*name;
 
 #ifdef CONFIG_MEMORY_ISOLATION
@@ -747,8 +747,8 @@ spanned_pages: ��node�е����Ƶĳ�Ա����һ��
 #ifdef CONFIG_MEMORY_HOTPLUG
 	/* see spanned/present_pages for more description */
 	/**
-      * ���ڱ���spanned/present_pages�ȱ�������Щ�����������ᷢ���仯�����Ƿ������ڴ��Ȳ岦������
-      * �⼸������������lock�ֶα�����������Ҫ���ڶ������ʹ�ö�д����
+      * 用于保护spanned/present_pages等变量。这些变量几乎不会发生变化，除非发生了内存热插拨操作。
+      * 这几个变量并不被lock字段保护。并且主要用于读，因此使用读写锁。
       */
 	seqlock_t		span_seqlock;
 #endif
@@ -759,26 +759,26 @@ spanned_pages: ��node�е����Ƶĳ�Ա����һ��
 	ZONE_PADDING(_pad1_)
 
 	/* free areas of different sizes */
-    /*  ҳ��ʹ��״̬����Ϣ����ÿ��bit��ʶ��Ӧ��page�Ƿ���Է���
-           �����ڻ��ϵͳ�ģ�ÿ������Ԫ��ָ���Ӧ��Ҳ�������鿪ͷ
-           �����ǹ�ҳ֡����ɨ����(page reclaim scanner)���ʵ��ֶ�
-           scanner�����ҳ֡�Ļ������ڴ�����ʹ�õ�ҳ���б�Ŀ
-           ���ҳ֡��Ƶ�����ʣ����ǻ�ģ��෴���ǲ���ģ�
-           ����Ҫ����ҳ֡ʱ����������Ϣ�Ǻ���Ҫ�ģ�  
+    /*  页面使用状态的信息，以每个bit标识对应的page是否可以分配
+           是用于伙伴系统的，每个数组元素指向对应阶也表的数组开头
+           以下是供页帧回收扫描器(page reclaim scanner)访问的字段
+           scanner会跟据页帧的活动情况对内存域中使用的页进行编目
+           如果页帧被频繁访问，则是活动的，相反则是不活动的，
+           在需要换出页帧时，这样的信息是很重要的：  
       */
     /**
-      * ���ϵͳ����Ҫ������������鶨����11�����У�ÿ�������е�Ԫ�ض��Ǵ�СΪ2^n��ҳ��顣
+      * 伙伴系统的主要变量。这个数组定义了11个队列，每个队列中的元素都是大小为2^n的页面块。
       */
 	struct free_area	free_area[MAX_ORDER];
 
 	/* zone flags, see below */
-    /* ������ǰ�ڴ��״̬, �μ������enum zone_flags�ṹ */
+    /* 描述当前内存的状态, 参见下面的enum zone_flags结构 */
 	unsigned long		flags;
 
 	/* Primarily protects free_area */
-    /* ��zone�������ʵı�����������  */
+    /* 对zone并发访问的保护的自旋锁  */
   /**
-      * �������ڱ������ϵͳ���ݽṹ��������free_area������ݡ�
+      * 该锁用于保护伙伴系统数据结构。即保护free_area相关数据。
       */
 	spinlock_t		lock;
 
@@ -789,9 +789,9 @@ spanned_pages: ��node�е����Ƶĳ�Ա����һ��
 	 * When free pages are below this point, additional steps are taken
 	 * when reading the number of free pages to avoid per-cpu counter
 	 * drift allowing watermarks to be breached
-       �ڿ���ҳ����Ŀ���������percpu_drift_mark��ʱ��
-       ����ȡ�Ϳ���ҳ��һ�����ڴ�ҳʱ��ϵͳ���ȡ����Ĺ�����
-       ��ֹ��CPUҳ��Ư�ƣ��Ӷ�����ˮӡ���ƻ���
+       在空闲页的数目少于这个点percpu_drift_mark的时候
+       当读取和空闲页数一样的内存页时，系统会采取额外的工作，
+       防止单CPU页数漂移，从而导致水印被破坏。
       */
 	unsigned long percpu_drift_mark;
 
@@ -809,10 +809,10 @@ spanned_pages: ��node�е����Ƶĳ�Ա����һ��
 	 * last failure is tracked with compact_considered.
 	 */
     /**
-      * �������ֶ������ڴ��������Ŀ����Ϊ�˱����ڴ�����Ƭ��
-      * ͨ��ҳ��Ǩ�ƣ����Ѿ������ҳ��ϲ���һ��
-      * δ����ҳ��ϲ���һ����������ҳ�潫�γɴ�Ŀ飬��������Ƭ��
-      * ��������־�����ж��Ƿ���Ҫ�ڱ��������������ڽ�����
+      * 这两个字段用于内存紧缩。其目的是为了避免内存外碎片。
+      * 通过页面迁移，将已经分配的页面合并到一起，
+      * 未分配页面合并到一起，这样可用页面将形成大的块，减少外碎片。
+      * 这两个标志用于判断是否需要在本管理区进行内在紧缩。
       */
 	unsigned int		compact_considered;
 	unsigned int		compact_defer_shift;
@@ -827,28 +827,28 @@ spanned_pages: ��node�е����Ƶĳ�Ա����һ��
 	bool			contiguous;
 
 	ZONE_PADDING(_pad3_)
-	/* Zone statistics �ڴ����ͳ����Ϣ, �μ������enum zone_stat_item�ṹ*/
+	/* Zone statistics 内存域的统计信息, 参见后面的enum zone_stat_item结构*/
 	atomic_long_t		vm_stat[NR_VM_ZONE_STAT_ITEMS];
 } ____cacheline_internodealigned_in_smp;
 
 enum pgdat_flags {
-/* ��ʶ��ǰ�������кܶ���ҳ */
+/* 标识当前区域中有很多脏页 */
 	PGDAT_CONGESTED,		/* pgdat has many dirty pages backed by
 					 * a congested BDI
 					 */
-/* ���ڱ�ʶ�����һ��ҳ��ɨ����, LRU�㷨�����˺ܶ����ҳ�� */
+/* 用于标识最近的一次页面扫描中, LRU算法发现了很多脏的页面 */
 	PGDAT_DIRTY,			/* reclaim scanning has recently found
 					 * many dirty file pages at the tail
 					 * of the LRU.
 					 */
-/* ����Ļ���ɨ�跢���кܶ�ҳ��д�� */
+/* 最近的回收扫描发现有很多页在写回 */
 	PGDAT_WRITEBACK,		/* reclaim scanning has recently found
 					 * many pages under writeback
 					 */
 /*
-��ֹ��������, ��SMP��ϵͳ, ���CPU������ͼ�����Ļ�����i���ڴ���.
- PGDAT_RECLAIM_LOCKED��־�ɷ�ֹ�������: 
-���һ��CPU�ڻ���ĳ���ڴ���, �����øñ�ʶ. ���ֹ������CPU�ĳ���
+防止并发回收, 在SMP上系统, 多个CPU可能试图并发的回收亿i个内存域.
+ PGDAT_RECLAIM_LOCKED标志可防止这种情况: 
+如果一个CPU在回收某个内存域, 则设置该标识. 这防止了其他CPU的尝试
 */
 	PGDAT_RECLAIM_LOCKED,		/* prevents concurrent reclaim */
 };
@@ -900,12 +900,12 @@ enum {
  * here to avoid dereferences into large structures and lookups of tables
  */
 /**
- * ��zone������
+ * 对zone的引用
  */
 struct zoneref {
-	//ʵ�����õ�zoneָ��
+	//实际引用的zone指针
 	struct zone *zone;	/* Pointer to actual zone */
-	//�����������е�����
+	//在引用数组中的索引
 	int zone_idx;		/* zone_idx(zoneref->zone) */
 };
 
@@ -924,18 +924,18 @@ struct zoneref {
  * zonelist_node_idx()	- Return the index of the node for an entry
  */
 /**
- * �����ڴ�����zone�б�
+ * 用于内存分配的zone列表
  */
 struct zonelist {
 	/**
-	 * ���ڵ���*ÿ���ڵ��zone������������zone�������á�
+	 * 最大节点数*每个节点的zone数量，对所有zone进行引用。
 	 */
 	struct zoneref _zonerefs[MAX_ZONES_PER_ZONELIST + 1];
 };
 
 #ifndef CONFIG_DISCONTIGMEM
 /* The array of struct pages - for discontigmem use pgdat->lmem_map */
-/* ȫ�ֱ����������������ҳpage�����ָ��*/
+/* 全局变量，存放所有物理页page对象的指针*/
 extern struct page *mem_map;
 #endif
 
@@ -952,38 +952,38 @@ extern struct page *mem_map;
  */
 struct bootmem_data;
 /**
- * �ڴ������ڷ������ڴ�ģ���У�����һ���ڴ�bank
- * ��NUMAϵͳ�У�һ���ʾһ��NUMA�ڵ㡣
+ * 内存区域，在非连续内存模型中，代表一块内存bank
+ * 在NUMA系统中，一般表示一个NUMA节点。
  */
 typedef struct pglist_data {
     /*  
-    �����˽���и��ڴ�������ݽṹ , ���ܵ�����������zone_type��ʾ
-    ÿ��Node����Ϊ��ͬ��zone���ֱ�ΪZONE_DMA��ZONE_NORMAL��ZONE_HIGHMEM
+    包含了结点中各内存域的数据结构 , 可能的区域类型用zone_type表示
+    每个Node划分为不同的zone，分别为ZONE_DMA，ZONE_NORMAL，ZONE_HIGHMEM
     */
 	struct zone node_zones[MAX_NR_ZONES];
 	/*
-     node_zonelists������һ��zone�����б���ÿһ�����һ��zone����
-     ����ĳ��node��ĳ��zone�����ڴ�ʧ�ܺ󣬻��������б���
-     ����һ�����ʵ�zone���������ڴ�
+     node_zonelists定义了一个zone搜索列表（每一项代表一个zone），
+     当从某个node的某个zone申请内存失败后，会搜索该列表，
+     查找一个合适的zone继续分配内存
 
-    ������free_area_init_core()ʱ��
-    ��mm/page_alloc.c�ļ��е�build_zonelists()��������
+    当调用free_area_init_core()时，
+    由mm/page_alloc.c文件中的build_zonelists()函数设置
 	*/
 	struct zonelist node_zonelists[MAX_ZONELISTS];
     /*  
-    ��ǰ�ڵ��в�ͬ�ڴ���zone��������1��3��֮�䡣
-    ���������е�node����3��zone�ģ�����һ��CPU�ؾͿ���û��ZONE_DMA���� 
+    当前节点中不同内存域zone的数量，1到3个之间。
+    并不是所有的node都有3个zone的，比如一个CPU簇就可能没有ZONE_DMA区域 
     */
 	int nr_zones;
 #ifdef CONFIG_FLAT_NODE_MEM_MAP	/* means !SPARSEMEM */
     /*  
-        ƽ̹�͵��ڴ�ģ���У���ָ�򱾽ڵ��һ��ҳ���������
-         node�еĵ�һ��page��������ָ��mem_map�е��κ�һ��page��
-        ָ��pageʵ�������ָ�룬���������ýڵ���ӵ�еĵ������ڴ�ҳ��
+        平坦型的内存模型中，它指向本节点第一个页面的描述符
+         node中的第一个page，它可以指向mem_map中的任何一个page，
+        指向page实例数组的指针，用于描述该节点所拥有的的物理内存页，
 
-        linuxΪÿ������ҳ������һ��struct page�Ĺ����ṹ�壬
-        ���γ���һ���ṹ�����飬node_mem_map��Ϊ�����ָ�룻
-        pfn_to_page��page_to_pfn������������ʵ��
+        linux为每个物理页分配了一个struct page的管理结构体，
+        并形成了一个结构体数组，node_mem_map即为数组的指针；
+        pfn_to_page和page_to_pfn都借助该数组实现
      */
 	struct page *node_mem_map;
 #ifdef CONFIG_PAGE_EXTENSION
@@ -991,10 +991,10 @@ typedef struct pglist_data {
 #endif
 #endif
 #ifndef CONFIG_NO_BOOTMEM
-    /*  ��ϵͳ����boot�ڼ䣬�ڴ������ϵͳ��ʼ��֮ǰ��
-           �ں�ҳ��Ҫʹ���ڴ棨���⣬����Ҫ���������ڴ����ڳ�ʼ���ڴ������ϵͳ��
-           Ϊ���������⣬�ں�ʹ�����Ծ��ڴ������ 
-           �˽ṹ��������׶ε��ڴ����  */
+    /*  在系统启动boot期间，内存管理子系统初始化之前，
+           内核页需要使用内存（另外，还需要保留部分内存用于初始化内存管理子系统）
+           为解决这个问题，内核使用了自举内存分配器 
+           此结构用于这个阶段的内存管理  */
 	struct bootmem_data *bdata;
 #endif
 #ifdef CONFIG_MEMORY_HOTPLUG
@@ -1009,44 +1009,44 @@ typedef struct pglist_data {
 	 * Nests above zone->lock and zone->span_seqlock
 	 */
     /*
-        ��ϵͳ֧���ڴ��Ȳ岦ʱ�����ڱ������ṹ�е���ڵ��С��ص��ֶΡ�
-        �ĵ���node_start_pfn��node_present_pages��node_spanned_pages��صĴ���ʱ����Ҫʹ�ø�����
+        当系统支持内存热插拨时，用于保护本结构中的与节点大小相关的字段。
+        哪调用node_start_pfn，node_present_pages，node_spanned_pages相关的代码时，需要使用该锁。
       */
 	spinlock_t node_size_lock;
 #endif
     /*
-        ��ʼҳ��֡�ţ�ָ���ýڵ���ȫ��mem_map�е�ƫ��
-        ϵͳ�����е�ҳ֡�����α�ŵģ�
-        ÿ��ҳ֡�ĺ��붼��ȫ��Ψһ�ģ���ֻ�ǽ����Ψһ��  
+        起始页面帧号，指出该节点在全局mem_map中的偏移
+        系统中所有的页帧是依次编号的，
+        每个页帧的号码都是全局唯一的（不只是结点内唯一）  
         
-        pfn��page frame number����д��
-        �����Ա�����ڱ�ʾnode�еĿ�ʼ�Ǹ�page�������ڴ��е�λ�õġ�
-        �ǵ�ǰNUMA�ڵ�ĵ�һ��ҳ֡�ı�ţ�ϵͳ�����е�ҳ֡�����ν��б�ŵģ�
-        ����ֶδ������ǵ�ǰ�ڵ��ҳ֡����ʼֵ������UMAϵͳ��
-        ֻ��һ���ڵ㣬���Ը�ֵ����0
+        pfn是page frame number的缩写。
+        这个成员是用于表示node中的开始那个page在物理内存中的位置的。
+        是当前NUMA节点的第一个页帧的编号，系统中所有的页帧是依次进行编号的，
+        这个字段代表的是当前节点的页帧的起始值，对于UMA系统，
+        只有一个节点，所以该值总是0
      */
 	unsigned long node_start_pfn;
 /*
-	node�е���������ʹ�õ�page���� 
+	node中的真正可以使用的page数量 
 */
 	unsigned long node_present_pages; /* total number of physical pages  */
 /*
-     node��page����(�����ն�)
+     node中page数量(包含空洞)
 */
 	unsigned long node_spanned_pages; /* total size of physical page  range, including holes*/
-	int node_id; /*  ȫ�ֽ��ID��ϵͳ�е�NUMA��㶼��0��ʼ���  */
-	/*  node�ĵȴ����У������ػ��жӽ��̵ĵȴ��б�*/
+	int node_id; /*  全局结点ID，系统中的NUMA结点都从0开始编号  */
+	/*  node的等待队列，交换守护列队进程的等待列表*/
 	wait_queue_head_t kswapd_wait; 
 	wait_queue_head_t pfmemalloc_wait;
-	/* ָ������ո�node���ڴ��swap�ں��߳�kswapd��
-	һ��node��Ӧһ��kswapd */
+	/* 指向负责回收该node中内存的swap内核线程kswapd，
+	一个node对应一个kswapd */
 	struct task_struct *kswapd;	/* Protected by   mem_hotplug_begin/end() */
     /*  
-        ������Ҫ�ͷŵ�����ĳ���  
+        定义需要释放的区域的长度  
      */
 	int kswapd_order;              
     /**
-        * ��ʱ�����������ڴ����ʱʹ�á���¼��һ�λ���ʱ��ɨ������һ������
+        * 临时变量，用于内存回收时使用。记录上一次回收时，扫描的最后一个区域。
       */
 	enum zone_type kswapd_classzone_idx;
 
@@ -1070,30 +1070,30 @@ typedef struct pglist_data {
 	 * This is a per-node reserve of pages that are not available
 	 * to userspace allocations.
 	 */
-    // ÿ���������Ĳ��ܱ��û��ռ�����ҳ����Ŀ
+    // 每个区域保留的不能被用户空间分配的页面数目
 	unsigned long		totalreserve_pages;
 
 #ifdef CONFIG_NUMA
 	/*
 	 * zone reclaim becomes active if more unmapped pages exist.
-	 ��Ӧ��page��������������ֵʱ����ʼ���л��� 
+	 对应的page个数大于这两个值时，开始进行回收 
 	*/
 	unsigned long		min_unmapped_pages;
 	/**
-      * ���������У�����slab�Ŀɻ���ҳ���ڴ�ֵʱ��������slab�еĻ���ҳ��
+      * 当管理区中，用于slab的可回收页大于此值时，将回收slab中的缓存页。
       */
 	unsigned long		min_slab_pages;
 #endif /* CONFIG_NUMA */
 
 	/* Write-intensive fields used by page reclaim */
 	 /**
-      * ����δ���ֶΣ�ȷ��������ֶ��ǻ����ж���ġ�
+      * 填充的未用字段，确保后面的字段是缓存行对齐的。
       */
 	ZONE_PADDING(_pad1_)
 	/**
-      * lru��ص��ֶ������ڴ���ա�����ֶ����ڱ����⼸��������ص��ֶΡ�
-      * lru����ȷ����Щ�ֶ��ǻ�Ծ�ģ���Щ���ǻ�Ծ�ģ����ݴ�ȷ��Ӧ����д�ص��������ͷ��ڴ档
-      * LRU(�������ʹ���㷨)��Լ��ǻ����ʹ�õ�������  
+      * lru相关的字段用于内存回收。这个字段用于保护这几个回收相关的字段。
+      * lru用于确定哪些字段是活跃的，哪些不是活跃的，并据此确定应当被写回到磁盘以释放内存。
+      * LRU(最近最少使用算法)活动以及非活动链表使用的自旋锁  
       */
 	spinlock_t		lru_lock; 
 
@@ -1119,7 +1119,7 @@ typedef struct pglist_data {
 	 * this node's LRU.  Maintained by the pageout code.
 	 */
      /**
-          * �������ҳ�������ǻҳ���ƶ��ı��ʡ�
+          * 将匿名活动页向匿名非活动页中移动的比率。
        */
 	unsigned int inactive_ratio;
 
@@ -1130,7 +1130,7 @@ typedef struct pglist_data {
 	/* Per-node vmstats */
 	struct per_cpu_nodestat __percpu *per_cpu_nodestats;
 	/**
-      * һЩͳ����Ϣ�������ҳ������
+      * 一些统计信息，如可用页面数。
       */
 	atomic_long_t		vm_stat[NR_VM_NODE_STAT_ITEMS];
 } pg_data_t;
@@ -1318,8 +1318,8 @@ extern char numa_zonelist_order[];
 #ifndef CONFIG_NEED_MULTIPLE_NODES
 
 /*
-UMA�ṹ�Ļ�����, ֻ��һ��node��㼴contig_page_data, 
-��ʱNODE_DATAֱ��ָ����ȫ�ֵ�contig_page_data, ����node�ı��nid�޹�
+UMA结构的机器中, 只有一个node结点即contig_page_data, 
+此时NODE_DATA直接指向了全局的contig_page_data, 而与node的编号nid无关
 */
 extern struct pglist_data contig_page_data;
 #define NODE_DATA(nid)		(&contig_page_data)
@@ -1528,7 +1528,7 @@ struct mem_section {
 
 	/* See declaration of similar field in struct zone */
 	/**
-      * �����������ҳ���־���顣
+      * 本管理区里的页面标志数组。
       */
 	unsigned long *pageblock_flags;
 #ifdef CONFIG_PAGE_EXTENSION

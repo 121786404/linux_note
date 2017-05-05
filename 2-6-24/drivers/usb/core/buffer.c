@@ -49,7 +49,7 @@ static const size_t	pool_max [HCD_BUFFER_POOLS] = {
  * Call hcd_buffer_destroy() to clean up after using those pools.
  */
 /**
- * ´´½¨HCD DMA»º³å³Ø
+ * åˆ›å»ºHCD DMAç¼“å†²æ± 
  */
 int hcd_buffer_create(struct usb_hcd *hcd)
 {
@@ -57,13 +57,13 @@ int hcd_buffer_create(struct usb_hcd *hcd)
 	int 		i, size;
 
 	/**
-	 * Ö÷»ú¿ØÖÆÆ÷²»Ö§³ÖDMA¡£
+	 * ä¸»æœºæ§åˆ¶å™¨ä¸æ”¯æŒDMAã€‚
 	 */
 	if (!hcd->self.controller->dma_mask)
 		return 0;
 
 	/**
-	 * ´´½¨4¸öDMA»º³å³Ø
+	 * åˆ›å»º4ä¸ªDMAç¼“å†²æ± 
 	 */
 	for (i = 0; i < HCD_BUFFER_POOLS; i++) { 
 		if (!(size = pool_max [i]))
@@ -72,7 +72,7 @@ int hcd_buffer_create(struct usb_hcd *hcd)
 		hcd->pool[i] = dma_pool_create(name, hcd->self.controller,
 				size, size, 0);
 		/**
-		 * »º³å³Ø´´½¨Ê§°Ü£¬ÊÍ·ÅÒÑ¾­´´½¨µÄ»º³åÇø¡£
+		 * ç¼“å†²æ± åˆ›å»ºå¤±è´¥ï¼Œé‡Šæ”¾å·²ç»åˆ›å»ºçš„ç¼“å†²åŒºã€‚
 		 */
 		if (!hcd->pool [i]) {
 			hcd_buffer_destroy(hcd);
@@ -91,7 +91,7 @@ int hcd_buffer_create(struct usb_hcd *hcd)
  * This frees the buffer pools created by hcd_buffer_create().
  */
 /**
- * ÊÍ·ÅHCDµÄDMA»º³å³Ø¡£
+ * é‡Šæ”¾HCDçš„DMAç¼“å†²æ± ã€‚
  */
 void hcd_buffer_destroy(struct usb_hcd *hcd)
 {
@@ -111,7 +111,7 @@ void hcd_buffer_destroy(struct usb_hcd *hcd)
  * better sharing and to leverage mm/slab.c intelligence.
  */
 /**
- * ´ÓHCD DMA»º³å³ØÖĞ·ÖÅäÄÚ´æ¡£
+ * ä»HCD DMAç¼“å†²æ± ä¸­åˆ†é…å†…å­˜ã€‚
  */
 void *hcd_buffer_alloc(
 	struct usb_bus 	*bus,
@@ -125,7 +125,7 @@ void *hcd_buffer_alloc(
 
 	/* some USB hosts just use PIO */
 	/** 
-	 * HCD²»Ö§³ÖDMA£¬ÔòÖ±½ÓÊ¹ÓÃkmalloc·ÖÅäÄÚ´æ²¢·µ»Ø¡£
+	 * HCDä¸æ”¯æŒDMAï¼Œåˆ™ç›´æ¥ä½¿ç”¨kmallocåˆ†é…å†…å­˜å¹¶è¿”å›ã€‚
 	 */
 	if (!bus->controller->dma_mask) {
 		*dma = ~(dma_addr_t) 0;
@@ -133,14 +133,14 @@ void *hcd_buffer_alloc(
 	}
 
 	/**
-	 * ´Ó»º³å³ØÖĞ·ÖÅä¡£
+	 * ä»ç¼“å†²æ± ä¸­åˆ†é…ã€‚
 	 */
 	for (i = 0; i < HCD_BUFFER_POOLS; i++) {
 		if (size <= pool_max [i])
 			return dma_pool_alloc(hcd->pool [i], mem_flags, dma);
 	}
 	/**
-	 * »º³å³ØÖĞµÄDMA»º´æÎŞ·¨Âú×ãÒªÇó£¬Ö±½Óµ÷ÓÃdma_alloc_coherent·ÖÅäDMA»º´æ¡£
+	 * ç¼“å†²æ± ä¸­çš„DMAç¼“å­˜æ— æ³•æ»¡è¶³è¦æ±‚ï¼Œç›´æ¥è°ƒç”¨dma_alloc_coherentåˆ†é…DMAç¼“å­˜ã€‚
 	 */
 	return dma_alloc_coherent(hcd->self.controller, size, dma, 0);
 }

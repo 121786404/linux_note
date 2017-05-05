@@ -61,7 +61,7 @@ static struct file_system_type sysfs_fs_type = {
 	.fs_flags	= FS_USERNS_MOUNT,
 };
 
-/*sysfsÎÄ¼şÏµÍ³µÄ×¢²áºÍ³õÊ¼»¯*/
+/*sysfsæ–‡ä»¶ç³»ç»Ÿçš„æ³¨å†Œå’Œåˆå§‹åŒ–*/
 int __init sysfs_init(void)
 {
 	int err;
@@ -72,8 +72,8 @@ int __init sysfs_init(void)
 		return PTR_ERR(sysfs_root);
 
 	sysfs_root_kn = sysfs_root->kn;
-	/*ÏòÏµÍ³ÖĞ×¢²áÒ»¸öÀàĞÍÎªsysfs_fs_typeµÄÎÄ¼şÏµÍ³,°ÑsysfsÎÄ¼şÏµÍ³²åÈëµ½ÎÄ¼şÏµÍ³µÄ
-	 *×ÜÁ´±íÖĞ*/
+	/*å‘ç³»ç»Ÿä¸­æ³¨å†Œä¸€ä¸ªç±»å‹ä¸ºsysfs_fs_typeçš„æ–‡ä»¶ç³»ç»Ÿ,æŠŠsysfsæ–‡ä»¶ç³»ç»Ÿæ’å…¥åˆ°æ–‡ä»¶ç³»ç»Ÿçš„
+	 *æ€»é“¾è¡¨ä¸­*/
 	err = register_filesystem(&sysfs_fs_type);
 	if (err) {
 		kernfs_destroy_root(sysfs_root);

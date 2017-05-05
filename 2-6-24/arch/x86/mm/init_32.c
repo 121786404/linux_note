@@ -415,21 +415,21 @@ static void __init pagetable_init (void)
 	unsigned long vaddr, end;
 	pgd_t *pgd_base = swapper_pg_dir;
 
-	/* ³õÊ¼»¯swapper_pg_dirÒ³±í */
+	/* åˆå§‹åŒ–swapper_pg_diré¡µè¡¨ */
 	paravirt_pagetable_setup_start(pgd_base);
 
 	/* Enable PSE if available */
-	if (cpu_has_pse)/* ¿ªÆôpse£¬Ö§³Ö´óÒ³ */
+	if (cpu_has_pse)/* å¼€å¯pseï¼Œæ”¯æŒå¤§é¡µ */
 		set_in_cr4(X86_CR4_PSE);
 
 	/* Enable PGE if available */
-	if (cpu_has_pge) {/* ¿ªÆôPGE£¬Ö§³Ö¾ŞÒ³ */
+	if (cpu_has_pge) {/* å¼€å¯PGEï¼Œæ”¯æŒå·¨é¡µ */
 		set_in_cr4(X86_CR4_PGE);
-		__PAGE_KERNEL |= _PAGE_GLOBAL;/* ÄÚºËËùÓÃÒ³Ãæ¾ù¼ÓÉÏ´Ë±êÖ¾£¬ÒÔÌáÉıĞÔÄÜ */
+		__PAGE_KERNEL |= _PAGE_GLOBAL;/* å†…æ ¸æ‰€ç”¨é¡µé¢å‡åŠ ä¸Šæ­¤æ ‡å¿—ï¼Œä»¥æå‡æ€§èƒ½ */
 		__PAGE_KERNEL_EXEC |= _PAGE_GLOBAL;
 	}
 
-	/* ÉèÖÃÇ°896MÎïÀíÄÚ´æÒ³µÄÄÚºËÒ³±í */
+	/* è®¾ç½®å‰896Mç‰©ç†å†…å­˜é¡µçš„å†…æ ¸é¡µè¡¨ */
 	kernel_physical_mapping_init(pgd_base);
 	remap_numa_kva();
 
@@ -437,7 +437,7 @@ static void __init pagetable_init (void)
 	 * Fixed mappings, only the page table structure has to be
 	 * created - mappings will be set by set_fixmap():
 	 */
-	/* ÉèÖÃ¹Ì¶¨Ó³ÉäÇø¼äµÄÒ³±íºÍ³Ö¾ÃÓ³ÉäµÄÒ³±í */
+	/* è®¾ç½®å›ºå®šæ˜ å°„åŒºé—´çš„é¡µè¡¨å’ŒæŒä¹…æ˜ å°„çš„é¡µè¡¨ */
 	vaddr = __fix_to_virt(__end_of_fixed_addresses - 1) & PMD_MASK;
 	end = (FIXADDR_TOP + PMD_SIZE - 1) & PMD_MASK;
 	page_table_range_init(vaddr, end, pgd_base);
@@ -572,7 +572,7 @@ out:
  * This routines also unmaps the page at virtual kernel address 0, so
  * that we can trap those pesky NULL-reference errors in the kernel.
  */
-/* ³õÊ¼»¯ÄÚ´æÒ³±í²¢Æô¶¯ÄÚ´æ·ÖÒ³£¬²¢ÇÒÖ§³ÖPAE */
+/* åˆå§‹åŒ–å†…å­˜é¡µè¡¨å¹¶å¯åŠ¨å†…å­˜åˆ†é¡µï¼Œå¹¶ä¸”æ”¯æŒPAE */
 void __init paging_init(void)
 {
 #ifdef CONFIG_X86_PAE
@@ -582,12 +582,12 @@ void __init paging_init(void)
 #endif
 
 	/**
-	 * ³õÊ¼»¯ÏµÍ³Ò³±í£¬ÒÔswapper_pg_dirÎª»ù´¡ 
-	 * ÒÔ¼°ÆôÓÃPSE¡¢PGEÀ©Õ¹£¬ÕâÁ½¸öÀ©Õ¹¼¸ºõ¾ù±»Ó²¼şËùÖ§³Ö¡£
+	 * åˆå§‹åŒ–ç³»ç»Ÿé¡µè¡¨ï¼Œä»¥swapper_pg_dirä¸ºåŸºç¡€ 
+	 * ä»¥åŠå¯ç”¨PSEã€PGEæ‰©å±•ï¼Œè¿™ä¸¤ä¸ªæ‰©å±•å‡ ä¹å‡è¢«ç¡¬ä»¶æ‰€æ”¯æŒã€‚
 	 */
 	pagetable_init();
 
-	/* ¼ÓÔØcr3¼Ä´æÆ÷Ê¹ÆäÖ¸ÏòÒ³È«¾ÖÄ¿Â¼ */
+	/* åŠ è½½cr3å¯„å­˜å™¨ä½¿å…¶æŒ‡å‘é¡µå…¨å±€ç›®å½• */
 	load_cr3(swapper_pg_dir);
 
 #ifdef CONFIG_X86_PAE
@@ -598,10 +598,10 @@ void __init paging_init(void)
 	if (cpu_has_pae)
 		set_in_cr4(X86_CR4_PAE);
 #endif
-	/* ¼ÓÔØcr3ºó£¬Ç¿ÖÆË¢ĞÂtlb£¬ÒÔ±ÜÃâ»º´æ¹ıÆÚµÄTLB */
+	/* åŠ è½½cr3åï¼Œå¼ºåˆ¶åˆ·æ–°tlbï¼Œä»¥é¿å…ç¼“å­˜è¿‡æœŸçš„TLB */
 	__flush_tlb_all();
 
-	/* ³õÊ¼»¯È«¾Ö±äÁ¿kmap_pte£¬ÓÃÓÚ½«¸ß¶ËÄÚ´æµÄµØÖ·Ó³Éäµ½ÄÚºËĞéÄâµØÖ·¿Õ¼äÖĞ */
+	/* åˆå§‹åŒ–å…¨å±€å˜é‡kmap_pteï¼Œç”¨äºå°†é«˜ç«¯å†…å­˜çš„åœ°å€æ˜ å°„åˆ°å†…æ ¸è™šæ‹Ÿåœ°å€ç©ºé—´ä¸­ */
 	kmap_init();
 }
 
@@ -848,7 +848,7 @@ void free_init_pages(char *what, unsigned long begin, unsigned long end)
 	printk(KERN_INFO "Freeing %s: %luk freed\n", what, (end - begin) >> 10);
 }
 
-/* ÊÍ·Å³õÊ¼»¯´úÂë¶ÎºÍ³õÊ¼»¯Êı¾İ¶Îµ½»ï°éÏµÍ³ÖĞ */
+/* é‡Šæ”¾åˆå§‹åŒ–ä»£ç æ®µå’Œåˆå§‹åŒ–æ•°æ®æ®µåˆ°ä¼™ä¼´ç³»ç»Ÿä¸­ */
 void free_initmem(void)
 {
 	free_init_pages("unused kernel memory",

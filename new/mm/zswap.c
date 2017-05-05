@@ -19,11 +19,11 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
- *ZSWAPÊÇÒ»¸ö·ÅÖÃÔÚswapÇ°ÃæµÄÑ¹Ëõ»º´æ,Ëü¿ÉÒÔ½«ÐèÒª»»³öµÄÒ³Ñ¹Ëõ
- *´æ·ÅÔÚÄÚ´æÖÐµÄÑ¹Ëõ³ØÀï,ÕâÑùÔÚÑ¹Ëõ³ØÃ»ÓÐÂúµÄÊ±ºò,¿ÉÒÔ±ÜÃâÊ¹ÓÃ
- *ÕæÕýµÄswapÉè±¸.µ±Ñ¹Ëõ³ØÂúµÄÊ±ºò,Ôò°Ñ×îÀÏµÄÒ³½âÑ¹ºóÐ´ÈëswapÉè±¸.
- *Ñ¹Ëõ³ØÄ¬ÈÏÊÇÄÚ´æ×ÜÁ¿µÄ20%.ZSWAP²»½öÌáÉýÁËswapµÄÕûÌåÐÔÄÜ,
- *Ò²±äÏàµÄÔö¼ÓÁËswap¿Õ¼ä
+ *ZSWAPæ˜¯ä¸€ä¸ªæ”¾ç½®åœ¨swapå‰é¢çš„åŽ‹ç¼©ç¼“å­˜,å®ƒå¯ä»¥å°†éœ€è¦æ¢å‡ºçš„é¡µåŽ‹ç¼©
+ *å­˜æ”¾åœ¨å†…å­˜ä¸­çš„åŽ‹ç¼©æ± é‡Œ,è¿™æ ·åœ¨åŽ‹ç¼©æ± æ²¡æœ‰æ»¡çš„æ—¶å€™,å¯ä»¥é¿å…ä½¿ç”¨
+ *çœŸæ­£çš„swapè®¾å¤‡.å½“åŽ‹ç¼©æ± æ»¡çš„æ—¶å€™,åˆ™æŠŠæœ€è€çš„é¡µè§£åŽ‹åŽå†™å…¥swapè®¾å¤‡.
+ *åŽ‹ç¼©æ± é»˜è®¤æ˜¯å†…å­˜æ€»é‡çš„20%.ZSWAPä¸ä»…æå‡äº†swapçš„æ•´ä½“æ€§èƒ½,
+ *ä¹Ÿå˜ç›¸çš„å¢žåŠ äº†swapç©ºé—´
  */
 
 #define pr_fmt(fmt) KBUILD_MODNAME ": " fmt

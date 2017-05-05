@@ -12,9 +12,9 @@ struct vm_area_struct;
  * GFP bitmasks..
  */
 /* Zone modifiers in GFP_ZONEMASK (see linux/mmzone.h - low two bits) */
-/* Ä¬ÈÏÇé¿öÏÂÊÇÔÚNORMALÄÚ´æÇøÖĞ·ÖÅäÄÚ´æ */
-#define __GFP_DMA	0x01                 /* ÔÚDMAÄÚ´æÇøÖĞ·ÖÅä */
-#define __GFP_HIGHMEM	0x02           /* ¸Ã±ê¼ÇÒâÎ¶×ÅÔÚ¸ßÄÚ´æÇøÖĞ·ÖÅä*/
+/* é»˜è®¤æƒ…å†µä¸‹æ˜¯åœ¨NORMALå†…å­˜åŒºä¸­åˆ†é…å†…å­˜ */
+#define __GFP_DMA	0x01                 /* åœ¨DMAå†…å­˜åŒºä¸­åˆ†é… */
+#define __GFP_HIGHMEM	0x02           /* è¯¥æ ‡è®°æ„å‘³ç€åœ¨é«˜å†…å­˜åŒºä¸­åˆ†é…*/
 
 /*
  * Action modifiers - doesn't change the zoning
@@ -89,16 +89,16 @@ static inline struct page *alloc_pages_node(int nid, unsigned int gfp_mask,
 	if (unlikely(order >= MAX_ORDER))
 		return NULL;
 
-        /* ×¢ÒâÕâÒ»µãÍ¨¹ıgfp_maskÀ´È·¶¨µ½µ×Ê¹ÓÃÄÄÖÖ·ÖÅä²ßÂÔ */
+        /* æ³¨æ„è¿™ä¸€ç‚¹é€šè¿‡gfp_maskæ¥ç¡®å®šåˆ°åº•ä½¿ç”¨å“ªç§åˆ†é…ç­–ç•¥ */
 	return __alloc_pages(gfp_mask, order,
 		NODE_DATA(nid)->node_zonelists + (gfp_mask & GFP_ZONEMASK));
 }
 
-/* ÊÇ·ñÆôÓÃ·ÇÒ»ÖÂÄÚ´æ·ÃÎÊ */
+/* æ˜¯å¦å¯ç”¨éä¸€è‡´å†…å­˜è®¿é—® */
 #ifdef CONFIG_NUMA
 extern struct page *alloc_pages_current(unsigned gfp_mask, unsigned order);
 
-/* ·ÖÅä2µÄorder´Î·½¸öÄÚ´æÒ³ */
+/* åˆ†é…2çš„orderæ¬¡æ–¹ä¸ªå†…å­˜é¡µ */
 static inline struct page *
 alloc_pages(unsigned int gfp_mask, unsigned int order)
 {

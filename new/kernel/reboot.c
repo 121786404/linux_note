@@ -21,10 +21,10 @@
  * this indicates whether you can reboot with ctrl-alt-del: the default is yes
  */
 /*
-cad_pidÊÇÓÃÀ´½ÓÊÕctrl-alt-del reboot signalµÄ½ø³Ì, 
-Èç¹ûÉèÖÃC_A_D=1¾Í±íÊ¾¿ÉÒÔ´¦ÀíÀ´×Ôctl-alt-delµÄ¶¯×÷ 
-×îºó»áµ÷ÓÃ ctrl_alt_del(void)²¢È·ÈÏC_A_DÊÇ·ñÎª1,
-È·ÈÏÍê³Éºó½«Ö´ĞĞcad_work=deferred_cad,Ö´ĞĞkernel_restart
+cad_pidæ˜¯ç”¨æ¥æ¥æ”¶ctrl-alt-del reboot signalçš„è¿›ç¨‹, 
+å¦‚æœè®¾ç½®C_A_D=1å°±è¡¨ç¤ºå¯ä»¥å¤„ç†æ¥è‡ªctl-alt-delçš„åŠ¨ä½œ 
+æœ€åä¼šè°ƒç”¨ ctrl_alt_del(void)å¹¶ç¡®è®¤C_A_Dæ˜¯å¦ä¸º1,
+ç¡®è®¤å®Œæˆåå°†æ‰§è¡Œcad_work=deferred_cad,æ‰§è¡Œkernel_restart
 */
 int C_A_D = 1;
 struct pid *cad_pid;

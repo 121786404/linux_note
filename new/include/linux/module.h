@@ -326,16 +326,16 @@ struct klp_modinfo {
 #endif
 
 struct module {
-	enum module_state state;	/*ÓÃÓÚ¼ÇÂ¼Ä£¿é¼ÓÔØ¹ı³ÌÖĞ²»Í¬½×¶ÎµÄ×´Ì¬*/
+	enum module_state state;	/*ç”¨äºè®°å½•æ¨¡å—åŠ è½½è¿‡ç¨‹ä¸­ä¸åŒé˜¶æ®µçš„çŠ¶æ€*/
 
 	/* Member of list of modules */
-	struct list_head list;	/* ÓÃÓÚ½«Ä£¿éÁ´½Óµ½ÏµÍ³Î¬»¤µÄÄÚºËÄ£¿éÁ´±íÖĞ,
-				 * ÄÚºËÓÃÒ»¸öÁ´±íÀ´¹ÜÀíÏµÍ³ÖĞËùÓĞ±»³É¹¦¼ÓÔØµÄ
-				 * Ä£¿é
+	struct list_head list;	/* ç”¨äºå°†æ¨¡å—é“¾æ¥åˆ°ç³»ç»Ÿç»´æŠ¤çš„å†…æ ¸æ¨¡å—é“¾è¡¨ä¸­,
+				 * å†…æ ¸ç”¨ä¸€ä¸ªé“¾è¡¨æ¥ç®¡ç†ç³»ç»Ÿä¸­æ‰€æœ‰è¢«æˆåŠŸåŠ è½½çš„
+				 * æ¨¡å—
 				 */
 
 	/* Unique handle for this module */
-	char name[MODULE_NAME_LEN];	/*Ä£¿éÃû³Æ*/
+	char name[MODULE_NAME_LEN];	/*æ¨¡å—åç§°*/
 
 	/* Sysfs stuff. */
 	struct module_kobject mkobj;
@@ -345,15 +345,15 @@ struct module {
 	struct kobject *holders_dir;
 
 	/* Exported symbols */
-	const struct kernel_symbol *syms;	/*ÄÚºËÄ£¿éµ¼³öµÄ·ûºÅËùÔÚÆğÊ¼µØÖ·*/
-	const s32 *crcs;	/*ÄÚºËÄ£¿éµ¼³öµÄ·ûºÅµÄĞ£ÑéÂëËùÔÚµÄÆğÊ¼µØÖ·*/
+	const struct kernel_symbol *syms;	/*å†…æ ¸æ¨¡å—å¯¼å‡ºçš„ç¬¦å·æ‰€åœ¨èµ·å§‹åœ°å€*/
+	const s32 *crcs;	/*å†…æ ¸æ¨¡å—å¯¼å‡ºçš„ç¬¦å·çš„æ ¡éªŒç æ‰€åœ¨çš„èµ·å§‹åœ°å€*/
 	unsigned int num_syms;
 
 	/* Kernel parameters. */
 #ifdef CONFIG_SYSFS
 	struct mutex param_lock;
 #endif
-	struct kernel_param *kp;	/*ÄÚºËÄ£¿é²ÎÊıËùÔÚµÄÆğÊ¼µØÖ·*/
+	struct kernel_param *kp;	/*å†…æ ¸æ¨¡å—å‚æ•°æ‰€åœ¨çš„èµ·å§‹åœ°å€*/
 	unsigned int num_kp;
 
 	/* GPL-only exported symbols. */
@@ -390,8 +390,8 @@ struct module {
 	struct exception_table_entry *extable;
 
 	/* Startup function. */
-	int (*init)(void);	/* Ö¸ÏòÄÚºËÄ£¿é³õÊ¼»¯º¯ÊıµÄÖ¸Õë£¬
-				 * ÔÚÄÚºËÄ£¿éÔ´ÂëÖĞÓÉmodule_initºêÖ¸¶¨
+	int (*init)(void);	/* æŒ‡å‘å†…æ ¸æ¨¡å—åˆå§‹åŒ–å‡½æ•°çš„æŒ‡é’ˆï¼Œ
+				 * åœ¨å†…æ ¸æ¨¡å—æºç ä¸­ç”±module_initå®æŒ‡å®š
 				 */
 
 	/* Core layout: rbtree is accessed frequently, so keep together. */
@@ -592,7 +592,7 @@ static inline int try_module_get(struct module *module)
 	return !module || module_is_live(module);
 }
 /*
-¸Ãº¯ÊıµÄ¹¦ÄÜÊÇ½«Ò»¸öÌØ¶¨Ä£¿émoduleµÄÒıÓÃ¼ÆÊı¼õ1 £¬ÕâÑùµ±Ò»¸öÄ£¿éµÄÒıÓÃ¼ÆÊıÒòÎª²»Îª0¶ø²»ÄÜ´ÓÄÚºËÖĞĞ¶ÔØÊ±£¬¿ÉÒÔµ÷ÓÃ´Ëº¯ÊıÒ»´Î»ò¶à´Î£¬ÊµÏÖ¶ÔÄ£¿é¼ÆÊıµÄÇåÁã£¬´Ó¶øÊµÏÖÄ£¿éĞ¶ÔØ¡£*/
+è¯¥å‡½æ•°çš„åŠŸèƒ½æ˜¯å°†ä¸€ä¸ªç‰¹å®šæ¨¡å—moduleçš„å¼•ç”¨è®¡æ•°å‡1 ï¼Œè¿™æ ·å½“ä¸€ä¸ªæ¨¡å—çš„å¼•ç”¨è®¡æ•°å› ä¸ºä¸ä¸º0è€Œä¸èƒ½ä»å†…æ ¸ä¸­å¸è½½æ—¶ï¼Œå¯ä»¥è°ƒç”¨æ­¤å‡½æ•°ä¸€æ¬¡æˆ–å¤šæ¬¡ï¼Œå®ç°å¯¹æ¨¡å—è®¡æ•°çš„æ¸…é›¶ï¼Œä»è€Œå®ç°æ¨¡å—å¸è½½ã€‚*/
 static inline void module_put(struct module *module)
 {
 }

@@ -388,16 +388,16 @@ static inline void memcpy_toio(volatile void __iomem *to, const void *from,
  * will provide a write allocate mapping instead.
  */
 void __iomem *ioremap(resource_size_t res_cookie, size_t size);
-/* ioremap�����������������vmalloc����ĳ�������ڴ�ӳ�䵽I/O�ռ�,
- * ��vmalloc��ͬ���ǣ�ioremap������Ҫ���ϵͳȥ��������ҳ����Ϊioremap
- * Ҫӳ���Ŀ���ַ��I/O�ռ䣬���������ڴ�*/
- /*ioremap���صĵ�ַӦ��ͳһʹ��readb/writeb��readw/writew�����ĺ�*/
- /*�����ӳ��Ŀռ䲻��ʹ�ã�Ӧ��ʹ��iounmap������������������*/
-/*���豸��I/O�ռ�ӳ�䵽�ں˿ռ�*/
+/* ioremap函数及其变种用来将vmalloc区的某段虚拟内存映射到I/O空间,
+ * 与vmalloc不同的是，ioremap并不需要伙伴系统去分配物理页，因为ioremap
+ * 要映射的目标地址是I/O空间，不是物理内存*/
+ /*ioremap返回的地址应该统一使用readb/writeb、readw/writew这样的宏*/
+ /*如果被映射的空间不再使用，应该使用iounmap函数来做相关清除工作*/
+/*将设备的I/O空间映射到内核空间*/
 
 #define ioremap ioremap
-/* ͨ�����ҳ�����е�C(ache)��־��ʹ�ô������ڷ�����ε�ַʱ���ᱶcache,
- * �������ռ�ĵ�ַ�ǳ���Ҫ*/
+/* 通过清除页表项中的C(ache)标志，使得处理器在访问这段地址时不会倍cache,
+ * 这对外设空间的地址非常重要*/
 #define ioremap_nocache ioremap
 
 /*

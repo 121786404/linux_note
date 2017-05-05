@@ -111,7 +111,7 @@ static int smpboot_thread_fn(void *data)
 		set_current_state(TASK_INTERRUPTIBLE);
 		preempt_disable();
 /*
-		kthread_stop Ö§³Ö
+		kthread_stop æ”¯æŒ
 */
 		if (kthread_should_stop()) {
 			__set_current_state(TASK_RUNNING);
@@ -123,7 +123,7 @@ static int smpboot_thread_fn(void *data)
 			return 0;
 		}
         /*
-                kthread_park Ö§³Ö
+                kthread_park æ”¯æŒ
           */
 		if (kthread_should_park()) {
 			__set_current_state(TASK_RUNNING);
@@ -143,7 +143,7 @@ static int smpboot_thread_fn(void *data)
 		/* Check for state change setup */
 		switch (td->status) {
 /*
-	½ø³Ì´Ó	NONE×´Ì¬±»»½ÐÑ
+	è¿›ç¨‹ä»Ž	NONEçŠ¶æ€è¢«å”¤é†’
 */
 		case HP_THREAD_NONE:
 			__set_current_state(TASK_RUNNING);
@@ -153,7 +153,7 @@ static int smpboot_thread_fn(void *data)
 			td->status = HP_THREAD_ACTIVE;
 			continue;
 /*
-      ½ø³Ì´Ó  PARKED×´Ì¬±»»½ÐÑ
+      è¿›ç¨‹ä»Ž  PARKEDçŠ¶æ€è¢«å”¤é†’
 */
 		case HP_THREAD_PARKED:
 			__set_current_state(TASK_RUNNING);
@@ -166,13 +166,13 @@ static int smpboot_thread_fn(void *data)
 
 		if (!ht->thread_should_run(td->cpu)) {
 /*
-    Èç¹û²»ÄÜrun½øÈë×èÈûË¯Ãß
+    å¦‚æžœä¸èƒ½runè¿›å…¥é˜»å¡žç¡çœ 
 */
 			preempt_enable_no_resched();
 			schedule();
 		} else {
 /*
-    Ö´ÐÐÊµ¼ÊµÄÓÃ»§º¯Êýthread_fn
+    æ‰§è¡Œå®žé™…çš„ç”¨æˆ·å‡½æ•°thread_fn
 */
 			__set_current_state(TASK_RUNNING);
 			preempt_enable();
@@ -196,7 +196,7 @@ __smpboot_create_thread(struct smp_hotplug_thread *ht, unsigned int cpu)
 	td->cpu = cpu;
 	td->ht = ht;
 /*
-    ÓÃ»§½ø³Ìº¯Êýsmpboot_thread_fn
+    ç”¨æˆ·è¿›ç¨‹å‡½æ•°smpboot_thread_fn
 */
 	tsk = kthread_create_on_cpu(smpboot_thread_fn, td, cpu,
 				    ht->thread_comm);
@@ -318,7 +318,7 @@ int smpboot_register_percpu_thread_cpumask(struct smp_hotplug_thread *plug_threa
 	mutex_lock(&smpboot_threads_lock);
 	for_each_online_cpu(cpu) {
 /*
-	¸øÃ¿¸öonline cpu´´½¨Ïß³Ì
+	ç»™æ¯ä¸ªonline cpuåˆ›å»ºçº¿ç¨‹
 */
 		ret = __smpboot_create_thread(plug_thread, cpu);
 		if (ret) {
@@ -327,7 +327,7 @@ int smpboot_register_percpu_thread_cpumask(struct smp_hotplug_thread *plug_threa
 			goto out;
 		}
 		if (cpumask_test_cpu(cpu, cpumask))
-		    //unpark²¢°ó¶¨½ø³Ìµ½CPU
+		    //unparkå¹¶ç»‘å®šè¿›ç¨‹åˆ°CPU
 			smpboot_unpark_thread(plug_thread, cpu);
 	}
 	list_add(&plug_thread->list, &hotplug_threads);

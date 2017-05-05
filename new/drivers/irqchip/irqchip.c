@@ -23,7 +23,7 @@ static const struct of_device_id
 irqchip_of_match_end __used __section(__irqchip_of_table_end);
 
 /*
-__irqchip_of_table在vmlinux.lds文件里边被放到了__irqchip_begin和__irqchip_of_end之间
+__irqchip_of_table鍦╲mlinux.lds鏂囦欢閲岃竟琚斁鍒颁簡__irqchip_begin鍜宊_irqchip_of_end涔嬮棿
 */
 extern struct of_device_id __irqchip_of_table[];
 

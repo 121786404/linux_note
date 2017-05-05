@@ -118,7 +118,7 @@ static void param_check_unsafe(const struct kernel_param *kp)
 }
 
 /**
- * ´¦Àíµ¥¸ö²ÎÊı
+ * å¤„ç†å•ä¸ªå‚æ•°
  */
 static int parse_one(char *param,
 		     char *val,
@@ -135,8 +135,8 @@ static int parse_one(char *param,
 	int err;
 
 	/* Find parameter */
-	for (i = 0; i < num_params; i++) {//ÔÚ²ÎÊıÇø²éÕÒËùÓĞ¿ÉÓÃ²ÎÊı
-		if (parameq(param, params[i].name)) {//ÕÒµ½ÁË
+	for (i = 0; i < num_params; i++) {//åœ¨å‚æ•°åŒºæŸ¥æ‰¾æ‰€æœ‰å¯ç”¨å‚æ•°
+		if (parameq(param, params[i].name)) {//æ‰¾åˆ°äº†
 			if (params[i].level < min_level
 			    || params[i].level > max_level)
 				return 0;
@@ -146,12 +146,12 @@ static int parse_one(char *param,
 				return -EINVAL;
 			pr_debug("handling %s with %p\n", param,
 				params[i].ops->set);
-			//Ëø×¡Ä£¿é
+			//é”ä½æ¨¡å—
 			kernel_param_lock(params[i].mod);
 			param_check_unsafe(&params[i]);
-			//µ÷ÓÃÄ£¿éµÄ²ÎÊı½âÎö
+			//è°ƒç”¨æ¨¡å—çš„å‚æ•°è§£æ
 			err = params[i].ops->set(val, &params[i]);
-			//Ä£¿é½âËø
+			//æ¨¡å—è§£é”
 			kernel_param_unlock(params[i].mod);
 			return err;
 		}
@@ -232,7 +232,7 @@ char *parse_args(const char *doing,
 	char *param, *val, *err = NULL;
 
 	/* Chew leading spaces */
-	args = skip_spaces(args);//Ìø¹ıÇ°ÃæµÄ¿Õ¸ñ
+	args = skip_spaces(args);//è·³è¿‡å‰é¢çš„ç©ºæ ¼
 
 	if (*args)
 		pr_debug("doing %s, parsing ARGS: '%s'\n", doing, args);
@@ -241,16 +241,16 @@ char *parse_args(const char *doing,
 		int ret;
 		int irq_was_disabled;
 
-		//ÕÒÏÂÒ»¸ö²ÎÊı¼°ÆäÖµ
+		//æ‰¾ä¸‹ä¸€ä¸ªå‚æ•°åŠå…¶å€¼
 		args = next_arg(args, &param, &val);
 		/* Stop at -- */
-		if (!val && strcmp(param, "--") == 0)//--±íÊ¾×¢ÊÍ£¬ºöÂÔºóÃæµÄ²ÎÊı
+		if (!val && strcmp(param, "--") == 0)//--è¡¨ç¤ºæ³¨é‡Šï¼Œå¿½ç•¥åé¢çš„å‚æ•°
 			return err ?: args;
 		irq_was_disabled = irqs_disabled();
-		//½âÎöµ¥¸ö²ÎÊı
+		//è§£æå•ä¸ªå‚æ•°
 		ret = parse_one(param, val, doing, params, num,
 				min_level, max_level, arg, unknown);
-		//ÔÚ½âÎö¹ı³ÌÖĞÒâÍâµÄ´ò¿ªÁËÖĞ¶Ï£¬ÕâÀï¾¯¸æ¡£
+		//åœ¨è§£æè¿‡ç¨‹ä¸­æ„å¤–çš„æ‰“å¼€äº†ä¸­æ–­ï¼Œè¿™é‡Œè­¦å‘Šã€‚
 		if (irq_was_disabled && !irqs_disabled())
 			pr_warn("%s: option '%s' enabled irq's!\n",
 				doing, param);

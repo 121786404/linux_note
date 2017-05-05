@@ -368,7 +368,7 @@ static int rh_call_control (struct usb_hcd *hcd, struct urb *urb)
 	urb->hcpriv = hcd;	/* Indicate it's queued */
 
 	/**
-	 * ¿ØÖÆ´«Êä×¨ÓÃ»º³åÇø¡£
+	 * æŽ§åˆ¶ä¼ è¾“ä¸“ç”¨ç¼“å†²åŒºã€‚
 	 */
 	cmd = (struct usb_ctrlrequest *) urb->setup_packet;
 	typeReq  = (cmd->bRequestType << 8) | cmd->bRequest;
@@ -400,7 +400,7 @@ static int rh_call_control (struct usb_hcd *hcd, struct urb *urb)
 	 * controller capabilities are identical.
 	 */
 	/**
-	 * Éè±¸ÇëÇó²¢ÇÒÊÇIN·½Ïò
+	 * è®¾å¤‡è¯·æ±‚å¹¶ä¸”æ˜¯INæ–¹å‘
 	 */
 	case DeviceRequest | USB_REQ_GET_STATUS:
 		tbuf [0] = (device_may_wakeup(&hcd->self.root_hub->dev)
@@ -501,8 +501,8 @@ static int rh_call_control (struct usb_hcd *hcd, struct urb *urb)
 			break;
 		}
 		/**
-		 * HUBÌØ¶¨ÀàµÄÇëÇóÐèÒªµ÷ÓÃÖ÷»ú¿ØÖÆÆ÷Çý¶¯³ÌÐòµÄhub_controlº¯Êý¡£
-		 * ¶ÔUHCIÀ´Ëµ£¬Îªuhci_hub_controlº¯Êý¡£
+		 * HUBç‰¹å®šç±»çš„è¯·æ±‚éœ€è¦è°ƒç”¨ä¸»æœºæŽ§åˆ¶å™¨é©±åŠ¨ç¨‹åºçš„hub_controlå‡½æ•°ã€‚
+		 * å¯¹UHCIæ¥è¯´ï¼Œä¸ºuhci_hub_controlå‡½æ•°ã€‚
 		 */
 		status = hcd->driver->hub_control (hcd,
 			typeReq, wValue, wIndex,
@@ -548,7 +548,7 @@ error:
 	 */
 	spin_unlock(&hcd_root_hub_lock);
 	/**
-	 * ÕâÀïÖ÷ÒªÊÇ½øÐÐÊÕÎ²¹¤×÷£¬µ÷ÓÃcompleteÍ¨Öªµ÷ÓÃÕß¡£
+	 * è¿™é‡Œä¸»è¦æ˜¯è¿›è¡Œæ”¶å°¾å·¥ä½œï¼Œè°ƒç”¨completeé€šçŸ¥è°ƒç”¨è€…ã€‚
 	 */
 	usb_hcd_giveback_urb(hcd, urb, status);
 	spin_lock(&hcd_root_hub_lock);
@@ -580,7 +580,7 @@ void usb_hcd_poll_rh_status(struct usb_hcd *hcd)
 		return;
 
 	/**
-	 * ¶ÔUHCIÀ´Ëµ£¬»Øµ÷uhci_hub_status_dataº¯Êý¡£
+	 * å¯¹UHCIæ¥è¯´ï¼Œå›žè°ƒuhci_hub_status_dataå‡½æ•°ã€‚
 	 */
 	length = hcd->driver->hub_status_data(hcd, buffer);
 	if (length > 0) {
@@ -610,12 +610,12 @@ void usb_hcd_poll_rh_status(struct usb_hcd *hcd)
 	 * maybe expected, this is to make sure that all timers for USB devices
 	 * fire at the same time to give the CPU a break inbetween */
 	/**
-	 * uses_new_pollingÒ»°ãÊÇ1£¬poll_rhÒ²ÒÑ¾­ÉèÖÃ¹ý¡£
+	 * uses_new_pollingä¸€èˆ¬æ˜¯1ï¼Œpoll_rhä¹Ÿå·²ç»è®¾ç½®è¿‡ã€‚
 	 */
 	if (hcd->uses_new_polling ? hcd->poll_rh :
 			(length == 0 && hcd->status_urb != NULL))
 		/**
-		 * ¶¨Ê±Æ÷º¯ÊýÊÇrh_timer_func£¬ÔÙ´Î»Øµ÷±¾º¯Êý¡£
+		 * å®šæ—¶å™¨å‡½æ•°æ˜¯rh_timer_funcï¼Œå†æ¬¡å›žè°ƒæœ¬å‡½æ•°ã€‚
 		 */
 		mod_timer (&hcd->rh_timer, jiffies + msecs_to_jiffies(250));
 }
@@ -661,7 +661,7 @@ static int rh_queue_status (struct usb_hcd *hcd, struct urb *urb)
 }
 
 /**
- * ROOT HUBµÄURBÇëÇóÈë¶Ó¡£
+ * ROOT HUBçš„URBè¯·æ±‚å…¥é˜Ÿã€‚
  */
 static int rh_urb_enqueue (struct usb_hcd *hcd, struct urb *urb)
 {
@@ -772,14 +772,14 @@ static struct attribute_group usb_bus_attr_group = {
 static struct class *usb_host_class;
 
 /**
- * Ö÷»ú¿ØÖÆÆ÷³õÊ¼»¯´úÂë
+ * ä¸»æœºæŽ§åˆ¶å™¨åˆå§‹åŒ–ä»£ç 
  */
 int usb_host_init(void)
 {
 	int retval = 0;
 
 	/**
-	 * ÔÚ/sys/classÏÂÃæ½¨Á¢usb_hostÄ¿Â¼¡£
+	 * åœ¨/sys/classä¸‹é¢å»ºç«‹usb_hostç›®å½•ã€‚
 	 */
 	usb_host_class = class_create(THIS_MODULE, "usb_host");
 	if (IS_ERR(usb_host_class))
@@ -831,7 +831,7 @@ static int usb_register_bus(struct usb_bus *bus)
 
 	mutex_lock(&usb_bus_list_lock);
 	/**
-	 * ÕÒµ½×ÜÏßºÅ¡£
+	 * æ‰¾åˆ°æ€»çº¿å·ã€‚
 	 */
 	busnum = find_next_zero_bit (busmap.busmap, USB_MAXBUS, 1);
 	if (busnum >= USB_MAXBUS) {
@@ -841,7 +841,7 @@ static int usb_register_bus(struct usb_bus *bus)
 	set_bit (busnum, busmap.busmap);
 	bus->busnum = busnum;
 	/**
-	 * ÔÚ/sys/class/usbÏÂÃæ´´½¨usb_hostÎÄ¼þ¡£
+	 * åœ¨/sys/class/usbä¸‹é¢åˆ›å»ºusb_hostæ–‡ä»¶ã€‚
 	 */
 	bus->class_dev = class_device_create(usb_host_class, NULL, MKDEV(0,0),
 					     bus->controller, "usb_host%d",
@@ -850,19 +850,19 @@ static int usb_register_bus(struct usb_bus *bus)
 	if (IS_ERR(bus->class_dev))
 		goto error_create_class_dev;
 	/**
-	 * ½«Éè±¸ÓësysfsÎÄ¼þÏµÍ³ÖÐµÄÎÄ¼þ¹ØÁªÆðÀ´¡£
+	 * å°†è®¾å¤‡ä¸Žsysfsæ–‡ä»¶ç³»ç»Ÿä¸­çš„æ–‡ä»¶å…³è”èµ·æ¥ã€‚
 	 */
 	class_set_devdata(bus->class_dev, bus);
 
 	/* Add it to the local list of buses */
 	/**
-	 * ½«×ÜÏß¼Óµ½×ÜÏßÁ´±íÖÐ¡£
+	 * å°†æ€»çº¿åŠ åˆ°æ€»çº¿é“¾è¡¨ä¸­ã€‚
 	 */
 	list_add (&bus->bus_list, &usb_bus_list);
 	mutex_unlock(&usb_bus_list_lock);
 
 	/**
-	 * Õâ»áµ¼ÖÂÔö¼Ó/proc/bus/usbÏÂÃæµÄÎÄ¼þ¡£
+	 * è¿™ä¼šå¯¼è‡´å¢žåŠ /proc/bus/usbä¸‹é¢çš„æ–‡ä»¶ã€‚
 	 */
 	usb_notify_add_bus(bus);
 
@@ -922,18 +922,18 @@ static int register_root_hub(struct usb_hcd *hcd)
 	int retval;
 
 	/**
-	 * Root HUBµÄÉè±¸ºÅµ±Í·ÊÇ1ÁË¡£
+	 * Root HUBçš„è®¾å¤‡å·å½“å¤´æ˜¯1äº†ã€‚
 	 */
 	usb_dev->devnum = devnum;
 	usb_dev->bus->devnum_next = devnum + 1;
 	/**
-	 * ½«devicemapÇå¿Õ²¢½«µÚÒ»¸öÉè±¸µÄÎ»ÖÃÕ¼×¡¡£
+	 * å°†devicemapæ¸…ç©ºå¹¶å°†ç¬¬ä¸€ä¸ªè®¾å¤‡çš„ä½ç½®å ä½ã€‚
 	 */
 	memset (&usb_dev->bus->devmap.devicemap, 0,
 			sizeof usb_dev->bus->devmap.devicemap);
 	set_bit (devnum, usb_dev->bus->devmap.devicemap);
 	/**
-	 * ÉèÖÃÉè±¸×´Ì¬Îª¿ÉÓÃ×´Ì¬¡£
+	 * è®¾ç½®è®¾å¤‡çŠ¶æ€ä¸ºå¯ç”¨çŠ¶æ€ã€‚
 	 */
 	usb_set_device_state(usb_dev, USB_STATE_ADDRESS);
 
@@ -941,7 +941,7 @@ static int register_root_hub(struct usb_hcd *hcd)
 
 	usb_dev->ep0.desc.wMaxPacketSize = __constant_cpu_to_le16(64);
 	/**
-	 * »ñµÃRoot HUBµÄÉè±¸ÃèÊö·û¡£
+	 * èŽ·å¾—Root HUBçš„è®¾å¤‡æè¿°ç¬¦ã€‚
 	 */
 	retval = usb_get_device_descriptor(usb_dev, USB_DT_DEVICE_SIZE);
 	if (retval != sizeof usb_dev->descriptor) {
@@ -952,7 +952,7 @@ static int register_root_hub(struct usb_hcd *hcd)
 	}
 
 	/**
-	 * ½«Éè±¸¼ÓÈëµ½Éè±¸Ä£ÐÍÖÐ£¬²¢´¦ÀíÒ»Ð©ÓÐÎÊÌâµÄÓ²¼þ¡£
+	 * å°†è®¾å¤‡åŠ å…¥åˆ°è®¾å¤‡æ¨¡åž‹ä¸­ï¼Œå¹¶å¤„ç†ä¸€äº›æœ‰é—®é¢˜çš„ç¡¬ä»¶ã€‚
 	 */
 	retval = usb_new_device (usb_dev);
 	if (retval) {
@@ -964,14 +964,14 @@ static int register_root_hub(struct usb_hcd *hcd)
 	if (retval == 0) {
 		spin_lock_irq (&hcd_root_hub_lock);
 		/**
-		 * Í¨ÖªÈ«ÊÀ½ç£¬HCDµÄRoot HUBÓÐ»§¿ÚÁË¡£
+		 * é€šçŸ¥å…¨ä¸–ç•Œï¼ŒHCDçš„Root HUBæœ‰æˆ·å£äº†ã€‚
 		 */
 		hcd->rh_registered = 1;
 		spin_unlock_irq (&hcd_root_hub_lock);
 
 		/* Did the HC die before the root hub was registered? */
 		/** 
-		 * Èç¹ûÄÄÎ»ÈÊÐÖ½«HCDÇý¶¯Ð¶ÔØÁË£¬ÕâÀï´¦ÀíÒ»ÏÂ¡£
+		 * å¦‚æžœå“ªä½ä»å…„å°†HCDé©±åŠ¨å¸è½½äº†ï¼Œè¿™é‡Œå¤„ç†ä¸€ä¸‹ã€‚
 		 */
 		if (hcd->state == HC_STATE_HALT)
 			usb_hc_died (hcd);	/* This time clean up */
@@ -1273,26 +1273,26 @@ int usb_hcd_submit_urb (struct urb *urb, gfp_t mem_flags)
 }
 #else
 /**
- * µ±URBÍ¨¹ýÑéÖ¤ºó£¬ÏòHCDÊµ¼ÊµÄÌá½»URB¡£
+ * å½“URBé€šè¿‡éªŒè¯åŽï¼Œå‘HCDå®žé™…çš„æäº¤URBã€‚
  */
 int usb_hcd_submit_urb (struct urb *urb, gfp_t mem_flags)
 {
 	int			status;
 	/**
-	 * »ñµÃURB¶ÔÓ¦Éè±¸µÄÖ÷»ú¿ØÖÆÆ÷¡£
+	 * èŽ·å¾—URBå¯¹åº”è®¾å¤‡çš„ä¸»æœºæŽ§åˆ¶å™¨ã€‚
 	 */
 	struct usb_hcd		*hcd = bus_to_hcd(urb->dev->bus);
 	struct usb_host_endpoint *ep;
 	unsigned long		flags;
 
 	/**
-	 * ½¡¿µ¼ì²é¡£
+	 * å¥åº·æ£€æŸ¥ã€‚
 	 */
 	if (!hcd)
 		return -ENODEV;
 
 	/**
-	 * µ÷ÊÔÓÃ£¬USB¼à¿Ø¡£
+	 * è°ƒè¯•ç”¨ï¼ŒUSBç›‘æŽ§ã€‚
 	 */
 	usbmon_urb_submit(&hcd->self, urb);
 
@@ -1305,27 +1305,27 @@ int usb_hcd_submit_urb (struct urb *urb, gfp_t mem_flags)
 	// FIXME:  verify that quiescing hc works right (RH cleans up)
 
 	/**
-	 * Õâ°ÑÈ«¾ÖËøÓÃÓÚ±£»¤HCDÊý¾Ý´«Êä¡£
+	 * è¿™æŠŠå…¨å±€é”ç”¨äºŽä¿æŠ¤HCDæ•°æ®ä¼ è¾“ã€‚
 	 */
 	spin_lock_irqsave (&hcd_data_lock, flags);
 	/**
-	 * ¸ù¾Ý¹ÜµÀµÃµ½¶ÔÓ¦µÄ¶Ëµã¡£
+	 * æ ¹æ®ç®¡é“å¾—åˆ°å¯¹åº”çš„ç«¯ç‚¹ã€‚
 	 */
 	ep = (usb_pipein(urb->pipe) ? urb->dev->ep_in : urb->dev->ep_out)
 			[usb_pipeendpoint(urb->pipe)];
 	/**
-	 * ¶ËµãÎª¿Õ£¬ËµÃ÷Ó²¼þ»¹Ã»ÓÐ³õÊ¼»¯ºÃ£¬ÍË³ö¡£
+	 * ç«¯ç‚¹ä¸ºç©ºï¼Œè¯´æ˜Žç¡¬ä»¶è¿˜æ²¡æœ‰åˆå§‹åŒ–å¥½ï¼Œé€€å‡ºã€‚
 	 */
 	if (unlikely (!ep))
 		status = -ENOENT;
 	/**
-	 * URB±»ÖÕÖ¹ÁË¡£
+	 * URBè¢«ç»ˆæ­¢äº†ã€‚
 	 */
 	else if (unlikely (urb->reject))
 		status = -EPERM;
 	else switch (hcd->state) {
 		/**
-		 * Ö÷»ú¿ØÖÆÆ÷×´Ì¬ÊÇOKµÄ£¬½«URB¹Òµ½Á´±íÖÐ¡£
+		 * ä¸»æœºæŽ§åˆ¶å™¨çŠ¶æ€æ˜¯OKçš„ï¼Œå°†URBæŒ‚åˆ°é“¾è¡¨ä¸­ã€‚
 		 */
 	case HC_STATE_RUNNING:
 	case HC_STATE_RESUMING:
@@ -1339,7 +1339,7 @@ doit:
 		 * usbcore talk to the root hub.
 		 */
 		/**
-		 * Ö÷»ú¿ØÖÆÆ÷±»¹ÒÆð£¬µ«ÊÇÉÏÐÐÁ´Â·ÄÜ¹»¹¤×÷£¬²¢ÇÒÕâ¸öURBÊÇËÍÍùroot hubµÄ£¬Ôò½«ËüËÍµ½root hubµÄ¶ÓÁÐÖÐ¡£¡£
+		 * ä¸»æœºæŽ§åˆ¶å™¨è¢«æŒ‚èµ·ï¼Œä½†æ˜¯ä¸Šè¡Œé“¾è·¯èƒ½å¤Ÿå·¥ä½œï¼Œå¹¶ä¸”è¿™ä¸ªURBæ˜¯é€å¾€root hubçš„ï¼Œåˆ™å°†å®ƒé€åˆ°root hubçš„é˜Ÿåˆ—ä¸­ã€‚ã€‚
 		 */
 		if (hcd->self.controller->power.power_state.event == PM_EVENT_ON
 				&& urb->dev->parent == NULL)
@@ -1352,7 +1352,7 @@ doit:
 	spin_unlock_irqrestore (&hcd_data_lock, flags);
 
 	/**
-	 * ·¢ËÍ²»ÄÜÍê³É£¬·µ»Ø¡£
+	 * å‘é€ä¸èƒ½å®Œæˆï¼Œè¿”å›žã€‚
 	 */
 	if (status) {
 		INIT_LIST_HEAD (&urb->urb_list);
@@ -1365,16 +1365,16 @@ doit:
 	 * an error or calls giveback(), but not both.
 	 */
 	/**
-	 * Ôö¼ÓURB½á¹¹µÄÒýÓÃ¼ÆÊý£¬¸Ð¾õÕâÀï´æÔÚÒ»¸öBUG£¬ËÆºõÓ¦¸ÃÔÚ½øÈë±¾º¯Êý£¬½«URB¹ÒÈëÁ´±íÇ°¾Í½«ÒýÓÃ¼ÆÊýÔö¼Ó¡£
+	 * å¢žåŠ URBç»“æž„çš„å¼•ç”¨è®¡æ•°ï¼Œæ„Ÿè§‰è¿™é‡Œå­˜åœ¨ä¸€ä¸ªBUGï¼Œä¼¼ä¹Žåº”è¯¥åœ¨è¿›å…¥æœ¬å‡½æ•°ï¼Œå°†URBæŒ‚å…¥é“¾è¡¨å‰å°±å°†å¼•ç”¨è®¡æ•°å¢žåŠ ã€‚
 	 */
 	urb = usb_get_urb (urb);
 	/**
-	 * Ôö¼Óuse_count¼ÆÊý£¬±íÊ¾URBÒÑ¾­±»HCD½ÓÊÜÁË¡£
+	 * å¢žåŠ use_countè®¡æ•°ï¼Œè¡¨ç¤ºURBå·²ç»è¢«HCDæŽ¥å—äº†ã€‚
 	 */
 	atomic_inc (&urb->use_count);
 
 	/**
-	 * URBÊÇÁ÷Ïòroot hubµÄ¡£ÕâÖÖÇé¿öºÜÉÙ¡£
+	 * URBæ˜¯æµå‘root hubçš„ã€‚è¿™ç§æƒ…å†µå¾ˆå°‘ã€‚
 	 */
 	if (urb->dev == hcd->self.root_hub) {
 		/* NOTE:  requirement on hub callers (usbfs and the hub
@@ -1390,23 +1390,23 @@ doit:
 	 * unless it uses pio or talks to another transport.
 	 */
 	/**
-	 * Ö÷»ú¿ØÖÆÆ÷Ö§³ÖDMA¡£
+	 * ä¸»æœºæŽ§åˆ¶å™¨æ”¯æŒDMAã€‚
 	 */
 	if (hcd->self.uses_dma) {
-		if (usb_pipecontrol (urb->pipe)/* ¿ØÖÆ¹ÜµÀ */
-			&& !(urb->transfer_flags & URB_NO_SETUP_DMA_MAP))/* µ«ÊÇÃ»ÓÐÖ¸¶¨URB_NO_SETUP_DMA_MAP±êÖ¾ */
+		if (usb_pipecontrol (urb->pipe)/* æŽ§åˆ¶ç®¡é“ */
+			&& !(urb->transfer_flags & URB_NO_SETUP_DMA_MAP))/* ä½†æ˜¯æ²¡æœ‰æŒ‡å®šURB_NO_SETUP_DMA_MAPæ ‡å¿— */
 			/**
-			 * ÕâÖÖÇé¿öÏÂ£¬ÐèÒª½«»º³åÇøÖÐµÄ°ü½øÐÐDMAÓ³Éä¡£
+			 * è¿™ç§æƒ…å†µä¸‹ï¼Œéœ€è¦å°†ç¼“å†²åŒºä¸­çš„åŒ…è¿›è¡ŒDMAæ˜ å°„ã€‚
 			 */
 			urb->setup_dma = dma_map_single (
 					hcd->self.controller,
 					urb->setup_packet,
 					sizeof (struct usb_ctrlrequest),
 					DMA_TO_DEVICE);
-		if (urb->transfer_buffer_length != 0 /* Êý¾Ý°ü */
-			&& !(urb->transfer_flags & URB_NO_TRANSFER_DMA_MAP))/* µ«ÊÇÃ»ÓÐURB_NO_TRANSFER_DMA_MAP */
+		if (urb->transfer_buffer_length != 0 /* æ•°æ®åŒ… */
+			&& !(urb->transfer_flags & URB_NO_TRANSFER_DMA_MAP))/* ä½†æ˜¯æ²¡æœ‰URB_NO_TRANSFER_DMA_MAP */
 			/**
-			 * Ò²ÐèÒª½øÐÐDMAÓ³Éä¡£
+			 * ä¹Ÿéœ€è¦è¿›è¡ŒDMAæ˜ å°„ã€‚
 			 */
 			urb->transfer_dma = dma_map_single (
 					hcd->self.controller,
@@ -1418,12 +1418,12 @@ doit:
 	}
 
 	/**
-	 * ½«urb ÈÓ¸ø¾ßÌåµÄÖ÷»ú¿ØÖÆÆ÷Çý¶¯³ÌÐò£¬Èçuhci_urb_enqueue
+	 * å°†urb æ‰”ç»™å…·ä½“çš„ä¸»æœºæŽ§åˆ¶å™¨é©±åŠ¨ç¨‹åºï¼Œå¦‚uhci_urb_enqueue
 	 */
 	status = hcd->driver->urb_enqueue (hcd, ep, urb, mem_flags);
 done:
 	/**
-	 * Èë¶ÓÊ§°ÜÁË¡£
+	 * å…¥é˜Ÿå¤±è´¥äº†ã€‚
 	 */
 	if (unlikely (status)) {
 		urb_unlink (urb);
@@ -1786,7 +1786,7 @@ irqreturn_t usb_hcd_irq (int irq, void *__hcd)
 	    !test_bit(HCD_FLAG_HW_ACCESSIBLE, &hcd->flags)))
 		return IRQ_NONE;
 	/**
-	 * ¶ÔUHCIÀ´Ëµ£¬»Øµ÷º¯ÊýÊÇuhci_irq
+	 * å¯¹UHCIæ¥è¯´ï¼Œå›žè°ƒå‡½æ•°æ˜¯uhci_irq
 	 */
 	if (hcd->driver->irq (hcd) == IRQ_NONE)
 		return IRQ_NONE;
@@ -1820,12 +1820,12 @@ void usb_hc_died (struct usb_hcd *hcd)
 
 		/* make khubd clean up old urbs and devices */
 		/**
-		 * ½«Éè±¸»ØÍËµ½½â·ÅÇ°¡£
+		 * å°†è®¾å¤‡å›žé€€åˆ°è§£æ”¾å‰ã€‚
 		 */
 		usb_set_device_state (hcd->self.root_hub,
 				USB_STATE_NOTATTACHED);
 		/**
-		 * ´¥·¢hub_eventsÈ¥´¦ÀíºóÊÂ¡£
+		 * è§¦å‘hub_eventsåŽ»å¤„ç†åŽäº‹ã€‚
 		 */
 		usb_kick_khubd (hcd->self.root_hub);
 	}
@@ -1928,7 +1928,7 @@ int usb_add_hcd(struct usb_hcd *hcd,
 	 * starts talking to them.  (Note, bus id is assigned early too.)
 	 */
 	/**
-	 * ³õÊ¼»¯DMAÐèÒªµÄÄÚ´æ³Ø¡£
+	 * åˆå§‹åŒ–DMAéœ€è¦çš„å†…å­˜æ± ã€‚
 	 */
 	if ((retval = hcd_buffer_create(hcd)) != 0) {
 		dev_dbg(hcd->self.controller, "pool alloc failed\n");
@@ -1936,13 +1936,13 @@ int usb_add_hcd(struct usb_hcd *hcd,
 	}
 
 	/**
-	 * ×¢²áÖ÷»ú¿ØÖÆÆ÷µÄUSB×ÜÏß¡£
+	 * æ³¨å†Œä¸»æœºæŽ§åˆ¶å™¨çš„USBæ€»çº¿ã€‚
 	 */
 	if ((retval = usb_register_bus(&hcd->self)) < 0)
 		goto err_register_bus;
 
 	/**
-	 * ÎªHCD·ÖÅäÒ»¸ö¿ØÖÆ½á¹¹¡£
+	 * ä¸ºHCDåˆ†é…ä¸€ä¸ªæŽ§åˆ¶ç»“æž„ã€‚
 	 */
 	if ((rhdev = usb_alloc_dev(NULL, &hcd->self, 0)) == NULL) {
 		dev_err(hcd->self.controller, "unable to allocate root hub\n");
@@ -1950,7 +1950,7 @@ int usb_add_hcd(struct usb_hcd *hcd,
 		goto err_allocate_root_hub;
 	}
 	/**
-	 * EHCIÖ§³ÖUSB2.0¡£
+	 * EHCIæ”¯æŒUSB2.0ã€‚
 	 */
 	rhdev->speed = (hcd->driver->flags & HCD_USB2) ? USB_SPEED_HIGH :
 			USB_SPEED_FULL;
@@ -1961,7 +1961,7 @@ int usb_add_hcd(struct usb_hcd *hcd,
 	 * recording the overall controller's system wakeup capability.
 	 */
 	/**
-	 * ´ò¿ªroot hubÉè±¸µÄwakeup¹¦ÄÜ¡£
+	 * æ‰“å¼€root hubè®¾å¤‡çš„wakeupåŠŸèƒ½ã€‚
 	 */
 	device_init_wakeup(&rhdev->dev, 1);
 
@@ -1969,7 +1969,7 @@ int usb_add_hcd(struct usb_hcd *hcd,
 	 * should already have been reset (and boot firmware kicked off etc).
 	 */
 	/**
-	 * »Øµ÷Éè±¸³õÊ¼»¯º¯Êý¡£¶ÔuhciÀ´ËµÊÇuhci_init¡£
+	 * å›žè°ƒè®¾å¤‡åˆå§‹åŒ–å‡½æ•°ã€‚å¯¹uhciæ¥è¯´æ˜¯uhci_initã€‚
 	 */
 	if (hcd->driver->reset && (retval = hcd->driver->reset(hcd)) < 0) {
 		dev_err(hcd->self.controller, "can't setup\n");
@@ -1982,11 +1982,11 @@ int usb_add_hcd(struct usb_hcd *hcd,
 		dev_dbg(hcd->self.controller, "supports USB remote wakeup\n");
 
 	/* enable irqs just before we start the controller */
-	if (hcd->driver->irq) {/* Ö÷»ú¿ØÖÆÆ÷ÐèÒªÖÐ¶Ï£¬ÄÄ¸ö¿ØÖÆÆ÷»áÃ»ÓÐÄØ? */
+	if (hcd->driver->irq) {/* ä¸»æœºæŽ§åˆ¶å™¨éœ€è¦ä¸­æ–­ï¼Œå“ªä¸ªæŽ§åˆ¶å™¨ä¼šæ²¡æœ‰å‘¢? */
 		snprintf(hcd->irq_descr, sizeof(hcd->irq_descr), "%s:usb%d",
 				hcd->driver->description, hcd->self.busnum);
 		/**
-		 * ×¢²áUHCIÐèÒªµÄÖÐ¶Ï´¦Àíº¯Êý¡£
+		 * æ³¨å†ŒUHCIéœ€è¦çš„ä¸­æ–­å¤„ç†å‡½æ•°ã€‚
 		 */
 		if ((retval = request_irq(irqnum, &usb_hcd_irq, irqflags,
 				hcd->irq_descr, hcd)) != 0) {
@@ -2009,7 +2009,7 @@ int usb_add_hcd(struct usb_hcd *hcd,
 	}
 
 	/**
-	 * »Øµ÷Éè±¸µÄstartº¯Êý£¬¶ÔUHCIÀ´Ëµ£¬¾ÍÊÇuhci_startº¯Êý¡£
+	 * å›žè°ƒè®¾å¤‡çš„startå‡½æ•°ï¼Œå¯¹UHCIæ¥è¯´ï¼Œå°±æ˜¯uhci_startå‡½æ•°ã€‚
 	 */
 	if ((retval = hcd->driver->start(hcd)) < 0) {
 		dev_err(hcd->self.controller, "startup error %d\n", retval);
@@ -2019,7 +2019,7 @@ int usb_add_hcd(struct usb_hcd *hcd,
 	/* starting here, usbcore will pay attention to this root hub */
 	rhdev->bus_mA = min(500u, hcd->power_budget);
 	/**
-	 * Ö÷»ú¿ØÖÆÆ÷Ò»°ãÓÐÒ»¸öRoot HUB£¬×¢²áËü¡£
+	 * ä¸»æœºæŽ§åˆ¶å™¨ä¸€èˆ¬æœ‰ä¸€ä¸ªRoot HUBï¼Œæ³¨å†Œå®ƒã€‚
 	 */
 	if ((retval = register_root_hub(hcd)) != 0)
 		goto err_register_root_hub;

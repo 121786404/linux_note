@@ -445,7 +445,7 @@ static inline int security_capset(struct cred *new,
 	return cap_capset(new, old, effective, inheritable, permitted);
 }
 
-/*È¨ÄÜ¼ì²é;º¯Êı¼ì²éµ±Ç°½ø³ÌµÄÈ¨ÄÜÖ¤ÊéÖĞµÄcap_effective³ÉÔ±,ÒÔÈ·¶¨½ø³ÌÊÇ·ñ¾ßÓĞ²ÎÊıcapÖĞÖ¸¶¨µÄÈ¨ÄÜ,Èç¹ûÓĞ½«·µ»Ø0*/
+/*æƒèƒ½æ£€æŸ¥;å‡½æ•°æ£€æŸ¥å½“å‰è¿›ç¨‹çš„æƒèƒ½è¯ä¹¦ä¸­çš„cap_effectiveæˆå‘˜,ä»¥ç¡®å®šè¿›ç¨‹æ˜¯å¦å…·æœ‰å‚æ•°capä¸­æŒ‡å®šçš„æƒèƒ½,å¦‚æœæœ‰å°†è¿”å›0*/
 static inline int security_capable(const struct cred *cred,
 				   struct user_namespace *ns, int cap)
 {

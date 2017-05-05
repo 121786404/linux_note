@@ -18,7 +18,7 @@
 # define sub_preempt_count(val)	do { preempt_count() -= (val); } while (0)
 #endif
 
-/* 递增递减抢占计数 */
+/* 閫掑閫掑噺鎶㈠崰璁℃暟 */
 #define inc_preempt_count() add_preempt_count(1)
 #define dec_preempt_count() sub_preempt_count(1)
 
@@ -28,28 +28,28 @@
 
 asmlinkage void preempt_schedule(void);
 
-/* 通过递增抢占计数实现禁止抢占，同时增加了编译屏障 */
+/* 閫氳繃閫掑鎶㈠崰璁℃暟瀹炵幇绂佹鎶㈠崰锛屽悓鏃跺鍔犱簡缂栬瘧灞忛殰 */
 #define preempt_disable() \
 do { \
 	inc_preempt_count(); \
 	barrier(); \
 } while (0)
 
-/* 禁止抢占，但是不进行重新调度 */
+/* 绂佹鎶㈠崰锛屼絾鏄笉杩涜閲嶆柊璋冨害 */
 #define preempt_enable_no_resched() \
 do { \
 	barrier(); \
 	dec_preempt_count(); \
 } while (0)
 
-/* 检查是否需要调度，如果需要则进行抢占调度 */
+/* 妫�鏌ユ槸鍚﹂渶瑕佽皟搴︼紝濡傛灉闇�瑕佸垯杩涜鎶㈠崰璋冨害 */
 #define preempt_check_resched() \
 do { \
 	if (unlikely(test_thread_flag(TIF_NEED_RESCHED))) \
 		preempt_schedule(); \
 } while (0)
 
-/* 打开抢占 */
+/* 鎵撳紑鎶㈠崰 */
 #define preempt_enable() \
 do { \
 	preempt_enable_no_resched(); \

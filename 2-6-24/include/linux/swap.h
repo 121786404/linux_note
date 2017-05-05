@@ -54,27 +54,27 @@ static inline int current_is_kswapd(void)
  * bootbits...
  */
 /**
- * ½»»»ÇøÍ·²¿£¬±£´æÔÚ½»»»ÇøµÚÒ»¸ö²ÛÎ»ÖĞ¡£*/
+ * äº¤æ¢åŒºå¤´éƒ¨ï¼Œä¿å­˜åœ¨äº¤æ¢åŒºç¬¬ä¸€ä¸ªæ§½ä½ä¸­ã€‚*/
 union swap_header {
 	struct {
-		/* ±£ÁôÇøÓò */
+		/* ä¿ç•™åŒºåŸŸ */
 		char reserved[PAGE_SIZE - 10];
-		/* Ä§·¨Êı£¬½»»»Çø°æ±¾ºÅ¡£Ä¿Ç°Ö»Ö§³ÖSWAPSPACE2¡£ */
+		/* é­”æ³•æ•°ï¼Œäº¤æ¢åŒºç‰ˆæœ¬å·ã€‚ç›®å‰åªæ”¯æŒSWAPSPACE2ã€‚ */
 		char magic[10];			/* SWAP-SPACE or SWAPSPACE2 */
 	} magic;
 	struct {
-		/* ÎªÆô¶¯×°ÔØ³ÌĞòÔ¤ÁôµÄ¿Õ¼ä */
+		/* ä¸ºå¯åŠ¨è£…è½½ç¨‹åºé¢„ç•™çš„ç©ºé—´ */
 		char		bootbits[1024];	/* Space for disklabel etc. */
-		/* °æ±¾ºÅ */
+		/* ç‰ˆæœ¬å· */
 		__u32		version;
-		/* ×îºóÒ»Ò³µÄ±àºÅ */
+		/* æœ€åä¸€é¡µçš„ç¼–å· */
 		__u32		last_page;
-		/* ²»¿ÉÓÃ£¬»µ¿éÊıÄ¿ */
+		/* ä¸å¯ç”¨ï¼Œåå—æ•°ç›® */
 		__u32		nr_badpages;
 		unsigned char	sws_uuid[16];
 		unsigned char	sws_volume[16];
 		__u32		padding[117];
-		/* »µ¿é±àºÅ */
+		/* åå—ç¼–å· */
 		__u32		badpages[1];
 	} info;
 };
@@ -84,8 +84,8 @@ union swap_header {
   * swapper address space.
   */
  /**
-  * ½»»»Ïî£¬°üº¬½»»»Çø±êÊ¶·ûºÍÔÚ½»»»ÇøÖĞµÄÆ«ÒÆÁ¿
-  * ¿ÉÓÃswp_typeºÍswp_offsetÌáÈ¡ÆäÖµ¡£
+  * äº¤æ¢é¡¹ï¼ŒåŒ…å«äº¤æ¢åŒºæ ‡è¯†ç¬¦å’Œåœ¨äº¤æ¢åŒºä¸­çš„åç§»é‡
+  * å¯ç”¨swp_typeå’Œswp_offsetæå–å…¶å€¼ã€‚
   */
 typedef struct {
 	unsigned long val;
@@ -115,16 +115,16 @@ struct zone;
  * We always assume that blocks are of size PAGE_SIZE.
  */
 /**
- * ½»»»·ÖÇøÖĞ£¬Ã¿Ò»¸öÁ¬ĞøÇø¿é
+ * äº¤æ¢åˆ†åŒºä¸­ï¼Œæ¯ä¸€ä¸ªè¿ç»­åŒºå—
  */
 struct swap_extent {
-	/* Í¨¹ı´Ë×Ö¶Î½«ÆäÌí¼Óµ½·Ö¿éÁ´±íÖĞ */
+	/* é€šè¿‡æ­¤å­—æ®µå°†å…¶æ·»åŠ åˆ°åˆ†å—é“¾è¡¨ä¸­ */
 	struct list_head list;
-	/* ·Ö¿é¶ÔÓ¦µÄ²ÛÎ» */
+	/* åˆ†å—å¯¹åº”çš„æ§½ä½ */
 	pgoff_t start_page;
-	/* ·Ö¿éÖĞ°üº¬µÄÒ³ÃæÊıÁ¿ */
+	/* åˆ†å—ä¸­åŒ…å«çš„é¡µé¢æ•°é‡ */
 	pgoff_t nr_pages;
-	/* ÔÚÉè±¸ÖĞµÄ¿éºÅ */
+	/* åœ¨è®¾å¤‡ä¸­çš„å—å· */
 	sector_t start_block;
 };
 
@@ -136,11 +136,11 @@ struct swap_extent {
 	((__swapoffset(magic.magic) - __swapoffset(info.badpages)) / sizeof(int))
 
 enum {
-	/* ÕıÔÚÊ¹ÓÃÓÃ */
+	/* æ­£åœ¨ä½¿ç”¨ç”¨ */
 	SWP_USED	= (1 << 0),	/* is slot in swap_info[] used? */
-	/* ¿ÉĞ´ */
+	/* å¯å†™ */
 	SWP_WRITEOK	= (1 << 1),	/* ok to write to this swap?	*/
-	/* ¿ÉÓÃ */
+	/* å¯ç”¨ */
 	SWP_ACTIVE	= (SWP_USED | SWP_WRITEOK),
 					/* add others here before... */
 	SWP_SCANNING	= (1 << 8),	/* refcount in scan_swap_map */
@@ -155,36 +155,36 @@ enum {
  * The in-memory structure used to track swap areas.
  */
 /**
- * ½»»»ÇøĞÅÏ¢
+ * äº¤æ¢åŒºä¿¡æ¯
  */
 struct swap_info_struct {
-	/* ½»»»ÇøµÄ×´Ì¬±êÖ¾¡£ÈçSWP_USED */
+	/* äº¤æ¢åŒºçš„çŠ¶æ€æ ‡å¿—ã€‚å¦‚SWP_USED */
 	unsigned int flags;
-	/* ½»»»ÇøÓÅÏÈ¼¶ */
+	/* äº¤æ¢åŒºä¼˜å…ˆçº§ */
 	int prio;			/* swap priority */
-	/* ½»»»ÇøÎÄ¼ş£¬¿ÉÄÜÊÇ½»»»Éè±¸ÉÏ·ÖÇøÉè±¸ÎÄ¼ş */
+	/* äº¤æ¢åŒºæ–‡ä»¶ï¼Œå¯èƒ½æ˜¯äº¤æ¢è®¾å¤‡ä¸Šåˆ†åŒºè®¾å¤‡æ–‡ä»¶ */
 	struct file *swap_file;
-	/* ·ÖÇøËùÔÚµ×²ãÉè±¸ */
+	/* åˆ†åŒºæ‰€åœ¨åº•å±‚è®¾å¤‡ */
 	struct block_device *bdev;
 	struct list_head extent_list;
-	/* ÓÃÓÚ¼Ó¿ì¶Ô·Ö¿éµÄËÑË÷ */
+	/* ç”¨äºåŠ å¿«å¯¹åˆ†å—çš„æœç´¢ */
 	struct swap_extent *curr_swap_extent;
 	unsigned old_block_size;
-	/* Ö¸ÏòÒ»¸öÕûĞÎÊı×é£¬Æä°üº¬µÄÏîÊıÓë½»»»Çø²ÛÎ»ÊıÏàÍ¬¡£Ã¿Ò»ÏîÊÇ²ÛÎ»µÄÒıÓÃ¼ÆÊıÆ÷ */
+	/* æŒ‡å‘ä¸€ä¸ªæ•´å½¢æ•°ç»„ï¼Œå…¶åŒ…å«çš„é¡¹æ•°ä¸äº¤æ¢åŒºæ§½ä½æ•°ç›¸åŒã€‚æ¯ä¸€é¡¹æ˜¯æ§½ä½çš„å¼•ç”¨è®¡æ•°å™¨ */
 	unsigned short * swap_map;
-	/* ÓÃÓÚ¼Ó¿ìËÑË÷¿ÕÏĞ²ÛÎ»£¬µÍÓÚlowest_bit¼°¸ßÓÚhighest_bitµÄ²ÛÎ»ÊÇ²»¿ÉÓÃµÄ */
+	/* ç”¨äºåŠ å¿«æœç´¢ç©ºé—²æ§½ä½ï¼Œä½äºlowest_bitåŠé«˜äºhighest_bitçš„æ§½ä½æ˜¯ä¸å¯ç”¨çš„ */
 	unsigned int lowest_bit;
 	unsigned int highest_bit;
-	/* ¿ÉÓÃ´ØµÄ²ÛÎ» */
+	/* å¯ç”¨ç°‡çš„æ§½ä½ */
 	unsigned int cluster_next;
-	/* ¿ÉÓÃ´ØµÄ²ÛÎ»Êı */
+	/* å¯ç”¨ç°‡çš„æ§½ä½æ•° */
 	unsigned int cluster_nr;
-	/* ¿ÉÓÃ²ÛÎ»Êı */
+	/* å¯ç”¨æ§½ä½æ•° */
 	unsigned int pages;
-	/* ½»»»Çø×Ü²ÛÎ»Êı£¬°üº¬Ëğ»µºÍÓÃÓÚ¹ÜÀíµÄ²ÛÎ»Êı */
+	/* äº¤æ¢åŒºæ€»æ§½ä½æ•°ï¼ŒåŒ…å«æŸåå’Œç”¨äºç®¡ç†çš„æ§½ä½æ•° */
 	unsigned int max;
 	unsigned int inuse_pages;
-	/* ÏÂÒ»¸ö½»»»ÇøµÄË÷Òı£¬ÒÔ´ËĞÎ³ÉÒ»¸öÓÅÏÈ¼¶ÅÅĞòµÄÁ´±í */
+	/* ä¸‹ä¸€ä¸ªäº¤æ¢åŒºçš„ç´¢å¼•ï¼Œä»¥æ­¤å½¢æˆä¸€ä¸ªä¼˜å…ˆçº§æ’åºçš„é“¾è¡¨ */
 	int next;			/* next entry on swap list */
 };
 

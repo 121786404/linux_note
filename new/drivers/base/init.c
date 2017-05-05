@@ -23,9 +23,9 @@ void __init driver_init(void)
 	/* These are the core pieces */
 	// mount root node: "/"
 	devtmpfs_init();
-	//ÔÚsysfsÖĞÉú³Édevices,dev,block,charµÈÄ¿Â¼¡£
+	//åœ¨sysfsä¸­ç”Ÿæˆdevices,dev,block,charç­‰ç›®å½•ã€‚
 	devices_init();
-	//Éú³Ébus,systemµÈÄ¿Â¼¡£
+	//ç”Ÿæˆbus,systemç­‰ç›®å½•ã€‚
 	buses_init();
 	classes_init();
 	firmware_init();

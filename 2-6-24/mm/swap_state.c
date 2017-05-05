@@ -25,11 +25,11 @@
  * future use of radix_tree tags in the swap cache.
  */
 static const struct address_space_operations swap_aops = {
-	/* ½«Ò³´Ó½»»»»º´æÖĞÒÆ³ı£¬´«Êäµ½½»»»Çø */
+	/* å°†é¡µä»äº¤æ¢ç¼“å­˜ä¸­ç§»é™¤ï¼Œä¼ è¾“åˆ°äº¤æ¢åŒº */
 	.writepage	= swap_writepage,
-	/* ½«Ò³Í¬²½µ½½»»»Çø£¬°Î³ö¶ÔÓ¦µÄ¿éÉè±¸¶ÓÁĞ¡£ */
+	/* å°†é¡µåŒæ­¥åˆ°äº¤æ¢åŒºï¼Œæ‹”å‡ºå¯¹åº”çš„å—è®¾å¤‡é˜Ÿåˆ—ã€‚ */
 	.sync_page	= block_sync_page,
-	/* ÎªÁË½ÚÊ¡ÄÚ´æ£¬½»»»»º´æ²¢²»Ê¹ÓÃ»º³åÇø¡£¶øÊÇÖ±½ÓÔÚÒ³±êÖ¾ÖĞ±ê¼ÇÔà */
+	/* ä¸ºäº†èŠ‚çœå†…å­˜ï¼Œäº¤æ¢ç¼“å­˜å¹¶ä¸ä½¿ç”¨ç¼“å†²åŒºã€‚è€Œæ˜¯ç›´æ¥åœ¨é¡µæ ‡å¿—ä¸­æ ‡è®°è„ */
 	.set_page_dirty	= __set_page_dirty_nobuffers,
 	.migratepage	= migrate_page,
 };
@@ -40,7 +40,7 @@ static struct backing_dev_info swap_backing_dev_info = {
 };
 
 /**
- * ½»»»»º´æÃèÊö·û
+ * äº¤æ¢ç¼“å­˜æè¿°ç¬¦
  */
 struct address_space swapper_space = {
 	.page_tree	= RADIX_TREE_INIT(GFP_ATOMIC|__GFP_NOWARN),
@@ -102,9 +102,9 @@ static int __add_to_swap_cache(struct page *page, swp_entry_t entry,
 }
 
 /**
- * ½«Ò»Ò³Ìí¼Óµ½½»»»»º´æ£¬¶ø²»¶Ô½»»»Çø½øĞĞ²Ù×÷
- * µ±´Ó½»»»Çø¶ÁÈëÓÉ¼¸¸ö½ø³Ì¹²ÏíµÄÒ³(¸ù¾İ½»»»ÇøÖĞµÄÊ¹ÓÃ¼ÆÊıÆ÷È·¶¨)Ê±£¬¸ÃÒ³ÃæÍ¬Ê±±£´æ½»»»ÇøºÍ½»»»»º´æÖĞ
- * Óëadd_to_swap²»Í¬Ö®´¦ÔÚÓÚ£¬Ëü²»»áÎªÒ³Ãæ·ÖÅäÒ»¸ö½»»»²ÛÎ»¡£
+ * å°†ä¸€é¡µæ·»åŠ åˆ°äº¤æ¢ç¼“å­˜ï¼Œè€Œä¸å¯¹äº¤æ¢åŒºè¿›è¡Œæ“ä½œ
+ * å½“ä»äº¤æ¢åŒºè¯»å…¥ç”±å‡ ä¸ªè¿›ç¨‹å…±äº«çš„é¡µ(æ ¹æ®äº¤æ¢åŒºä¸­çš„ä½¿ç”¨è®¡æ•°å™¨ç¡®å®š)æ—¶ï¼Œè¯¥é¡µé¢åŒæ—¶ä¿å­˜äº¤æ¢åŒºå’Œäº¤æ¢ç¼“å­˜ä¸­
+ * ä¸add_to_swapä¸åŒä¹‹å¤„åœ¨äºï¼Œå®ƒä¸ä¼šä¸ºé¡µé¢åˆ†é…ä¸€ä¸ªäº¤æ¢æ§½ä½ã€‚
  */
 static int add_to_swap_cache(struct page *page, swp_entry_t entry)
 {
@@ -158,7 +158,7 @@ void __delete_from_swap_cache(struct page *page)
  * swap cache.  Caller needs to hold the page lock. 
  */
 /**
- * µ±ÄÚºËÈ·¶¨ÄÚ´æ²»×ãÊ±£¬½«Ò³Ìí¼Óµ½½»»»»º´æ£¬²¢ÇÒÔÚ½»»»ÇøÖĞÎª¸ÃÒ³·ÖÅäÒ»¸ö²ÛÎ»
+ * å½“å†…æ ¸ç¡®å®šå†…å­˜ä¸è¶³æ—¶ï¼Œå°†é¡µæ·»åŠ åˆ°äº¤æ¢ç¼“å­˜ï¼Œå¹¶ä¸”åœ¨äº¤æ¢åŒºä¸­ä¸ºè¯¥é¡µåˆ†é…ä¸€ä¸ªæ§½ä½
  */
 int add_to_swap(struct page * page, gfp_t gfp_mask)
 {
@@ -168,9 +168,9 @@ int add_to_swap(struct page * page, gfp_t gfp_mask)
 	BUG_ON(!PageLocked(page));
 
 	for (;;) {
-		/* ²éÕÒÒ»¸ö¿ÕÏĞ½»»»²Û */
+		/* æŸ¥æ‰¾ä¸€ä¸ªç©ºé—²äº¤æ¢æ§½ */
 		entry = get_swap_page();
-		if (!entry.val)/* Ã»ÓĞ¿ÉÓÃµÄ¿ÕÏĞ²ÛÎ» */
+		if (!entry.val)/* æ²¡æœ‰å¯ç”¨çš„ç©ºé—²æ§½ä½ */
 			return 0;
 
 		/*
@@ -184,14 +184,14 @@ int add_to_swap(struct page * page, gfp_t gfp_mask)
 		/*
 		 * Add it to the swap cache and mark it dirty
 		 */
-		/* ½«Òª»»³öµÄÒ³ÒÆ¶¯µ½½»»»Çø */
+		/* å°†è¦æ¢å‡ºçš„é¡µç§»åŠ¨åˆ°äº¤æ¢åŒº */
 		err = __add_to_swap_cache(page, entry,
 				gfp_mask|__GFP_NOMEMALLOC|__GFP_NOWARN);
 
 		switch (err) {
 		case 0:				/* Success */
 			SetPageUptodate(page);
-			/* Ò³»¹Ã»ÓĞĞ´µ½½»»»Çø£¬Òò´ËÓ¦µ±ÉèÖÃÎªÔà£¬·ñÔò²»»áÌá½»µ½¿éÉè±¸ */
+			/* é¡µè¿˜æ²¡æœ‰å†™åˆ°äº¤æ¢åŒºï¼Œå› æ­¤åº”å½“è®¾ç½®ä¸ºè„ï¼Œå¦åˆ™ä¸ä¼šæäº¤åˆ°å—è®¾å¤‡ */
 			SetPageDirty(page);
 			INC_CACHE_INFO(add_total);
 			return 1;
@@ -316,14 +316,14 @@ void free_pages_and_swap_cache(struct page **pages, int nr)
  * lock before returning.
  */
 /**
- * ¼ì²éÄ³Ò»Ò³ÊÇ·ñÎ»ÓÚ½»»»»º´æÖĞ¡£
+ * æ£€æŸ¥æŸä¸€é¡µæ˜¯å¦ä½äºäº¤æ¢ç¼“å­˜ä¸­ã€‚
  */
 struct page * lookup_swap_cache(swp_entry_t entry)
 {
 	struct page *page;
 
 	/**
-	 * ÔÚswapper_spaceµØÖ·¿Õ¼äÖĞËÑË÷Ò³Ãæ¡£
+	 * åœ¨swapper_spaceåœ°å€ç©ºé—´ä¸­æœç´¢é¡µé¢ã€‚
 	 */
 	page = find_get_page(&swapper_space, entry.val);
 
@@ -341,7 +341,7 @@ struct page * lookup_swap_cache(swp_entry_t entry)
  * the swap entry is no longer in use.
  */
 /**
- * Îª´Ó½»»»Çø¶ÁÈëÊı¾İ¶ø½øĞĞÒ»Ğ©×¼±¸¹¤×÷£¬ÀıÈç·ÖÅäÒ³Ãæ
+ * ä¸ºä»äº¤æ¢åŒºè¯»å…¥æ•°æ®è€Œè¿›è¡Œä¸€äº›å‡†å¤‡å·¥ä½œï¼Œä¾‹å¦‚åˆ†é…é¡µé¢
  */
 struct page *read_swap_cache_async(swp_entry_t entry,
 			struct vm_area_struct *vma, unsigned long addr)
@@ -355,19 +355,19 @@ struct page *read_swap_cache_async(swp_entry_t entry,
 		 * called after lookup_swap_cache() failed, re-calling
 		 * that would confuse statistics.
 		 */
-		/* Ê×ÏÈÔÚ½»»»»º´æÖĞ²éÕÒÒ³ */
+		/* é¦–å…ˆåœ¨äº¤æ¢ç¼“å­˜ä¸­æŸ¥æ‰¾é¡µ */
 		found_page = find_get_page(&swapper_space, entry.val);
-		if (found_page)/* ÔÚ½»»»»º´æÖĞ´æÔÚÒ³£¬Ö±½Ó·µ»Ø */
+		if (found_page)/* åœ¨äº¤æ¢ç¼“å­˜ä¸­å­˜åœ¨é¡µï¼Œç›´æ¥è¿”å› */
 			break;
 
 		/*
 		 * Get a new page to read into from swap.
 		 */
-		if (!new_page) {/* »¹Ã»ÓĞ»ñÈ¡µ½ĞÂÒ³ */
-			/* ·ÖÅäÒ»¸öĞÂÒ³ */
+		if (!new_page) {/* è¿˜æ²¡æœ‰è·å–åˆ°æ–°é¡µ */
+			/* åˆ†é…ä¸€ä¸ªæ–°é¡µ */
 			new_page = alloc_page_vma(GFP_HIGHUSER_MOVABLE,
 								vma, addr);
-			if (!new_page)/* ·ÖÅäĞÂÒ³Ê§°Ü */
+			if (!new_page)/* åˆ†é…æ–°é¡µå¤±è´¥ */
 				break;		/* Out of memory */
 		}
 
@@ -381,15 +381,15 @@ struct page *read_swap_cache_async(swp_entry_t entry,
 		 * the just freed swap entry for an existing page.
 		 * May fail (-ENOMEM) if radix-tree node allocation failed.
 		 */
-		/* ½«Ò³Ìí¼Óµ½Ò³»º´æ£¬²¢ÇÒ×Ô¶¯Ëø¶¨Ò³ */
+		/* å°†é¡µæ·»åŠ åˆ°é¡µç¼“å­˜ï¼Œå¹¶ä¸”è‡ªåŠ¨é”å®šé¡µ */
 		err = add_to_swap_cache(new_page, entry);
 		if (!err) {
 			/*
 			 * Initiate read into locked page and return.
 			 */
-			/* ½«Ò³Ìí¼Óµ½»î¶¯LRUÁ´±í */
+			/* å°†é¡µæ·»åŠ åˆ°æ´»åŠ¨LRUé“¾è¡¨ */
 			lru_cache_add_active(new_page);
-			/* ´Ó½»»»Çø¶ÁÈ¡Ò³µ½ÄÚ´æ£¬µ«ÊÇ²»µÈ´ı */
+			/* ä»äº¤æ¢åŒºè¯»å–é¡µåˆ°å†…å­˜ï¼Œä½†æ˜¯ä¸ç­‰å¾… */
 			swap_readpage(NULL, new_page);
 			return new_page;
 		}

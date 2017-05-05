@@ -45,7 +45,7 @@
 
 #define DRV_NAME	"q40kbd"
 /*
- *这是一个键盘控制器驱动，使用了platform总线*/
+ *杩欐槸涓�涓敭鐩樻帶鍒跺櫒椹卞姩锛屼娇鐢ㄤ簡platform鎬荤嚎*/
 
 MODULE_AUTHOR("Vojtech Pavlik <vojtech@ucw.cz>");
 MODULE_DESCRIPTION("Q40 PS/2 keyboard controller driver");

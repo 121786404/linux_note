@@ -83,9 +83,9 @@ static int populate_range(struct mm_struct *mm, struct vm_area_struct *vma,
 {
 	int err;
 
-	/* ±éÀúËùÓĞµÄÒ³£¬¶ÔÃ¿Ò»Ò³½øĞĞ´¦Àí */
+	/* éå†æ‰€æœ‰çš„é¡µï¼Œå¯¹æ¯ä¸€é¡µè¿›è¡Œå¤„ç† */
 	do {
-		/* ĞŞ¸Äµ±Ç°Ò³µÄpteÏî£¬Ê¹ÆäÖ¸Ïò·ÇÏßĞÔÓ³ÉäµÄÇøÓò */
+		/* ä¿®æ”¹å½“å‰é¡µçš„pteé¡¹ï¼Œä½¿å…¶æŒ‡å‘éçº¿æ€§æ˜ å°„çš„åŒºåŸŸ */
 		err = install_file_pte(mm, vma, addr, pgoff, vma->vm_page_prot);
 		if (err)
 			return err;
@@ -120,8 +120,8 @@ static int populate_range(struct mm_struct *mm, struct vm_area_struct *vma,
  * might be implemented in the future.
  */
 /**
- * ¶ÔÎÄ¼şÓ³Éä½øĞĞ·ÇÏßĞÔÓ³Éä¡£
- * ½«pgoff£¬size¶ÔÓ¦µÄÎÄ¼şÄÚÈİÓ³Éäµ½start´¦¡£
+ * å¯¹æ–‡ä»¶æ˜ å°„è¿›è¡Œéçº¿æ€§æ˜ å°„ã€‚
+ * å°†pgoffï¼Œsizeå¯¹åº”çš„æ–‡ä»¶å†…å®¹æ˜ å°„åˆ°startå¤„ã€‚
  */
 asmlinkage long sys_remap_file_pages(unsigned long start, unsigned long size,
 	unsigned long prot, unsigned long pgoff, unsigned long flags)
@@ -142,20 +142,20 @@ asmlinkage long sys_remap_file_pages(unsigned long start, unsigned long size,
 	size = size & PAGE_MASK;
 
 	/* Does the address range wrap, or is the span zero-sized? */
-	if (start + size <= start)/* ÕûĞÎÒç³ö */
+	if (start + size <= start)/* æ•´å½¢æº¢å‡º */
 		return err;
 
 	/* Can we represent this offset inside this architecture's pte's? */
 #if PTE_FILE_MAX_BITS < BITS_PER_LONG
-	/* ¼ì²éÖØĞÂÓ³ÉäµÄ·¶Î§ÊÇ·ñºÏ·¨ */
+	/* æ£€æŸ¥é‡æ–°æ˜ å°„çš„èŒƒå›´æ˜¯å¦åˆæ³• */
 	if (pgoff + (size >> PAGE_SHIFT) >= (1UL << PTE_FILE_MAX_BITS))
 		return err;
 #endif
 
 	/* We need down_write() to change vma->vm_flags. */
-	down_read(&mm->mmap_sem);/* »ñÈ¡mmapĞÅºÅÁ¿ */
+	down_read(&mm->mmap_sem);/* è·å–mmapä¿¡å·é‡ */
  retry:
- 	/* ²éÕÒÄ¿±êµØÖ·ËùÔÚµÄÇøÓò */
+ 	/* æŸ¥æ‰¾ç›®æ ‡åœ°å€æ‰€åœ¨çš„åŒºåŸŸ */
 	vma = find_vma(mm, start);
 
 	/*
@@ -164,30 +164,30 @@ asmlinkage long sys_remap_file_pages(unsigned long start, unsigned long size,
 	 * the single existing vma.  vm_private_data is used as a
 	 * swapout cursor in a VM_NONLINEAR vma.
 	 */
-	if (!vma || !(vma->vm_flags & VM_SHARED))/* ÇøÓò²»´æÔÚ»òÕß²»ÊÇ¹²ÏíÓ³Éä */
+	if (!vma || !(vma->vm_flags & VM_SHARED))/* åŒºåŸŸä¸å­˜åœ¨æˆ–è€…ä¸æ˜¯å…±äº«æ˜ å°„ */
 		goto out;
 
 	/* ??? */
 	if (vma->vm_private_data && !(vma->vm_flags & VM_NONLINEAR))
 		goto out;
 
-	/* ²»ÔÊĞí½øĞĞ·ÇÏßĞÔÓ³Éä */
+	/* ä¸å…è®¸è¿›è¡Œéçº¿æ€§æ˜ å°„ */
 	if (!(vma->vm_flags & VM_CAN_NONLINEAR))
 		goto out;
 
-	/* Ö»ÄÜÓ³ÉäÇøÓòµÄÒ»²¿·ÖÎª·ÇÏßĞÔÓ³Éä */
+	/* åªèƒ½æ˜ å°„åŒºåŸŸçš„ä¸€éƒ¨åˆ†ä¸ºéçº¿æ€§æ˜ å°„ */
 	if (end <= start || start < vma->vm_start || end > vma->vm_end)
 		goto out;
 
 	/* Must set VM_NONLINEAR before any pages are populated. */
-	if (!(vma->vm_flags & VM_NONLINEAR)) {/* µÚÒ»´Î½øĞĞ·ÇÏßĞÔÓ³Éä */
+	if (!(vma->vm_flags & VM_NONLINEAR)) {/* ç¬¬ä¸€æ¬¡è¿›è¡Œéçº¿æ€§æ˜ å°„ */
 		/* Don't need a nonlinear mapping, exit success */
 		if (pgoff == linear_page_index(vma, start)) {
 			err = 0;
 			goto out;
 		}
 
-		if (!has_write_lock) {/* »ñÈ¡mmapĞ´Ëø */
+		if (!has_write_lock) {/* è·å–mmapå†™é” */
 			up_read(&mm->mmap_sem);
 			down_write(&mm->mmap_sem);
 			has_write_lock = 1;
@@ -215,24 +215,24 @@ asmlinkage long sys_remap_file_pages(unsigned long start, unsigned long size,
 		}
 		spin_lock(&mapping->i_mmap_lock);
 		flush_dcache_mmap_lock(mapping);
-		/* ÉèÖÃ·ÇÏßĞÔÓ³Éä±êÖ¾ */
+		/* è®¾ç½®éçº¿æ€§æ˜ å°„æ ‡å¿— */
 		vma->vm_flags |= VM_NONLINEAR;
-		/* ´ÓÓÅÏÈÊ÷ÖĞÒÆ³ıvma */
+		/* ä»ä¼˜å…ˆæ ‘ä¸­ç§»é™¤vma */
 		vma_prio_tree_remove(vma, &mapping->i_mmap);
-		/* ¼ÓÈëµ½·ÇÏßĞÔÓ³ÉäÖĞ */
+		/* åŠ å…¥åˆ°éçº¿æ€§æ˜ å°„ä¸­ */
 		vma_nonlinear_insert(vma, &mapping->i_mmap_nonlinear);
 		flush_dcache_mmap_unlock(mapping);
 		spin_unlock(&mapping->i_mmap_lock);
 	}
 
-	/* ĞŞ¸ÄÒ³±íÏî£¬½«ÆäÖ¸ÏòĞÂµÄÇø¼ä */
+	/* ä¿®æ”¹é¡µè¡¨é¡¹ï¼Œå°†å…¶æŒ‡å‘æ–°çš„åŒºé—´ */
 	err = populate_range(mm, vma, start, size, pgoff);
-	if (!err && !(flags & MAP_NONBLOCK)) {/* µ÷ÓÃÕßÔÊĞí×èÈû */
-		if (unlikely(has_write_lock)) {/* Èç¹ûÊÇµÚÒ»´ÎÓ³Éä³É·ÇÏßĞÔÓ³Éä£¬ÔòÇ°Ãæ»ñÈ¡ÁËĞ´Ëø£¬´Ë´¦½µ¼¶Îª¶ÁËø */
+	if (!err && !(flags & MAP_NONBLOCK)) {/* è°ƒç”¨è€…å…è®¸é˜»å¡ */
+		if (unlikely(has_write_lock)) {/* å¦‚æœæ˜¯ç¬¬ä¸€æ¬¡æ˜ å°„æˆéçº¿æ€§æ˜ å°„ï¼Œåˆ™å‰é¢è·å–äº†å†™é”ï¼Œæ­¤å¤„é™çº§ä¸ºè¯»é” */
 			downgrade_write(&mm->mmap_sem);
 			has_write_lock = 0;
 		}
-		/* ¶ÁÈëËùÓĞµÄÒ³Ãæ */
+		/* è¯»å…¥æ‰€æœ‰çš„é¡µé¢ */
 		make_pages_present(start, start+size);
 	}
 

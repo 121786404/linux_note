@@ -108,21 +108,21 @@ struct file *get_empty_filp(void)
 	int error;
 
 /*
-¶ÔÓÚfileµÄ¸öÊý£¬LinuxÄÚºËÊ¹ÓÃÁ½ÖÖ·½Ê½À´¼ÆÊý¡£
-Ò»ÊÇÊ¹ÓÃÈ«¾Ö±äÁ¿£¬ÁíÍâÒ»¸öÊÇÊ¹ÓÃper cpu±äÁ¿¡£
-¸üÐÂÈ«¾Ö±äÁ¿Ê±£¬ÎªÁË±ÜÃâ¾ºÕù£¬²»µÃ²»Ê¹ÓÃËø£¬
-ËùÒÔLinuxÊ¹ÓÃÁËÒ»ÖÖÕÛÖÐµÄ½â¾ö·½°¸¡£
+å¯¹äºŽfileçš„ä¸ªæ•°ï¼ŒLinuxå†…æ ¸ä½¿ç”¨ä¸¤ç§æ–¹å¼æ¥è®¡æ•°ã€‚
+ä¸€æ˜¯ä½¿ç”¨å…¨å±€å˜é‡ï¼Œå¦å¤–ä¸€ä¸ªæ˜¯ä½¿ç”¨per cpuå˜é‡ã€‚
+æ›´æ–°å…¨å±€å˜é‡æ—¶ï¼Œä¸ºäº†é¿å…ç«žäº‰ï¼Œä¸å¾—ä¸ä½¿ç”¨é”ï¼Œ
+æ‰€ä»¥Linuxä½¿ç”¨äº†ä¸€ç§æŠ˜ä¸­çš„è§£å†³æ–¹æ¡ˆã€‚
 
-µ±per cpu±äÁ¿µÄ¸öÊý±ä»¯²»³¬¹ýÕý¸ºpercpu_counter_batch£¨Ä¬ÈÏÎª32£©µÄ·¶Î§Ê±£¬
-¾Í²»¸üÐÂÈ«¾Ö±äÁ¿¡£ÕâÑù¾Í¼õÉÙÁË¶ÔÈ«¾Ö±äÁ¿µÄ¸üÐÂ£¬
-¿ÉÊÇÒ²Ôì³ÉÁËÈ«¾Ö±äÁ¿µÄÖµ²»×¼È·µÄÎÊÌâ¡£
-ÓÚÊÇÔÚÈ«¾Ö±äÁ¿µÄfile¸öÊý³¬¹ýÏÞÖÆÊ±£¬»áÔÙ¶ÔËùÓÐµÄper cpu±äÁ¿ÇóºÍ£¬
-ÔÙ´ÎÓëÏµÍ³µÄÏÞÖÆÏà±È½Ï
+å½“per cpuå˜é‡çš„ä¸ªæ•°å˜åŒ–ä¸è¶…è¿‡æ­£è´Ÿpercpu_counter_batchï¼ˆé»˜è®¤ä¸º32ï¼‰çš„èŒƒå›´æ—¶ï¼Œ
+å°±ä¸æ›´æ–°å…¨å±€å˜é‡ã€‚è¿™æ ·å°±å‡å°‘äº†å¯¹å…¨å±€å˜é‡çš„æ›´æ–°ï¼Œ
+å¯æ˜¯ä¹Ÿé€ æˆäº†å…¨å±€å˜é‡çš„å€¼ä¸å‡†ç¡®çš„é—®é¢˜ã€‚
+äºŽæ˜¯åœ¨å…¨å±€å˜é‡çš„fileä¸ªæ•°è¶…è¿‡é™åˆ¶æ—¶ï¼Œä¼šå†å¯¹æ‰€æœ‰çš„per cpuå˜é‡æ±‚å’Œï¼Œ
+å†æ¬¡ä¸Žç³»ç»Ÿçš„é™åˆ¶ç›¸æ¯”è¾ƒ
 */
 	/*
 	 * Privileged users can go above max_files
 	 */
-	 /* ÕâÀï¶Ô´ò¿ªÎÄ¼þµÄ¸öÊý½øÐÐ¼ì²é£¬·ÇÌØÈ¨ÓÃ»§²»ÄÜ³¬¹ýÏµÍ³µÄÏÞÖÆ */  
+	 /* è¿™é‡Œå¯¹æ‰“å¼€æ–‡ä»¶çš„ä¸ªæ•°è¿›è¡Œæ£€æŸ¥ï¼Œéžç‰¹æƒç”¨æˆ·ä¸èƒ½è¶…è¿‡ç³»ç»Ÿçš„é™åˆ¶ */  
 	if (get_nr_files() >= files_stat.max_files && !capable(CAP_SYS_ADMIN)) {
 		/*
 		 * percpu_counters are inaccurate.  Do an expensive check before
@@ -131,11 +131,11 @@ struct file *get_empty_filp(void)
 		if (percpu_counter_sum_positive(&nr_files) >= files_stat.max_files)
 			goto over;
 	}
-    /* Î´µ½´ïÉÏÏÞ£¬ÉêÇëÒ»¸öÐÂµÄfile½á¹¹ */ 
+    /* æœªåˆ°è¾¾ä¸Šé™ï¼Œç”³è¯·ä¸€ä¸ªæ–°çš„fileç»“æž„ */ 
 	f = kmem_cache_zalloc(filp_cachep, GFP_KERNEL);
 	if (unlikely(!f))
 		return ERR_PTR(-ENOMEM);
-    /* Ôö¼Ófile½á¹¹¼ÆÊý */
+    /* å¢žåŠ fileç»“æž„è®¡æ•° */
 	percpu_counter_inc(&nr_files);
 	f->f_cred = get_cred(cred);
 	error = security_file_alloc(f);
@@ -154,7 +154,7 @@ struct file *get_empty_filp(void)
 
 over:
 	/* Ran out of filps - report that */
-    /* ÓÃÍêÁËfileÅä¶î£¬´òÓ¡log±¨´í */
+    /* ç”¨å®Œäº†fileé…é¢ï¼Œæ‰“å°logæŠ¥é”™ */
 	if (get_nr_files() > old_max) {
 		pr_info("VFS: file-max limit %lu reached\n", get_max_files());
 		old_max = get_nr_files();
@@ -173,7 +173,7 @@ struct file *alloc_file(const struct path *path, fmode_t mode,
 		const struct file_operations *fop)
 {
 	struct file *file;
-    /* ÉêÇëÒ»¸öfile */
+    /* ç”³è¯·ä¸€ä¸ªfile */
 	file = get_empty_filp();
 	if (IS_ERR(file))
 		return file;
@@ -188,7 +188,7 @@ struct file *alloc_file(const struct path *path, fmode_t mode,
 	     likely(fop->write || fop->write_iter))
 		mode |= FMODE_CAN_WRITE;
 	file->f_mode = mode;
-	/* ½«×Ô¶¨ÒåµÄÎÄ¼þ²Ù×÷º¯ÊýÖ¸Õë½á¹¹Ìå¸³¸øfile->f_op */
+	/* å°†è‡ªå®šä¹‰çš„æ–‡ä»¶æ“ä½œå‡½æ•°æŒ‡é’ˆç»“æž„ä½“èµ‹ç»™file->f_op */
 	file->f_op = fop;
 	if ((mode & (FMODE_READ | FMODE_WRITE)) == FMODE_READ)
 		i_readcount_inc(path->dentry->d_inode);

@@ -26,7 +26,7 @@ struct module;
 struct bin_attribute;
 enum kobj_ns_type;
 
-/*ÎªkobjectÄÚºË¶ÔÏó¶¨ÒåµÄÊôĞÔ³ÉÔ±,ÊÇÊı×é*/
+/*ä¸ºkobjectå†…æ ¸å¯¹è±¡å®šä¹‰çš„å±æ€§æˆå‘˜,æ˜¯æ•°ç»„*/
 struct attribute {
 	const char		*name;
 	umode_t			mode;
@@ -208,20 +208,20 @@ struct bin_attribute bin_attr_##_name = __BIN_ATTR_RO(_name, _size)
 struct bin_attribute bin_attr_##_name = __BIN_ATTR_RW(_name, _size)
 
 struct sysfs_ops {
-	ssize_t	(*show)(struct kobject *, struct attribute *,char *);/*Ïàµ±ÓÚread*/
-	ssize_t	(*store)(struct kobject *,struct attribute *,const char *, size_t);/*Ïàµ±ÓÚwrite*/
+	ssize_t	(*show)(struct kobject *, struct attribute *,char *);/*ç›¸å½“äºread*/
+	ssize_t	(*store)(struct kobject *,struct attribute *,const char *, size_t);/*ç›¸å½“äºwrite*/
 };
 
 #ifdef CONFIG_SYSFS
 
-/*´´½¨Ä¿Â¼ÎÄ¼ş*/
+/*åˆ›å»ºç›®å½•æ–‡ä»¶*/
 int __must_check sysfs_create_dir_ns(struct kobject *kobj, const void *ns);
-/*É¾³ıÄ¿Â¼ÎÄ¼ş*/
+/*åˆ é™¤ç›®å½•æ–‡ä»¶*/
 void sysfs_remove_dir(struct kobject *kobj);
-/*ÖØÃüÃûÄ¿Â¼ÎÄ¼ş*/
+/*é‡å‘½åç›®å½•æ–‡ä»¶*/
 int __must_check sysfs_rename_dir_ns(struct kobject *kobj, const char *new_name,
 				     const void *new_ns);
-/*ÒÆ¶¯Ä¿Â¼ÎÄ¼ş*/
+/*ç§»åŠ¨ç›®å½•æ–‡ä»¶*/
 int __must_check sysfs_move_dir_ns(struct kobject *kobj,
 				   struct kobject *new_parent_kobj,
 				   const void *new_ns);

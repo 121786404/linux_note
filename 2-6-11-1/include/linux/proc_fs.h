@@ -47,11 +47,11 @@ typedef	int (write_proc_t)(struct file *file, const char __user *buffer,
 			   unsigned long count, void *data);
 typedef int (get_info_t)(char *, char **, off_t, int);
 
-/* procÎÄ¼şÏµÍ³µÄÄ¿Â¼½á¹¹ */
+/* procæ–‡ä»¶ç³»ç»Ÿçš„ç›®å½•ç»“æ„ */
 struct proc_dir_entry {
-	unsigned int low_ino;        /* procÎÄ¼şÏµÍ³µÄinoºÅ£¬ËùÒÔ¸Ã½á¹¹ÖĞ²¢Ã»ÓĞinodeµÄÖ¸Õë */
-	unsigned short namelen;   /* Ö¸ÏòÄ¿Â¼µÄ³¤¶È£¬ÒòÎªÄ¿Â¼µÄÊı¾İÖ±½Ó´æ·ÅÔÚ½á¹¹ÌåºóÃæ */
-	const char *name;   /* Ö¸ÏòÄ¿Â¼µÄÃû³Æ */
+	unsigned int low_ino;        /* procæ–‡ä»¶ç³»ç»Ÿçš„inoå·ï¼Œæ‰€ä»¥è¯¥ç»“æ„ä¸­å¹¶æ²¡æœ‰inodeçš„æŒ‡é’ˆ */
+	unsigned short namelen;   /* æŒ‡å‘ç›®å½•çš„é•¿åº¦ï¼Œå› ä¸ºç›®å½•çš„æ•°æ®ç›´æ¥å­˜æ”¾åœ¨ç»“æ„ä½“åé¢ */
+	const char *name;   /* æŒ‡å‘ç›®å½•çš„åç§° */
 	mode_t mode;
 	nlink_t nlink;
 	uid_t uid;
@@ -61,7 +61,7 @@ struct proc_dir_entry {
 	struct file_operations * proc_fops;
 	get_info_t *get_info;
 	struct module *owner;
-        /* procÄ¿Â¼µÄ¸¸Ä¿Â¼£¬ÏÂÒ»¸öÄ¿Â¼£¬×ÓÄ¿Â¼ */
+        /* procç›®å½•çš„çˆ¶ç›®å½•ï¼Œä¸‹ä¸€ä¸ªç›®å½•ï¼Œå­ç›®å½• */
 	struct proc_dir_entry *next, *parent, *subdir;
 	void *data;
 	read_proc_t *read_proc;

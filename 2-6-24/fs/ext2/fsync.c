@@ -32,7 +32,7 @@
  */
 
 /**
- * ÔÚÍ¬²½µ¥¸öÎÄ¼şÊ±£¬½øĞĞÒ»Ğ©ÓëÎÄ¼şÏµÍ³Ïà¹ØµÄ»ØĞ´¹¤×÷
+ * åœ¨åŒæ­¥å•ä¸ªæ–‡ä»¶æ—¶ï¼Œè¿›è¡Œä¸€äº›ä¸æ–‡ä»¶ç³»ç»Ÿç›¸å…³çš„å›å†™å·¥ä½œ
  */
 int ext2_sync_file(struct file *file, struct dentry *dentry, int datasync)
 {
@@ -40,14 +40,14 @@ int ext2_sync_file(struct file *file, struct dentry *dentry, int datasync)
 	int err;
 	int ret;
 
-	/* ½«¼ä½Ó¿é»òÆäËûinodeÏà¹ØµÄ»º³åÇøĞ´»Ø */
+	/* å°†é—´æ¥å—æˆ–å…¶ä»–inodeç›¸å…³çš„ç¼“å†²åŒºå†™å› */
 	ret = sync_mapping_buffers(inode->i_mapping);
 	if (!(inode->i_state & I_DIRTY))
 		return ret;
 	if (datasync && !(inode->i_state & I_DIRTY_DATASYNC))
 		return ret;
 
-	/* »ØĞ´inodeµÄ¹ÜÀíÊı¾İ */
+	/* å›å†™inodeçš„ç®¡ç†æ•°æ® */
 	err = ext2_sync_inode(inode);
 	if (ret == 0)
 		ret = err;

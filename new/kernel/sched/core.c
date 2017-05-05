@@ -2335,9 +2335,9 @@ static inline void init_schedstats(void) {}
 
 /*
  * fork()/clone()-time setup:
- ÎÒÃÇ¿ÉÒÔ¿´µ½sched_fork´óÖÂÍê³ÉÁËÁ½ÏîÖØÒª¹¤×÷£¬
- Ò»ÊÇ½«×Ó½ø³Ì×´Ì¬ÉèÖÃÎª TASK_RUNNING£¬
- ¶şÊÇÎªÆä·ÖÅä CPU
+ æˆ‘ä»¬å¯ä»¥çœ‹åˆ°sched_forkå¤§è‡´å®Œæˆäº†ä¸¤é¡¹é‡è¦å·¥ä½œï¼Œ
+ ä¸€æ˜¯å°†å­è¿›ç¨‹çŠ¶æ€è®¾ç½®ä¸º TASK_RUNNINGï¼Œ
+ äºŒæ˜¯ä¸ºå…¶åˆ†é… CPU
  */
 int sched_fork(unsigned long clone_flags, struct task_struct *p)
 {
@@ -2350,7 +2350,7 @@ int sched_fork(unsigned long clone_flags, struct task_struct *p)
 	 * nobody will actually run it, and a signal or other external
 	 * event cannot wake it up and insert it on the runqueue either.
 	 */
-    //  ½«×Ó½ø³Ì×´Ì¬ÉèÖÃÎª TASK_RUNNING
+    //  å°†å­è¿›ç¨‹çŠ¶æ€è®¾ç½®ä¸º TASK_RUNNING
 	p->state = TASK_NEW;
 
 	/*
@@ -2402,7 +2402,7 @@ int sched_fork(unsigned long clone_flags, struct task_struct *p)
 	 * We're setting the CPU for the first time, we don't migrate,
 	 * so use __set_task_cpu().
 	 */
-	 /* Îª×Ó½ø³Ì·ÖÅä CPU */
+	 /* ä¸ºå­è¿›ç¨‹åˆ†é… CPU */
 	__set_task_cpu(p, cpu);
 	if (p->sched_class->task_fork)
 		p->sched_class->task_fork(p);
@@ -2832,9 +2832,9 @@ asmlinkage __visible void schedule_tail(struct task_struct *prev)
 
 /*
  * context_switch - switch to the new MM and the new thread's register state.
- rq£ºÔÚ¶àºËÏµÍ³ÖĞ£¬½ø³ÌÇĞ»»×ÜÊÇ·¢ÉúÔÚ¸÷¸öcpu coreÉÏ£¬²ÎÊırqÖ¸Ïò±¾´ÎÇĞ»»·¢ÉúµÄÄÇ¸öcpu¶ÔÓ¦µÄrun queue 
- prev£º½«Òª±»°ş¶áÖ´ĞĞÈ¨ÀûµÄÄÇ¸ö½ø³Ì 
- next£º±»Ñ¡ÔñÔÚ¸ÃcpuÉÏÖ´ĞĞµÄÄÇ¸ö½ø³Ì
+ rqï¼šåœ¨å¤šæ ¸ç³»ç»Ÿä¸­ï¼Œè¿›ç¨‹åˆ‡æ¢æ€»æ˜¯å‘ç”Ÿåœ¨å„ä¸ªcpu coreä¸Šï¼Œå‚æ•°rqæŒ‡å‘æœ¬æ¬¡åˆ‡æ¢å‘ç”Ÿçš„é‚£ä¸ªcpuå¯¹åº”çš„run queue 
+ prevï¼šå°†è¦è¢«å‰¥å¤ºæ‰§è¡Œæƒåˆ©çš„é‚£ä¸ªè¿›ç¨‹ 
+ nextï¼šè¢«é€‰æ‹©åœ¨è¯¥cpuä¸Šæ‰§è¡Œçš„é‚£ä¸ªè¿›ç¨‹
  */
 static __always_inline struct rq *
 context_switch(struct rq *rq, struct task_struct *prev,
@@ -2853,8 +2853,8 @@ context_switch(struct rq *rq, struct task_struct *prev,
 	 */
 	arch_start_context_switch(prev);
 
-	if (!mm) { /* B½ø³ÌÊÇÄÚºËÏß³Ì */
-		next->active_mm = oldmm; /* ½èÓÃA½ø³Ìµ±Ç°ÕıÔÚÊ¹ÓÃµÄÄÇ¸öµØÖ·¿Õ¼ä */
+	if (!mm) { /* Bè¿›ç¨‹æ˜¯å†…æ ¸çº¿ç¨‹ */
+		next->active_mm = oldmm; /* å€Ÿç”¨Aè¿›ç¨‹å½“å‰æ­£åœ¨ä½¿ç”¨çš„é‚£ä¸ªåœ°å€ç©ºé—´ */
 		atomic_inc(&oldmm->mm_count);
 		enter_lazy_tlb(oldmm, next); 
 	} else
@@ -5353,7 +5353,7 @@ void init_idle(struct task_struct *idle, int cpu)
 	rcu_read_lock();
 	__set_task_cpu(idle, cpu);
 	rcu_read_unlock();
-    /* °Ñµ±Ç°½ø³Ì£¨0ºÅ½ø³Ì£©ÖÃÎªÃ¿¸örqÔËĞĞ¶ÓÁĞµÄµÄidleÉÏ */
+    /* æŠŠå½“å‰è¿›ç¨‹ï¼ˆ0å·è¿›ç¨‹ï¼‰ç½®ä¸ºæ¯ä¸ªrqè¿è¡Œé˜Ÿåˆ—çš„çš„idleä¸Š */
 	rq->curr = rq->idle = idle;
 	idle->on_rq = TASK_ON_RQ_QUEUED;
 #ifdef CONFIG_SMP
@@ -5879,7 +5879,7 @@ void __init sched_init_smp(void)
 	cpumask_var_t non_isolated_cpus;
 
 	/**
-	 * ÎªCPU¸ôÀë¹¦ÄÜ£¬¼°NUMA½ÚµãÓò·ÖÅä´æ´¢¿Õ¼ä¡£
+	 * ä¸ºCPUéš”ç¦»åŠŸèƒ½ï¼ŒåŠNUMAèŠ‚ç‚¹åŸŸåˆ†é…å­˜å‚¨ç©ºé—´ã€‚
 	 */
 	alloc_cpumask_var(&non_isolated_cpus, GFP_KERNEL);
 	alloc_cpumask_var(&fallback_doms, GFP_KERNEL);
@@ -5891,31 +5891,31 @@ void __init sched_init_smp(void)
 	 * CPU masks are stable and all blatant races in the below code cannot
 	 * happen.
 	 */
-	//»ñÈ¡µ÷¶ÈÓòµÄËø
+	//è·å–è°ƒåº¦åŸŸçš„é”
 	mutex_lock(&sched_domains_mutex);
-	//³õÊ¼»¯µ÷¶ÈÓò¡£
-    /* Éè¶¨scheduler domainsÓëgroups,²Î¿¼Linux Documentation/scheduler/sched-domains.txtÎÄ¼ş,
-          Ò»¸öScheduling Domain»á°üº¬Ò»¸ö»ò¶à¸öCPU Groups,
-          ÅÅ³ÌµÄLoad-Balance¾Í»á¸ù¾İDomainÖĞµÄGroupsÀ´×öµ÷Õû*/
+	//åˆå§‹åŒ–è°ƒåº¦åŸŸã€‚
+    /* è®¾å®šscheduler domainsä¸groups,å‚è€ƒLinux Documentation/scheduler/sched-domains.txtæ–‡ä»¶,
+          ä¸€ä¸ªScheduling Domainä¼šåŒ…å«ä¸€ä¸ªæˆ–å¤šä¸ªCPU Groups,
+          æ’ç¨‹çš„Load-Balanceå°±ä¼šæ ¹æ®Domainä¸­çš„Groupsæ¥åšè°ƒæ•´*/
 	init_sched_domains(cpu_active_mask);
-	//ÉèÖÃ·Ç¸ôÀëµ÷¶ÈCPU
+	//è®¾ç½®ééš”ç¦»è°ƒåº¦CPU
 	cpumask_andnot(non_isolated_cpus, cpu_possible_mask, cpu_isolated_map);
-	//ÖÁÉÙ½«µ±Ç°CPUÉèÖÃÎª·Ç¸ôÀëCPU
+	//è‡³å°‘å°†å½“å‰CPUè®¾ç½®ä¸ºééš”ç¦»CPU
 	if (cpumask_empty(non_isolated_cpus))
 		cpumask_set_cpu(smp_processor_id(), non_isolated_cpus);
-	//ÊÍ·ÅËø
+	//é‡Šæ”¾é”
 	mutex_unlock(&sched_domains_mutex);
 
 	/* Move init over to a non-isolated CPU */
-	//ÉèÖÃµ±Ç°ÈÎÎñ¿ÉÒÔÔËĞĞµÄºË£¬²»ÄÜÕ¼ÓÃ±»¸ôÀëµÄCPU
+	//è®¾ç½®å½“å‰ä»»åŠ¡å¯ä»¥è¿è¡Œçš„æ ¸ï¼Œä¸èƒ½å ç”¨è¢«éš”ç¦»çš„CPU
     /*
-    ºô½Ğset_cpus_allowed_ptr,Í¸¹ıÕâº¯Ê½¿ÉÒÔÉè¶¨CPU bitmask,
-    ÏŞ¶¨TaskÖ»ÄÜÔÚÌØ¶¨µÄ´¦ÀíÆ÷ÉÏÔË×÷.ÔÚÕâ»áÓÃ²ÎÊı¡±non_isolated_cpus¡±,
-    Ò²¾ÍÊÇ»á°ÑinitÖ¸¶¨¸ønon-isolated CPU. Linux Kernel¿ÉÒÔÔÚ†¢¶¯Ê±,
-    Í¸¹ıBoot Parameters ¡°isolcpus=¡°Ö¸¶¨CPU±àºÅ»òÊÇ·¶Î§,
-    ÈÃÕâĞ©´¦ÀíÆ÷²»±»°üº¬ÔÚLinux Kernel SMP balancing/schedulingËã·¨ÄÚ,
-    ¿ÉÒÔÔÚ†¢¶¯ºóÖ¸ÅÉ¸øÌØ¶¨µÄTaskÔË×÷.
-    ¶ø²»ÔÚ ¡°isolcpus=¡° Ö¸¶¨·¶Î§ÄÚµÄ´¦ÀíÆ÷¾ÍËãÊÇnon-isolated CPU.
+    å‘¼å«set_cpus_allowed_ptr,é€è¿‡è¿™å‡½å¼å¯ä»¥è®¾å®šCPU bitmask,
+    é™å®šTaskåªèƒ½åœ¨ç‰¹å®šçš„å¤„ç†å™¨ä¸Šè¿ä½œ.åœ¨è¿™ä¼šç”¨å‚æ•°â€non_isolated_cpusâ€,
+    ä¹Ÿå°±æ˜¯ä¼šæŠŠinitæŒ‡å®šç»™non-isolated CPU. Linux Kernelå¯ä»¥åœ¨å•ŸåŠ¨æ—¶,
+    é€è¿‡Boot Parameters â€œisolcpus=â€œæŒ‡å®šCPUç¼–å·æˆ–æ˜¯èŒƒå›´,
+    è®©è¿™äº›å¤„ç†å™¨ä¸è¢«åŒ…å«åœ¨Linux Kernel SMP balancing/schedulingç®—æ³•å†…,
+    å¯ä»¥åœ¨å•ŸåŠ¨åæŒ‡æ´¾ç»™ç‰¹å®šçš„Taskè¿ä½œ.
+    è€Œä¸åœ¨ â€œisolcpus=â€œ æŒ‡å®šèŒƒå›´å†…çš„å¤„ç†å™¨å°±ç®—æ˜¯non-isolated CPU.
     */
 	if (set_cpus_allowed_ptr(current, non_isolated_cpus) < 0)
 		BUG();

@@ -152,7 +152,7 @@ static const struct usb_device_id *usb_match_dynamic_id(struct usb_interface *in
 
 /* called from driver core with dev locked */
 /**
- * µ±USBÉè±¸ÔÚPCI×ÓÏµÍ³±»·¢ÏÖ£¬»Øµ÷´Ëº¯Êı¡£
+ * å½“USBè®¾å¤‡åœ¨PCIå­ç³»ç»Ÿè¢«å‘ç°ï¼Œå›è°ƒæ­¤å‡½æ•°ã€‚
  */
 static int usb_probe_device(struct device *dev)
 {
@@ -163,7 +163,7 @@ static int usb_probe_device(struct device *dev)
 	dev_dbg(dev, "%s\n", __FUNCTION__);
 
 	/**
-	 * ½¡¿µ¼ì²é£¬È·±£ÊÇUSBÉè±¸Çı¶¯¡£
+	 * å¥åº·æ£€æŸ¥ï¼Œç¡®ä¿æ˜¯USBè®¾å¤‡é©±åŠ¨ã€‚
 	 */
 	if (!is_usb_device(dev))	/* Sanity check */
 		return error;
@@ -178,7 +178,7 @@ static int usb_probe_device(struct device *dev)
 	udev->pm_usage_cnt = !(udriver->supports_autosuspend);
 
 	/**
-	 * µ÷ÓÃÉè±¸×Ô¼ºµÄÌ½²âº¯Êıgeneric_probe¡£
+	 * è°ƒç”¨è®¾å¤‡è‡ªå·±çš„æ¢æµ‹å‡½æ•°generic_probeã€‚
 	 */
 	error = udriver->probe(udev);
 	return error;
@@ -426,22 +426,22 @@ int usb_match_one_id(struct usb_interface *interface,
 
 	/* proc_connectinfo in devio.c may call us with id == NULL. */
 	/**
-	 * Éè±¸µÄID±íÎª¿Õ£¬²»Æ¥ÅäÖ±½Ó·µ»Ø¡£
+	 * è®¾å¤‡çš„IDè¡¨ä¸ºç©ºï¼Œä¸åŒ¹é…ç›´æ¥è¿”å›ã€‚
 	 */
 	if (id == NULL)
 		return 0;
 
 	/**
-	 * »ñµÃ½Ó¿ÚµÄÉèÖÃ£¬ÉèÖÃÀïÃæ°üº¬½Ó¿ÚÃèÊö·û£¬ÓÃÓÚÆ¥ÅäÇı¶¯¡£
+	 * è·å¾—æ¥å£çš„è®¾ç½®ï¼Œè®¾ç½®é‡Œé¢åŒ…å«æ¥å£æè¿°ç¬¦ï¼Œç”¨äºåŒ¹é…é©±åŠ¨ã€‚
 	 */
 	intf = interface->cur_altsetting;
 	/**
-	 * »ñµÃ½Ó¿ÚËùÔÚµÄÉè±¸¡£
+	 * è·å¾—æ¥å£æ‰€åœ¨çš„è®¾å¤‡ã€‚
 	 */
 	dev = interface_to_usbdev(interface);
 
 	/**
-	 * Ê×ÏÈ¿´½Ó¿ÚËùÔÚµÄÉè±¸ÊÇ·ñÄÜÓëIDÆ¥Åä¡£
+	 * é¦–å…ˆçœ‹æ¥å£æ‰€åœ¨çš„è®¾å¤‡æ˜¯å¦èƒ½ä¸IDåŒ¹é…ã€‚
 	 */
 	if (!usb_match_device(dev, id))
 		return 0;
@@ -449,15 +449,15 @@ int usb_match_one_id(struct usb_interface *interface,
 	/* The interface class, subclass, and protocol should never be
 	 * checked for a match if the device class is Vendor Specific,
 	 * unless the match record specifies the Vendor ID. */
-	if (dev->descriptor.bDeviceClass == USB_CLASS_VENDOR_SPEC &&/* Éè±¸²»ÊÇ±ê×¼Àà */
-			!(id->match_flags & USB_DEVICE_ID_MATCH_VENDOR) && /* ²»Æ¥ÅäUSB_DEVICE_ID_MATCH_VENDOR */
-			(id->match_flags & (USB_DEVICE_ID_MATCH_INT_CLASS | /* Çı¶¯ĞèÒª¼ì²éÀà±ğ */
+	if (dev->descriptor.bDeviceClass == USB_CLASS_VENDOR_SPEC &&/* è®¾å¤‡ä¸æ˜¯æ ‡å‡†ç±» */
+			!(id->match_flags & USB_DEVICE_ID_MATCH_VENDOR) && /* ä¸åŒ¹é…USB_DEVICE_ID_MATCH_VENDOR */
+			(id->match_flags & (USB_DEVICE_ID_MATCH_INT_CLASS | /* é©±åŠ¨éœ€è¦æ£€æŸ¥ç±»åˆ« */
 				USB_DEVICE_ID_MATCH_INT_SUBCLASS |
 				USB_DEVICE_ID_MATCH_INT_PROTOCOL)))
 		return 0;
 
 	/**
-	 * ¼ì²éIDµÄÀà±ğÊÇ·ñÓë½Ó¿ÚµÄÀà±ğÒ»ÖÂ¡£
+	 * æ£€æŸ¥IDçš„ç±»åˆ«æ˜¯å¦ä¸æ¥å£çš„ç±»åˆ«ä¸€è‡´ã€‚
 	 */
 	if ((id->match_flags & USB_DEVICE_ID_MATCH_INT_CLASS) &&
 	    (id->bInterfaceClass != intf->desc.bInterfaceClass))
@@ -472,7 +472,7 @@ int usb_match_one_id(struct usb_interface *interface,
 		return 0;
 
 	/**
-	 * ÍêÈ«Æ¥Åä¡£
+	 * å®Œå…¨åŒ¹é…ã€‚
 	 */
 	return 1;
 }
@@ -550,14 +550,14 @@ EXPORT_SYMBOL_GPL(usb_match_one_id);
  * its associated class and subclass.
  */
 /**
- * Æ¥ÅäUSBÉè±¸ºÍÇı¶¯¡£
+ * åŒ¹é…USBè®¾å¤‡å’Œé©±åŠ¨ã€‚
  */
 const struct usb_device_id *usb_match_id(struct usb_interface *interface,
 					 const struct usb_device_id *id)
 {
 	/* proc_connectinfo in devio.c may call us with id == NULL. */
 	/**
-	 * ID±íÎª¿Õ£¬±íÊ¾Çı¶¯²»ÎªÈÎºÎÉè±¸·şÎñ¡£
+	 * IDè¡¨ä¸ºç©ºï¼Œè¡¨ç¤ºé©±åŠ¨ä¸ä¸ºä»»ä½•è®¾å¤‡æœåŠ¡ã€‚
 	 */
 	if (id == NULL)
 		return NULL;
@@ -568,7 +568,7 @@ const struct usb_device_id *usb_match_id(struct usb_interface *interface,
 	   indicates that the driver want to examine every
 	   device and interface. */
 	/**
-	 * ÂÖÑ¯Çı¶¯ID±í£¬¿´ÊÇ·ñÓëµ±Ç°Éè±¸Æ¥Åä¡£
+	 * è½®è¯¢é©±åŠ¨IDè¡¨ï¼Œçœ‹æ˜¯å¦ä¸å½“å‰è®¾å¤‡åŒ¹é…ã€‚
 	 */
 	for (; id->idVendor || id->bDeviceClass || id->bInterfaceClass ||
 	       id->driver_info; id++) {
@@ -581,21 +581,21 @@ const struct usb_device_id *usb_match_id(struct usb_interface *interface,
 EXPORT_SYMBOL_GPL_FUTURE(usb_match_id);
 
 /**
- * Ì½²âUSBÉè±¸ÓëÇı¶¯Ö®¼äÊÇ·ñÆ¥Åä¡£
- * µ±×ÜÏßÉÏÓĞĞÂÉè±¸»òĞÂµÄÇı¶¯Ìí¼ÓÊ±£¬¾Íµ÷ÓÃ´Ëº¯Êı¡£
- * ÄÜ¹»Æ¥ÅäÔò·µ»Ø0.
+ * æ¢æµ‹USBè®¾å¤‡ä¸é©±åŠ¨ä¹‹é—´æ˜¯å¦åŒ¹é…ã€‚
+ * å½“æ€»çº¿ä¸Šæœ‰æ–°è®¾å¤‡æˆ–æ–°çš„é©±åŠ¨æ·»åŠ æ—¶ï¼Œå°±è°ƒç”¨æ­¤å‡½æ•°ã€‚
+ * èƒ½å¤ŸåŒ¹é…åˆ™è¿”å›0.
  */
 static int usb_device_match(struct device *dev, struct device_driver *drv)
 {
 	/* devices and interfaces are handled separately */
 	/**
-	 * Éè±¸ÊÇUSBÉè±¸ÈçÁ¬½ÓUSB¼üÅÌºÍÑïÉùÆ÷µÄÉè±¸£¬ÆäÉÏÁ¬½Ó·¢USB¼üÅÌÊÇÒ»¸ö½Ó¿Ú£¬ÑïÉùÇ»Æ÷ÊÇÁíÒ»¸ö½Ó¿Ú(¶ø²»ÊÇUSB½Ó¿Ú£¬Æ½Ê±Ê¹ÓÃµÄUSBÉè±¸ÊÇÁ¬½ÓÔÚUSB½Ó¿ÚÉÏµÄ)
+	 * è®¾å¤‡æ˜¯USBè®¾å¤‡å¦‚è¿æ¥USBé”®ç›˜å’Œæ‰¬å£°å™¨çš„è®¾å¤‡ï¼Œå…¶ä¸Šè¿æ¥å‘USBé”®ç›˜æ˜¯ä¸€ä¸ªæ¥å£ï¼Œæ‰¬å£°è…”å™¨æ˜¯å¦ä¸€ä¸ªæ¥å£(è€Œä¸æ˜¯USBæ¥å£ï¼Œå¹³æ—¶ä½¿ç”¨çš„USBè®¾å¤‡æ˜¯è¿æ¥åœ¨USBæ¥å£ä¸Šçš„)
 	 */
 	if (is_usb_device(dev)) {
 
 		/* interface drivers never match devices */
 		/**
-		 * ÅĞ¶ÏÇı¶¯ÊÇ·ñÎªUSBÉè±¸Çı¶¯¡£
+		 * åˆ¤æ–­é©±åŠ¨æ˜¯å¦ä¸ºUSBè®¾å¤‡é©±åŠ¨ã€‚
 		 */
 		if (!is_usb_device_driver(drv))
 			return 0;
@@ -603,7 +603,7 @@ static int usb_device_match(struct device *dev, struct device_driver *drv)
 		/* TODO: Add real matching code */
 		return 1;
 
-	} else {/* ²»ÊÇUSBÉè±¸£¬¶øÊÇUSB½Ó¿Ú */
+	} else {/* ä¸æ˜¯USBè®¾å¤‡ï¼Œè€Œæ˜¯USBæ¥å£ */
 		struct usb_interface *intf;
 		struct usb_driver *usb_drv;
 		const struct usb_device_id *id;
@@ -616,14 +616,14 @@ static int usb_device_match(struct device *dev, struct device_driver *drv)
 		usb_drv = to_usb_driver(drv);
 
 		/**
-		 * ÔÚ¾²Ì¬ID±íÖĞÆ¥Åä¡£
+		 * åœ¨é™æ€IDè¡¨ä¸­åŒ¹é…ã€‚
 		 */
 		id = usb_match_id(intf, usb_drv->id_table);
 		if (id)
 			return 1;
 
 		/**
-		 * ÔÚ¶¯Ì¬ID±íÖĞÆ¥Åä¡£
+		 * åœ¨åŠ¨æ€IDè¡¨ä¸­åŒ¹é…ã€‚
 		 */
 		id = usb_match_dynamic_id(intf, usb_drv);
 		if (id)
@@ -708,17 +708,17 @@ int usb_register_device_driver(struct usb_device_driver *new_udriver,
 	int retval = 0;
 
 	/**
-	 * ÏµÍ³Æô¶¯µÄÊ±ºò¾Í½ûÖ¹ÁËUSB×ÓÏµÍ³¡£
+	 * ç³»ç»Ÿå¯åŠ¨çš„æ—¶å€™å°±ç¦æ­¢äº†USBå­ç³»ç»Ÿã€‚
 	 */
 	if (usb_disabled())
 		return -ENODEV;
 
 	/**
-	 * ±íÃ÷ÕâÊÇÒ»¸öÉè±¸Çı¶¯¶ø²»ÊÇ½Ó¿ÚÇı¶¯¡£
+	 * è¡¨æ˜è¿™æ˜¯ä¸€ä¸ªè®¾å¤‡é©±åŠ¨è€Œä¸æ˜¯æ¥å£é©±åŠ¨ã€‚
 	 */
 	new_udriver->drvwrap.for_devices = 1;
 	/**
-	 * Éè±¸Ä£ĞÍÓÃµ½µÄ²ÎÊı£¬PCI×ÓÏµÍ³¿ÉÒÔ¾İ´Ë¼ÓÔØUSBÉè±¸µÄÇı¶¯ÁË¡£
+	 * è®¾å¤‡æ¨¡å‹ç”¨åˆ°çš„å‚æ•°ï¼ŒPCIå­ç³»ç»Ÿå¯ä»¥æ®æ­¤åŠ è½½USBè®¾å¤‡çš„é©±åŠ¨äº†ã€‚
 	 */
 	new_udriver->drvwrap.driver.name = (char *) new_udriver->name;
 	new_udriver->drvwrap.driver.bus = &usb_bus_type;
@@ -727,7 +727,7 @@ int usb_register_device_driver(struct usb_device_driver *new_udriver,
 	new_udriver->drvwrap.driver.owner = owner;
 
 	/**
-	 * ½«Éè±¸Çı¶¯×¢²áµ½Éè±¸Ä£ĞÍÖĞ¡£
+	 * å°†è®¾å¤‡é©±åŠ¨æ³¨å†Œåˆ°è®¾å¤‡æ¨¡å‹ä¸­ã€‚
 	 */
 	retval = driver_register(&new_udriver->drvwrap.driver);
 
@@ -786,7 +786,7 @@ int usb_register_driver(struct usb_driver *new_driver, struct module *owner,
 		return -ENODEV;
 
 	/**
-	 * for_devicesÎª0±íÊ¾²»ÊÇUSBÉè±¸Çı¶¯£¬¶øÊÇUSB½Ó¿ÚÇı¶¯¡£
+	 * for_devicesä¸º0è¡¨ç¤ºä¸æ˜¯USBè®¾å¤‡é©±åŠ¨ï¼Œè€Œæ˜¯USBæ¥å£é©±åŠ¨ã€‚
 	 */
 	new_driver->drvwrap.for_devices = 0;
 	new_driver->drvwrap.driver.name = (char *) new_driver->name;
@@ -799,7 +799,7 @@ int usb_register_driver(struct usb_driver *new_driver, struct module *owner,
 	INIT_LIST_HEAD(&new_driver->dynids.list);
 
 	/**
-	 * ×¢²áÇı¶¯µ½Çı¶¯Ä£ĞÍÖĞ¡£
+	 * æ³¨å†Œé©±åŠ¨åˆ°é©±åŠ¨æ¨¡å‹ä¸­ã€‚
 	 */
 	retval = driver_register(&new_driver->drvwrap.driver);
 
@@ -919,11 +919,11 @@ static int usb_suspend_interface(struct usb_interface *intf, pm_message_t msg)
 
 	if (driver->suspend && driver->resume) {
 		/**
-		 * µ÷ÓÃÇı¶¯µÄ¹ÒÆğº¯Êı¡£
+		 * è°ƒç”¨é©±åŠ¨çš„æŒ‚èµ·å‡½æ•°ã€‚
 		 */
 		status = driver->suspend(intf, msg);
 		if (status == 0)
-			mark_quiesced(intf);/* ÉèÖÃ»î¶¯±êÖ¾£¬±íÊ¾Éè±¸ÒÑ¾­²»¿ÉÔÙÊ¹ÓÃ */
+			mark_quiesced(intf);/* è®¾ç½®æ´»åŠ¨æ ‡å¿—ï¼Œè¡¨ç¤ºè®¾å¤‡å·²ç»ä¸å¯å†ä½¿ç”¨ */
 		else if (!interface_to_usbdev(intf)->auto_pm)
 			dev_err(&intf->dev, "%s error %d\n",
 					"suspend", status);
@@ -1116,14 +1116,14 @@ static int usb_suspend_both(struct usb_device *udev, pm_message_t msg)
 	struct usb_device	*parent = udev->parent;
 
 	/**
-	 * ÒÑ¾­ÔÚ¹ÒÆğ×´Ì¬£¬ÍË³ö¡£
+	 * å·²ç»åœ¨æŒ‚èµ·çŠ¶æ€ï¼Œé€€å‡ºã€‚
 	 */
 	if (udev->state == USB_STATE_NOTATTACHED ||
 			udev->state == USB_STATE_SUSPENDED)
 		goto done;
 
 	/**
-	 * ¸ù¾İÉè±¸×Ô¶¯»½ĞÑ±êÖ¾ºÍprocÉèÖÃ£¬µÃµ½ÊÇ·ñÔÊĞíÔ¶³Ì»½ĞÑÉè±¸¡£
+	 * æ ¹æ®è®¾å¤‡è‡ªåŠ¨å”¤é†’æ ‡å¿—å’Œprocè®¾ç½®ï¼Œå¾—åˆ°æ˜¯å¦å…è®¸è¿œç¨‹å”¤é†’è®¾å¤‡ã€‚
 	 */
 	udev->do_remote_wakeup = device_may_wakeup(&udev->dev);
 
@@ -1136,7 +1136,7 @@ static int usb_suspend_both(struct usb_device *udev, pm_message_t msg)
 	/* Suspend all the interfaces and then udev itself */
 	if (udev->actconfig) {
 		/**
-		 * Ê×ÏÈ¹ÒÆğËùÓĞ½Ó¿Ú¡£
+		 * é¦–å…ˆæŒ‚èµ·æ‰€æœ‰æ¥å£ã€‚
 		 */
 		for (; i < udev->actconfig->desc.bNumInterfaces; i++) {
 			intf = udev->actconfig->interface[i];
@@ -1146,14 +1146,14 @@ static int usb_suspend_both(struct usb_device *udev, pm_message_t msg)
 		}
 	}
 	/**
-	 * ¹ÒÆğÁËËùÓĞ½Ó¿Ú£¬ÔÙ¹ÒÆğÉè±¸±¾Éí¡£
+	 * æŒ‚èµ·äº†æ‰€æœ‰æ¥å£ï¼Œå†æŒ‚èµ·è®¾å¤‡æœ¬èº«ã€‚
 	 */
 	if (status == 0)
 		status = usb_suspend_device(udev, msg);
 
 	/* If the suspend failed, resume interfaces that did get suspended */
 	/**
-	 * ¹ÒÆğÉè±¸Ê§°Ü£¬»Ö¸´ÒÑ¾­¹ÒÆğµÄ½Ó¿Ú¡£
+	 * æŒ‚èµ·è®¾å¤‡å¤±è´¥ï¼Œæ¢å¤å·²ç»æŒ‚èµ·çš„æ¥å£ã€‚
 	 */
 	if (status != 0) {
 		while (--i >= 0) {
@@ -1168,7 +1168,7 @@ static int usb_suspend_both(struct usb_device *udev, pm_message_t msg)
 	/* If the suspend succeeded then prevent any more URB submissions,
 	 * flush any outstanding URBs, and propagate the suspend up the tree.
 	 */
-	} else {/* ¼ÈÈ»Éè±¸ÒÑ¾­¹ÒÆğ³É¹¦£¬¾Í²»ÓÃÔÙ´¦Àí×Ô¶¯¹ÒÆğÁË¡£ */
+	} else {/* æ—¢ç„¶è®¾å¤‡å·²ç»æŒ‚èµ·æˆåŠŸï¼Œå°±ä¸ç”¨å†å¤„ç†è‡ªåŠ¨æŒ‚èµ·äº†ã€‚ */
 		cancel_delayed_work(&udev->autosuspend);
 		udev->can_submit = 0;
 		for (i = 0; i < 16; ++i) {
@@ -1568,7 +1568,7 @@ int usb_external_suspend_device(struct usb_device *udev, pm_message_t msg)
 
 	usb_pm_lock(udev);
 	/**
-	 * ÒÑ¾­ÔÚ¹ÒÆğÉè±¸ÁË£¬ÉèÖÃ½ûÖ¹¹ÒÆğ±êÖ¾¡£
+	 * å·²ç»åœ¨æŒ‚èµ·è®¾å¤‡äº†ï¼Œè®¾ç½®ç¦æ­¢æŒ‚èµ·æ ‡å¿—ã€‚
 	 */
 	udev->auto_pm = 0;
 	status = usb_suspend_both(udev, msg);
@@ -1605,14 +1605,14 @@ int usb_external_resume_device(struct usb_device *udev)
 }
 
 /**
- * USBÉè±¸¹ÒÆğº¯Êı¡£
+ * USBè®¾å¤‡æŒ‚èµ·å‡½æ•°ã€‚
  */
 static int usb_suspend(struct device *dev, pm_message_t message)
 {
 	struct usb_device	*udev;
 
 	/**
-	 * Ö»ÓĞUSBÉè±¸²ÅÖ§³ÖPM¡£
+	 * åªæœ‰USBè®¾å¤‡æ‰æ”¯æŒPMã€‚
 	 */
 	if (!is_usb_device(dev))	/* Ignore PM for interfaces */
 		return 0;

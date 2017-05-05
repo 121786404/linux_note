@@ -100,7 +100,7 @@ static int wait_for_packet(struct sock *sk, int *err, long *timeo_p)
 	error = 0;
 	*timeo_p = schedule_timeout(*timeo_p);
 out:
-	/* °Ñ×Ô¼º´ÓµÈ´ı¶ÓÁĞÖĞÉ¾³ı */
+	/* æŠŠè‡ªå·±ä»ç­‰å¾…é˜Ÿåˆ—ä¸­åˆ é™¤ */
 	finish_wait(sk->sk_sleep, &wait);
 	return error;
 interrupted:
@@ -143,7 +143,7 @@ out_noerr:
  *	quite explicitly by POSIX 1003.1g, don't change them without having
  *	the standard around please.
  */
-/* ´ÓskÖĞ½ÓÊÕÊı¾İ±¨  
+/* ä»skä¸­æ¥æ”¶æ•°æ®æŠ¥  
   */
 struct sk_buff *skb_recv_datagram(struct sock *sk, unsigned flags,
 				  int noblock, int *err)
@@ -180,13 +180,13 @@ struct sk_buff *skb_recv_datagram(struct sock *sk, unsigned flags,
 		} else
 			skb = skb_dequeue(&sk->sk_receive_queue);
 
-		/* Èç¹û´Ó½ÓÊÕ¶ÓÁĞÖĞ»ñÈ¡µ½Êı¾İ±¨ÔòÖ±½Ó·µ»Ø */
+		/* å¦‚æœä»æ¥æ”¶é˜Ÿåˆ—ä¸­è·å–åˆ°æ•°æ®æŠ¥åˆ™ç›´æ¥è¿”å› */
 		if (skb)
 			return skb;
 
 		/* User doesn't want to wait */
 		error = -EAGAIN;
-		/* Èç¹ûÊÇ·Ç×èÈû£¬ÔòÖ±½Ó·µ»Ø */
+		/* å¦‚æœæ˜¯éé˜»å¡ï¼Œåˆ™ç›´æ¥è¿”å› */
 		if (!timeo)
 			goto no_packet;
 
@@ -213,7 +213,7 @@ void skb_free_datagram(struct sock *sk, struct sk_buff *skb)
  *
  *	Note: the iovec is modified during the copy.
  */
-/* ½«skbÖĞµÄÊı¾İ¿½±´µ½iovecÖĞÖ¸ÏòµÄÓÃ»§¿Õ¼äµØÖ· */
+/* å°†skbä¸­çš„æ•°æ®æ‹·è´åˆ°iovecä¸­æŒ‡å‘çš„ç”¨æˆ·ç©ºé—´åœ°å€ */
 int skb_copy_datagram_iovec(const struct sk_buff *skb, int offset,
 			    struct iovec *to, int len)
 {

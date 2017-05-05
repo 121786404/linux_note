@@ -3,8 +3,8 @@
 
 #include <linux/thread_info.h>
 /*
-current¸ø³öÁËµ±Ç°½ø³Ì½ø³ÌÃèÊö·ûtask_structµÄµØÖ·£¬
-¸ÃµØÖ·ÍùÍùÍ¨¹ýcurrent_thread_infoÀ´È·¶¨ 
+currentç»™å‡ºäº†å½“å‰è¿›ç¨‹è¿›ç¨‹æè¿°ç¬¦task_structçš„åœ°å€ï¼Œ
+è¯¥åœ°å€å¾€å¾€é€šè¿‡current_thread_infoæ¥ç¡®å®š 
 current = current_thread_info()->task
 */
 #define get_current() (current_thread_info()->task)

@@ -18,7 +18,7 @@ static inline struct pt_regs *get_irq_regs(void)
 	return this_cpu_read(irq_regs);
 }
 
-/*set_irq_regs将一个per_CPU型的指针变量__irq_regs保存到old_regs中，然后将__irq_regs赋予了一个新值regs,这样中断处理过程中，系统中每个ｃｐｕ都可以通过__irq_regs来访问系统保存的中断现场*/
+/*set_irq_regs灏嗕竴涓猵er_CPU鍨嬬殑鎸囬拡鍙橀噺__irq_regs淇濆瓨鍒皁ld_regs涓紝鐒跺悗灏哶_irq_regs璧嬩簣浜嗕竴涓柊鍊紃egs,杩欐牱涓柇澶勭悊杩囩▼涓紝绯荤粺涓瘡涓絻锝愶綍閮藉彲浠ラ�氳繃__irq_regs鏉ヨ闂郴缁熶繚瀛樼殑涓柇鐜板満*/
 static inline struct pt_regs *set_irq_regs(struct pt_regs *new_regs)
 {
 	struct pt_regs *old_regs;

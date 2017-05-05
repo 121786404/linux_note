@@ -101,7 +101,7 @@ typedef void (*pm_hook)(struct us_data *, int);	/* power management hook */
 
 /* we allocate one of these for every device that we remember */
 /**
- * USB�洢�豸�ṹ��
+ * USB存储设备结构。
  */
 struct us_data {
 	/* The device we're working with

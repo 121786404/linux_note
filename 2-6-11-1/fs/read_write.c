@@ -219,15 +219,15 @@ ssize_t do_sync_read(struct file *filp, char __user *buf, size_t len, loff_t *pp
 
 EXPORT_SYMBOL(do_sync_read);
 
-/* VFSÎÄ¼þÏµÍ³µÄ¶Á²Ù×÷
-  * pos±íÊ¾´ÓÎÄ¼þµÄÆ«ÒÆÎ»ÖÃ¿ªÊ¼´¦¶ÁÈ¡ 
-  * count±íÊ¾¶ÁÈ¡ÊýÁ¿  
+/* VFSæ–‡ä»¶ç³»ç»Ÿçš„è¯»æ“ä½œ
+  * posè¡¨ç¤ºä»Žæ–‡ä»¶çš„åç§»ä½ç½®å¼€å§‹å¤„è¯»å– 
+  * countè¡¨ç¤ºè¯»å–æ•°é‡  
   */
 ssize_t vfs_read(struct file *file, char __user *buf, size_t count, loff_t *pos)
 {
 	ssize_t ret;
 
-        /* ÅÐ¶ÏÊÇ·ñ¿É¶Á */
+        /* åˆ¤æ–­æ˜¯å¦å¯è¯» */
 	if (!(file->f_mode & FMODE_READ))
 		return -EBADF;
 	if (!file->f_op || (!file->f_op->read && !file->f_op->aio_read))
@@ -239,7 +239,7 @@ ssize_t vfs_read(struct file *file, char __user *buf, size_t count, loff_t *pos)
 	if (!ret) {
 		ret = security_file_permission (file, MAY_READ);
 		if (!ret) {
-                        /* Èç¹ûÃ»ÓÐÕý³£µÄ*/
+                        /* å¦‚æžœæ²¡æœ‰æ­£å¸¸çš„*/
 			if (file->f_op->read)
 				ret = file->f_op->read(file, buf, count, pos);
 			else

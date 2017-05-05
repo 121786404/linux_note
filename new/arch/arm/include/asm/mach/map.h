@@ -16,19 +16,19 @@
 
 struct map_desc {
 /*
-ӳ�䵽�������ַ�Ŀ�ʼ
+映射到的虚拟地址的开始
 */
 	unsigned long virtual;
 /*
-	��ӳ��������ڴ����ʼҳ��
+	被映射的物理内存的起始页框
 */
 	unsigned long pfn;
 /*
-	��ӳ��������ڴ�Ĵ�С,ע�����ﲻ��ҳ���С
+	被映射的物理内存的大小,注意这里不是页框大小
 */
 	unsigned long length;
 /*
-	ӳ�����ͣ�MT_xxx����������Ӧӳ��ҳ��ķ���Ȩ��
+	映射类型，MT_xxx，决定了相应映射页面的访问权限
 */
 	unsigned int type;
 };

@@ -741,7 +741,7 @@ int device_add(struct device *dev)
 
 	/* first, register with generic layer. */
 	kobject_set_name(&dev->kobj, "%s", dev->bus_id);
-	/* ³õÊ¼»¯Ê±ÒÑ¾­½«¸¸×Ó¹ØÏµÉèÖÃºÃ£¬ÔÚ´ËÖ»ĞèÒª½«ËüÌí¼Óµ½sysfsÖĞ */
+	/* åˆå§‹åŒ–æ—¶å·²ç»å°†çˆ¶å­å…³ç³»è®¾ç½®å¥½ï¼Œåœ¨æ­¤åªéœ€è¦å°†å®ƒæ·»åŠ åˆ°sysfsä¸­ */
 	error = kobject_add(&dev->kobj);
 	if (error)
 		goto Error;
@@ -775,14 +775,14 @@ int device_add(struct device *dev)
 	if (error)
 		goto PMError;
 	device_pm_add(dev);
-	/* ÔÚ×ÜÏßÄ¿Â¼ÏÂÖ¸ÏòÉè±¸£¬ÔÚÉè±¸Ä¿Â¼ÏÂÖ¸Ïò×ÜÏß */
+	/* åœ¨æ€»çº¿ç›®å½•ä¸‹æŒ‡å‘è®¾å¤‡ï¼Œåœ¨è®¾å¤‡ç›®å½•ä¸‹æŒ‡å‘æ€»çº¿ */
 	error = bus_add_device(dev);
 	if (error)
 		goto BusError;
 	kobject_uevent(&dev->kobj, KOBJ_ADD);
-	/* ×Ô¶¯Ì½²âÉè±¸¡£Ìí¼ÓÇı¶¯µ½Á´±í */
+	/* è‡ªåŠ¨æ¢æµ‹è®¾å¤‡ã€‚æ·»åŠ é©±åŠ¨åˆ°é“¾è¡¨ */
 	bus_attach_device(dev);
-	if (parent)/* ½«Éè±¸Ìí¼Óµ½¸¸½ÚµãµÄÁ´±íÖĞ */
+	if (parent)/* å°†è®¾å¤‡æ·»åŠ åˆ°çˆ¶èŠ‚ç‚¹çš„é“¾è¡¨ä¸­ */
 		klist_add_tail(&dev->knode_parent, &parent->klist_children);
 
 	if (dev->class) {
@@ -856,10 +856,10 @@ int device_add(struct device *dev)
  *	before it is added to the hierarchy.
  */
 
-/* ½«Ò»¸öĞÂÉè±¸Ìí¼Óµ½ÄÚºËÖĞ */
+/* å°†ä¸€ä¸ªæ–°è®¾å¤‡æ·»åŠ åˆ°å†…æ ¸ä¸­ */
 int device_register(struct device *dev)
 {
-	/* ½«ĞÂÉè±¸Ìí¼Óµ½Éè±¸×ÓÏµÍ³ */
+	/* å°†æ–°è®¾å¤‡æ·»åŠ åˆ°è®¾å¤‡å­ç³»ç»Ÿ */
 	device_initialize(dev);
 	return device_add(dev);
 }

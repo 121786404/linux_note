@@ -23,8 +23,8 @@
 
 /*
  * This controls the default maximum pid allocated to a process
- * ��CONFIG_BASE_SMALL����Ϊ0������£�PID��ȡֵ��Χ��0��32767��
- * ��ϵͳ�еĽ��������Ϊ32768��
+ * 在CONFIG_BASE_SMALL配置为0的情况下，PID的取值范围是0到32767，
+ * 即系统中的进程数最大为32768个
  */
 #define PID_MAX_DEFAULT (CONFIG_BASE_SMALL ? 0x1000 : 0x8000)
 

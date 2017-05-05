@@ -838,7 +838,7 @@ asmlinkage long sys_setfsuid(uid_t uid)
 }
 
 /*
- * Samma pÃ¥ svenska..
+ * Samma pæ°“ svenska..
  */
 asmlinkage long sys_setfsgid(gid_t gid)
 {
@@ -1420,7 +1420,7 @@ asmlinkage long sys_setdomainname(char __user *name, int len)
 }
 
 /**
- * ¼ì²é½ø³ÌµÄµ±Ç°ÏŞÖÆ
+ * æ£€æŸ¥è¿›ç¨‹çš„å½“å‰é™åˆ¶
  */
 asmlinkage long sys_getrlimit(unsigned int resource, struct rlimit __user *rlim)
 {
@@ -1460,8 +1460,8 @@ asmlinkage long sys_old_getrlimit(unsigned int resource, struct rlimit __user *r
 #endif
 
 /**
- * ÏµÍ³µ÷ÓÃ£¬ÉèÖÃ½ø³ÌµÄµ±Ç°ÏŞÖÆ
- * ÏŞÖÆÖµ²»ÄÜ³¬¹ırlim_maxµÄÖµ
+ * ç³»ç»Ÿè°ƒç”¨ï¼Œè®¾ç½®è¿›ç¨‹çš„å½“å‰é™åˆ¶
+ * é™åˆ¶å€¼ä¸èƒ½è¶…è¿‡rlim_maxçš„å€¼
  */
 asmlinkage long sys_setrlimit(unsigned int resource, struct rlimit __user *rlim)
 {

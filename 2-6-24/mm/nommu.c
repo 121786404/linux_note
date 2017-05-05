@@ -223,7 +223,7 @@ long vwrite(char *buf, char *addr, unsigned long count)
  *	use __vmalloc() instead.
  */
 /**
- * 非连续地址映射
+ * 闈炶繛缁湴鍧�鏄犲皠
  */
 void *vmalloc(unsigned long size)
 {

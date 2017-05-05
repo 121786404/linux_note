@@ -117,11 +117,11 @@ struct poll_table_page {
 static void __pollwait(struct file *filp, wait_queue_head_t *wait_address,
 		       poll_table *p);
 
-/*struct poll_wqueues¶ÔÏótableµÄ³õÊ¼»¯·¢ÉúÔÚpoll_initwaitÖĞ*/
+/*struct poll_wqueueså¯¹è±¡tableçš„åˆå§‹åŒ–å‘ç”Ÿåœ¨poll_initwaitä¸­*/
 void poll_initwait(struct poll_wqueues *pwq)
 {
 	init_poll_funcptr(&pwq->pt, __pollwait);
-	/*°Ñµ±Ç°½ø³ÌµÄtask_struct¶ÔÏóÖ¸Õëcurrent·ÅÈëpwqµÄpolling_taskÖĞ,»½ĞÑ²Ù×÷½«»áÓÃÕâ¸ö±äÁ¿ÕÒµ½ĞèÒª»½ĞÑµÄ½ø³Ì*/
+	/*æŠŠå½“å‰è¿›ç¨‹çš„task_structå¯¹è±¡æŒ‡é’ˆcurrentæ”¾å…¥pwqçš„polling_taskä¸­,å”¤é†’æ“ä½œå°†ä¼šç”¨è¿™ä¸ªå˜é‡æ‰¾åˆ°éœ€è¦å”¤é†’çš„è¿›ç¨‹*/
 	pwq->polling_task = current;
 	pwq->triggered = 0;
 	pwq->error = 0;
@@ -136,7 +136,7 @@ static void free_poll_entry(struct poll_table_entry *entry)
 	fput(entry->filp);
 }
 
-/*º¯ÊıÖ»×öÒ»Ğ©×ÊÔ´ÊÍ·ÅÀàµÄ¸¨Öú¹¤×÷*/
+/*å‡½æ•°åªåšä¸€äº›èµ„æºé‡Šæ”¾ç±»çš„è¾…åŠ©å·¥ä½œ*/
 void poll_freewait(struct poll_wqueues *pwq)
 {
 	struct poll_table_page * p = pwq->table;
@@ -223,9 +223,9 @@ static int pollwake(wait_queue_t *wait, unsigned mode, int sync, void *key)
 static void __pollwait(struct file *filp, wait_queue_head_t *wait_address,
 				poll_table *p)
 {
-	/*Í¨¹ıp»ñµÃpwqÖ¸Õë*/
+	/*é€šè¿‡pè·å¾—pwqæŒ‡é’ˆ*/
 	struct poll_wqueues *pwq = container_of(p, struct poll_wqueues, pt);
-	/*´Ópwq¹ÜÀíµÄÊı¾İ½á¹¹ÉÏ»ñµÃµÈ´ı½ÚµãËùÔÚµÄ¿Õ¼ä*/
+	/*ä»pwqç®¡ç†çš„æ•°æ®ç»“æ„ä¸Šè·å¾—ç­‰å¾…èŠ‚ç‚¹æ‰€åœ¨çš„ç©ºé—´*/
 	struct poll_table_entry *entry = poll_get_entry(pwq);
 	if (!entry)
 		return;
@@ -234,11 +234,11 @@ static void __pollwait(struct file *filp, wait_queue_head_t *wait_address,
 	entry->key = p->_key;
 	init_waitqueue_func_entry(&entry->wait, pollwake);
 	entry->wait.private = pwq;
-	/*½«Æä¼ÓÈëµ½µÈ´ı¶ÓÁĞwait_addressÖĞ,ºóÕßÊÇÓÉ¸÷×ÔµÄÇı¶¯³ÌĞòÎ¬»¤µÄµÈ´ı¶ÓÁĞ*/
+	/*å°†å…¶åŠ å…¥åˆ°ç­‰å¾…é˜Ÿåˆ—wait_addressä¸­,åè€…æ˜¯ç”±å„è‡ªçš„é©±åŠ¨ç¨‹åºç»´æŠ¤çš„ç­‰å¾…é˜Ÿåˆ—*/
 	add_wait_queue(wait_address, &entry->wait);
 }
 
-/*ÈÃ½ø³ÌË¯Ãß*/
+/*è®©è¿›ç¨‹ç¡çœ */
 int poll_schedule_timeout(struct poll_wqueues *pwq, int state,
 			  ktime_t *expires, unsigned long slack)
 {
@@ -768,7 +768,7 @@ struct poll_list {
  * pwait poll_table will be used by the fd-provided poll handler for waiting,
  * if pwait->_qproc is non-NULL.
  */
-/*º¯ÊıµÄ¹¦ÄÜÊÇ¸ù¾İµ±Ç°µÄfdÕÒµ½¶ÔÓ¦µÄstruct file *filp,È»ºóµ÷ÓÃpollÀı³Ì*/
+/*å‡½æ•°çš„åŠŸèƒ½æ˜¯æ ¹æ®å½“å‰çš„fdæ‰¾åˆ°å¯¹åº”çš„struct file *filp,ç„¶åè°ƒç”¨pollä¾‹ç¨‹*/
 static inline unsigned int do_pollfd(struct pollfd *pollfd, poll_table *pwait,
 				     bool *can_busy_poll,
 				     unsigned int busy_flag)
@@ -791,8 +791,8 @@ static inline unsigned int do_pollfd(struct pollfd *pollfd, poll_table *pwait,
 					*can_busy_poll = true;
 			}
 			/* Mask out unneeded events. */
-			/*ÓÉÉè±¸Çı¶¯³ÌĞòÖĞµÄpollÀı³Ì·µ»Ø,ÓÃÀ´¼ÇÂ¼Çı¶¯³ÌĞòÖĞ·¢ÉúµÄÊÂ¼ş,
-			 *È»ºódo_pollfd½«Æä¼ÇÂ¼ÔÚpollfd->reventsÖĞ,²¢×îÖÕ·µ»Øµ½ÓÃ»§¿Õ¼ä*/
+			/*ç”±è®¾å¤‡é©±åŠ¨ç¨‹åºä¸­çš„pollä¾‹ç¨‹è¿”å›,ç”¨æ¥è®°å½•é©±åŠ¨ç¨‹åºä¸­å‘ç”Ÿçš„äº‹ä»¶,
+			 *ç„¶ådo_pollfdå°†å…¶è®°å½•åœ¨pollfd->reventsä¸­,å¹¶æœ€ç»ˆè¿”å›åˆ°ç”¨æˆ·ç©ºé—´*/
 			mask &= pollfd->events | POLLERR | POLLHUP;
 			fdput(f);
 		}
@@ -802,9 +802,9 @@ static inline unsigned int do_pollfd(struct pollfd *pollfd, poll_table *pwait,
 	return mask;
 }
 
-/* ¸Ãº¯Êı¿ÉÄÜ»á×èÈû,µ±Æä·µ»ØÊ±,Æä·µ»ØÖµ½«´«µİµ½ÓÃ»§¿Õ¼äÓÃÒÔÖ¸Ê¾±¾´Î²Ù×÷µÄ×´Ì¬,fdcount>0
- * ±íÃ÷¼¯ºÏÖĞÓĞfdcount¸öÎÄ¼şÃèÊö·û¿ÉÒÔ½øĞĞ¶Á»òÕßĞ´,fdcount=0±íÃ÷¼¯ºÏÖĞËùÓĞÎÄ¼şÃèÊö·ûÉĞ
- * ÎŞ×´Ì¬±ä»¯,timeoutÖ¸¶¨µÄÊ±¼äµ½,º¯Êı³¬Ê±;fdcount<0±íÃ÷º¯Êıµ÷ÓÃÊ§°Ü,´íÎóÔ­ÒòĞ´Èëerrno*/
+/* è¯¥å‡½æ•°å¯èƒ½ä¼šé˜»å¡,å½“å…¶è¿”å›æ—¶,å…¶è¿”å›å€¼å°†ä¼ é€’åˆ°ç”¨æˆ·ç©ºé—´ç”¨ä»¥æŒ‡ç¤ºæœ¬æ¬¡æ“ä½œçš„çŠ¶æ€,fdcount>0
+ * è¡¨æ˜é›†åˆä¸­æœ‰fdcountä¸ªæ–‡ä»¶æè¿°ç¬¦å¯ä»¥è¿›è¡Œè¯»æˆ–è€…å†™,fdcount=0è¡¨æ˜é›†åˆä¸­æ‰€æœ‰æ–‡ä»¶æè¿°ç¬¦å°š
+ * æ— çŠ¶æ€å˜åŒ–,timeoutæŒ‡å®šçš„æ—¶é—´åˆ°,å‡½æ•°è¶…æ—¶;fdcount<0è¡¨æ˜å‡½æ•°è°ƒç”¨å¤±è´¥,é”™è¯¯åŸå› å†™å…¥errno*/
 static int do_poll(struct poll_list *list, struct poll_wqueues *wait,
 		   struct timespec64 *end_time)
 {
@@ -841,9 +841,9 @@ static int do_poll(struct poll_list *list, struct poll_wqueues *wait,
 				 * this. They'll get immediately deregistered
 				 * when we break out and return.
 				 */
-				 /*Ê×ÏÈ¶ÔÎÄ¼şÃèÊö·û¼¯ºÏÖĞµÄÃ¿¸öÃèÊö·ûµ÷ÓÃdo_pollfd,Í¬Ê±
-				  *´«ÈëÒ»¸östruct pollfdÀàĞÍµÄÖ¸Õë,º¯ÊıµÄ¹¦ÄÜÊÇ¸ù¾İµ±Ç°µÄ
-				  *fdÕÒµ½¶ÔÓ¦µÄstruct file *filp,È»ºóµ÷ÓÃpollÀı³Ì*/
+				 /*é¦–å…ˆå¯¹æ–‡ä»¶æè¿°ç¬¦é›†åˆä¸­çš„æ¯ä¸ªæè¿°ç¬¦è°ƒç”¨do_pollfd,åŒæ—¶
+				  *ä¼ å…¥ä¸€ä¸ªstruct pollfdç±»å‹çš„æŒ‡é’ˆ,å‡½æ•°çš„åŠŸèƒ½æ˜¯æ ¹æ®å½“å‰çš„
+				  *fdæ‰¾åˆ°å¯¹åº”çš„struct file *filp,ç„¶åè°ƒç”¨pollä¾‹ç¨‹*/
 				if (do_pollfd(pfd, pt, &can_busy_loop,
 					      busy_flag)) {
 					count++;
@@ -864,7 +864,7 @@ static int do_poll(struct poll_list *list, struct poll_wqueues *wait,
 			if (signal_pending(current))
 				count = -EINTR;
 		}
-		/*Éè¶¨timeout²ÎÊıÎª0,»òÕßµ±Ç°Éè±¸Ö´ĞĞpollÊ±Éè±¸ÖĞÇ¡ºÃÓĞ¾ÍĞ÷µÄÊı¾İ*/
+		/*è®¾å®štimeoutå‚æ•°ä¸º0,æˆ–è€…å½“å‰è®¾å¤‡æ‰§è¡Œpollæ—¶è®¾å¤‡ä¸­æ°å¥½æœ‰å°±ç»ªçš„æ•°æ®*/
 		if (count || timed_out)
 			break;
 
@@ -889,7 +889,7 @@ static int do_poll(struct poll_list *list, struct poll_wqueues *wait,
 			to = &expire;
 		}
 
-		/*ÈÃ½ø³ÌË¯Ãß*/
+		/*è®©è¿›ç¨‹ç¡çœ */
 		if (!poll_schedule_timeout(wait, TASK_INTERRUPTIBLE, to, slack))
 			timed_out = 1;
 	}
@@ -899,12 +899,12 @@ static int do_poll(struct poll_list *list, struct poll_wqueues *wait,
 #define N_STACK_PPS ((sizeof(stack_pps) - sizeof(struct poll_list))  / \
 			sizeof(struct pollfd))
 
-/*sys_pollÏµÍ³µ÷ÓÃµÄÔ­ĞÎºÍÓÃ»§¿Õ¼äµÄpollÒ»Ñù,º¯ÊıÄÚ²¿Ö÷Òªµ÷ÓÃdo_sys_pollÀ´ÊµÏÖÆäºËĞÄ¹¦ÄÜ*/
+/*sys_pollç³»ç»Ÿè°ƒç”¨çš„åŸå½¢å’Œç”¨æˆ·ç©ºé—´çš„pollä¸€æ ·,å‡½æ•°å†…éƒ¨ä¸»è¦è°ƒç”¨do_sys_pollæ¥å®ç°å…¶æ ¸å¿ƒåŠŸèƒ½*/
 int do_sys_poll(struct pollfd __user *ufds, unsigned int nfds,
 		struct timespec64 *end_time)
 {
-	struct poll_wqueues table;	/* table±äÁ¿ÊÇ¸ö¹Ø¼üÔªËØ,ÒòÎªÕâ¸ö±äÁ¿µÄ³ÉÔ±
-					 * poll_table pt½«±»´«µİ¸øÇı¶¯³ÌĞò*/
+	struct poll_wqueues table;	/* tableå˜é‡æ˜¯ä¸ªå…³é”®å…ƒç´ ,å› ä¸ºè¿™ä¸ªå˜é‡çš„æˆå‘˜
+					 * poll_table ptå°†è¢«ä¼ é€’ç»™é©±åŠ¨ç¨‹åº*/
  	int err = -EFAULT, fdcount, len, size;
 	/* Allocate small arguments on the stack to save memory and be
 	   faster - use long to make sure the buffer is aligned properly
@@ -941,14 +941,14 @@ int do_sys_poll(struct pollfd __user *ufds, unsigned int nfds,
 		}
 	}
 
-	/*struct poll_wqueues¶ÔÏótableµÄ³õÊ¼»¯·¢ÉúÔÚpoll_initwaitÖĞ*/
+	/*struct poll_wqueueså¯¹è±¡tableçš„åˆå§‹åŒ–å‘ç”Ÿåœ¨poll_initwaitä¸­*/
 	poll_initwait(&table);
-	/* do_sys_pollµÄºËĞÄÊµÏÖÔÚdo_pollÖĞ,¸Ãº¯Êı¿ÉÄÜ»á×èÈû,µ±Æä·µ»ØÊ±,Æä·µ»ØÖµ½«´«µİµ½
-	 * ÓÃ»§¿Õ¼äÓÃÒÔÖ¸Ê¾±¾´Î²Ù×÷µÄ×´Ì¬,fdcount>0±íÃ÷¼¯ºÏÖĞÓĞfdcount¸öÎÄ¼şÃèÊö·û¿ÉÒÔ
-	 * ½øĞĞ¶Á»òÕßĞ´,fdcount=0±íÃ÷¼¯ºÏÖĞËùÓĞÎÄ¼şÃèÊö·ûÉĞÎŞ×´Ì¬±ä»¯,timeoutÖ¸¶¨µÄÊ±¼ä
-	 * µ½,º¯Êı³¬Ê±;fdcount<0±íÃ÷º¯Êıµ÷ÓÃÊ§°Ü,´íÎóÔ­ÒòĞ´Èëerrno*/
+	/* do_sys_pollçš„æ ¸å¿ƒå®ç°åœ¨do_pollä¸­,è¯¥å‡½æ•°å¯èƒ½ä¼šé˜»å¡,å½“å…¶è¿”å›æ—¶,å…¶è¿”å›å€¼å°†ä¼ é€’åˆ°
+	 * ç”¨æˆ·ç©ºé—´ç”¨ä»¥æŒ‡ç¤ºæœ¬æ¬¡æ“ä½œçš„çŠ¶æ€,fdcount>0è¡¨æ˜é›†åˆä¸­æœ‰fdcountä¸ªæ–‡ä»¶æè¿°ç¬¦å¯ä»¥
+	 * è¿›è¡Œè¯»æˆ–è€…å†™,fdcount=0è¡¨æ˜é›†åˆä¸­æ‰€æœ‰æ–‡ä»¶æè¿°ç¬¦å°šæ— çŠ¶æ€å˜åŒ–,timeoutæŒ‡å®šçš„æ—¶é—´
+	 * åˆ°,å‡½æ•°è¶…æ—¶;fdcount<0è¡¨æ˜å‡½æ•°è°ƒç”¨å¤±è´¥,é”™è¯¯åŸå› å†™å…¥errno*/
 	fdcount = do_poll(head, &table, end_time);
-	/*º¯ÊıÖ»×öÒ»Ğ©×ÊÔ´ÊÍ·ÅÀàµÄ¸¨Öú¹¤×÷*/
+	/*å‡½æ•°åªåšä¸€äº›èµ„æºé‡Šæ”¾ç±»çš„è¾…åŠ©å·¥ä½œ*/
 	poll_freewait(&table);
 
 	for (walk = head; walk; walk = walk->next) {
@@ -994,7 +994,7 @@ static long do_restart_poll(struct restart_block *restart_block)
 	return ret;
 }
 
-/*sys_pollÏµÍ³µ÷ÓÃµÄÔ­ĞÎºÍÓÃ»§¿Õ¼äµÄpollÒ»Ñù,º¯ÊıÄÚ²¿Ö÷Òªµ÷ÓÃdo_sys_pollÀ´ÊµÏÖÆäºËĞÄ¹¦ÄÜ*/
+/*sys_pollç³»ç»Ÿè°ƒç”¨çš„åŸå½¢å’Œç”¨æˆ·ç©ºé—´çš„pollä¸€æ ·,å‡½æ•°å†…éƒ¨ä¸»è¦è°ƒç”¨do_sys_pollæ¥å®ç°å…¶æ ¸å¿ƒåŠŸèƒ½*/
 SYSCALL_DEFINE3(poll, struct pollfd __user *, ufds, unsigned int, nfds,
 		int, timeout_msecs)
 {

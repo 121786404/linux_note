@@ -8,7 +8,7 @@
 
 struct tvec_t_base_s;
 
-/* 时钟结构 */
+/* 鏃堕挓缁撴瀯 */
 struct timer_list {
 	struct list_head entry;
 	unsigned long expires;

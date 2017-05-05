@@ -29,12 +29,12 @@ void msg_exit_ns(struct ipc_namespace *ns);
 void shm_exit_ns(struct ipc_namespace *ns);
 
 struct ipc_ids {
-	/* ÃüÃû¿Õ¼äÖĞÕıÔÚÊ¹ÓÃµÄipc¶ÔÏóÊıÄ¿ */
+	/* å‘½åç©ºé—´ä¸­æ­£åœ¨ä½¿ç”¨çš„ipcå¯¹è±¡æ•°ç›® */
 	int in_use;
-	/* ÓÃÓÚÁ¬Ğø²úÉúÓÃ»§¿Õ¼äIPC ID */
+	/* ç”¨äºè¿ç»­äº§ç”Ÿç”¨æˆ·ç©ºé—´IPC ID */
 	unsigned short seq;
 	unsigned short seq_max;
-	/* ÄÚºËĞÅºÅÁ¿£¬±ÜÃâÓÃ»§¿Õ¼äÖĞµÄ¾ºÕù¡£ */
+	/* å†…æ ¸ä¿¡å·é‡ï¼Œé¿å…ç”¨æˆ·ç©ºé—´ä¸­çš„ç«äº‰ã€‚ */
 	struct rw_semaphore rw_mutex;
 	struct idr ipcs_idr;
 };

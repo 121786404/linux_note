@@ -216,31 +216,31 @@ enum rq_flag_bits {
  * try to put the fields that are referenced together in the same cacheline
  */
 /**
- * ¿éÉè±¸µÄÇëÇó½á¹¹
+ * å—è®¾å¤‡çš„è¯·æ±‚ç»“æ„
  */
 struct request {
-	/* Í¨¹ı´Ë×Ö¶Î½«ÇëÇóÁ´½Óµ½Òì²½Á´±íÖĞ */
+	/* é€šè¿‡æ­¤å­—æ®µå°†è¯·æ±‚é“¾æ¥åˆ°å¼‚æ­¥é“¾è¡¨ä¸­ */
 	struct list_head queuelist;
-	/* Í¨¹ı´Ë×Ö¶Î½«ÇëÇóÁ´½Óµ½Íê³ÉÁ´±íÖĞ */
+	/* é€šè¿‡æ­¤å­—æ®µå°†è¯·æ±‚é“¾æ¥åˆ°å®Œæˆé“¾è¡¨ä¸­ */
 	struct list_head donelist;
 
-	/* ËùÊôµÄÇëÇó¶ÓÁĞ */
+	/* æ‰€å±çš„è¯·æ±‚é˜Ÿåˆ— */
 	struct request_queue *q;
 
-	/* Ò»×éÍ¨ÓÃµÄÇëÇó±êÖ¾ */
+	/* ä¸€ç»„é€šç”¨çš„è¯·æ±‚æ ‡å¿— */
 	unsigned int cmd_flags;
-	/* ÇëÇóÀàĞÍ */
+	/* è¯·æ±‚ç±»å‹ */
 	enum rq_cmd_type_bits cmd_type;
 
 	/* Maintain bio traversal state for part by part I/O submission.
 	 * hard_* are block layer internals, no driver should touch them!
 	 */
 
-	/* Ëù´«ÊäÊı¾İµÄÎ»ÖÃ:ÆğÊ¼ÉÈÇø£¬µ±Ç°¶ÎÖĞ»¹ĞèÒª´«ÊäµÄÉÈÇøÊıÄ¿£¬µ±Ç°ÇëÇóÖĞ»¹ĞèÒª´«ÊäµÄÉÈÇøÊıÄ¿ */
+	/* æ‰€ä¼ è¾“æ•°æ®çš„ä½ç½®:èµ·å§‹æ‰‡åŒºï¼Œå½“å‰æ®µä¸­è¿˜éœ€è¦ä¼ è¾“çš„æ‰‡åŒºæ•°ç›®ï¼Œå½“å‰è¯·æ±‚ä¸­è¿˜éœ€è¦ä¼ è¾“çš„æ‰‡åŒºæ•°ç›® */
 	sector_t sector;		/* next sector to submit */
 	sector_t hard_sector;		/* next sector to complete */
 	unsigned long nr_sectors;	/* no. of sectors left to submit */
-	/* Õâ¼¸¸ö±äÁ¿ÓëÇ°Èı¸ö±äÁ¿Í¨³£ÏàÍ¬£¬±íÊ¾ÎïÀíÓ²¼şÉÏµÄÊı¾İÎ»ÖÃ¡£µ«ÊÇ£¬Èç¹ûÂß¼­ÉÈÇøÓëÎïÀíÉÈÇø²»Í¬£¬ÕâÓĞ²îÒì¡£ */
+	/* è¿™å‡ ä¸ªå˜é‡ä¸å‰ä¸‰ä¸ªå˜é‡é€šå¸¸ç›¸åŒï¼Œè¡¨ç¤ºç‰©ç†ç¡¬ä»¶ä¸Šçš„æ•°æ®ä½ç½®ã€‚ä½†æ˜¯ï¼Œå¦‚æœé€»è¾‘æ‰‡åŒºä¸ç‰©ç†æ‰‡åŒºä¸åŒï¼Œè¿™æœ‰å·®å¼‚ã€‚ */
 	unsigned long hard_nr_sectors;	/* no. of sectors left to complete */
 	/* no. of sectors left to submit in the current segment */
 	unsigned int current_nr_sectors;
@@ -248,9 +248,9 @@ struct request {
 	/* no. of sectors left to complete in the current segment */
 	unsigned int hard_cur_sectors;
 
-	/* µ±Ç°´«Êä£¬µ«ÊÇ»¹Ã»ÓĞÍê³ÉµÄbioÇëÇó */
+	/* å½“å‰ä¼ è¾“ï¼Œä½†æ˜¯è¿˜æ²¡æœ‰å®Œæˆçš„bioè¯·æ±‚ */
 	struct bio *bio;
-	/* ÇëÇóÖĞ×îºóÒ»¸öbio */
+	/* è¯·æ±‚ä¸­æœ€åä¸€ä¸ªbio */
 	struct bio *biotail;
 
 	struct hlist_node hash;	/* merge hash */
@@ -268,7 +268,7 @@ struct request {
 	 * two pointers are available for the IO schedulers, if they need
 	 * more they have to dynamically allocate it.
 	 */
-	/* Ë½ÓĞÊı¾İ */
+	/* ç§æœ‰æ•°æ® */
 	void *elevator_private;
 	void *elevator_private2;
 
@@ -278,7 +278,7 @@ struct request {
 	/* Number of scatter-gather DMA addr+len pairs after
 	 * physical address coalescing is performed.
 	 */
-	/* ÔÚÊ¹ÓÃSGÊ±£¬ÇëÇóÖĞ¶ÎµÄÊıÄ¿ */
+	/* åœ¨ä½¿ç”¨SGæ—¶ï¼Œè¯·æ±‚ä¸­æ®µçš„æ•°ç›® */
 	unsigned short nr_phys_segments;
 
 	/* Number of scatter-gather addr+len pairs after
@@ -286,7 +286,7 @@ struct request {
 	 * This is the number of scatter-gather entries the driver
 	 * will actually have to deal with after DMA mapping is done.
 	 */
-	/* ÔÚÊ¹ÓÃSGÊ±£¬ÇëÇóÖĞ¶ÎµÄÊıÄ¿£¬¾­¹ıIO MMUÖØÅÅ */
+	/* åœ¨ä½¿ç”¨SGæ—¶ï¼Œè¯·æ±‚ä¸­æ®µçš„æ•°ç›®ï¼Œç»è¿‡IO MMUé‡æ’ */
 	unsigned short nr_hw_segments;
 
 	unsigned short ioprio;
@@ -363,42 +363,42 @@ struct blk_queue_tag {
 };
 
 /**
- * ´ÅÅÌÇëÇó¶ÓÁĞ
+ * ç£ç›˜è¯·æ±‚é˜Ÿåˆ—
  */
 struct request_queue
 {
 	/*
 	 * Together with queue_head for cacheline sharing
 	 */
-	/* Á´±íÍ·£¬±£´æËùÓĞIOÇëÇó¡£Ã¿¸öÇëÇóÊÇÒ»¸örequest½á¹¹ */
+	/* é“¾è¡¨å¤´ï¼Œä¿å­˜æ‰€æœ‰IOè¯·æ±‚ã€‚æ¯ä¸ªè¯·æ±‚æ˜¯ä¸€ä¸ªrequestç»“æ„ */
 	struct list_head	queue_head;
 	struct request		*last_merge;
-	/* Óë¶ÓÁĞÏà¹ØÁªµÄIOÖØÅÅËã·¨ */
+	/* ä¸é˜Ÿåˆ—ç›¸å…³è”çš„IOé‡æ’ç®—æ³• */
 	elevator_t		*elevator;
 
 	/*
 	 * the queue request freelist, one for reads and one for writes
 	 */
-	/* ÓÃÓÚ¶ÁĞ´ÇëÇóµÄ¿ÕÏĞÁ´±í */
+	/* ç”¨äºè¯»å†™è¯·æ±‚çš„ç©ºé—²é“¾è¡¨ */
 	struct request_list	rq;
 
-	/* ´¦ÀíÇëÇóµÄ»Øµ÷º¯ÊıÖ¸Õë */
-	request_fn_proc		*request_fn;/* ½«¶ÓÁĞÖĞµÄÇëÇó·¢ËÍµ½Éè±¸ */
+	/* å¤„ç†è¯·æ±‚çš„å›è°ƒå‡½æ•°æŒ‡é’ˆ */
+	request_fn_proc		*request_fn;/* å°†é˜Ÿåˆ—ä¸­çš„è¯·æ±‚å‘é€åˆ°è®¾å¤‡ */
 	/**
-	 * ´´½¨ĞÂÇëÇó¡£
-	 * ±ê×¼ÊµÏÖÊÇÏòÇëÇóÁ´±íÌí¼ÓÇëÇó¡£Èç¹ûÓĞ×ã¹»¶àµÄÇëÇó£¬¾Í»áµ÷ÓÃrequest_fn¡£
-	 * Èç¹ûÉè±¸²»Ê¹ÓÃ¶ÓÁĞ£¬Ôò¿ÉÄÜÖØĞ´¸Ãº¯Êı¡£
+	 * åˆ›å»ºæ–°è¯·æ±‚ã€‚
+	 * æ ‡å‡†å®ç°æ˜¯å‘è¯·æ±‚é“¾è¡¨æ·»åŠ è¯·æ±‚ã€‚å¦‚æœæœ‰è¶³å¤Ÿå¤šçš„è¯·æ±‚ï¼Œå°±ä¼šè°ƒç”¨request_fnã€‚
+	 * å¦‚æœè®¾å¤‡ä¸ä½¿ç”¨é˜Ÿåˆ—ï¼Œåˆ™å¯èƒ½é‡å†™è¯¥å‡½æ•°ã€‚
 	 */
 	make_request_fn		*make_request_fn;
-	/* ÇëÇóÔ¤±¸º¯Êı¡£ÓÃÓÚÔÚÊµ¼Ê·¢ËÍµÄÇëÇóÇ°£¬Ô¤±¸ÇëÇó´¦Àí¡£Ò»°ãÎªNULL */
+	/* è¯·æ±‚é¢„å¤‡å‡½æ•°ã€‚ç”¨äºåœ¨å®é™…å‘é€çš„è¯·æ±‚å‰ï¼Œé¢„å¤‡è¯·æ±‚å¤„ç†ã€‚ä¸€èˆ¬ä¸ºNULL */
 	prep_rq_fn		*prep_rq_fn;
-	/* ²¦³ö¿éÉè±¸Ê±µ÷ÓÃ£¬ÒÑÓĞµÄÇëÇó²»»á±»Ö´ĞĞ£¬¶øÊÇ½«ÆäÊÕ¼¯ÆğÀ´¡£¿ÉÌá¸ßĞÔÄÜ¡£ */
+	/* æ‹¨å‡ºå—è®¾å¤‡æ—¶è°ƒç”¨ï¼Œå·²æœ‰çš„è¯·æ±‚ä¸ä¼šè¢«æ‰§è¡Œï¼Œè€Œæ˜¯å°†å…¶æ”¶é›†èµ·æ¥ã€‚å¯æé«˜æ€§èƒ½ã€‚ */
 	unplug_fn		*unplug_fn;
-	/* ÓÃÓÚÈ·¶¨ÊÇ·ñ¿ÉÒÔÏòÏÖ´æµÄÇëÇóÔö¼Ó¸ü¶àµÄÊı¾İ¡£ */
+	/* ç”¨äºç¡®å®šæ˜¯å¦å¯ä»¥å‘ç°å­˜çš„è¯·æ±‚å¢åŠ æ›´å¤šçš„æ•°æ®ã€‚ */
 	merge_bvec_fn		*merge_bvec_fn;
-	/* ÔÚÒ»´ÎĞÔµÄÖ´ĞĞËùÓĞÇëÇóÒÔÇ°£¬µ÷ÓÃ´Ë·½·¨£¬ÀûÓÃ´Ë·½·¨¿ÉÒÔ½øĞĞ±ØÒªµÄÇåÀí¡£ */
+	/* åœ¨ä¸€æ¬¡æ€§çš„æ‰§è¡Œæ‰€æœ‰è¯·æ±‚ä»¥å‰ï¼Œè°ƒç”¨æ­¤æ–¹æ³•ï¼Œåˆ©ç”¨æ­¤æ–¹æ³•å¯ä»¥è¿›è¡Œå¿…è¦çš„æ¸…ç†ã€‚ */
 	prepare_flush_fn	*prepare_flush_fn;
-	/* Çı¶¯ÔÚÈí¼şÖĞ¶ÏÍê³ÉÇëÇóºó£¬µ÷ÓÃ´Ëº¯ÊıÍ¨ÖªÇı¶¯¡£ */
+	/* é©±åŠ¨åœ¨è½¯ä»¶ä¸­æ–­å®Œæˆè¯·æ±‚åï¼Œè°ƒç”¨æ­¤å‡½æ•°é€šçŸ¥é©±åŠ¨ã€‚ */
 	softirq_done_fn		*softirq_done_fn;
 
 	/*
@@ -410,7 +410,7 @@ struct request_queue
 	/*
 	 * Auto-unplugging state
 	 */
-	/* ÓÃÓÚÊµÏÖÒ»¸ö¶¨Ê±Æ÷»úÖÆ£¬ÔÚÒ»¶¨Ê±¼äÄÚ×Ô¶¯²¦³öÉè±¸£¬ÊµÏÖÅúÁ¿´¦ÀíIOÇëÇó */
+	/* ç”¨äºå®ç°ä¸€ä¸ªå®šæ—¶å™¨æœºåˆ¶ï¼Œåœ¨ä¸€å®šæ—¶é—´å†…è‡ªåŠ¨æ‹¨å‡ºè®¾å¤‡ï¼Œå®ç°æ‰¹é‡å¤„ç†IOè¯·æ±‚ */
 	struct timer_list	unplug_timer;
 	int			unplug_thresh;	/* After this many requests */
 	unsigned long		unplug_delay;	/* After this many jiffies */
@@ -433,7 +433,7 @@ struct request_queue
 	/*
 	 * various queue flags, see QUEUE_* below
 	 */
-	/* ¶ÓÁĞµÄÄÚ²¿×´Ì¬ */
+	/* é˜Ÿåˆ—çš„å†…éƒ¨çŠ¶æ€ */
 	unsigned long		queue_flags;
 
 	/*
@@ -452,21 +452,21 @@ struct request_queue
 	/*
 	 * queue settings
 	 */
-	/* ¶ÓÁĞÖĞÇëÇóµÄ×î´óÊıÄ¿£¬Ò»°ãÎª128 */
+	/* é˜Ÿåˆ—ä¸­è¯·æ±‚çš„æœ€å¤§æ•°ç›®ï¼Œä¸€èˆ¬ä¸º128 */
 	unsigned long		nr_requests;	/* Max # of requests */
-	/* ÇëÇóÊıÄ¿´ïµ½ÓµÈûµÄ·§Öµ£¬ÓµÈûÊ±£¬¿ÕÏĞrequest½á¹¹µÄÊıÄ¿±Ø¶¨Ğ¡ÓÚ¸ÃÖµ */
+	/* è¯·æ±‚æ•°ç›®è¾¾åˆ°æ‹¥å¡çš„é˜€å€¼ï¼Œæ‹¥å¡æ—¶ï¼Œç©ºé—²requestç»“æ„çš„æ•°ç›®å¿…å®šå°äºè¯¥å€¼ */
 	unsigned int		nr_congestion_on;
-	/* µ±¿ÕÏĞÇëÇó³¬¹ı´ËÖµ£¬½â³ıÓµÈû×´Ì¬ */
+	/* å½“ç©ºé—²è¯·æ±‚è¶…è¿‡æ­¤å€¼ï¼Œè§£é™¤æ‹¥å¡çŠ¶æ€ */
 	unsigned int		nr_congestion_off;
 	unsigned int		nr_batching;
 
-	/* ¶ÓÁĞÖĞÃèÊöËù¹ÜÀíµÄ¿éÉè±¸ÖĞ£¬ÓëÓ²¼şÏà¹ØµÄÒ»Ğ©ÉèÖÃ */
-	unsigned int		max_sectors;/* µ¥¸öÇëÇóÖĞ£¬×î´óÄÜ´¦ÀíµÄÉÈÇøÊıÄ¿ */
+	/* é˜Ÿåˆ—ä¸­æè¿°æ‰€ç®¡ç†çš„å—è®¾å¤‡ä¸­ï¼Œä¸ç¡¬ä»¶ç›¸å…³çš„ä¸€äº›è®¾ç½® */
+	unsigned int		max_sectors;/* å•ä¸ªè¯·æ±‚ä¸­ï¼Œæœ€å¤§èƒ½å¤„ç†çš„æ‰‡åŒºæ•°ç›® */
 	unsigned int		max_hw_sectors;
-	unsigned short		max_phys_segments;/* S/GÇëÇóÖĞ£¬²»Á¬Ğø¶ÎµÄ×î´óÊıÄ¿ */
-	unsigned short		max_hw_segments;/* Óëmax_phys_segmentsÀàËÆ£¬µ«ÊÇ¿¼ÂÇÁËIO MMUËù½øĞĞµÄÖØĞÂÓ³Éä */
-	unsigned short		hardsect_size;/* Éè±¸µÄÎïÀíÉÈÇø³¤¶È£¬Í¨³£ÊÇ512 */
-	unsigned int		max_segment_size;/* µ¥¸öÇëÇóµÄ×î´ó¶Î³¤¶È */
+	unsigned short		max_phys_segments;/* S/Gè¯·æ±‚ä¸­ï¼Œä¸è¿ç»­æ®µçš„æœ€å¤§æ•°ç›® */
+	unsigned short		max_hw_segments;/* ä¸max_phys_segmentsç±»ä¼¼ï¼Œä½†æ˜¯è€ƒè™‘äº†IO MMUæ‰€è¿›è¡Œçš„é‡æ–°æ˜ å°„ */
+	unsigned short		hardsect_size;/* è®¾å¤‡çš„ç‰©ç†æ‰‡åŒºé•¿åº¦ï¼Œé€šå¸¸æ˜¯512 */
+	unsigned int		max_segment_size;/* å•ä¸ªè¯·æ±‚çš„æœ€å¤§æ®µé•¿åº¦ */
 
 	unsigned long		seg_boundary_mask;
 	unsigned int		dma_alignment;

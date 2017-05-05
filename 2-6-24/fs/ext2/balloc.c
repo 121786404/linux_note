@@ -604,7 +604,7 @@ find_next_usable_block(int start, struct buffer_head *bh, int maxblocks)
  * new bitmap.
  */
 /**
- * ÔÚ¿é×éÄÚ·ÖÅä¿é£¬Ö±½ÓÓë¿éÎ»Í¼½»»¥¡£¿ÉÒÔ´¦ÀíÓĞÎŞÔ¤Áô´°¿ÚÁ½ÖÖÇé¿ö¡£
+ * åœ¨å—ç»„å†…åˆ†é…å—ï¼Œç›´æ¥ä¸å—ä½å›¾äº¤äº’ã€‚å¯ä»¥å¤„ç†æœ‰æ— é¢„ç•™çª—å£ä¸¤ç§æƒ…å†µã€‚
  */
 static int
 ext2_try_to_allocate(struct super_block *sb, int group,
@@ -617,23 +617,23 @@ ext2_try_to_allocate(struct super_block *sb, int group,
 	unsigned long num = 0;
 
 	/* we do allocation within the reservation window if we have a window */
-	if (my_rsv) {/* ÓĞÔ¤Áô´°¿Ú */
+	if (my_rsv) {/* æœ‰é¢„ç•™çª—å£ */
 		group_first_block = ext2_group_first_block_no(sb, group);
-		if (my_rsv->_rsv_start >= group_first_block)/* Ô¤Áô´°¿Ú¿ªÊ¼ÓÚ¿é×éÄÚ²¿ */
-			start = my_rsv->_rsv_start - group_first_block;/* ½«Ô¤ÁôÆğÊ¼Î»ÖÃ×ª»»Îª×éÄÚÏà¶ÔÎ»ÖÃ */
+		if (my_rsv->_rsv_start >= group_first_block)/* é¢„ç•™çª—å£å¼€å§‹äºå—ç»„å†…éƒ¨ */
+			start = my_rsv->_rsv_start - group_first_block;/* å°†é¢„ç•™èµ·å§‹ä½ç½®è½¬æ¢ä¸ºç»„å†…ç›¸å¯¹ä½ç½® */
 		else
 			/* reservation window cross group boundary */
-			start = 0;/* ´Ó×éÄÚµÚ0¿é¿ªÊ¼Ô¤Áô */
+			start = 0;/* ä»ç»„å†…ç¬¬0å—å¼€å§‹é¢„ç•™ */
 		end = my_rsv->_rsv_end - group_first_block + 1;
-		if (end > EXT2_BLOCKS_PER_GROUP(sb))/* Ô¤Áô´°¿Ú²»ÄÜ³¬¹ı±¾×é×îºóÒ»¿é */
+		if (end > EXT2_BLOCKS_PER_GROUP(sb))/* é¢„ç•™çª—å£ä¸èƒ½è¶…è¿‡æœ¬ç»„æœ€åä¸€å— */
 			/* reservation window crosses group boundary */
 			end = EXT2_BLOCKS_PER_GROUP(sb);
 		if ((start <= grp_goal) && (grp_goal < end))
 			start = grp_goal;
 		else
 			grp_goal = -1;
-	} else {/* Ã»ÓĞÔ¤Áô´°¿Ú */
-		if (grp_goal > 0)/* ¸ø³öÁËÄ¿±ê¿é£¬Ôò´ÓÄ¿±ê¿é¿ªÊ¼ËÑË÷ */
+	} else {/* æ²¡æœ‰é¢„ç•™çª—å£ */
+		if (grp_goal > 0)/* ç»™å‡ºäº†ç›®æ ‡å—ï¼Œåˆ™ä»ç›®æ ‡å—å¼€å§‹æœç´¢ */
 			start = grp_goal;
 		else
 			start = 0;
@@ -842,7 +842,7 @@ static int find_next_reservable_window(
  *
  */
 /**
- * ´´½¨ĞÂµÄÔ¤Áô´°¿Ú
+ * åˆ›å»ºæ–°çš„é¢„ç•™çª—å£
  */
 static int alloc_new_reservation(struct ext2_reserve_window_node *my_rsv,
 		ext2_grpblk_t grp_goal, struct super_block *sb,
@@ -856,7 +856,7 @@ static int alloc_new_reservation(struct ext2_reserve_window_node *my_rsv,
 	int ret;
 	spinlock_t *rsv_lock = &EXT2_SB(sb)->s_rsv_window_lock;
 
-	/* È·¶¨´ÓÄÄ¸ö¿é¿ªÊ¼ËÑË÷Ô¤Áô´°¿Ú */
+	/* ç¡®å®šä»å“ªä¸ªå—å¼€å§‹æœç´¢é¢„ç•™çª—å£ */
 	group_first_block = ext2_group_first_block_no(sb, group);
 	group_end_block = group_first_block + (EXT2_BLOCKS_PER_GROUP(sb) - 1);
 
@@ -867,7 +867,7 @@ static int alloc_new_reservation(struct ext2_reserve_window_node *my_rsv,
 
 	size = my_rsv->rsv_goal_size;
 
-	/* ÒÑ¾­ÓĞÔ¤Áô´°¿ÚÁË */
+	/* å·²ç»æœ‰é¢„ç•™çª—å£äº† */
 	if (!rsv_is_empty(&my_rsv->rsv_window)) {
 		/*
 		 * if the old reservation is cross group boundary
@@ -1040,7 +1040,7 @@ static void try_to_extend_reservation(struct ext2_reserve_window_node *my_rsv,
  * We use a red-black tree for the per-filesystem reservation list.
  */
 /**
- * ·ÖÅäĞÂ¿é¼°Ô¤Áô´°¿Ú
+ * åˆ†é…æ–°å—åŠé¢„ç•™çª—å£
  */
 static ext2_grpblk_t
 ext2_try_to_allocate_with_rsv(struct super_block *sb, unsigned int group,
@@ -1058,7 +1058,7 @@ ext2_try_to_allocate_with_rsv(struct super_block *sb, unsigned int group,
 	 * or the file is not a regular file
 	 * or last attempt to allocate a block with reservation turned on failed
 	 */
-	if (my_rsv == NULL) {/* ²»Ê¹ÓÃÔ¤·ÖÅä»úÖÆ£¬Ö±½Óµ÷ÓÃext2_try_to_allocate·ÖÅä¿é */
+	if (my_rsv == NULL) {/* ä¸ä½¿ç”¨é¢„åˆ†é…æœºåˆ¶ï¼Œç›´æ¥è°ƒç”¨ext2_try_to_allocateåˆ†é…å— */
 		return ext2_try_to_allocate(sb, group, bitmap_bh,
 						grp_goal, count, NULL);
 	}
@@ -1087,28 +1087,28 @@ ext2_try_to_allocate_with_rsv(struct super_block *sb, unsigned int group,
 	 * then we could go to allocate from the reservation window directly.
 	 */
 	while (1) {
-		/* ÉÏÒ»ÂÖÔ¤ÁôÊ§°Ü£¬Ò²ĞèÒª·ÖÅäÒ»¸öĞÂµÄÔ¤Áô´°¿Ú */
-		if (rsv_is_empty(&my_rsv->rsv_window) || (ret < 0) ||/* Ã»ÓĞÓëÎÄ¼ş¹ØÁªµÄÔ¤ÁôÇøÓò */
+		/* ä¸Šä¸€è½®é¢„ç•™å¤±è´¥ï¼Œä¹Ÿéœ€è¦åˆ†é…ä¸€ä¸ªæ–°çš„é¢„ç•™çª—å£ */
+		if (rsv_is_empty(&my_rsv->rsv_window) || (ret < 0) ||/* æ²¡æœ‰ä¸æ–‡ä»¶å…³è”çš„é¢„ç•™åŒºåŸŸ */
 			!goal_in_my_reservation(&my_rsv->rsv_window,
-						grp_goal, group, sb)) {/* Ô¤ÆÚÄ¿±ê¿é²¢²»ÔÚµ±Ç°´°¿ÚÄÚ²¿ */
+						grp_goal, group, sb)) {/* é¢„æœŸç›®æ ‡å—å¹¶ä¸åœ¨å½“å‰çª—å£å†…éƒ¨ */
 			if (my_rsv->rsv_goal_size < *count)
 				my_rsv->rsv_goal_size = *count;
-			/* ´´½¨Ò»¸ö°üº¬Ä¿±ê¿éµÄÔ¤Áô´°¿Ú */
+			/* åˆ›å»ºä¸€ä¸ªåŒ…å«ç›®æ ‡å—çš„é¢„ç•™çª—å£ */
 			ret = alloc_new_reservation(my_rsv, grp_goal, sb,
 							group, bitmap_bh);
 			if (ret < 0)
 				break;			/* failed */
 
 			if (!goal_in_my_reservation(&my_rsv->rsv_window,
-							grp_goal, group, sb))/* Ä¿±ê¿é²»ÄÜ°üº¬ÔÚ´°¿ÚÄÚ */
+							grp_goal, group, sb))/* ç›®æ ‡å—ä¸èƒ½åŒ…å«åœ¨çª—å£å†… */
 				grp_goal = -1;
-		} else if (grp_goal >= 0) {/* ÓĞÔ¤Áô´°¿Ú²¢ÇÒÖ¸¶¨ÁËÄ¿±ê¿é */
+		} else if (grp_goal >= 0) {/* æœ‰é¢„ç•™çª—å£å¹¶ä¸”æŒ‡å®šäº†ç›®æ ‡å— */
 			int curr = my_rsv->rsv_end -
 					(grp_goal + group_first_block) + 1;
 
-			if (curr < *count)/* µ±Ç°Ô¤Áô´°¿Ú½ÏĞ¡£¬²»ÄÜ·ÖÅäËùĞèÒªµÄ¿é */
+			if (curr < *count)/* å½“å‰é¢„ç•™çª—å£è¾ƒå°ï¼Œä¸èƒ½åˆ†é…æ‰€éœ€è¦çš„å— */
 				try_to_extend_reservation(my_rsv, sb,
-							*count - curr);/* À©Õ¹Ô¤Áô´°¿Ú */
+							*count - curr);/* æ‰©å±•é¢„ç•™çª—å£ */
 		}
 
 		if ((my_rsv->rsv_start > group_last_block) ||
@@ -1116,10 +1116,10 @@ ext2_try_to_allocate_with_rsv(struct super_block *sb, unsigned int group,
 			rsv_window_dump(&EXT2_SB(sb)->s_rsv_window_root, 1);
 			BUG();
 		}
-		/* ·ÖÅäÔ¤¶¨µÄ¿é£¬°üº¬Ô¤Áô´°¿Ú */
+		/* åˆ†é…é¢„å®šçš„å—ï¼ŒåŒ…å«é¢„ç•™çª—å£ */
 		ret = ext2_try_to_allocate(sb, group, bitmap_bh, grp_goal,
 					   &num, &my_rsv->rsv_window);
-		if (ret >= 0) {/* ·ÖÅäÁËÒ»Ğ©¿é£¬¸üĞÂÔ¤Áô¼ÆÊı */
+		if (ret >= 0) {/* åˆ†é…äº†ä¸€äº›å—ï¼Œæ›´æ–°é¢„ç•™è®¡æ•° */
 			my_rsv->rsv_alloc_hit += num;
 			*count = num;
 			break;				/* succeed */
@@ -1164,12 +1164,12 @@ static int ext2_has_free_blocks(struct ext2_sb_info *sbi)
  * This function also updates quota and i_blocks field.
  */
 /**
- * ·ÖÅäÊı¾İ¿é£¬¾¡Á¿Á¬Ğø£¬²¢ÇÒ´¦ÀíÔ¤·ÖÅä¡£
- *	inode:Îª¸Ãinode·ÖÅä¿é
- *	goal:ÀíÏëµÄ¿éºÅ
- *	count:ĞèÒªµÄ¿éÊı
- *	errp:´íÎóºÅ
- *  ·µ»ØÖµ:·ÖÅäµÄµÚÒ»¸ö¿éºÅ
+ * åˆ†é…æ•°æ®å—ï¼Œå°½é‡è¿ç»­ï¼Œå¹¶ä¸”å¤„ç†é¢„åˆ†é…ã€‚
+ *	inode:ä¸ºè¯¥inodeåˆ†é…å—
+ *	goal:ç†æƒ³çš„å—å·
+ *	count:éœ€è¦çš„å—æ•°
+ *	errp:é”™è¯¯å·
+ *  è¿”å›å€¼:åˆ†é…çš„ç¬¬ä¸€ä¸ªå—å·
  */
 ext2_fsblk_t ext2_new_blocks(struct inode *inode, ext2_fsblk_t goal,
 		    unsigned long *count, int *errp)
@@ -1221,13 +1221,13 @@ ext2_fsblk_t ext2_new_blocks(struct inode *inode, ext2_fsblk_t goal,
 	 * reservation on that particular file)
 	 */
 	block_i = EXT2_I(inode)->i_block_alloc_info;
-	if (block_i) {/* ¸ÃinodeÓĞÔ¤·ÖÅä»úÖÆ */
+	if (block_i) {/* è¯¥inodeæœ‰é¢„åˆ†é…æœºåˆ¶ */
 		windowsz = block_i->rsv_window_node.rsv_goal_size;
 		if (windowsz > 0)
 			my_rsv = &block_i->rsv_window_node;
 	}
 
-	if (!ext2_has_free_blocks(sbi)) {/* ÎÄ¼ş±ØĞëÖÁÉÙÓĞÒ»¸ö¿ÕÏĞ¿é£¬²ÅÄÜ·ÖÅä¿é */
+	if (!ext2_has_free_blocks(sbi)) {/* æ–‡ä»¶å¿…é¡»è‡³å°‘æœ‰ä¸€ä¸ªç©ºé—²å—ï¼Œæ‰èƒ½åˆ†é…å— */
 		*errp = -ENOSPC;
 		goto out;
 	}
@@ -1235,15 +1235,15 @@ ext2_fsblk_t ext2_new_blocks(struct inode *inode, ext2_fsblk_t goal,
 	/*
 	 * First, test whether the goal block is free.
 	 */
-	if (goal < le32_to_cpu(es->s_first_data_block) ||/* Ä¿±ê¿é¿ÉÄÜ²»ÊÇÓĞĞ§µÄ¿éºÅ£¬ĞŞÕıËü */
+	if (goal < le32_to_cpu(es->s_first_data_block) ||/* ç›®æ ‡å—å¯èƒ½ä¸æ˜¯æœ‰æ•ˆçš„å—å·ï¼Œä¿®æ­£å®ƒ */
 	    goal >= le32_to_cpu(es->s_blocks_count))
 		goal = le32_to_cpu(es->s_first_data_block);
-	/* ¼ÆËãÄ¿±ê¿éËùÔÚµÄ×é */
+	/* è®¡ç®—ç›®æ ‡å—æ‰€åœ¨çš„ç»„ */
 	group_no = (goal - le32_to_cpu(es->s_first_data_block)) /
 			EXT2_BLOCKS_PER_GROUP(sb);
 	goal_group = group_no;
 retry_alloc:
-	/* »ñµÃ×é¶ÔÓ¦µÄ×éÃèÊö·û */
+	/* è·å¾—ç»„å¯¹åº”çš„ç»„æè¿°ç¬¦ */
 	gdp = ext2_get_group_desc(sb, group_no, &gdp_bh);
 	if (!gdp)
 		goto io_error;
@@ -1253,17 +1253,17 @@ retry_alloc:
 	 * if there is not enough free blocks to make a new resevation
 	 * turn off reservation for this allocation
 	 */
-	if (my_rsv && (free_blocks < windowsz)/* ¿ÕÏĞ¿éÉÙÓÚÔ¤·ÖÅä¿Õ¼ä£¬¹Ø±ÕÔ¤·ÖÅä */
+	if (my_rsv && (free_blocks < windowsz)/* ç©ºé—²å—å°‘äºé¢„åˆ†é…ç©ºé—´ï¼Œå…³é—­é¢„åˆ†é… */
 		&& (rsv_is_empty(&my_rsv->rsv_window)))
 		my_rsv = NULL;
 
-	if (free_blocks > 0) {/* ×éÄÚÓĞ¿ÕÏĞ¿Õ¼ä */
+	if (free_blocks > 0) {/* ç»„å†…æœ‰ç©ºé—²ç©ºé—´ */
 		grp_target_blk = ((goal - le32_to_cpu(es->s_first_data_block)) %
 				EXT2_BLOCKS_PER_GROUP(sb));
 		bitmap_bh = read_block_bitmap(sb, group_no);
 		if (!bitmap_bh)
 			goto io_error;
-		/* Ê¹ÓÃÔ¤·ÖÅä»úÖÆ·ÖÅäËùĞèµÄÊı¾İ¿é */
+		/* ä½¿ç”¨é¢„åˆ†é…æœºåˆ¶åˆ†é…æ‰€éœ€çš„æ•°æ®å— */
 		grp_alloc_blk = ext2_try_to_allocate_with_rsv(sb, group_no,
 					bitmap_bh, grp_target_blk,
 					my_rsv, &num);
@@ -1271,7 +1271,7 @@ retry_alloc:
 			goto allocated;
 	}
 
-	/* µ±Ç°×éÄÚÃ»ÓĞ·ÖÅäµ½¿é */
+	/* å½“å‰ç»„å†…æ²¡æœ‰åˆ†é…åˆ°å— */
 	ngroups = EXT2_SB(sb)->s_groups_count;
 	smp_rmb();
 
@@ -1279,11 +1279,11 @@ retry_alloc:
 	 * Now search the rest of the groups.  We assume that 
 	 * i and gdp correctly point to the last group visited.
 	 */
-	for (bgi = 0; bgi < ngroups; bgi++) {/* ´Óµ±Ç°¿é×é¿ªÊ¼£¬±éÀúËùÓĞ×é */
+	for (bgi = 0; bgi < ngroups; bgi++) {/* ä»å½“å‰å—ç»„å¼€å§‹ï¼Œéå†æ‰€æœ‰ç»„ */
 		group_no++;
 		if (group_no >= ngroups)
 			group_no = 0;
-		/* »ñµÃ×éÃèÊö·û */
+		/* è·å¾—ç»„æè¿°ç¬¦ */
 		gdp = ext2_get_group_desc(sb, group_no, &gdp_bh);
 		if (!gdp)
 			goto io_error;
@@ -1316,7 +1316,7 @@ retry_alloc:
 	 * In this case, we just forget about the reservations
 	 * just do block allocation as without reservations.
 	 */
-	if (my_rsv) {/* ÈÔÈ»ÎŞ·¨·ÖÅäµ½¿é£¬½ûÓÃÔ¤·ÖÅä»úÖÆºóÖØÊÔ */
+	if (my_rsv) {/* ä»ç„¶æ— æ³•åˆ†é…åˆ°å—ï¼Œç¦ç”¨é¢„åˆ†é…æœºåˆ¶åé‡è¯• */
 		my_rsv = NULL;
 		windowsz = 0;
 		group_no = goal_group;

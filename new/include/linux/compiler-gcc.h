@@ -142,11 +142,11 @@
 
 #if GCC_VERSION >= 30400
 /*
-ÀûÓÃgcc±àÒëÆ÷µÄ_attribute_¸øº¯Êý¼ÓÉÏÁËÊôÐÔ£¬Õâ¸öÊôÐÔµÄ×÷ÓÃÊÇ£º 
-ÈÃ±àÒëÆ÷¼ì²éËùÓÐµ÷ÓÃÕßÊÇ·ñ¶¼¼ì²éº¯ÊýµÄ½á¹û¡£
-ÕâÈ·±£µ÷ÓÃÕßÊÊµ±µØ¼ìÑéº¯Êý½á¹û£¬´Ó¶øÄÜ¹»ÊÊµ±µØ´¦Àí´íÎó¡£
-Ò²¾ÍÊÇËµ£¬µ÷ÓÃÕßÔÚÄÃµ½½á¹ûºó±ØÐëÒª½øÐÐ¼ì²éÊÇ·ñ·µ»ØÁËÕýÈ·µÄ½á¹¹£¬
-·ñÔò±àÒëÆ÷»á¸ø³öÌáÊ¾ÐÅÏ¢
+åˆ©ç”¨gccç¼–è¯‘å™¨çš„_attribute_ç»™å‡½æ•°åŠ ä¸Šäº†å±žæ€§ï¼Œè¿™ä¸ªå±žæ€§çš„ä½œç”¨æ˜¯ï¼š 
+è®©ç¼–è¯‘å™¨æ£€æŸ¥æ‰€æœ‰è°ƒç”¨è€…æ˜¯å¦éƒ½æ£€æŸ¥å‡½æ•°çš„ç»“æžœã€‚
+è¿™ç¡®ä¿è°ƒç”¨è€…é€‚å½“åœ°æ£€éªŒå‡½æ•°ç»“æžœï¼Œä»Žè€Œèƒ½å¤Ÿé€‚å½“åœ°å¤„ç†é”™è¯¯ã€‚
+ä¹Ÿå°±æ˜¯è¯´ï¼Œè°ƒç”¨è€…åœ¨æ‹¿åˆ°ç»“æžœåŽå¿…é¡»è¦è¿›è¡Œæ£€æŸ¥æ˜¯å¦è¿”å›žäº†æ­£ç¡®çš„ç»“æž„ï¼Œ
+å¦åˆ™ç¼–è¯‘å™¨ä¼šç»™å‡ºæç¤ºä¿¡æ¯
 */
 #define __must_check		__attribute__((warn_unused_result))
 #define __malloc		__attribute__((__malloc__))

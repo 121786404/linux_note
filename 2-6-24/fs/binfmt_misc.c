@@ -1,7 +1,7 @@
 /*
  *  binfmt_misc.c
  *
- *  Copyright (C) 1997 Richard G眉nther
+ *  Copyright (C) 1997 Richard G鐪塶ther
  *
  *  binfmt_misc detects binaries via a magic or filename extension and invokes
  *  a specified wrapper. This should obsolete binfmt_java, binfmt_em86 and
@@ -734,7 +734,7 @@ static int bm_get_sb(struct file_system_type *fs_type,
 	return get_sb_single(fs_type, flags, data, bm_fill_super, mnt);
 }
 
-/* 类似于script_format，但是根据扩展名来确定解释执行的程序 */
+/* 绫讳技浜巗cript_format锛屼絾鏄牴鎹墿灞曞悕鏉ョ‘瀹氳В閲婃墽琛岀殑绋嬪簭 */
 static struct linux_binfmt misc_format = {
 	.module = THIS_MODULE,
 	.load_binary = load_misc_binary,

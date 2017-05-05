@@ -299,8 +299,8 @@ long vwrite(char *buf, char *addr, unsigned long count)
  *	For tight control over page level allocator and protection flags
  *	use __vmalloc() instead.
  */
- /* ËûµÄÌØµãÊÇ·ÖÅäµÄÐéÄâµØÖ·¿Õ¼äÊÇÁ¬ÐøµÄ£¬µ«ÊÇÕâ¶ÎÐéÄâµØÖ·¿Õ¼äËùÓ³ÉäµÄ
-  * ÎïÀíµØÖ·¿ÉÄÜÊÇ²»Á¬ÐøµÄ,vmallocº¯ÊýÖ÷Òª¶ÔvmÇø½øÐÐ²Ù×÷,ÔÚÇý¶¯³ÌÐòÖÐ²»¹ÄÀøÊ¹ÓÃ*/
+ /* ä»–çš„ç‰¹ç‚¹æ˜¯åˆ†é…çš„è™šæ‹Ÿåœ°å€ç©ºé—´æ˜¯è¿žç»­çš„ï¼Œä½†æ˜¯è¿™æ®µè™šæ‹Ÿåœ°å€ç©ºé—´æ‰€æ˜ å°„çš„
+  * ç‰©ç†åœ°å€å¯èƒ½æ˜¯ä¸è¿žç»­çš„,vmallocå‡½æ•°ä¸»è¦å¯¹vmåŒºè¿›è¡Œæ“ä½œ,åœ¨é©±åŠ¨ç¨‹åºä¸­ä¸é¼“åŠ±ä½¿ç”¨*/
 void *vmalloc(unsigned long size)
 {
        return __vmalloc(size, GFP_KERNEL | __GFP_HIGHMEM, PAGE_KERNEL);

@@ -303,7 +303,7 @@ void fill_inquiry_response(struct us_data *us, unsigned char *data,
 }
 
 /**
- * USBÊØ»¤½ø³Ì¡£
+ * USBå®ˆæŠ¤è¿›ç¨‹ã€‚
  */
 static int usb_stor_control_thread(void * __us)
 {
@@ -313,8 +313,8 @@ static int usb_stor_control_thread(void * __us)
 	for(;;) {
 		US_DEBUGP("*** thread sleeping.\n");
 		/**
-		 * Ä£¿é±»Ğ¶ÔØ»òÕßÊÕµ½SCSIÃüÁî(queuecommandº¯Êı)Ê±£¬»á»½ĞÑ´ËĞÅºÅÁ¿¡£
-		 * Èç¹ûÊÕµ½ĞÅºÅ£¬¿ÉÄÜÊÇ¹Ø»úÁË£¬ĞèÒªÍË³öÑ­»·¡£
+		 * æ¨¡å—è¢«å¸è½½æˆ–è€…æ”¶åˆ°SCSIå‘½ä»¤(queuecommandå‡½æ•°)æ—¶ï¼Œä¼šå”¤é†’æ­¤ä¿¡å·é‡ã€‚
+		 * å¦‚æœæ”¶åˆ°ä¿¡å·ï¼Œå¯èƒ½æ˜¯å…³æœºäº†ï¼Œéœ€è¦é€€å‡ºå¾ªç¯ã€‚
 		 */
 		if(down_interruptible(&us->sema))
 			break;
@@ -326,7 +326,7 @@ static int usb_stor_control_thread(void * __us)
 
 		/* if the device has disconnected, we are free to exit */
 		/**
-		 * UÅÌÒÑ¾­±»²¦³ö¡£
+		 * Uç›˜å·²ç»è¢«æ‹¨å‡ºã€‚
 		 */
 		if (test_bit(US_FLIDX_DISCONNECTING, &us->flags)) {
 			US_DEBUGP("-- exiting\n");
@@ -339,7 +339,7 @@ static int usb_stor_control_thread(void * __us)
 
 		/* has the command timed out *already* ? */
 		/**
-		 * ¿ÉÄÜÊÇcommand_abortÉèÖÃÁË´Ë±êÖ¾¡£
+		 * å¯èƒ½æ˜¯command_abortè®¾ç½®äº†æ­¤æ ‡å¿—ã€‚
 		 */
 		if (test_bit(US_FLIDX_TIMED_OUT, &us->flags)) {
 			us->srb->result = DID_ABORT << 16;
@@ -352,7 +352,7 @@ static int usb_stor_control_thread(void * __us)
 		 * is UNKNOWN
 		 */
 		/**
-		 * DMA_BIDIRECTIONAL±íÊ¾Á½¸ö·½Ïò¶¼ÓĞ¿ÉÄÜ£¬ÕâÊÇÒ»ÖÖ´íÎóÇé¿ö¡£
+		 * DMA_BIDIRECTIONALè¡¨ç¤ºä¸¤ä¸ªæ–¹å‘éƒ½æœ‰å¯èƒ½ï¼Œè¿™æ˜¯ä¸€ç§é”™è¯¯æƒ…å†µã€‚
 		 */
 		if (us->srb->sc_data_direction == DMA_BIDIRECTIONAL) {
 			US_DEBUGP("UNKNOWN data direction\n");
@@ -362,8 +362,8 @@ static int usb_stor_control_thread(void * __us)
 		/* reject if target != 0 or if LUN is higher than
 		 * the maximum known LUN
 		 */
-		else if (us->srb->device->id && /* id!=0±íÊ¾Ö§³Ö¶à¸ötarget */
-				!(us->flags & US_FL_SCM_MULT_TARG)) {/* Éè±¸²»Ö§³Ö¶àtarget */
+		else if (us->srb->device->id && /* id!=0è¡¨ç¤ºæ”¯æŒå¤šä¸ªtarget */
+				!(us->flags & US_FL_SCM_MULT_TARG)) {/* è®¾å¤‡ä¸æ”¯æŒå¤štarget */
 			US_DEBUGP("Bad target number (%d:%d)\n",
 				  us->srb->device->id, us->srb->device->lun);
 			us->srb->result = DID_BAD_TARGET << 16;
@@ -377,15 +377,15 @@ static int usb_stor_control_thread(void * __us)
 
 		/* Handle those devices which need us to fake 
 		 * their inquiry data */
-		else if ((us->srb->cmnd[0] == INQUIRY) && /* ²éÑ¯ÃüÁî */
-			    (us->flags & US_FL_FIX_INQUIRY)) {/* ²»ĞèÒª²éÑ¯³§ÉÌÃûºÍ²úÆ·Ãû£¬¿ÉÄÜÊÇÉè±¸²»Ö§³Ö */
+		else if ((us->srb->cmnd[0] == INQUIRY) && /* æŸ¥è¯¢å‘½ä»¤ */
+			    (us->flags & US_FL_FIX_INQUIRY)) {/* ä¸éœ€è¦æŸ¥è¯¢å‚å•†åå’Œäº§å“åï¼Œå¯èƒ½æ˜¯è®¾å¤‡ä¸æ”¯æŒ */
 			unsigned char data_ptr[36] = {
 			    0x00, 0x80, 0x02, 0x02,
 			    0x1F, 0x00, 0x00, 0x00};
 
 			US_DEBUGP("Faking INQUIRY command\n");
 			/**
-			 * Ö±½Ó´Ó³£Á¿Êı×éÖĞ¸´ÖÆÊı¾İÈ»ºó·µ»Ø¡£
+			 * ç›´æ¥ä»å¸¸é‡æ•°ç»„ä¸­å¤åˆ¶æ•°æ®ç„¶åè¿”å›ã€‚
 			 */
 			fill_inquiry_response(us, data_ptr, 36);
 			us->srb->result = SAM_STAT_GOOD;
@@ -395,8 +395,8 @@ static int usb_stor_control_thread(void * __us)
 		else {
 			US_DEBUG(usb_stor_show_command(us->srb));
 			/**
-			 * Ò»°ãÇé¿öÏÂ£¬»áµ÷ÓÃproto_handlerÕæÕı´¦ÀíSCSIÃüÁî¡£
-			 * ¶ÔUÅÌÀ´Ëµ£¬Õâ¸öº¯ÊıÊÇusb_stor_transparent_scsi_command¡£
+			 * ä¸€èˆ¬æƒ…å†µä¸‹ï¼Œä¼šè°ƒç”¨proto_handlerçœŸæ­£å¤„ç†SCSIå‘½ä»¤ã€‚
+			 * å¯¹Uç›˜æ¥è¯´ï¼Œè¿™ä¸ªå‡½æ•°æ˜¯usb_stor_transparent_scsi_commandã€‚
 			 */
 			us->proto_handler(us->srb, us);
 		}
@@ -409,7 +409,7 @@ static int usb_stor_control_thread(void * __us)
 			;		/* nothing to do */
 
 		/* indicate that the command is done */
-		else if (us->srb->result != DID_ABORT << 16) {/* ³É¹¦Ö´ĞĞÁËÃüÁî£¬µ÷ÓÃscsi_doneÍ¨ÖªSCSIºËĞÄ²ã¡£ */
+		else if (us->srb->result != DID_ABORT << 16) {/* æˆåŠŸæ‰§è¡Œäº†å‘½ä»¤ï¼Œè°ƒç”¨scsi_doneé€šçŸ¥SCSIæ ¸å¿ƒå±‚ã€‚ */
 			US_DEBUGP("scsi cmd done, result=0x%x\n", 
 				   us->srb->result);
 			us->srb->scsi_done(us->srb);
@@ -957,7 +957,7 @@ static int usb_stor_scan_thread(void * __us)
 
 /* Probe to see if we can drive a newly-connected USB device */
 /**
- * USBÉè±¸Ì½²âº¯Êı¡£
+ * USBè®¾å¤‡æ¢æµ‹å‡½æ•°ã€‚
  */
 static int storage_probe(struct usb_interface *intf,
 			 const struct usb_device_id *id)
@@ -977,11 +977,11 @@ static int storage_probe(struct usb_interface *intf,
 	 * space at the end for our private us_data structure.
 	 */
 	/**
-	 * USBÉè±¸Ò²ÊÇÍ¨¹ıSCSIĞ­Òé£¬Òò´ËÍ¨¹ıSCSIºËĞÄ·ÖÅäÒ»¸öÍ¨ÓÃ½á¹¹£¬²¢ÇÒUSB´æ´¢¶ÔÏó·ÖÅäÊı¾İ¡£
+	 * USBè®¾å¤‡ä¹Ÿæ˜¯é€šè¿‡SCSIåè®®ï¼Œå› æ­¤é€šè¿‡SCSIæ ¸å¿ƒåˆ†é…ä¸€ä¸ªé€šç”¨ç»“æ„ï¼Œå¹¶ä¸”USBå­˜å‚¨å¯¹è±¡åˆ†é…æ•°æ®ã€‚
 	 */
 	host = scsi_host_alloc(&usb_stor_host_template, sizeof(*us));
 	/**
-	 * ÄÚ´æ·ÖÅäÊ§°Ü£¬Ö±½Ó·µ»Ø¡£
+	 * å†…å­˜åˆ†é…å¤±è´¥ï¼Œç›´æ¥è¿”å›ã€‚
 	 */
 	if (!host) {
 		printk(KERN_WARNING USB_STORAGE
@@ -1003,7 +1003,7 @@ static int storage_probe(struct usb_interface *intf,
 
 	/* Associate the us_data structure with the USB device */
 	/**
-	 * ÎªUS³ÉÔ±ÉèÖÃ³õÖµ¡£
+	 * ä¸ºUSæˆå‘˜è®¾ç½®åˆå€¼ã€‚
 	 */
 	result = associate_dev(us, intf);
 	if (result)
@@ -1017,7 +1017,7 @@ static int storage_probe(struct usb_interface *intf,
 	 * corresponding entry in the private table.
 	 */
 	/**
-	 * get_device_infoÖ÷ÒªÊÇ´¦ÀíÒ»Ğ©ÌØÊâÉè±¸¡£
+	 * get_device_infoä¸»è¦æ˜¯å¤„ç†ä¸€äº›ç‰¹æ®Šè®¾å¤‡ã€‚
 	 */
 	result = get_device_info(us, id);
 	if (result)
@@ -1025,19 +1025,19 @@ static int storage_probe(struct usb_interface *intf,
 
 	/* Get the transport, protocol, and pipe settings */
 	/**
-	 * ¶ÔUÅÌÀ´Ëµ£¬us µÄtransport_name ±»¸³ÖµÎª¡±Bulk¡±,transport ±»¸³ÖµÎªusb_stor_Bulk_transport,transport_reset ±»¸³ÖµÎªusb_stor_Bulk_reset.
+	 * å¯¹Uç›˜æ¥è¯´ï¼Œus çš„transport_name è¢«èµ‹å€¼ä¸ºâ€Bulkâ€,transport è¢«èµ‹å€¼ä¸ºusb_stor_Bulk_transport,transport_reset è¢«èµ‹å€¼ä¸ºusb_stor_Bulk_reset.
 	 */
 	result = get_transport(us);
 	if (result)
 		goto BadDevice;
 	/**
-	 * ¶ÔUÅÌÀ´Ëµ£¬Ò»ÊÇÁîus µÄprotocol_name Îª"Transparent SCSI",ÁíÒ»¸öÊÇÁîus µÄproto_handler Îªusb_stor_transparent_scsi_command.
+	 * å¯¹Uç›˜æ¥è¯´ï¼Œä¸€æ˜¯ä»¤us çš„protocol_name ä¸º"Transparent SCSI",å¦ä¸€ä¸ªæ˜¯ä»¤us çš„proto_handler ä¸ºusb_stor_transparent_scsi_command.
 	 */
 	result = get_protocol(us);
 	if (result)
 		goto BadDevice;
 	/**
-	 * ÅĞ¶ÏÃ¿¸ö¶ËµãµÄ·½ÏòºÍÀàĞÍ¡£
+	 * åˆ¤æ–­æ¯ä¸ªç«¯ç‚¹çš„æ–¹å‘å’Œç±»å‹ã€‚
 	 */
 	result = get_pipes(us);
 	if (result)
@@ -1045,7 +1045,7 @@ static int storage_probe(struct usb_interface *intf,
 
 	/* Acquire all the other resources and add the host */
 	/**
-	 * ÕâÊÇUÅÌ³õÊ¼»¯×îÖØÒªµÄº¯Êı¡£Ö÷ÒªÊÇ´´½¨UÅÌÊØ»¤Ïß³Ì¡£
+	 * è¿™æ˜¯Uç›˜åˆå§‹åŒ–æœ€é‡è¦çš„å‡½æ•°ã€‚ä¸»è¦æ˜¯åˆ›å»ºUç›˜å®ˆæŠ¤çº¿ç¨‹ã€‚
 	 */
 	result = usb_stor_acquire_resources(us);
 	if (result)
@@ -1092,7 +1092,7 @@ static void storage_disconnect(struct usb_interface *intf)
  * Initialization and registration
  ***********************************************************************/
 /**
- * USB´æ´¢Éè±¸Çı¶¯¡£
+ * USBå­˜å‚¨è®¾å¤‡é©±åŠ¨ã€‚
  */
 static struct usb_driver usb_storage_driver = {
 	.name =		"usb-storage",

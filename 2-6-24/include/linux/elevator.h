@@ -31,39 +31,39 @@ typedef void *(elevator_init_fn) (struct request_queue *);
 typedef void (elevator_exit_fn) (elevator_t *);
 
 /**
- * IOµ÷¶ÈËã·¨»Øµ÷
+ * IOè°ƒåº¦ç®—æ³•å›è°ƒ
  */
 struct elevator_ops
 {
-	/* ¼ì²éÒ»¸öĞÂÇëÇóÊÇ·ñÄÜ¹»ÓëÏÖÓĞÇëÇóºÏ²¢ */
+	/* æ£€æŸ¥ä¸€ä¸ªæ–°è¯·æ±‚æ˜¯å¦èƒ½å¤Ÿä¸ç°æœ‰è¯·æ±‚åˆå¹¶ */
 	elevator_merge_fn *elevator_merge_fn;
-	/* ÔÚÇëÇóºÏ²¢ºóµ÷ÓÃ£¬Ö´ĞĞÒ»Ğ©ÇåÀí¹¤×÷ */
+	/* åœ¨è¯·æ±‚åˆå¹¶åè°ƒç”¨ï¼Œæ‰§è¡Œä¸€äº›æ¸…ç†å·¥ä½œ */
 	elevator_merged_fn *elevator_merged_fn;
-	/* ½«Á½¸öÇëÇóºÏ²¢ÎªÒ»¸öÇëÇó */
+	/* å°†ä¸¤ä¸ªè¯·æ±‚åˆå¹¶ä¸ºä¸€ä¸ªè¯·æ±‚ */
 	elevator_merge_req_fn *elevator_merge_req_fn;
 	elevator_allow_merge_fn *elevator_allow_merge_fn;
 
 	elevator_dispatch_fn *elevator_dispatch_fn;
-	/* ÏòÇëÇó¶ÓÁĞÖĞÌí¼ÓÇëÇó */
+	/* å‘è¯·æ±‚é˜Ÿåˆ—ä¸­æ·»åŠ è¯·æ±‚ */
 	elevator_add_req_fn *elevator_add_req_fn;
 	elevator_activate_req_fn *elevator_activate_req_fn;
 	elevator_deactivate_req_fn *elevator_deactivate_req_fn;
 
-	/* ¼ì²é¶ÓÁĞÊÇ·ñÎª¿Õ */
+	/* æ£€æŸ¥é˜Ÿåˆ—æ˜¯å¦ä¸ºç©º */
 	elevator_queue_empty_fn *elevator_queue_empty_fn;
 	elevator_completed_req_fn *elevator_completed_req_fn;
 
-	/* ²éÕÒ¸ø¶¨ÇëÇóµÄÇ°Ò»¸öÇëÇóºÍºóÒ»¸öÇëÇó */
+	/* æŸ¥æ‰¾ç»™å®šè¯·æ±‚çš„å‰ä¸€ä¸ªè¯·æ±‚å’Œåä¸€ä¸ªè¯·æ±‚ */
 	elevator_request_list_fn *elevator_former_req_fn;
 	elevator_request_list_fn *elevator_latter_req_fn;
 
-	/* ÔÚ´´½¨ĞÂÇëÇóºÍÊÍ·ÅÄÚ´æÊ±µ÷ÓÃ£¬ÓÃÓÚ³õÊ¼»¯Êı¾İ½á¹¹ºÍÊÍ·Å¹ÜÀí½á¹¹ */
+	/* åœ¨åˆ›å»ºæ–°è¯·æ±‚å’Œé‡Šæ”¾å†…å­˜æ—¶è°ƒç”¨ï¼Œç”¨äºåˆå§‹åŒ–æ•°æ®ç»“æ„å’Œé‡Šæ”¾ç®¡ç†ç»“æ„ */
 	elevator_set_req_fn *elevator_set_req_fn;
 	elevator_put_req_fn *elevator_put_req_fn;
 
 	elevator_may_queue_fn *elevator_may_queue_fn;
 
-	/* ¹¹Ôìº¯ÊıºÍÎö¹¹º¯Êı */
+	/* æ„é€ å‡½æ•°å’Œææ„å‡½æ•° */
 	elevator_init_fn *elevator_init_fn;
 	elevator_exit_fn *elevator_exit_fn;
 	void (*trim)(struct io_context *);
@@ -81,19 +81,19 @@ struct elv_fs_entry {
  * identifies an elevator type, such as AS or deadline
  */
 /**
- * IOµ÷¶ÈÆ÷Àà
+ * IOè°ƒåº¦å™¨ç±»
  */
 struct elevator_type
 {
-	/* Í¨¹ı´Ë×Ö¶Î½«µ÷¶ÈÆ÷Á´½Óµ½È«¾ÖÁ´±íÖĞ */
+	/* é€šè¿‡æ­¤å­—æ®µå°†è°ƒåº¦å™¨é“¾æ¥åˆ°å…¨å±€é“¾è¡¨ä¸­ */
 	struct list_head list;
-	/* µ÷¶ÈÆ÷Ìá¹©µÄ»Øµ÷º¯Êı */
+	/* è°ƒåº¦å™¨æä¾›çš„å›è°ƒå‡½æ•° */
 	struct elevator_ops ops;
-	/* sysfsÖĞµÄÊôĞÔ */
+	/* sysfsä¸­çš„å±æ€§ */
 	struct elv_fs_entry *elevator_attrs;
-	/* Ëã·¨Ãû³Æ */
+	/* ç®—æ³•åç§° */
 	char elevator_name[ELV_NAME_MAX];
-	/* ËùÊôÄ£¿é */
+	/* æ‰€å±æ¨¡å— */
 	struct module *elevator_owner;
 };
 

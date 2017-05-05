@@ -15,14 +15,14 @@ struct page;
 struct address_space;
 
 /**
- * Ò³ÏòÁ¿ÃèÊö·û
+ * é¡µå‘é‡æè¿°ç¬¦
  */
 struct pagevec {
-	/* pagesÊı×éÖĞÓĞĞ§µÄÖ¸ÕëÊıÁ¿ */
+	/* pagesæ•°ç»„ä¸­æœ‰æ•ˆçš„æŒ‡é’ˆæ•°é‡ */
 	unsigned long nr;
-	/* ÕâĞ©Ò³ÊÇ·ñÊôÓÚÀäÒ³ */
+	/* è¿™äº›é¡µæ˜¯å¦å±äºå†·é¡µ */
 	unsigned long cold;
-	/* Ò³ÃæÊı×é */
+	/* é¡µé¢æ•°ç»„ */
 	struct page *pages[PAGEVEC_SIZE];
 };
 
@@ -63,7 +63,7 @@ static inline unsigned pagevec_space(struct pagevec *pvec)
  * Add a page to a pagevec.  Returns the number of slots still available.
  */
 /**
- * ½«Ò³Ìí¼Óµ½Ò³ÏòÁ¿ÖĞ
+ * å°†é¡µæ·»åŠ åˆ°é¡µå‘é‡ä¸­
  */
 static inline unsigned pagevec_add(struct pagevec *pvec, struct page *page)
 {
@@ -73,18 +73,18 @@ static inline unsigned pagevec_add(struct pagevec *pvec, struct page *page)
 
 
 /**
- * ÅúÁ¿ÊÍ·ÅÒ³ÏòÁ¿ÖĞµÄÒ³ 
+ * æ‰¹é‡é‡Šæ”¾é¡µå‘é‡ä¸­çš„é¡µ 
  */
 static inline void pagevec_release(struct pagevec *pvec)
 {
-	/* °üº¬ÓĞĞ§Ò³ */
+	/* åŒ…å«æœ‰æ•ˆé¡µ */
 	if (pagevec_count(pvec))
-		/* ÊÍ·ÅÒ³£¬Èç¹ûÊ¹ÓÃ¼ÆÊıÆ÷Îª0£¬Ôò·µ»Øµ½»ï°éÏµÍ³¡£Èç¹ûÒ³ÔÚLRUÁ´±íÉÏ£¬Ôò´ÓÁ´±íÖĞÒÆ³ı¡£ */
+		/* é‡Šæ”¾é¡µï¼Œå¦‚æœä½¿ç”¨è®¡æ•°å™¨ä¸º0ï¼Œåˆ™è¿”å›åˆ°ä¼™ä¼´ç³»ç»Ÿã€‚å¦‚æœé¡µåœ¨LRUé“¾è¡¨ä¸Šï¼Œåˆ™ä»é“¾è¡¨ä¸­ç§»é™¤ã€‚ */
 		__pagevec_release(pvec);
 }
 
 /**
- * Óëpagevec_releaseÀàËÆ£¬µ«ÊÇ²»´¦ÀíLRU¡£ÓÉµ÷ÓÃÕßÈ·±£Ò³ÃæÃ»ÓĞÎ»ÓÚLRUÁ´±íÖĞ¡£
+ * ä¸pagevec_releaseç±»ä¼¼ï¼Œä½†æ˜¯ä¸å¤„ç†LRUã€‚ç”±è°ƒç”¨è€…ç¡®ä¿é¡µé¢æ²¡æœ‰ä½äºLRUé“¾è¡¨ä¸­ã€‚
  */
 static inline void pagevec_release_nonlru(struct pagevec *pvec)
 {
@@ -93,7 +93,7 @@ static inline void pagevec_release_nonlru(struct pagevec *pvec)
 }
 
 /**
- * ½«Ò³Ãæ·µ»¹¸ø»ï°éÏµÍ³£¬ÓÉµ÷ÓÃÕßÈ·ÈÏÆäÒıÓÃ¼ÆÊıÎª0£¬ÇÒÎ´°üº¬ÔÚÈÎºÎLRUÁ´±íÖĞ¡£
+ * å°†é¡µé¢è¿”è¿˜ç»™ä¼™ä¼´ç³»ç»Ÿï¼Œç”±è°ƒç”¨è€…ç¡®è®¤å…¶å¼•ç”¨è®¡æ•°ä¸º0ï¼Œä¸”æœªåŒ…å«åœ¨ä»»ä½•LRUé“¾è¡¨ä¸­ã€‚
  */
 static inline void pagevec_free(struct pagevec *pvec)
 {

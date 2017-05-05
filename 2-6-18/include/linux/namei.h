@@ -13,21 +13,21 @@ struct open_intent {
 
 enum { MAX_NESTED_LINKS = 8 };
 
-//ÁÙÊ±¸¨Öú½á¹¹£¬¼ò»¯²ÎÊı´«µİ(½öÓÃÔÚÑ°ÕÒÄ¿±ê½ÚµãµÄ¹ı³ÌÖĞ¡£)
+//ä¸´æ—¶è¾…åŠ©ç»“æ„ï¼Œç®€åŒ–å‚æ•°ä¼ é€’(ä»…ç”¨åœ¨å¯»æ‰¾ç›®æ ‡èŠ‚ç‚¹çš„è¿‡ç¨‹ä¸­ã€‚)
 struct nameidata  
 {
-	struct dentry	*dentry;         //Ä¿Â¼Ïî
-	struct vfsmount *mnt;            // ¹ÒÔØµã
+	struct dentry	*dentry;         //ç›®å½•é¡¹
+	struct vfsmount *mnt;            // æŒ‚è½½ç‚¹
 	struct qstr	last;                //   
-	unsigned int	flags;           // ÎÄ¼ş²Ù×÷±êÊ¶
-	int		last_type;               // ÀàĞÍ  
-	unsigned	depth;				 //Ä¿Â¼½á¹¹Éî¶È
+	unsigned int	flags;           // æ–‡ä»¶æ“ä½œæ ‡è¯†
+	int		last_type;               // ç±»å‹  
+	unsigned	depth;				 //ç›®å½•ç»“æ„æ·±åº¦
 	char *saved_names[MAX_NESTED_LINKS + 1];
 
 	/* Intent data */
 	union {
 		struct open_intent open;
-	} intent; // ×¨ÓÃÊı¾İ 
+	} intent; // ä¸“ç”¨æ•°æ® 
 };
 
 /*

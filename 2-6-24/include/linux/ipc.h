@@ -85,35 +85,35 @@ struct ipc_kludge {
 #define IPCMNI 32768  /* <= MAX_INT limit for ipc arrays (including sysctl changes) */
 
 /* used by in-kernel data structures */
-/* ÓÃ»§Ì¬ipc¶ÔÏóÔÚÄÚºËÖÐµÄ±íÊ¾ */
+/* ç”¨æˆ·æ€ipcå¯¹è±¡åœ¨å†…æ ¸ä¸­çš„è¡¨ç¤º */
 struct kern_ipc_perm
 {
 	spinlock_t	lock;
 	int		deleted;
-	/* ipc¶ÔÏóÔÚÄÚºËÖÐµÄID */
+	/* ipcå¯¹è±¡åœ¨å†…æ ¸ä¸­çš„ID */
 	int		id;
-	/* ÓÃ»§Ì¬±êÊ¶ipc¶ÔÏóµÄÄ§Êý */
+	/* ç”¨æˆ·æ€æ ‡è¯†ipcå¯¹è±¡çš„é­”æ•° */
 	key_t		key;
-	/* ËùÓÐÕßµÄuidºÍgid */
+	/* æ‰€æœ‰è€…çš„uidå’Œgid */
 	uid_t		uid;
 	gid_t		gid;
-	/* ²úÉú¸Ã¶ÔÏóµÄuidºÍgid */
+	/* äº§ç”Ÿè¯¥å¯¹è±¡çš„uidå’Œgid */
 	uid_t		cuid;
 	gid_t		cgid;
-	/* Î»ÑÚÂë£¬ÓÃÓÚÖ¸¶¨ËùÓÐÕß¡¢ËùÓÐÕß×é¡¢ÆäËûÓÃ»§µÄÈ¨ÏÞ */
+	/* ä½æŽ©ç ï¼Œç”¨äºŽæŒ‡å®šæ‰€æœ‰è€…ã€æ‰€æœ‰è€…ç»„ã€å…¶ä»–ç”¨æˆ·çš„æƒé™ */
 	mode_t		mode; 
-	/* ÐòºÅ£¬·ÖÅäipc¶ÔÏóÊ±Ê¹ÓÃ */
+	/* åºå·ï¼Œåˆ†é…ipcå¯¹è±¡æ—¶ä½¿ç”¨ */
 	unsigned long	seq;
 	void		*security;
 };
 
 struct ipc_ids;
 /**
- * ipcÃüÃû¿Õ¼ä
+ * ipcå‘½åç©ºé—´
  */
 struct ipc_namespace {
 	struct kref	kref;
-	/* ÐÅºÅÁ¿¡¢ÏûÏ¢¶ÓÁÐ¡¢¹²ÏíÄÚ´æ */
+	/* ä¿¡å·é‡ã€æ¶ˆæ¯é˜Ÿåˆ—ã€å…±äº«å†…å­˜ */
 	struct ipc_ids	*ids[3];
 
 	int		sem_ctls[4];

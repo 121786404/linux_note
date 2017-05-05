@@ -52,25 +52,25 @@ typedef struct proc_dir_entry *(shadow_proc_t)(struct task_struct *task,
 						struct proc_dir_entry *pde);
 
 /**
- * procÎÄ¼şÏµÍ³ÖĞµÄÏî
+ * procæ–‡ä»¶ç³»ç»Ÿä¸­çš„é¡¹
  */
 struct proc_dir_entry {
-	/* inode±àºÅ */
+	/* inodeç¼–å· */
 	unsigned int low_ino;
-	/* Ãû³Æ×Ö¶Î³¤¶È */
+	/* åç§°å­—æ®µé•¿åº¦ */
 	unsigned short namelen;
-	/* procÏîÃû³Æ */
+	/* procé¡¹åç§° */
 	const char *name;
-	/* È¨ÏŞ¼°ÎÄ¼şÀàĞÍ */
+	/* æƒé™åŠæ–‡ä»¶ç±»å‹ */
 	mode_t mode;
-	/* ×ÓÄ¿Â¼ºÍ·ûºÅÁ´½Ó¼ÆÊı */
+	/* å­ç›®å½•å’Œç¬¦å·é“¾æ¥è®¡æ•° */
 	nlink_t nlink;
-	/* ÎÄ¼şËùÓĞÕß£¬Ò»°ãÎª0 */
+	/* æ–‡ä»¶æ‰€æœ‰è€…ï¼Œä¸€èˆ¬ä¸º0 */
 	uid_t uid;
 	gid_t gid;
-	/* ÎÄ¼ş³¤¶È£¬Ò»°ãÎª0 */
+	/* æ–‡ä»¶é•¿åº¦ï¼Œä¸€èˆ¬ä¸º0 */
 	loff_t size;
-	/* inode»Øµ÷ */
+	/* inodeå›è°ƒ */
 	const struct inode_operations *proc_iops;
 	/*
 	 * NULL ->proc_fops means "PDE is going away RSN" or
@@ -80,23 +80,23 @@ struct proc_dir_entry {
 	 * If you're allocating ->proc_fops dynamically, save a pointer
 	 * somewhere.
 	 */
-	/* ÎÄ¼ş²Ù×÷»Øµ÷ */
+	/* æ–‡ä»¶æ“ä½œå›è°ƒ */
 	const struct file_operations *proc_fops;
-	/* Ö¸Ïò·µ»ØÊı¾İµÄº¯Êı */
+	/* æŒ‡å‘è¿”å›æ•°æ®çš„å‡½æ•° */
 	get_info_t *get_info;
-	/* ËùÊôÄ£¿é */
+	/* æ‰€å±æ¨¡å— */
 	struct module *owner;
 	/**
-	 * parent¸¸Ä¿Â¼¶ÔÏó 
-	 * nextÏÂÒ»¸öÎÄ¼ş»òÄ¿Â¼£¬¼´ĞÖµÜ½Úµã
-	 * subdirµÚÒ»¸ö×ÓÄ¿Â¼»òÎÄ¼ş
+	 * parentçˆ¶ç›®å½•å¯¹è±¡ 
+	 * nextä¸‹ä¸€ä¸ªæ–‡ä»¶æˆ–ç›®å½•ï¼Œå³å…„å¼ŸèŠ‚ç‚¹
+	 * subdirç¬¬ä¸€ä¸ªå­ç›®å½•æˆ–æ–‡ä»¶
 	 */
 	struct proc_dir_entry *next, *parent, *subdir;
 	void *data;
-	/* ¶ÁÈ¡£¬Ğ´ÈëÊı¾İµÄº¯Êı */
+	/* è¯»å–ï¼Œå†™å…¥æ•°æ®çš„å‡½æ•° */
 	read_proc_t *read_proc;
 	write_proc_t *write_proc;
-	/* Ê¹ÓÃ¼ÆÊı */
+	/* ä½¿ç”¨è®¡æ•° */
 	atomic_t count;		/* use count */
 	int pde_users;	/* number of callers into module in progress */
 	spinlock_t pde_unload_lock; /* proc_fops checks and pde_users bumps */
@@ -277,26 +277,26 @@ static inline void kclist_add(struct kcore_list *new, void *addr, size_t size)
 extern void kclist_add(struct kcore_list *, void *, size_t);
 #endif
 
-/* ÕâÁ½¸ö½á¹¹½«procºÍVFSÁªÏµÆğÀ´ */
+/* è¿™ä¸¤ä¸ªç»“æ„å°†procå’ŒVFSè”ç³»èµ·æ¥ */
 union proc_op {
 	int (*proc_get_link)(struct inode *, struct dentry **, struct vfsmount **);
-	/* »ñµÃ½ø³ÌµÄĞÅÏ¢ */
+	/* è·å¾—è¿›ç¨‹çš„ä¿¡æ¯ */
 	int (*proc_read)(struct task_struct *task, char *page);
 };
 
 struct proc_inode {
-	/* Èç¹ûÓë½ø³Ì¹ØÁª£¬±íÊ¾Ïà¹ØµÄµÄ½ø³Ìid */
+	/* å¦‚æœä¸è¿›ç¨‹å…³è”ï¼Œè¡¨ç¤ºç›¸å…³çš„çš„è¿›ç¨‹id */
 	struct pid *pid;
-	/* proc/pid/fdÏÂµÄÎÄ¼şÃèÊö·û */
+	/* proc/pid/fdä¸‹çš„æ–‡ä»¶æè¿°ç¬¦ */
 	int fd;
 	union proc_op op;
-	/* proc¶ÔÏóÊµÀı */
+	/* procå¯¹è±¡å®ä¾‹ */
 	struct proc_dir_entry *pde;
-	/* vfs²ãinodeÊµÀı */
+	/* vfså±‚inodeå®ä¾‹ */
 	struct inode vfs_inode;
 };
 
-/* Í¨¹ıvfs²ãµÄinode¶¨Î»µ½proc_inodeÊµÀı */
+/* é€šè¿‡vfså±‚çš„inodeå®šä½åˆ°proc_inodeå®ä¾‹ */
 static inline struct proc_inode *PROC_I(const struct inode *inode)
 {
 	return container_of(inode, struct proc_inode, vfs_inode);

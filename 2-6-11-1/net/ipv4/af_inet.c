@@ -238,13 +238,13 @@ static int inet_create(struct socket *sock, int protocol)
 	char answer_no_check;
 	int err;
 
-	/* ÉèÖÃsocketµÄ×´Ì¬ */
+	/* è®¾ç½®socketçš„çŠ¶æ€ */
 	sock->state = SS_UNCONNECTED;
 
 	/* Look for the requested type/protocol pair. */
 	answer = NULL;
 	rcu_read_lock();
-        /* Ê×ÏÈÍ¨¹ıÀàĞÍÀ´hash³ö¶ÔÓ¦µÄstruct inet_protoswÁ´±í */
+        /* é¦–å…ˆé€šè¿‡ç±»å‹æ¥hashå‡ºå¯¹åº”çš„struct inet_protoswé“¾è¡¨ */
 	list_for_each_rcu(p, &inetsw[sock->type]) {
 		answer = list_entry(p, struct inet_protosw, list);
 
@@ -387,7 +387,7 @@ int inet_release(struct socket *sock)
 /* It is off by default, see below. */
 int sysctl_ip_nonlocal_bind;
 
-/* inetĞ­Òé×åµÄ°ó¶¨º¯Êı */
+/* inetåè®®æ—çš„ç»‘å®šå‡½æ•° */
 int inet_bind(struct socket *sock, struct sockaddr *uaddr, int addr_len)
 {
 	struct sockaddr_in *addr = (struct sockaddr_in *)uaddr;
@@ -782,7 +782,7 @@ int inet_ioctl(struct socket *sock, unsigned int cmd, unsigned long arg)
 	return err;
 }
 
-/* inetĞ­Òé×åµÄÊı¾İÁ÷²Ù×÷º¯Êı */
+/* inetåè®®æ—çš„æ•°æ®æµæ“ä½œå‡½æ•° */
 struct proto_ops inet_stream_ops = {
 	.family =	PF_INET,
 	.owner =	THIS_MODULE,
@@ -804,7 +804,7 @@ struct proto_ops inet_stream_ops = {
 	.sendpage =	tcp_sendpage
 };
 
-/* inetĞ­Òé×åµÄÊı¾İ±¨²Ù×÷º¯Êı*/
+/* inetåè®®æ—çš„æ•°æ®æŠ¥æ“ä½œå‡½æ•°*/
 struct proto_ops inet_dgram_ops = {
 	.family =	PF_INET,
 	.owner =	THIS_MODULE,
@@ -830,7 +830,7 @@ struct proto_ops inet_dgram_ops = {
  * For SOCK_RAW sockets; should be the same as inet_dgram_ops but without
  * udp_poll
  */
-/* inetĞ­Òé×åµÄÔ­Ê¼Ì×½Ó×Ö²Ù×÷º¯Êı */
+/* inetåè®®æ—çš„åŸå§‹å¥—æ¥å­—æ“ä½œå‡½æ•° */
 static struct proto_ops inet_sockraw_ops = {
 	.family =	PF_INET,
 	.owner =	THIS_MODULE,
@@ -915,9 +915,9 @@ void inet_register_protosw(struct inet_protosw *p)
 
 	/* If we are trying to override a permanent protocol, bail. */
 	answer = NULL;
-        /* ÈÃlast_permÖ¸Ïòµ±Ç°Î»ÖÃÖ¸Õë */
+        /* è®©last_permæŒ‡å‘å½“å‰ä½ç½®æŒ‡é’ˆ */
 	last_perm = &inetsw[p->type];
-        /* ´Óµ±Ç°Ñ­»·²éÕÒ´¦Àí */
+        /* ä»å½“å‰å¾ªç¯æŸ¥æ‰¾å¤„ç† */
 	list_for_each(lh, &inetsw[p->type]) {
 		answer = list_entry(lh, struct inet_protosw, list);
 
@@ -939,7 +939,7 @@ void inet_register_protosw(struct inet_protosw *p)
 	 * non-permanent entry.  This means that when we remove this entry, the 
 	 * system automatically returns to the old behavior.
 	 */
-        /* ½«p½á¹¹Ìí¼Óµ½Á´±íµ±ÖĞ */
+        /* å°†pç»“æ„æ·»åŠ åˆ°é“¾è¡¨å½“ä¸­ */
 	list_add_rcu(&p->list, last_perm);
 out:
 	spin_unlock_bh(&inetsw_lock);
@@ -1023,7 +1023,7 @@ static int __init init_ipv4_mibs(void)
 static int ipv4_proc_init(void);
 extern void ipfrag_init(void);
 
-/* inetĞ­Òé×å³õÊ¼»¯ */
+/* inetåè®®æ—åˆå§‹åŒ– */
 static int __init inet_init(void)
 {
 	struct sk_buff *dummy_skb;
@@ -1056,7 +1056,7 @@ static int __init inet_init(void)
 	 *	Tell SOCKET that we are alive... 
 	 */
 
-	/* ×¢²áinetĞ­Òé×å²Ù×÷º¯Êı */
+	/* æ³¨å†Œinetåè®®æ—æ“ä½œå‡½æ•° */
   	(void)sock_register(&inet_family_ops);
 
 	/*
@@ -1078,7 +1078,7 @@ static int __init inet_init(void)
 	for (r = &inetsw[0]; r < &inetsw[SOCK_MAX]; ++r)
 		INIT_LIST_HEAD(r);
 
-        /* ÒÀ´Î×¢²áinetĞ­Òé×åµÄÀàĞÍĞ­Òé */
+        /* ä¾æ¬¡æ³¨å†Œinetåè®®æ—çš„ç±»å‹åè®® */
 	for (q = inetsw_array; q < &inetsw_array[INETSW_ARRAY_LEN]; ++q)
 		inet_register_protosw(q);
 
@@ -1184,12 +1184,12 @@ static int __init ipv4_proc_init(void)
 }
 #endif /* CONFIG_PROC_FS */
 
-/* ¸øĞ­ÒéÃû³ÆÈ¡ÁË¸ö±ğÃû */
+/* ç»™åè®®åç§°å–äº†ä¸ªåˆ«å */
 MODULE_ALIAS_NETPROTO(PF_INET);
 
-/* ×¢ÒâÍ¨¹ıEXPORT_SYMBOLºêµ¼³öµÄº¯Êı·ûºÅ£¬
-  * ÔÚÆäËûÄ£¿éÊÇ¿ÉÒÔµ÷ÓÃµÄ£¬²¢ÇÒµ¼ÈëµÄº¯Êı²»ÄÜÊÇstaticµÄ£¬ 
-  * Èç¹ûÃ»ÓĞ±»µ¼³öµÄº¯Êı£¬Ò»°ãÊ¹ÓÃstatic¹Ø¼ü×Ö 
+/* æ³¨æ„é€šè¿‡EXPORT_SYMBOLå®å¯¼å‡ºçš„å‡½æ•°ç¬¦å·ï¼Œ
+  * åœ¨å…¶ä»–æ¨¡å—æ˜¯å¯ä»¥è°ƒç”¨çš„ï¼Œå¹¶ä¸”å¯¼å…¥çš„å‡½æ•°ä¸èƒ½æ˜¯staticçš„ï¼Œ 
+  * å¦‚æœæ²¡æœ‰è¢«å¯¼å‡ºçš„å‡½æ•°ï¼Œä¸€èˆ¬ä½¿ç”¨staticå…³é”®å­— 
   */
 EXPORT_SYMBOL(inet_accept);
 EXPORT_SYMBOL(inet_bind);

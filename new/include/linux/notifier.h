@@ -53,35 +53,35 @@ typedef	int (*notifier_fn_t)(struct notifier_block *nb,
 			unsigned long action, void *data);
 
 /**
- * ÊÂ¼ş½ÓÊÕÕß
+ * äº‹ä»¶æ¥æ”¶è€…
  */
 struct notifier_block {
-	//½ÓÊÕÕß»Øµ÷º¯Êı
+	//æ¥æ”¶è€…å›è°ƒå‡½æ•°
 	notifier_fn_t notifier_call;
-	//Í¨¹ı´ËÖ¸Õë½«½ÓÊÕÕßÁ´½ÓÆğÀ´£¬×¢Òâ__rcu¹Ø¼ü×Ö¡£
+	//é€šè¿‡æ­¤æŒ‡é’ˆå°†æ¥æ”¶è€…é“¾æ¥èµ·æ¥ï¼Œæ³¨æ„__rcuå…³é”®å­—ã€‚
 	struct notifier_block __rcu *next;
-	//ÓÅÏÈ¼¶
+	//ä¼˜å…ˆçº§
 	int priority;
 };
 
-//Ô­×ÓÍ¨ÖªÁ´£¬ÔÚÖĞ¶Ï»òÕßÆäËû²»ÔÊĞí×èÈûµÄÉÏÏÂÎÄµ÷ÓÃ»Øµ÷º¯Êı
+//åŸå­é€šçŸ¥é“¾ï¼Œåœ¨ä¸­æ–­æˆ–è€…å…¶ä»–ä¸å…è®¸é˜»å¡çš„ä¸Šä¸‹æ–‡è°ƒç”¨å›è°ƒå‡½æ•°
 struct atomic_notifier_head {
 	spinlock_t lock;
 	struct notifier_block __rcu *head;
 };
 
-//¿É×èÈûÍ¨ÖªÁ´
+//å¯é˜»å¡é€šçŸ¥é“¾
 struct blocking_notifier_head {
 	struct rw_semaphore rwsem;
 	struct notifier_block __rcu *head;
 };
 
-//Ô­Ê¼Í¨ÖªÁ´£¬ÎŞÏŞÖÆ£¬Í¬²½¼°±£»¤ÓÉµ÷ÓÃ·½¸ºÔğ
+//åŸå§‹é€šçŸ¥é“¾ï¼Œæ— é™åˆ¶ï¼ŒåŒæ­¥åŠä¿æŠ¤ç”±è°ƒç”¨æ–¹è´Ÿè´£
 struct raw_notifier_head {
 	struct notifier_block __rcu *head;
 };
 
-//SRCUÍ¨ÖªÁ´£¬¿É×èÈû¡£µ«ÊÇsrcu²»ÔÊĞí³¤Ê±¼ä×èÈû¡£
+//SRCUé€šçŸ¥é“¾ï¼Œå¯é˜»å¡ã€‚ä½†æ˜¯srcuä¸å…è®¸é•¿æ—¶é—´é˜»å¡ã€‚
 struct srcu_notifier_head {
 	struct mutex mutex;
 	struct srcu_struct srcu;

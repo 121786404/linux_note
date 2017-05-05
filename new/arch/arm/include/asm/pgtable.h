@@ -42,23 +42,23 @@
  * area for the same reason. ;)
  */
 /*
- VMALLOC_STARTºÍVMALLOC_END¶¨ÒåÁËvmallocÇøÓòµÄ¿ªÊ¼ºÍ½áÊø£¬
- ¸ÃÇøÓòÓÃÓÚÎïÀíÉÏ²»Á¬ĞøµÄÄÚºËÓ³Éä¡£
- ÕâÁ½¸öÖµÃ»ÓĞÖ±½Ó¶¨ÒåÎª³£Êı£¬¶øÊÇÒÀÀµÓÚ¼¸¸ö²ÎÊı¡£
+ VMALLOC_STARTå’ŒVMALLOC_ENDå®šä¹‰äº†vmallocåŒºåŸŸçš„å¼€å§‹å’Œç»“æŸï¼Œ
+ è¯¥åŒºåŸŸç”¨äºç‰©ç†ä¸Šä¸è¿ç»­çš„å†…æ ¸æ˜ å°„ã€‚
+ è¿™ä¸¤ä¸ªå€¼æ²¡æœ‰ç›´æ¥å®šä¹‰ä¸ºå¸¸æ•°ï¼Œè€Œæ˜¯ä¾èµ–äºå‡ ä¸ªå‚æ•°ã€‚
 
- vmallocÇøÓòµÄÆğÊ¼µØÖ·£¬È¡¾öÓÚÔÚÖ±½ÓÓ³ÉäÎïÀíÄÚ´æÊ±£¬
- Ê¹ÓÃÁË¶àÉÙĞéÄâµØÖ·¿Õ¼äÄÚ´æ£¨Òò´ËÒ²ÒÀÀµÓÚhigh_memory±äÁ¿£©¡£
- ÄÚºË»¹¿¼ÂÇµ½ÏÂÊöÊÂÊµ£¬¼´Á½¸öÇøÓòÖ®¼äÓĞÖÁÉÙÎª
- VMALLOC_OFFSETµÄÒ»¸öÈ±¿Ú.
+ vmallocåŒºåŸŸçš„èµ·å§‹åœ°å€ï¼Œå–å†³äºåœ¨ç›´æ¥æ˜ å°„ç‰©ç†å†…å­˜æ—¶ï¼Œ
+ ä½¿ç”¨äº†å¤šå°‘è™šæ‹Ÿåœ°å€ç©ºé—´å†…å­˜ï¼ˆå› æ­¤ä¹Ÿä¾èµ–äºhigh_memoryå˜é‡ï¼‰ã€‚
+ å†…æ ¸è¿˜è€ƒè™‘åˆ°ä¸‹è¿°äº‹å®ï¼Œå³ä¸¤ä¸ªåŒºåŸŸä¹‹é—´æœ‰è‡³å°‘ä¸º
+ VMALLOC_OFFSETçš„ä¸€ä¸ªç¼ºå£.
 
-VMALLOC_OFFSET ¶¨ÒåÁË8MµÄ¿Õ¶´£¬ÓÃÓÚ²¶×½Ô½½çµÄÄÚ´æ·ÃÎÊ¡£
-Èç¹ûVMALLOC_OFFSETÈ¡×îĞ¡Öµ£¬ÄÇÃ´ÔÚlowmemºÍvmallocÇøÓòÖ®¼ä£¬
-»á³öÏÖÒ»¸öÈ±¿Ú¡£Õâ¸öÈ±¿Ú¿ÉÓÃ×÷Õë¶ÔÈÎºÎÄÚºË¹ÊÕÏµÄ±£»¤´ëÊ©¡£
-Èç¹û·ÃÎÊÔ½½çµØÖ·£¨¼´ÎŞÒâµØ·ÃÎÊÎïÀíÉÏ²»´æÔÚµÄÄÚ´æÇø£©£¬
-Ôò·ÃÎÊÊ§°Ü²¢Éú³ÉÒ»¸öÒì³££¬±¨¸æ¸Ã´íÎó¡£
-Èç¹ûvmallocÇøÓò½ô½Ó×ÅÖ±½ÓÓ³Éä£¬ÄÇÃ´·ÃÎÊ½«³É¹¦¶ø²»»á×¢Òâµ½´íÎó¡£
-ÔÚÎÈ¶¨ÔËĞĞµÄÇé¿öÏÂ£¬¿Ï¶¨²»ĞèÒªÕâ¸ö¶îÍâµÄ±£»¤´ëÊ©£¬
-µ«Ëü¶Ô¿ª·¢ÉĞÎ´³ÉÊìµÄĞÂÄÚºËÌØĞÔÊÇÓĞÓÃµÄ¡£
+VMALLOC_OFFSET å®šä¹‰äº†8Mçš„ç©ºæ´ï¼Œç”¨äºæ•æ‰è¶Šç•Œçš„å†…å­˜è®¿é—®ã€‚
+å¦‚æœVMALLOC_OFFSETå–æœ€å°å€¼ï¼Œé‚£ä¹ˆåœ¨lowmemå’ŒvmallocåŒºåŸŸä¹‹é—´ï¼Œ
+ä¼šå‡ºç°ä¸€ä¸ªç¼ºå£ã€‚è¿™ä¸ªç¼ºå£å¯ç”¨ä½œé’ˆå¯¹ä»»ä½•å†…æ ¸æ•…éšœçš„ä¿æŠ¤æªæ–½ã€‚
+å¦‚æœè®¿é—®è¶Šç•Œåœ°å€ï¼ˆå³æ— æ„åœ°è®¿é—®ç‰©ç†ä¸Šä¸å­˜åœ¨çš„å†…å­˜åŒºï¼‰ï¼Œ
+åˆ™è®¿é—®å¤±è´¥å¹¶ç”Ÿæˆä¸€ä¸ªå¼‚å¸¸ï¼ŒæŠ¥å‘Šè¯¥é”™è¯¯ã€‚
+å¦‚æœvmallocåŒºåŸŸç´§æ¥ç€ç›´æ¥æ˜ å°„ï¼Œé‚£ä¹ˆè®¿é—®å°†æˆåŠŸè€Œä¸ä¼šæ³¨æ„åˆ°é”™è¯¯ã€‚
+åœ¨ç¨³å®šè¿è¡Œçš„æƒ…å†µä¸‹ï¼Œè‚¯å®šä¸éœ€è¦è¿™ä¸ªé¢å¤–çš„ä¿æŠ¤æªæ–½ï¼Œ
+ä½†å®ƒå¯¹å¼€å‘å°šæœªæˆç†Ÿçš„æ–°å†…æ ¸ç‰¹æ€§æ˜¯æœ‰ç”¨çš„ã€‚
 */
 #define VMALLOC_OFFSET		(8*1024*1024)
 #define VMALLOC_START		(((unsigned long)high_memory + VMALLOC_OFFSET) & ~(VMALLOC_OFFSET-1))
@@ -195,27 +195,27 @@ extern struct page *empty_zero_page;
 extern pgd_t swapper_pg_dir[PTRS_PER_PGD];
 
 /* to find an entry in a page-table-directory */
-// ÕÒµ½ÏßĞÔµØÖ· addr ¶ÔÓ¦µÄµÄÄ¿Â¼ÏîÔÚÒ³È«¾ÖÄ¿Â¼ÖĞµÄË÷Òı£¨Ïà¶ÔÎ»ÖÃ£©
+// æ‰¾åˆ°çº¿æ€§åœ°å€ addr å¯¹åº”çš„çš„ç›®å½•é¡¹åœ¨é¡µå…¨å±€ç›®å½•ä¸­çš„ç´¢å¼•ï¼ˆç›¸å¯¹ä½ç½®ï¼‰
 #define pgd_index(addr)		((addr) >> PGDIR_SHIFT)
 /*
-½ÓÊÕÄÚ´æÃèÊö·ûµØÖ· mm ºÍÏßĞÔµØÖ· addr ×÷Îª²ÎÊı¡£
-Õâ¸öºê²úÉúµØÖ·addr ÔÚÒ³È«¾ÖÄ¿Â¼ÖĞÏàÓ¦±íÏîµÄÏßĞÔµØÖ·£»
-Í¨¹ıÄÚ´æÃèÊö·û mm ÄÚµÄÒ»¸öÖ¸Õë¿ÉÒÔÕÒµ½Õâ¸öÒ³È«¾ÖÄ¿Â¼
+æ¥æ”¶å†…å­˜æè¿°ç¬¦åœ°å€ mm å’Œçº¿æ€§åœ°å€ addr ä½œä¸ºå‚æ•°ã€‚
+è¿™ä¸ªå®äº§ç”Ÿåœ°å€addr åœ¨é¡µå…¨å±€ç›®å½•ä¸­ç›¸åº”è¡¨é¡¹çš„çº¿æ€§åœ°å€ï¼›
+é€šè¿‡å†…å­˜æè¿°ç¬¦ mm å†…çš„ä¸€ä¸ªæŒ‡é’ˆå¯ä»¥æ‰¾åˆ°è¿™ä¸ªé¡µå…¨å±€ç›®å½•
 */
 #define pgd_offset(mm, addr)	((mm)->pgd + pgd_index(addr))
 
 /* to find an entry in a kernel page-table-directory */
 /*
-pgd_offset_kºê½«Ò»¸ö0-4G·¶Î§ÄÚµÄĞéÄâµØÖ·×ª»»Îª
-ÄÚºË½ø³ÌÖ÷Ò³±íÖĞµÄ¶ÔÓ¦Ò³±íÏîËùÔÚµÄµØÖ·¡£
+pgd_offset_kå®å°†ä¸€ä¸ª0-4GèŒƒå›´å†…çš„è™šæ‹Ÿåœ°å€è½¬æ¢ä¸º
+å†…æ ¸è¿›ç¨‹ä¸»é¡µè¡¨ä¸­çš„å¯¹åº”é¡µè¡¨é¡¹æ‰€åœ¨çš„åœ°å€ã€‚
 
-ËüÊ×ÏÈ¸ù¾İpgd_index¼ÆËã¸ÃĞéÄâµØÖ·¶ÔÓ¦µÄÒ³±íÏî
-ÔÚÖ÷Ò³±íÖĞµÄË÷ÒıÖµ
+å®ƒé¦–å…ˆæ ¹æ®pgd_indexè®¡ç®—è¯¥è™šæ‹Ÿåœ°å€å¯¹åº”çš„é¡µè¡¨é¡¹
+åœ¨ä¸»é¡µè¡¨ä¸­çš„ç´¢å¼•å€¼
 
-ÕâÀïĞèÒª×¢ÒâPGDIR_SHIFTµÄÖµÎª21£¬¶ø·Ç20£¬
-ËùÒÔËüµÄÆ«ÒÆÊÇÈ¡2M´óĞ¡Çø¿éµÄË÷Òı£¬
-ÕâÊÇÓÉÓÚpgd_tµÄÀàĞÍÎªÁ½¸ö³¤ÕûĞÎµÄÔªËØ¡£
-È»ºó¸ù¾İË÷ÒıÖµºÍÄÚºË½ø³ÌÖĞµÄinit_mm.pgdÈ¡µÃÒ³±íÏîµØÖ·¡£
+è¿™é‡Œéœ€è¦æ³¨æ„PGDIR_SHIFTçš„å€¼ä¸º21ï¼Œè€Œé20ï¼Œ
+æ‰€ä»¥å®ƒçš„åç§»æ˜¯å–2Må¤§å°åŒºå—çš„ç´¢å¼•ï¼Œ
+è¿™æ˜¯ç”±äºpgd_tçš„ç±»å‹ä¸ºä¸¤ä¸ªé•¿æ•´å½¢çš„å…ƒç´ ã€‚
+ç„¶åæ ¹æ®ç´¢å¼•å€¼å’Œå†…æ ¸è¿›ç¨‹ä¸­çš„init_mm.pgdå–å¾—é¡µè¡¨é¡¹åœ°å€ã€‚
 */
 #define pgd_offset_k(addr)	pgd_offset(&init_mm, addr)
 
@@ -226,8 +226,8 @@ static inline pte_t *pmd_page_vaddr(pmd_t pmd)
 	return __va(pmd_val(pmd) & PHYS_MASK & (s32)PAGE_MASK);
 }
 /*
-Í¨¹ıÒ³ÖĞ¼äÄ¿Â¼Ïî pmd ²úÉúÏàÓ¦Ò³±íµÄÒ³ÃèÊö·ûµØÖ·¡£
-ÔÚÁ½¼¶»òÈı¼¶·ÖÒ³ÏµÍ³ÖĞ£¬ pmd Êµ¼ÊÉÏÊÇÒ³È«¾ÖÄ¿Â¼ÖĞµÄÒ»Ïî
+é€šè¿‡é¡µä¸­é—´ç›®å½•é¡¹ pmd äº§ç”Ÿç›¸åº”é¡µè¡¨çš„é¡µæè¿°ç¬¦åœ°å€ã€‚
+åœ¨ä¸¤çº§æˆ–ä¸‰çº§åˆ†é¡µç³»ç»Ÿä¸­ï¼Œ pmd å®é™…ä¸Šæ˜¯é¡µå…¨å±€ç›®å½•ä¸­çš„ä¸€é¡¹
 */
 #define pmd_page(pmd)		pfn_to_page(__phys_to_pfn(pmd_val(pmd) & PHYS_MASK))
 
@@ -239,20 +239,20 @@ static inline pte_t *pmd_page_vaddr(pmd_t pmd)
 #define __pte_unmap(pte)	kunmap_atomic(pte)
 #endif
 /*
-²úÉúÏßĞÔµØÖ· addr ¶ÔÓ¦µÄ±íÏîÔÚÒ³±íÖĞµÄË÷Òı£¨Ïà¶ÔÎ»ÖÃ£©
+äº§ç”Ÿçº¿æ€§åœ°å€ addr å¯¹åº”çš„è¡¨é¡¹åœ¨é¡µè¡¨ä¸­çš„ç´¢å¼•ï¼ˆç›¸å¯¹ä½ç½®ï¼‰
 */
 #define pte_index(addr)		(((addr) >> PAGE_SHIFT) & (PTRS_PER_PTE - 1))
 /*
-ÏßĞÔµØÖ· addr ÔÚÒ³ÖĞ¼äÄ¿Â¼ dir ÖĞÓĞÒ»¸ö¶ÔÓ¦µÄÏî£¬¸Ãºê¾Í²úÉúÕâ¸ö¶ÔÓ¦Ïî£¬
-¼´Ò³±íµÄÏßĞÔµØÖ·¡£ÁíÍâ£¬¸ÃºêÖ»ÔÚÖ÷ÄÚºËÒ³±íÉÏÊ¹ÓÃ
+çº¿æ€§åœ°å€ addr åœ¨é¡µä¸­é—´ç›®å½• dir ä¸­æœ‰ä¸€ä¸ªå¯¹åº”çš„é¡¹ï¼Œè¯¥å®å°±äº§ç”Ÿè¿™ä¸ªå¯¹åº”é¡¹ï¼Œ
+å³é¡µè¡¨çš„çº¿æ€§åœ°å€ã€‚å¦å¤–ï¼Œè¯¥å®åªåœ¨ä¸»å†…æ ¸é¡µè¡¨ä¸Šä½¿ç”¨
 */
 #define pte_offset_kernel(pmd,addr)	(pmd_page_vaddr(*(pmd)) + pte_index(addr))
 /*
-½ÓÊÕÖ¸ÏòÒ»¸öÒ³ÖĞ¼äÄ¿Â¼ÏîµÄÖ¸Õë dir ºÍÏßĞÔµØÖ· addr ×÷Îª²ÎÊı£¬
-Ëü²úÉúÓëÏßĞÔµØÖ· addr Ïà¶ÔÓ¦µÄÒ³±íÏîµÄÏßĞÔµØÖ·¡£
-Èç¹ûÒ³±í±»±£´æÔÚ¸ß¶Ë´æ´¢Æ÷ÖĞ£¬ÄÇÃ´ÄÚºË½¨Á¢Ò»¸öÁÙÊ±ÄÚºËÓ³Éä£¬
-²¢ÓÃ pte_unmap ¶ÔËü½øĞĞÊÍ·Å¡£ pte_offset_map_nested ºêºÍ pte_unmap_nested ºêÊÇÏàÍ¬µÄ£¬
-µ«ËüÃÇÊ¹ÓÃ²»Í¬µÄÁÙÊ±ÄÚºËÓ³Éä
+æ¥æ”¶æŒ‡å‘ä¸€ä¸ªé¡µä¸­é—´ç›®å½•é¡¹çš„æŒ‡é’ˆ dir å’Œçº¿æ€§åœ°å€ addr ä½œä¸ºå‚æ•°ï¼Œ
+å®ƒäº§ç”Ÿä¸çº¿æ€§åœ°å€ addr ç›¸å¯¹åº”çš„é¡µè¡¨é¡¹çš„çº¿æ€§åœ°å€ã€‚
+å¦‚æœé¡µè¡¨è¢«ä¿å­˜åœ¨é«˜ç«¯å­˜å‚¨å™¨ä¸­ï¼Œé‚£ä¹ˆå†…æ ¸å»ºç«‹ä¸€ä¸ªä¸´æ—¶å†…æ ¸æ˜ å°„ï¼Œ
+å¹¶ç”¨ pte_unmap å¯¹å®ƒè¿›è¡Œé‡Šæ”¾ã€‚ pte_offset_map_nested å®å’Œ pte_unmap_nested å®æ˜¯ç›¸åŒçš„ï¼Œ
+ä½†å®ƒä»¬ä½¿ç”¨ä¸åŒçš„ä¸´æ—¶å†…æ ¸æ˜ å°„
 */
 #define pte_offset_map(pmd,addr)	(__pte_map(pmd) + pte_index(addr))
 #define pte_unmap(pte)			__pte_unmap(pte)
@@ -260,11 +260,11 @@ static inline pte_t *pmd_page_vaddr(pmd_t pmd)
 #define pte_pfn(pte)		((pte_val(pte) & PHYS_MASK) >> PAGE_SHIFT)
 #define pfn_pte(pfn,prot)	__pte(__pfn_to_phys(pfn) | pgprot_val(prot))
 /*
-·µ»ØÒ³±íÏî x ËùÒıÓÃÒ³µÄÃèÊö·ûµØÖ·
+è¿”å›é¡µè¡¨é¡¹ x æ‰€å¼•ç”¨é¡µçš„æè¿°ç¬¦åœ°å€
 */
 #define pte_page(pte)		pfn_to_page(pte_pfn(pte))
 /*
-½ÓÊÕÒ³ÃèÊö·ûµØÖ· p ºÍÒ»×é·ÃÎÊÈ¨ÏŞ prot ×÷Îª²ÎÊı£¬²¢´´½¨ÏàÓ¦µÄÒ³±íÏî 
+æ¥æ”¶é¡µæè¿°ç¬¦åœ°å€ p å’Œä¸€ç»„è®¿é—®æƒé™ prot ä½œä¸ºå‚æ•°ï¼Œå¹¶åˆ›å»ºç›¸åº”çš„é¡µè¡¨é¡¹ 
 */
 #define mk_pte(page,prot)	pfn_pte(page_to_pfn(page), prot)
 
@@ -319,37 +319,37 @@ static inline pte_t set_pte_bit(pte_t pte, pgprot_t prot)
 	pte_val(pte) |= pgprot_val(prot);
 	return pte;
 }
-//Çå³ı Read/Write ±êÖ¾
+//æ¸…é™¤ Read/Write æ ‡å¿—
 static inline pte_t pte_wrprotect(pte_t pte)
 {
 	return set_pte_bit(pte, __pgprot(L_PTE_RDONLY));
 }
-// ÉèÖÃ Read/Write ±êÖ¾
+// è®¾ç½® Read/Write æ ‡å¿—
 static inline pte_t pte_mkwrite(pte_t pte)
 {
 	return clear_pte_bit(pte, __pgprot(L_PTE_RDONLY));
 }
-// Çå³ı Dirty ±êÖ¾
+// æ¸…é™¤ Dirty æ ‡å¿—
 static inline pte_t pte_mkclean(pte_t pte)
 {
 	return clear_pte_bit(pte, __pgprot(L_PTE_DIRTY));
 }
-// ÉèÖÃ Dirty ±êÖ¾
+// è®¾ç½® Dirty æ ‡å¿—
 static inline pte_t pte_mkdirty(pte_t pte)
 {
 	return set_pte_bit(pte, __pgprot(L_PTE_DIRTY));
 }
-// Çå³ı Accessed ±êÖ¾£¨°Ñ´ËÒ³±ê¼ÇÎªÎ´·ÃÎÊ£©
+// æ¸…é™¤ Accessed æ ‡å¿—ï¼ˆæŠŠæ­¤é¡µæ ‡è®°ä¸ºæœªè®¿é—®ï¼‰
 static inline pte_t pte_mkold(pte_t pte)
 {
 	return clear_pte_bit(pte, __pgprot(L_PTE_YOUNG));
 }
-// ÉèÖÃ Accessed ±êÖ¾£¨°Ñ´ËÒ³±ê¼ÇÎª·ÃÎÊ¹ı£©
+// è®¾ç½® Accessed æ ‡å¿—ï¼ˆæŠŠæ­¤é¡µæ ‡è®°ä¸ºè®¿é—®è¿‡ï¼‰
 static inline pte_t pte_mkyoung(pte_t pte)
 {
 	return set_pte_bit(pte, __pgprot(L_PTE_YOUNG));
 }
-// ÉèÖÃ User/Supervisor ±êÖ¾
+// è®¾ç½® User/Supervisor æ ‡å¿—
 static inline pte_t pte_mkexec(pte_t pte)
 {
 	return clear_pte_bit(pte, __pgprot(L_PTE_XN));
@@ -359,7 +359,7 @@ static inline pte_t pte_mknexec(pte_t pte)
 {
 	return set_pte_bit(pte, __pgprot(L_PTE_XN));
 }
-// °ÑÒ³±íÏî p µÄËùÓĞ·ÃÎÊÈ¨ÏŞÉèÖÃÎªÖ¸¶¨µÄÖµ
+// æŠŠé¡µè¡¨é¡¹ p çš„æ‰€æœ‰è®¿é—®æƒé™è®¾ç½®ä¸ºæŒ‡å®šçš„å€¼
 static inline pte_t pte_modify(pte_t pte, pgprot_t newprot)
 {
 	const pteval_t mask = L_PTE_XN | L_PTE_RDONLY | L_PTE_USER |

@@ -35,13 +35,13 @@ struct semid_ds {
 #include <asm/sembuf.h>
 
 /* semop system calls takes an array of these. */
-/* ¶ÔĞÅºÅÁ¿µÄ²Ù×÷ */
+/* å¯¹ä¿¡å·é‡çš„æ“ä½œ */
 struct sembuf {
-	/* ĞÅºÅÁ¿ÔÚÊı×éÖĞµÄË÷Òı */
+	/* ä¿¡å·é‡åœ¨æ•°ç»„ä¸­çš„ç´¢å¼• */
 	unsigned short  sem_num;	/* semaphore index in array */
-	/* Òª½øĞĞµÄ²Ù×÷ */
+	/* è¦è¿›è¡Œçš„æ“ä½œ */
 	short		sem_op;		/* semaphore operation */
-	/* ²Ù×÷±êÖ¾ */
+	/* æ“ä½œæ ‡å¿— */
 	short		sem_flg;	/* operation flags */
 };
 
@@ -92,45 +92,45 @@ struct sem {
 };
 
 /* One sem_array data structure for each set of semaphores in the system. */
-/* ĞÅºÅÁ¿¼¯ºÏ */
+/* ä¿¡å·é‡é›†åˆ */
 struct sem_array {
-	/* ĞÅºÅÁ¿·ÃÎÊÈ¨ÏŞ£¬±ØĞëÎ»ÓÚ½á¹¹ÆğÊ¼´¦ */
+	/* ä¿¡å·é‡è®¿é—®æƒé™ï¼Œå¿…é¡»ä½äºç»“æ„èµ·å§‹å¤„ */
 	struct kern_ipc_perm	sem_perm;	/* permissions .. see ipc.h */
-	/* ÉÏ´Î·ÃÎÊĞÅºÅÁ¿µÄÊ±¼ä */
+	/* ä¸Šæ¬¡è®¿é—®ä¿¡å·é‡çš„æ—¶é—´ */
 	time_t			sem_otime;	/* last semop time */
-	/* ÉÏ´ÎĞŞ¸ÄĞÅºÅÁ¿µÄÊ±¼ä */
+	/* ä¸Šæ¬¡ä¿®æ”¹ä¿¡å·é‡çš„æ—¶é—´ */
 	time_t			sem_ctime;	/* last change time */
-	/* Ö¸ÏòÊı×éÖĞµÄµÚÒ»¸öĞÅºÅÁ¿ */
+	/* æŒ‡å‘æ•°ç»„ä¸­çš„ç¬¬ä¸€ä¸ªä¿¡å·é‡ */
 	struct sem		*sem_base;	/* ptr to first semaphore in array */
-	/* ´ı¾öĞÅºÅÁ¿²Ù×÷Á´±í¡£ */
+	/* å¾…å†³ä¿¡å·é‡æ“ä½œé“¾è¡¨ã€‚ */
 	struct sem_queue	*sem_pending;	/* pending operations to be processed */
-	/* ×îºóÒ»¸ö´ı¾öĞÅºÅÁ¿ */
+	/* æœ€åä¸€ä¸ªå¾…å†³ä¿¡å·é‡ */
 	struct sem_queue	**sem_pending_last; /* last pending operation */
 	struct sem_undo		*undo;		/* undo requests on this array */
-	/* Êı×éÖĞµÄĞÅºÅÁ¿ÊıÄ¿ */
+	/* æ•°ç»„ä¸­çš„ä¿¡å·é‡æ•°ç›® */
 	unsigned long		sem_nsems;	/* no. of semaphores in array */
 };
 
 /* One queue for each sleeping process in the system. */
-/* ipcĞÅºÅÁ¿¶ÓÁĞ */
+/* ipcä¿¡å·é‡é˜Ÿåˆ— */
 struct sem_queue {
-	/* Í¨¹ıÕâÁ½¸ö×Ö¶Î½«µÈ´ıÈÎÎñ¼ÓÈë¶ÓÁĞÖĞ */
+	/* é€šè¿‡è¿™ä¸¤ä¸ªå­—æ®µå°†ç­‰å¾…ä»»åŠ¡åŠ å…¥é˜Ÿåˆ—ä¸­ */
 	struct sem_queue *	next;	 /* next entry in the queue */
 	struct sem_queue **	prev;	 /* previous entry in the queue, *(q->prev) == q */
-	/* µÈ´ıĞÅºÅÁ¿µÄ½ø³Ì */
+	/* ç­‰å¾…ä¿¡å·é‡çš„è¿›ç¨‹ */
 	struct task_struct*	sleeper; /* this process */
 	struct sem_undo *	undo;	 /* undo structure */
-	/* µÈ´ı½ø³ÌµÄpid */
+	/* ç­‰å¾…è¿›ç¨‹çš„pid */
 	int    			pid;	 /* process id of requesting process */
 	int    			status;	 /* completion status of operation */
-	/* ²Ù×÷µÄĞÅºÅÁ¿Êı×é */
+	/* æ“ä½œçš„ä¿¡å·é‡æ•°ç»„ */
 	struct sem_array *	sma;	 /* semaphore array for operations */
-	/* ĞÅºÅÁ¿ÄÚ²¿id */
+	/* ä¿¡å·é‡å†…éƒ¨id */
 	int			id;	 /* internal sem id */
-	/* ¹ÒÆğµÄĞÅºÅÁ¿²Ù×÷Êı×é */
+	/* æŒ‚èµ·çš„ä¿¡å·é‡æ“ä½œæ•°ç»„ */
 	struct sembuf *		sops;	 /* array of pending operations */
 	int			nsops;	 /* number of operations */
-	/* ²Ù×÷ÊÇ·ñĞŞ¸ÄĞÅºÅÁ¿Êı¾İ½á¹¹ */
+	/* æ“ä½œæ˜¯å¦ä¿®æ”¹ä¿¡å·é‡æ•°æ®ç»“æ„ */
 	int			alter;   /* does the operation alter the array? */
 };
 

@@ -183,7 +183,7 @@ static unsigned long calibrate_delay_direct(void)
  */
 #define LPS_PREC 8
 
-//²âËãBogoMIPS
+//æµ‹ç®—BogoMIPS
 static unsigned long calibrate_delay_converge(void)
 {
 	/* First stage - slowly accelerate to find initial bounds */
@@ -194,10 +194,10 @@ static unsigned long calibrate_delay_converge(void)
 
 	/* wait for "start of" clock tick */
 	ticks = jiffies;
-	while (ticks == jiffies)//µÈ´ıjiffies·¢Éú±ä»¯
+	while (ticks == jiffies)//ç­‰å¾…jiffieså‘ç”Ÿå˜åŒ–
 		; /* nothing */
 	/* Go .. */
-	ticks = jiffies;//ĞÂµÄjiffies¿ªÊ¼ÁË
+	ticks = jiffies;//æ–°çš„jiffieså¼€å§‹äº†
 	do {
 		if (++trial_in_band == (1<<band)) {
 			++band;
@@ -205,7 +205,7 @@ static unsigned long calibrate_delay_converge(void)
 		}
 		__delay(lpj * band);
 		trials += band;
-	} while (ticks == jiffies);//Ñ­»·Ò»Ö±µÈ´ıjiffies·¢Éú±ä»¯¡£
+	} while (ticks == jiffies);//å¾ªç¯ä¸€ç›´ç­‰å¾…jiffieså‘ç”Ÿå˜åŒ–ã€‚
 	/*
 	 * We overshot, so retreat to a clear underestimate. Then estimate
 	 * the largest likely undershoot. This defines our chop bounds.
@@ -273,7 +273,7 @@ void __attribute__((weak)) calibration_delay_done(void)
 }
 
 /**
- * ²âËãBogoMIPS
+ * æµ‹ç®—BogoMIPS
  */
 void calibrate_delay(void)
 {
@@ -281,8 +281,8 @@ void calibrate_delay(void)
 	static bool printed;
 	int this_cpu = smp_processor_id();
 
-	if (per_cpu(cpu_loops_per_jiffy, this_cpu)) {//µ±Ç°CPUÒÑ¾­¼ÆËãÁËÖµ
-		//Ö±½Ó´òÓ¡³öÀ´
+	if (per_cpu(cpu_loops_per_jiffy, this_cpu)) {//å½“å‰CPUå·²ç»è®¡ç®—äº†å€¼
+		//ç›´æ¥æ‰“å°å‡ºæ¥
 		lpj = per_cpu(cpu_loops_per_jiffy, this_cpu);
 		if (!printed)
 			pr_info("Calibrating delay loop (skipped) "

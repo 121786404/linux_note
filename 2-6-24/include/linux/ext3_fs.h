@@ -312,7 +312,7 @@ struct ext3_inode {
 			__u32	m_i_reserved2[2];
 		} masix2;
 	} osd2;				/* OS dependent 2 */
-	/* inode中空闲空间的长度 */
+	/* inode涓┖闂茬┖闂寸殑闀垮害 */
 	__le16	i_extra_isize;
 	__le16	i_pad1;
 };

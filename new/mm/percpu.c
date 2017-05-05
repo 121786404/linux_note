@@ -55,30 +55,30 @@
 
 #define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
 /**
- *  Ã¿CPU±äÁ¿Ö÷ÒªÊÇÊı¾İ½á¹¹µÄÊı×é£¬ÏµÍ³µÄÃ¿¸öCPU¶ÔÓ¦Êı×éµÄÒ»¸öÔªËØ¡£
- *Ò»¸öCPU²»Ó¦¸Ã·ÃÎÊÓëÆäËûCPU¶ÔÓ¦µÄÊı×éÔªËØ£¬ÁíÍâ£¬Ëü¿ÉÒÔËæÒâ¶Á»òĞŞ
- *¸ÄËü×Ô¼ºµÄÔªËØ¶ø²»ÓÃµ£ĞÄ³öÏÖ¾ºÕùÌõ¼ş£¬ÒòÎªËüÊÇÎ¨Ò»ÓĞ×Ê¸ñÕâÃ´×öµÄ
- *CPU¡£µ«ÊÇ£¬ÕâÒ²ÒâÎ¶×ÅÃ¿CPU±äÁ¿»ù±¾ÉÏÖ»ÄÜÔÚÌØÊâÇé¿öÏÂÊ¹ÓÃ£¬Ò²¾ÍÊÇ
- *µ±ËüÈ·¶¨ÔÚÏµÍ³µÄCPUÉÏµÄÊı¾İÔÚÂß¼­ÉÏÊÇ¶ÀÁ¢µÄÊ±ºò¡£
- *  Ã¿CPUµÄÊı×éÔªËØÔÚÖ÷´æÖĞ±»ÅÅÁĞÒÔÊ¹Ã¿¸öÊı¾İ½á¹¹´æ·ÅÔÚÓ²¼ş¸ßËÙ»º´æ
- *µÄ²»Í¬ĞĞ£¬Òò´Ë£¬¶ÔÃ¿CPUÊı×éµÄ²¢·¢·ÃÎÊ²»»áµ¼ÖÂ¸ßËÙ»º´æĞĞµÄÇÔÓÃºÍ
- *Ê§Ğ§£¨ÕâÖÖ²Ù×÷»á´øÀ´°º¹óµÄÏµÍ³¿ªÏú£©¡£
- *  ËäÈ»Ã¿CPU±äÁ¿ÎªÀ´×Ô²»Í¬CPUµÄ²¢·¢·ÃÎÊÌá¹©±£»¤£¬µ«¶ÔÀ´×ÔÒì²½º¯Êı
- *£¨ÖĞ¶Ï´¦Àí³ÌĞòºÍ¿ÉÑÓ³Ùº¯Êı£©µÄ·ÃÎÊ²»Ìá¹©±£»¤£¬ÔÚÕâÖÖÇé¿öÏÂĞèÒª
- *ÁíÍâµÄÍ¬²½¼¼Êõ¡£
- *  ´ËÍâ£¬ÔÚµ¥´¦ÀíÆ÷ºÍ¶à´¦ÀíÆ÷ÏµÍ³ÖĞ£¬ÄÚºËÇÀÕ¼¶¼¿ÉÄÜÊ¹Ã¿CPU±äÁ¿²úÉú
- *¾ºÕùÌõ¼ş¡£×ÜµÄÔ­ÔòÊÇÄÚºË¿ØÖÆÂ·¾¶Ó¦¸ÃÔÚ½ûÓÃÇÀÕ¼µÄÇé¿öÏÂ·ÃÎÊÃ¿CPU
- *±äÁ¿¡£ÒòÎªµ±Ò»¸öÄÚºË¿ØÖÆÂ·¾¶»ñµÃÁËËüµÄÃ¿CPU±äÁ¿±¾µØ¸±±¾µÄµØÖ·£¬
- *È»ºóËüÒò±»ÇÀÕ¼¶ø×ªÒÆµ½ÁíÍâÒ»¸öCPUÉÏ£¬µ«ÈÔÈ»ÒıÓÃÔ­À´CPUÔªËØµÄµØÖ·£¬
- *ÕâÊÇ·Ç³£Î£ÏÕµÄ¡£
+ *  æ¯CPUå˜é‡ä¸»è¦æ˜¯æ•°æ®ç»“æ„çš„æ•°ç»„ï¼Œç³»ç»Ÿçš„æ¯ä¸ªCPUå¯¹åº”æ•°ç»„çš„ä¸€ä¸ªå…ƒç´ ã€‚
+ *ä¸€ä¸ªCPUä¸åº”è¯¥è®¿é—®ä¸å…¶ä»–CPUå¯¹åº”çš„æ•°ç»„å…ƒç´ ï¼Œå¦å¤–ï¼Œå®ƒå¯ä»¥éšæ„è¯»æˆ–ä¿®
+ *æ”¹å®ƒè‡ªå·±çš„å…ƒç´ è€Œä¸ç”¨æ‹…å¿ƒå‡ºç°ç«äº‰æ¡ä»¶ï¼Œå› ä¸ºå®ƒæ˜¯å”¯ä¸€æœ‰èµ„æ ¼è¿™ä¹ˆåšçš„
+ *CPUã€‚ä½†æ˜¯ï¼Œè¿™ä¹Ÿæ„å‘³ç€æ¯CPUå˜é‡åŸºæœ¬ä¸Šåªèƒ½åœ¨ç‰¹æ®Šæƒ…å†µä¸‹ä½¿ç”¨ï¼Œä¹Ÿå°±æ˜¯
+ *å½“å®ƒç¡®å®šåœ¨ç³»ç»Ÿçš„CPUä¸Šçš„æ•°æ®åœ¨é€»è¾‘ä¸Šæ˜¯ç‹¬ç«‹çš„æ—¶å€™ã€‚
+ *  æ¯CPUçš„æ•°ç»„å…ƒç´ åœ¨ä¸»å­˜ä¸­è¢«æ’åˆ—ä»¥ä½¿æ¯ä¸ªæ•°æ®ç»“æ„å­˜æ”¾åœ¨ç¡¬ä»¶é«˜é€Ÿç¼“å­˜
+ *çš„ä¸åŒè¡Œï¼Œå› æ­¤ï¼Œå¯¹æ¯CPUæ•°ç»„çš„å¹¶å‘è®¿é—®ä¸ä¼šå¯¼è‡´é«˜é€Ÿç¼“å­˜è¡Œçš„çªƒç”¨å’Œ
+ *å¤±æ•ˆï¼ˆè¿™ç§æ“ä½œä¼šå¸¦æ¥æ˜‚è´µçš„ç³»ç»Ÿå¼€é”€ï¼‰ã€‚
+ *  è™½ç„¶æ¯CPUå˜é‡ä¸ºæ¥è‡ªä¸åŒCPUçš„å¹¶å‘è®¿é—®æä¾›ä¿æŠ¤ï¼Œä½†å¯¹æ¥è‡ªå¼‚æ­¥å‡½æ•°
+ *ï¼ˆä¸­æ–­å¤„ç†ç¨‹åºå’Œå¯å»¶è¿Ÿå‡½æ•°ï¼‰çš„è®¿é—®ä¸æä¾›ä¿æŠ¤ï¼Œåœ¨è¿™ç§æƒ…å†µä¸‹éœ€è¦
+ *å¦å¤–çš„åŒæ­¥æŠ€æœ¯ã€‚
+ *  æ­¤å¤–ï¼Œåœ¨å•å¤„ç†å™¨å’Œå¤šå¤„ç†å™¨ç³»ç»Ÿä¸­ï¼Œå†…æ ¸æŠ¢å éƒ½å¯èƒ½ä½¿æ¯CPUå˜é‡äº§ç”Ÿ
+ *ç«äº‰æ¡ä»¶ã€‚æ€»çš„åŸåˆ™æ˜¯å†…æ ¸æ§åˆ¶è·¯å¾„åº”è¯¥åœ¨ç¦ç”¨æŠ¢å çš„æƒ…å†µä¸‹è®¿é—®æ¯CPU
+ *å˜é‡ã€‚å› ä¸ºå½“ä¸€ä¸ªå†…æ ¸æ§åˆ¶è·¯å¾„è·å¾—äº†å®ƒçš„æ¯CPUå˜é‡æœ¬åœ°å‰¯æœ¬çš„åœ°å€ï¼Œ
+ *ç„¶åå®ƒå› è¢«æŠ¢å è€Œè½¬ç§»åˆ°å¦å¤–ä¸€ä¸ªCPUä¸Šï¼Œä½†ä»ç„¶å¼•ç”¨åŸæ¥CPUå…ƒç´ çš„åœ°å€ï¼Œ
+ *è¿™æ˜¯éå¸¸å±é™©çš„ã€‚
  *
- * Ã¿cpu±äÁ¿ÊÇ×î¼òµ¥Ò²ÊÇ×îÖØÒªµÄÍ¬²½¼¼Êõ¡£Ã¿cpu±äÁ¿Ö÷ÒªÊÇÊı¾İ½á¹¹Êı×é£¬
- * ÏµÍ³µÄÃ¿¸öcpu¶ÔÓ¦Êı×éµÄÒ»¸öÔªËØ¡£Ò»¸öcpu²»Ó¦¸Ã·ÃÎÊÓëÆäËücpu¶ÔÓ¦µÄ
- * Êı×éÔªËØ£¬ÁíÍâ£¬Ëü¿ÉÒÔËæÒâ¶Á»òĞŞ¸ÄËü×Ô¼ºµÄÔªËØ¶ø²»ÓÃµ£ĞÄ³öÏÖ¾ºÕùÌõ¼ş£¬
- * ÒòÎªËüÊÇÎ¨Ò»ÓĞ×Ê¸ñÕâÃ´×öµÄcpu¡£ÕâÒ²ÒâÎ¶×ÅÃ¿cpu±äÁ¿»ù±¾ÉÏÖ»ÄÜÔÚÌØÊâ
- * Çé¿öÏÂÊ¹ÓÃ£¬Ò²¾ÍÊÇµ±ËüÈ·¶¨ÔÚÏµÍ³µÄcpuÉÏµÄÊı¾İÔÚÂß¼­ÉÏÊÇ¶ÀÁ¢µÄÊ±ºò.
- *   Ã¿¸ö´¦ÀíÆ÷·ÃÎÊ×Ô¼ºµÄ¸±±¾£¬ÎŞĞè¼ÓËø£¬¿ÉÒÔ·ÅÈë×Ô¼ºµÄcacheÖĞ£¬¼«´óµØ
- * Ìá¸ßÁË·ÃÎÊÓë¸üĞÂĞ§ÂÊ¡£³£ÓÃÓÚ¼ÆÊıÆ÷¡£
+ * æ¯cpuå˜é‡æ˜¯æœ€ç®€å•ä¹Ÿæ˜¯æœ€é‡è¦çš„åŒæ­¥æŠ€æœ¯ã€‚æ¯cpuå˜é‡ä¸»è¦æ˜¯æ•°æ®ç»“æ„æ•°ç»„ï¼Œ
+ * ç³»ç»Ÿçš„æ¯ä¸ªcpuå¯¹åº”æ•°ç»„çš„ä¸€ä¸ªå…ƒç´ ã€‚ä¸€ä¸ªcpuä¸åº”è¯¥è®¿é—®ä¸å…¶å®ƒcpuå¯¹åº”çš„
+ * æ•°ç»„å…ƒç´ ï¼Œå¦å¤–ï¼Œå®ƒå¯ä»¥éšæ„è¯»æˆ–ä¿®æ”¹å®ƒè‡ªå·±çš„å…ƒç´ è€Œä¸ç”¨æ‹…å¿ƒå‡ºç°ç«äº‰æ¡ä»¶ï¼Œ
+ * å› ä¸ºå®ƒæ˜¯å”¯ä¸€æœ‰èµ„æ ¼è¿™ä¹ˆåšçš„cpuã€‚è¿™ä¹Ÿæ„å‘³ç€æ¯cpuå˜é‡åŸºæœ¬ä¸Šåªèƒ½åœ¨ç‰¹æ®Š
+ * æƒ…å†µä¸‹ä½¿ç”¨ï¼Œä¹Ÿå°±æ˜¯å½“å®ƒç¡®å®šåœ¨ç³»ç»Ÿçš„cpuä¸Šçš„æ•°æ®åœ¨é€»è¾‘ä¸Šæ˜¯ç‹¬ç«‹çš„æ—¶å€™.
+ *   æ¯ä¸ªå¤„ç†å™¨è®¿é—®è‡ªå·±çš„å‰¯æœ¬ï¼Œæ— éœ€åŠ é”ï¼Œå¯ä»¥æ”¾å…¥è‡ªå·±çš„cacheä¸­ï¼Œæå¤§åœ°
+ * æé«˜äº†è®¿é—®ä¸æ›´æ–°æ•ˆç‡ã€‚å¸¸ç”¨äºè®¡æ•°å™¨ã€‚
  */
 #include <linux/bitmap.h>
 #include <linux/bootmem.h>
@@ -128,40 +128,40 @@
 #define __pcpu_ptr_to_addr(ptr)		(void __force *)(ptr)
 #endif	/* CONFIG_SMP */
 
-/* ÄÚºËÊ¹ÓÃpcpu_chunk½á¹¹¹ÜÀípercpuÄÚ´æ */
+/* å†…æ ¸ä½¿ç”¨pcpu_chunkç»“æ„ç®¡ç†percpuå†…å­˜ */
 struct pcpu_chunk {
 	/**
-	 * ÓÃÀ´°ÑchunkÁ´½ÓÆğÀ´ĞÎ³ÉÁ´±í¡£Ã¿Ò»¸öÁ´±íÓÖ¶¼·Åµ½pcpu_slotÊı×éÖĞ£¬
-	 * ¸ù¾İchunkÖĞ¿ÕÏĞ¿Õ¼äµÄ´óĞ¡¾ö¶¨·Åµ½Êı×éµÄÄÄ¸öÔªËØÖĞ¡£
+	 * ç”¨æ¥æŠŠchunké“¾æ¥èµ·æ¥å½¢æˆé“¾è¡¨ã€‚æ¯ä¸€ä¸ªé“¾è¡¨åˆéƒ½æ”¾åˆ°pcpu_slotæ•°ç»„ä¸­ï¼Œ
+	 * æ ¹æ®chunkä¸­ç©ºé—²ç©ºé—´çš„å¤§å°å†³å®šæ”¾åˆ°æ•°ç»„çš„å“ªä¸ªå…ƒç´ ä¸­ã€‚
 	 */
 	struct list_head	list;		/* linked to pcpu_slot lists */
-	/* chunkÖĞµÄ¿ÕÏĞ´óĞ¡ */
+	/* chunkä¸­çš„ç©ºé—²å¤§å° */
 	int			free_size;	/* free bytes in the chunk */
-	/* ¸ÃchunkËù¹ÜÀíµÄ¸±±¾¿Õ¼äÖĞ¿ÕÏĞ¿Õ¼ä´óĞ¡ */
-	/* ¸ÃchunkÖĞ×î´óµÄ¿ÉÓÃ¿Õ¼äµÄmapÏîµÄsize */
+	/* è¯¥chunkæ‰€ç®¡ç†çš„å‰¯æœ¬ç©ºé—´ä¸­ç©ºé—²ç©ºé—´å¤§å° */
+	/* è¯¥chunkä¸­æœ€å¤§çš„å¯ç”¨ç©ºé—´çš„mapé¡¹çš„size */
 	int			contig_hint;	/* max contiguous size hint */
 	/**
-	 * ¸±±¾¿Õ¼äÊ×µØÖ·¡£¸±±¾¿Õ¼äÒ²ÊÇÓÉÒ»¸öchunkÀ´¹Ü£¬³ÆÖ®Îªfirst chunkÖĞ£¬
-	 * ¸±±¾¿Õ¼äÖĞµÄdynamic¿Õ¼äÓÃÀ´¸ø¶¯Ì¬per-cpu±äÁ¿Ê¹ÓÃ. percpuÄÚ´æ¿ªÊ¼»ùµØÖµ
+	 * å‰¯æœ¬ç©ºé—´é¦–åœ°å€ã€‚å‰¯æœ¬ç©ºé—´ä¹Ÿæ˜¯ç”±ä¸€ä¸ªchunkæ¥ç®¡ï¼Œç§°ä¹‹ä¸ºfirst chunkä¸­ï¼Œ
+	 * å‰¯æœ¬ç©ºé—´ä¸­çš„dynamicç©ºé—´ç”¨æ¥ç»™åŠ¨æ€per-cpuå˜é‡ä½¿ç”¨. percpuå†…å­˜å¼€å§‹åŸºåœ°å€¼
 	 */
 	void			*base_addr;	/* base address of this chunk */
 
-	/* ÎªÁË¶ÔchunkËù¹ÜÀíµÄ¸±±¾¿Õ¼ä·ÖÅäÇé¿öµÄ¸ú×Ù£¬ÓÃÀ´±íÊ¾¿ÉÒÔ¹ÜÀíµÄ¸öÊı */
+	/* ä¸ºäº†å¯¹chunkæ‰€ç®¡ç†çš„å‰¯æœ¬ç©ºé—´åˆ†é…æƒ…å†µçš„è·Ÿè¸ªï¼Œç”¨æ¥è¡¨ç¤ºå¯ä»¥ç®¡ç†çš„ä¸ªæ•° */
 	int			map_used;	/* # of map entries used before the sentry */
 	/**
-	 * ÒÑ¾­·ÖÅäµÄĞ¡¿é¸öÊı£¬ÒòÎªÃ¿¸ö·ÖÅäµÄĞ¡¿é¶¼ÊÇ¸ø¶¯Ì¬per-cpuÊ¹ÓÃµÄ£¬
-	 * ËùÒÔÆäÊµÊÇÒÑ¾­·ÖÅäµÄ±äÁ¿µÄ¸öÊı. ¼ÇÂ¼mapÊı×éµÄÏîÊı£¬ÎªPERCPU_DYNAMIC_EARLY_SLOTS=128
+	 * å·²ç»åˆ†é…çš„å°å—ä¸ªæ•°ï¼Œå› ä¸ºæ¯ä¸ªåˆ†é…çš„å°å—éƒ½æ˜¯ç»™åŠ¨æ€per-cpuä½¿ç”¨çš„ï¼Œ
+	 * æ‰€ä»¥å…¶å®æ˜¯å·²ç»åˆ†é…çš„å˜é‡çš„ä¸ªæ•°. è®°å½•mapæ•°ç»„çš„é¡¹æ•°ï¼Œä¸ºPERCPU_DYNAMIC_EARLY_SLOTS=128
 	 */
 	int			map_alloc;	/* # of map entries allocated */
-	/* mapÊı×é£¬¼ÇÂ¼¸ÃchunkµÄ¿Õ¼äÊ¹ÓÃÇé¿ö. ÕıÊı±íÊ¾¸Ã¿Õ¼ä¿ÕÏĞ£¬¸ºÊı¾ÍÒÑ¾­·ÖÅä¸øÒ»¸ö±äÁ¿ÁË */
+	/* mapæ•°ç»„ï¼Œè®°å½•è¯¥chunkçš„ç©ºé—´ä½¿ç”¨æƒ…å†µ. æ­£æ•°è¡¨ç¤ºè¯¥ç©ºé—´ç©ºé—²ï¼Œè´Ÿæ•°å°±å·²ç»åˆ†é…ç»™ä¸€ä¸ªå˜é‡äº† */
 	/*
-	 * ÈômapÏî>0,±íÊ¾¸ÃmapÖĞ¼ÇÂ¼µÄsizeÊÇ¿ÉÒÔÓÃÀ´·ÖÅäpercpu¿Õ¼äµÄ
-	 * ÈômapÏî<0,±íÊ¾¸ÃmapÏîÖĞµÄsizeÒÑ¾­±»·ÖÅäÊ¹ÓÃ
+	 * è‹¥mapé¡¹>0,è¡¨ç¤ºè¯¥mapä¸­è®°å½•çš„sizeæ˜¯å¯ä»¥ç”¨æ¥åˆ†é…percpuç©ºé—´çš„
+	 * è‹¥mapé¡¹<0,è¡¨ç¤ºè¯¥mapé¡¹ä¸­çš„sizeå·²ç»è¢«åˆ†é…ä½¿ç”¨
 	 */
 	int			*map;		/* allocation map */
 	struct list_head	map_extend_list;/* on pcpu_map_extend_chunks */
 
-	/* Ö¸Ïò·ÖÅäµÄÒ³Êı¾İ */
+	/* æŒ‡å‘åˆ†é…çš„é¡µæ•°æ® */
 	void			*data;		/* chunk data */
 	int			first_free;	/* no free below this */
 	bool			immutable;	/* no [de]population allowed */
@@ -256,10 +256,10 @@ static bool pcpu_addr_in_reserved_chunk(void *addr)
 }
 
 /*
- *flsÕÒµ½sizeÖĞ×î¸ßµÄÖÃ1µÄÎ»£¬·µ»Ø¸ÃÎ»ºÅ
- *Àı£ºfls(0) = 0, fls(1) = 1, fls(0x80000000) = 32.
- *Èôsize=32768=0x8000£¬Ôòfls(32768)=16
- *Èôhighbit=0-4£¬Ôòslot¸öÊı¾ùÎª1
+ *flsæ‰¾åˆ°sizeä¸­æœ€é«˜çš„ç½®1çš„ä½ï¼Œè¿”å›è¯¥ä½å·
+ *ä¾‹ï¼šfls(0) = 0, fls(1) = 1, fls(0x80000000) = 32.
+ *è‹¥size=32768=0x8000ï¼Œåˆ™fls(32768)=16
+ *è‹¥highbit=0-4ï¼Œåˆ™slotä¸ªæ•°å‡ä¸º1
  */
 static int __pcpu_size_to_slot(int size)
 {
@@ -269,16 +269,16 @@ static int __pcpu_size_to_slot(int size)
 
 static int pcpu_size_to_slot(int size)
 {
-	/*ÈôsizeµÈÓÚÃ¿¸öcpuÕ¼ÓÃµÄpercpuÄÚ´æ¿Õ¼ä´óĞ¡£¬·µ»Ø×îºóÒ»Ïîpcpu_slotÊı×éÏÂ±ê*/
+	/*è‹¥sizeç­‰äºæ¯ä¸ªcpuå ç”¨çš„percpuå†…å­˜ç©ºé—´å¤§å°ï¼Œè¿”å›æœ€åä¸€é¡¹pcpu_slotæ•°ç»„ä¸‹æ ‡*/
 	if (size == pcpu_unit_size)
 		return pcpu_nr_slots - 1;
-	/*·ñÔò¸ù¾İsize·µ»ØÔÚpcpu_slotÊı×éÖĞµÄÏÂ±ê*/
+	/*å¦åˆ™æ ¹æ®sizeè¿”å›åœ¨pcpu_slotæ•°ç»„ä¸­çš„ä¸‹æ ‡*/
 	return __pcpu_size_to_slot(size);
 }
 
 static int pcpu_chunk_slot(const struct pcpu_chunk *chunk)
 {
-	/*¸ÃchunkÖĞµÄ¿ÕÏĞ¿Õ¼äĞ¡ÓÚsizeof(int)£¬»òÕß×î´óµÄ¿ÕÏĞ¿Õ¼ä¿éĞ¡ÓÚsizeof(int)£¬·µ»Ø0*/
+	/*è¯¥chunkä¸­çš„ç©ºé—²ç©ºé—´å°äºsizeof(int)ï¼Œæˆ–è€…æœ€å¤§çš„ç©ºé—²ç©ºé—´å—å°äºsizeof(int)ï¼Œè¿”å›0*/
 	if (chunk->free_size < sizeof(int) || chunk->contig_hint < sizeof(int))
 		return 0;
 
@@ -422,10 +422,10 @@ static int pcpu_count_occupied_pages(struct pcpu_chunk *chunk, int i)
  */
 static void pcpu_chunk_relocate(struct pcpu_chunk *chunk, int oslot)
 {
-	/*·µ»Ø¸Ãchunk¶ÔÓ¦µÄÒª¹ÒÈëµÄslotÊı×éµÄÏÂ±ê*/
+	/*è¿”å›è¯¥chunkå¯¹åº”çš„è¦æŒ‚å…¥çš„slotæ•°ç»„çš„ä¸‹æ ‡*/
 	int nslot = pcpu_chunk_slot(chunk);
 
-	/*¾²Ì¬chunk²»Ğè¹ÒÈëpcpu_slotÊı×éÖĞ*/
+	/*é™æ€chunkä¸éœ€æŒ‚å…¥pcpu_slotæ•°ç»„ä¸­*/
 	if (chunk != pcpu_reserved_chunk && oslot != nslot) {
 		if (oslot < nslot)
 			list_move(&chunk->list, &pcpu_slot[nslot]);
@@ -453,7 +453,7 @@ static void pcpu_chunk_relocate(struct pcpu_chunk *chunk, int oslot)
  * New target map allocation length if extension is necessary, 0
  * otherwise.
  */
-/*¼ì²échunkµÄmapÊı×éÊÇ·ñĞèÒªÀ©Õ¹*/
+/*æ£€æŸ¥chunkçš„mapæ•°ç»„æ˜¯å¦éœ€è¦æ‰©å±•*/
 static int pcpu_need_to_extend(struct pcpu_chunk *chunk, bool is_atomic)
 {
 	int margin, new_alloc;
@@ -475,12 +475,12 @@ static int pcpu_need_to_extend(struct pcpu_chunk *chunk, bool is_atomic)
 		margin = PCPU_ATOMIC_MAP_MARGIN_HIGH;
 	}
 
-	/*map_allocÄ¬ÈÏÉèÖÃÎª128£¬Ö»ÓĞmap_used¼ÇÂ¼³¬¹ı126Ê±²Å»á½øĞĞmapÊı×éÀ©Õ¹*/
+	/*map_allocé»˜è®¤è®¾ç½®ä¸º128ï¼Œåªæœ‰map_usedè®°å½•è¶…è¿‡126æ—¶æ‰ä¼šè¿›è¡Œmapæ•°ç»„æ‰©å±•*/
 	if (chunk->map_alloc >= chunk->map_used + margin)
 		return 0;
 
 	new_alloc = PCPU_DFL_MAP_ALLOC;
-	/*¼ÆËã¸ÃchunkµÄmapÊı×éĞÂµÄ´óĞ¡£¬²¢·µ»Ø*/
+	/*è®¡ç®—è¯¥chunkçš„mapæ•°ç»„æ–°çš„å¤§å°ï¼Œå¹¶è¿”å›*/
 	while (new_alloc < chunk->map_used + margin)
 		new_alloc *= 2;
 
@@ -500,7 +500,7 @@ static int pcpu_need_to_extend(struct pcpu_chunk *chunk, bool is_atomic)
  * RETURNS:
  * 0 on success, -errno on failure.
  */
-/*¶ÔmapÊı×éµÄ´óĞ¡½øĞĞÀ©Õ¹*/
+/*å¯¹mapæ•°ç»„çš„å¤§å°è¿›è¡Œæ‰©å±•*/
 static int pcpu_extend_area_map(struct pcpu_chunk *chunk, int new_alloc)
 {
 	int *old = NULL, *new = NULL;
@@ -508,7 +508,7 @@ static int pcpu_extend_area_map(struct pcpu_chunk *chunk, int new_alloc)
 	unsigned long flags;
 
 	lockdep_assert_held(&pcpu_alloc_mutex);
-	/*ÎªĞÂµÄmapÊı×é´óĞ¡·ÖÅäÄÚ´æ¿Õ¼ä*/
+	/*ä¸ºæ–°çš„mapæ•°ç»„å¤§å°åˆ†é…å†…å­˜ç©ºé—´*/
 	new = pcpu_mem_zalloc(new_size);
 	if (!new)
 		return -ENOMEM;
@@ -522,10 +522,10 @@ static int pcpu_extend_area_map(struct pcpu_chunk *chunk, int new_alloc)
 	old_size = chunk->map_alloc * sizeof(chunk->map[0]);
 	old = chunk->map;
 
-	/*¸´ÖÆÀÏµÄmapÊı×éĞÅÏ¢µ½new*/
+	/*å¤åˆ¶è€çš„mapæ•°ç»„ä¿¡æ¯åˆ°new*/
 	memcpy(new, old, old_size);
 
-	/*ÖØĞÂÉèÖÃmapÊı×é£¬Íê³ÉmapÊı×éµÄÀ©Õ¹*/
+	/*é‡æ–°è®¾ç½®mapæ•°ç»„ï¼Œå®Œæˆmapæ•°ç»„çš„æ‰©å±•*/
 	chunk->map_alloc = new_alloc;
 	chunk->map = new;
 	new = NULL;
@@ -613,7 +613,7 @@ static int pcpu_fit_in_area(struct pcpu_chunk *chunk, int off, int this_size,
  * Allocated offset in @chunk on success, -1 if no matching area is
  * found.
  */
-/*´ÓchunkµÄmapÊı×éÖĞ·ÖÅäsize´óĞ¡¿Õ¼ä£¬·µ»Ø¸ÃsizeµÄÆ«ÒÆÖµ*/
+/*ä»chunkçš„mapæ•°ç»„ä¸­åˆ†é…sizeå¤§å°ç©ºé—´ï¼Œè¿”å›è¯¥sizeçš„åç§»å€¼*/
 static int pcpu_alloc_area(struct pcpu_chunk *chunk, int size, int align,
 			   bool pop_only, int *occ_pages_p)
 {
@@ -623,7 +623,7 @@ static int pcpu_alloc_area(struct pcpu_chunk *chunk, int size, int align,
 	bool seen_free = false;
 	int *p;
 
-	/*±éÀú¸ÃchunkµÄmapÖĞ¼ÇÂ¼µÄ¿Õ¼ä£¬mapÖĞ¸ºÊıÎªÒÑ¾­Ê¹ÓÃµÄ¿Õ¼ä£¬ÕıÊıÎª¿ÉÒÔ·ÖÅäÊ¹ÓÃµÄ¿Õ¼ä*/
+	/*éå†è¯¥chunkçš„mapä¸­è®°å½•çš„ç©ºé—´ï¼Œmapä¸­è´Ÿæ•°ä¸ºå·²ç»ä½¿ç”¨çš„ç©ºé—´ï¼Œæ­£æ•°ä¸ºå¯ä»¥åˆ†é…ä½¿ç”¨çš„ç©ºé—´*/
 	for (i = chunk->first_free, p = chunk->map + i; i < chunk->map_used; i++, p++) {
 		int head, tail;
 		int this_size;
@@ -636,13 +636,13 @@ static int pcpu_alloc_area(struct pcpu_chunk *chunk, int size, int align,
 
 		head = pcpu_fit_in_area(chunk, off, this_size, size, align,
 					pop_only);
-		/*ÈômapÖĞµÄ¿Õ¼ä´óĞ¡Ğ¡ÓÚÒª·ÖÅäµÄ¿Õ¼ä´óĞ¡£¬¼ÌĞøÏÂÒ»¸ö*/
+		/*è‹¥mapä¸­çš„ç©ºé—´å¤§å°å°äºè¦åˆ†é…çš„ç©ºé—´å¤§å°ï¼Œç»§ç»­ä¸‹ä¸€ä¸ª*/
 		if (head < 0) {
 			if (!seen_free) {
 				chunk->first_free = i;
 				seen_free = true;
 			}
-			/*¸üĞÂ¸ÃchunkÖĞ¿ÉÊ¹ÓÃµÄ¿Õ¼ä´óĞ¡*/
+			/*æ›´æ–°è¯¥chunkä¸­å¯ä½¿ç”¨çš„ç©ºé—´å¤§å°*/
 			max_contig = max(this_size, max_contig);
 			continue;
 		}
@@ -654,9 +654,9 @@ static int pcpu_alloc_area(struct pcpu_chunk *chunk, int size, int align,
 		 * uncommon for percpu allocations.
 		 */
 		/*
-		 *Èç¹ûhead²»Îª0£¬²¢ÇÒheadºÜĞ¡(Ğ¡ÓÚsizeof(int))£¬»òÕßÇ°Ò»¸ömapµÄ¿ÉÓÃ¿Õ¼ä´óÓÚ0(µ«ÊÇp[i - 1] < head+size)
-		 *Èç¹ûÇ°Ò»¸ömapÏî>0£¬Ôò½«headºÏ²¢µ½Ç°Ò»¸ömapÖĞ
-		 *Èç¹ûÇ°Ò»¸ömapÏî<0,Ôò½«headºÏ²¢µ½Ç°Ò»¸ömap£¬²¢ÇÒÊÇ¸ºÊı£¬²»¿ÉÓÃ¿Õ¼ä£¬µ±Ç°chunk¿ÕÏĞsize¼õÈ¥Õâhead´óĞ¡µÄ¿Õ¼ä
+		 *å¦‚æœheadä¸ä¸º0ï¼Œå¹¶ä¸”headå¾ˆå°(å°äºsizeof(int))ï¼Œæˆ–è€…å‰ä¸€ä¸ªmapçš„å¯ç”¨ç©ºé—´å¤§äº0(ä½†æ˜¯p[i - 1] < head+size)
+		 *å¦‚æœå‰ä¸€ä¸ªmapé¡¹>0ï¼Œåˆ™å°†headåˆå¹¶åˆ°å‰ä¸€ä¸ªmapä¸­
+		 *å¦‚æœå‰ä¸€ä¸ªmapé¡¹<0,åˆ™å°†headåˆå¹¶åˆ°å‰ä¸€ä¸ªmapï¼Œå¹¶ä¸”æ˜¯è´Ÿæ•°ï¼Œä¸å¯ç”¨ç©ºé—´ï¼Œå½“å‰chunkç©ºé—²sizeå‡å»è¿™headå¤§å°çš„ç©ºé—´
 		 */
 		if (head && (head < sizeof(int) || !(p[-1] & 1))) {
 			*p = off += head;
@@ -669,7 +669,7 @@ static int pcpu_alloc_area(struct pcpu_chunk *chunk, int size, int align,
 		}
 
 		/* if tail is small, just keep it around */
-		/*¼ÆËãÒª·ÖÅä¿Õ¼äµÄÎ²²¿*/
+		/*è®¡ç®—è¦åˆ†é…ç©ºé—´çš„å°¾éƒ¨*/
 		tail = this_size - head - size;
 		if (tail < sizeof(int)) {
 			tail = 0;
@@ -677,7 +677,7 @@ static int pcpu_alloc_area(struct pcpu_chunk *chunk, int size, int align,
 		}
 
 		/* split if warranted */
-		/*Èç¹ûhead²»Îª0£¬»òÕßtail²»Îª0£¬ÔòÒª½«µ±Ç°map·Ö¸î*/
+		/*å¦‚æœheadä¸ä¸º0ï¼Œæˆ–è€…tailä¸ä¸º0ï¼Œåˆ™è¦å°†å½“å‰mapåˆ†å‰²*/
 		if (head || tail) {
 			int nr_extra = !!head + !!tail;
 
@@ -687,22 +687,22 @@ static int pcpu_alloc_area(struct pcpu_chunk *chunk, int size, int align,
 			chunk->map_used += nr_extra;
 
 			/*
-			 *Èç¹ûhead²»Îª0£¬tail²»Îª0£¬¾­¹ısplitÖ®ºó£¬map[i]¼ÇÂ¼head£¬
-			 *map[i+1]¼ÇÂ¼Òª·ÖÅäµÄsize£¬map[i+2]¼ÇÂ¼tail
+			 *å¦‚æœheadä¸ä¸º0ï¼Œtailä¸ä¸º0ï¼Œç»è¿‡splitä¹‹åï¼Œmap[i]è®°å½•headï¼Œ
+			 *map[i+1]è®°å½•è¦åˆ†é…çš„sizeï¼Œmap[i+2]è®°å½•tail
 			 */
 			if (head) {
 				if (!seen_free) {
 					chunk->first_free = i;
 					seen_free = true;
 				}
-				/*Æ«ÒÆÒª¼ÓÉÏhead£¬±íÊ¾´ÓheadÖ®ºó¿ªÊ¼*/
+				/*åç§»è¦åŠ ä¸Šheadï¼Œè¡¨ç¤ºä»headä¹‹åå¼€å§‹*/
 				*++p = off += head;
-				/*ÒÆµ½¼ÇÂ¼Òª·ÖÅäsize¿Õ¼äµÄmapÏî*/
+				/*ç§»åˆ°è®°å½•è¦åˆ†é…sizeç©ºé—´çš„mapé¡¹*/
 				++i;
-				/*Óëmax_contig±È½Ï´óĞ¡£¬ÎªÏÂ±ß¸üĞÂchunkµÄ×î´ó¿ÕÏĞ¿Õ¼ä*/
+				/*ä¸max_contigæ¯”è¾ƒå¤§å°ï¼Œä¸ºä¸‹è¾¹æ›´æ–°chunkçš„æœ€å¤§ç©ºé—²ç©ºé—´*/
 				max_contig = max(head, max_contig);
 			}
-			/*±È½ÏÓëmax_contigµÄ´óĞ¡£¬ÎªÏÂ±ß¸üĞÂchunkµÄ×î´ó¿ÕÏĞ¿Õ¼ä*/
+			/*æ¯”è¾ƒä¸max_contigçš„å¤§å°ï¼Œä¸ºä¸‹è¾¹æ›´æ–°chunkçš„æœ€å¤§ç©ºé—²ç©ºé—´*/
 			if (tail) {
 				p[1] = off + size;
 				max_contig = max(tail, max_contig);
@@ -713,20 +713,20 @@ static int pcpu_alloc_area(struct pcpu_chunk *chunk, int size, int align,
 			chunk->first_free = i + 1;
 
 		/* update hint and mark allocated */
-		/*¸üĞÂchunkµÄ×î´ó¿ÕÏĞ¿Õ¼ä*/
+		/*æ›´æ–°chunkçš„æœ€å¤§ç©ºé—²ç©ºé—´*/
 		if (i + 1 == chunk->map_used)
 			chunk->contig_hint = max_contig; /* fully scanned */
 		else
 			chunk->contig_hint = max(chunk->contig_hint,
 						 max_contig);
 
-		/*chunkÖĞµÄ¿ÕÏĞ¿Õ¼ä´óĞ¡µİ¼õ*/
+		/*chunkä¸­çš„ç©ºé—²ç©ºé—´å¤§å°é€’å‡*/
 		chunk->free_size -= size;
-		/*±íÊ¾¸ÃmapÖĞµÄsize´óĞ¡ÒÑ·ÖÅä*/
+		/*è¡¨ç¤ºè¯¥mapä¸­çš„sizeå¤§å°å·²åˆ†é…*/
 		*p |= 1;
 
 		*occ_pages_p = pcpu_count_occupied_pages(chunk, i);
-		/*ÖØĞÂ¼ÆËãchunkÔÚslotÖĞµÄÎ»ÖÃ*/
+		/*é‡æ–°è®¡ç®—chunkåœ¨slotä¸­çš„ä½ç½®*/
 		pcpu_chunk_relocate(chunk, oslot);
 		return off;
 	}
@@ -953,7 +953,7 @@ static struct pcpu_chunk *pcpu_chunk_addr_search(void *addr)
  * RETURNS:
  * Percpu pointer to the allocated area on success, NULL on failure.
  */
-/*¶¯Ì¬·ÖÅäpercpu*/
+/*åŠ¨æ€åˆ†é…percpu*/
 static void __percpu *pcpu_alloc(size_t size, size_t align, bool reserved,
 				 gfp_t gfp)
 {
@@ -988,21 +988,21 @@ static void __percpu *pcpu_alloc(size_t size, size_t align, bool reserved,
 	spin_lock_irqsave(&pcpu_lock, flags);
 
 	/* serve reserved allocations from the reserved chunk if available */
-	/*ÈôÖ¸¶¨reserved·ÖÅä£¬Ôò´Ópcpu_reserved_chunk½øĞĞ*/
+	/*è‹¥æŒ‡å®šreservedåˆ†é…ï¼Œåˆ™ä»pcpu_reserved_chunkè¿›è¡Œ*/
 	if (reserved && pcpu_reserved_chunk) {
-		/*ÕÒµ½¾²Ì¬percpuµÄchunk*/
+		/*æ‰¾åˆ°é™æ€percpuçš„chunk*/
 		chunk = pcpu_reserved_chunk;
 
-		/*¼ì²éÒª·ÖÅäµÄ¿Õ¼äsizeÊÇ·ñ³¬³ö¸ÃchunkµÄËù¾ßÓĞµÄ×î´óµÄ¿ÕÏĞsize*/
+		/*æ£€æŸ¥è¦åˆ†é…çš„ç©ºé—´sizeæ˜¯å¦è¶…å‡ºè¯¥chunkçš„æ‰€å…·æœ‰çš„æœ€å¤§çš„ç©ºé—²size*/
 		if (size > chunk->contig_hint) {
 			err = "alloc from reserved chunk failed";
 			goto fail_unlock;
 		}
 
-		/*¼ì²éÊÇ·ñÒªÀ©Õ¹chunkµÄµÄmapÊı×é£¬mapÊı×éÄ¬ÈÏÉèÖÃÎª128Ïî*/
+		/*æ£€æŸ¥æ˜¯å¦è¦æ‰©å±•chunkçš„çš„mapæ•°ç»„ï¼Œmapæ•°ç»„é»˜è®¤è®¾ç½®ä¸º128é¡¹*/
 		while ((new_alloc = pcpu_need_to_extend(chunk, is_atomic))) {
 			spin_unlock_irqrestore(&pcpu_lock, flags);
-			/*¶ÔmapÊı×é½øĞĞÀ©Õ¹*/
+			/*å¯¹mapæ•°ç»„è¿›è¡Œæ‰©å±•*/
 			if (is_atomic ||
 			    pcpu_extend_area_map(chunk, new_alloc) < 0) {
 				err = "failed to extend area map of reserved chunk";
@@ -1012,8 +1012,8 @@ static void __percpu *pcpu_alloc(size_t size, size_t align, bool reserved,
 		}
 
 		/*
-		 *´Ó¸Ãchunk·ÖÅä³ösize´óĞ¡µÄ¿Õ¼ä£¬·µ»Ø¸Ãsize¿Õ¼äÔÚchunkÖĞµÄ
-		 *Æ«ÒÆÁ¿off, È»ºóÖØĞÂ½«¸Ãchunk¹Òµ½slotÊı×é¶ÔÓ¦Á´±íÖĞ
+		 *ä»è¯¥chunkåˆ†é…å‡ºsizeå¤§å°çš„ç©ºé—´ï¼Œè¿”å›è¯¥sizeç©ºé—´åœ¨chunkä¸­çš„
+		 *åç§»é‡off, ç„¶åé‡æ–°å°†è¯¥chunkæŒ‚åˆ°slotæ•°ç»„å¯¹åº”é“¾è¡¨ä¸­
 		 */
 		off = pcpu_alloc_area(chunk, size, align, is_atomic,
 				      &occ_pages);
@@ -1026,23 +1026,23 @@ static void __percpu *pcpu_alloc(size_t size, size_t align, bool reserved,
 
 restart:
 	/* search through normal chunks */
-	/*¸ù¾İĞèÒª·ÖÅäÄÚ´æ¿éµÄ´óĞ¡Ë÷ÒıslotÊı×éÕÒµ½¶ÔÓ¦Á´±í*/
+	/*æ ¹æ®éœ€è¦åˆ†é…å†…å­˜å—çš„å¤§å°ç´¢å¼•slotæ•°ç»„æ‰¾åˆ°å¯¹åº”é“¾è¡¨*/
 	for (slot = pcpu_size_to_slot(size); slot < pcpu_nr_slots; slot++) {
 		list_for_each_entry(chunk, &pcpu_slot[slot], list) {
-			/*ÔÚ¸ÃÁ´±íÖĞ½øÒ»²½Ñ°ÕÒ·ûºÏ³ß´çÒªÇóµÄchunk*/
+			/*åœ¨è¯¥é“¾è¡¨ä¸­è¿›ä¸€æ­¥å¯»æ‰¾ç¬¦åˆå°ºå¯¸è¦æ±‚çš„chunk*/
 			if (size > chunk->contig_hint)
 				continue;
 
 			/*
-			 *chunckÓÃÊı×émap¼ÇÂ¼Ã¿´Î·ÖÅäµÄÄÚ´æ¿é£¬Èô¸ÃÊı×éÏîÊıÓÃÍê(Ä¬ÈÏÎª128Ïî)£¬
-			 *µ«ÊÇÈô¸ÃchunkÈÔÈ»»¹ÓĞ¿ÕÏĞ¿Õ¼ä¿É·ÖÅä£¬ÔòĞèÒªÔö³¤¸ÃmapÊı×éÏîÊıÀ´¼ÇÂ¼¿É·ÖÅäµÄ¿Õ¼ä
+			 *chunckç”¨æ•°ç»„mapè®°å½•æ¯æ¬¡åˆ†é…çš„å†…å­˜å—ï¼Œè‹¥è¯¥æ•°ç»„é¡¹æ•°ç”¨å®Œ(é»˜è®¤ä¸º128é¡¹)ï¼Œ
+			 *ä½†æ˜¯è‹¥è¯¥chunkä»ç„¶è¿˜æœ‰ç©ºé—²ç©ºé—´å¯åˆ†é…ï¼Œåˆ™éœ€è¦å¢é•¿è¯¥mapæ•°ç»„é¡¹æ•°æ¥è®°å½•å¯åˆ†é…çš„ç©ºé—´
 			 */
 			new_alloc = pcpu_need_to_extend(chunk, is_atomic);
 			if (new_alloc) {
 				if (is_atomic)
 					continue;
 				spin_unlock_irqrestore(&pcpu_lock, flags);
-				/*À©Õ¹mapÊı×é*/
+				/*æ‰©å±•mapæ•°ç»„*/
 				if (pcpu_extend_area_map(chunk,
 							 new_alloc) < 0) {
 					err = "failed to extend area map";
@@ -1057,8 +1057,8 @@ restart:
 			}
 
 			/*
-			 *´Ó¸Ãchunk·ÖÅä³ösize´óĞ¡µÄ¿Õ¼ä£¬·µ»Ø¸Ãsize¿Õ¼äÔÚchunkÖĞµÄ
-			 *Æ«ÒÆÁ¿off,È»ºóÖØĞÂ½«¸Ãchunk¹Òµ½slotÊı×é¶ÔÓ¦Á´±íÖĞ
+			 *ä»è¯¥chunkåˆ†é…å‡ºsizeå¤§å°çš„ç©ºé—´ï¼Œè¿”å›è¯¥sizeç©ºé—´åœ¨chunkä¸­çš„
+			 *åç§»é‡off,ç„¶åé‡æ–°å°†è¯¥chunkæŒ‚åˆ°slotæ•°ç»„å¯¹åº”é“¾è¡¨ä¸­
 			 */
 			off = pcpu_alloc_area(chunk, size, align, is_atomic,
 					      &occ_pages);
@@ -1067,7 +1067,7 @@ restart:
 		}
 	}
 
-	/*µ½ÕâÀï±íÊ¾Ã»ÓĞÕÒµ½ºÏÊÊµÄchunk£¬ĞèÒªÖØĞÂ´´½¨Ò»¸öĞÂµÄchunk*/
+	/*åˆ°è¿™é‡Œè¡¨ç¤ºæ²¡æœ‰æ‰¾åˆ°åˆé€‚çš„chunkï¼Œéœ€è¦é‡æ–°åˆ›å»ºä¸€ä¸ªæ–°çš„chunk*/
 	spin_unlock_irqrestore(&pcpu_lock, flags);
 
 	/*
@@ -1079,7 +1079,7 @@ restart:
 		goto fail;
 
 	if (list_empty(&pcpu_slot[pcpu_nr_slots - 1])) {
-		/*´´½¨Ò»¸öĞÂµÄchunk£¬ÕâÀï½øĞĞµÄÊÇĞéÄâµØÖ·¿Õ¼äµÄ·ÖÅä*/
+		/*åˆ›å»ºä¸€ä¸ªæ–°çš„chunkï¼Œè¿™é‡Œè¿›è¡Œçš„æ˜¯è™šæ‹Ÿåœ°å€ç©ºé—´çš„åˆ†é…*/
 		chunk = pcpu_create_chunk();
 		if (!chunk) {
 			err = "failed to allocate new chunk";
@@ -1087,7 +1087,7 @@ restart:
 		}
 
 		spin_lock_irqsave(&pcpu_lock, flags);
-		/*°ÑÒ»¸öÈ«ĞÂµÄchunk¹Òµ½slotÊı×é¶ÔÓ¦Á´±íÖĞ*/
+		/*æŠŠä¸€ä¸ªå…¨æ–°çš„chunkæŒ‚åˆ°slotæ•°ç»„å¯¹åº”é“¾è¡¨ä¸­*/
 		pcpu_chunk_relocate(chunk, -1);
 	} else {
 		spin_lock_irqsave(&pcpu_lock, flags);
@@ -1108,7 +1108,7 @@ area_found:
 		pcpu_for_each_unpop_region(chunk, rs, re, page_start, page_end) {
 			WARN_ON(chunk->immutable);
 
-			/*ÕâÀïÒª¼ì²é¸Ã¶ÎÇøÓò¶ÔÓ¦ÎïÀíÒ³ÊÇ·ñÒÑ¾­·ÖÅä*/
+			/*è¿™é‡Œè¦æ£€æŸ¥è¯¥æ®µåŒºåŸŸå¯¹åº”ç‰©ç†é¡µæ˜¯å¦å·²ç»åˆ†é…*/
 			ret = pcpu_populate_chunk(chunk, rs, re);
 
 			spin_lock_irqsave(&pcpu_lock, flags);
@@ -1135,15 +1135,15 @@ area_found:
 		memset((void *)pcpu_chunk_addr(chunk, cpu, 0) + off, 0, size);
 
 	/*
-	 *chunk->base_addr + off±íÊ¾·ÖÅä¸Ãsize¿Õ¼äµÄÆğÊ¼percpuÄÚ´æµØÖ·
-	 *×îÖÕ·µ»ØµÄµØÖ·¼´__per_cpu_start+off£¬¼´µÃµ½¸Ã¶¯Ì¬·ÖÅäpercpu±äÁ¿
-	 *ÔÚÄÚºË¾µÏñÖĞµÄÒ»¸öĞéÄâÄÚ´æµØÖ·¡£Êµ¼ÊÉÏ¸Ã¶¯Ì¬·ÖÅäpercpu±äÁ¿²¢²»
-	 *ÔÚ´ËµØÖ·ÉÏ£¬Ö»ÊÇÎªÁËÒÔºóÍ¨¹ıper_cpu(var, cpu)ÒıÓÃ¸Ã±äÁ¿Ê±£¬Óë¾²Ì¬
-	 *percpu±äÁ¿Ò»ÖÂ£¬ÒòÎª¾²Ì¬percpu±äÁ¿ÔÚÄÚºË¾µÏñÖĞÊÇÓĞ·ÖÅäÄÚ´æĞéÄâµØÖ·
-	 *µÄ(ÔÚ.data..percpu¶ÎÖĞ)¡£Ê¹ÓÃper_cpu(var, cpu)Ê±£¬¸Ã¶¯Ì¬·ÖÅäpercpu
-	 *±äÁ¿µÄÄÚºË¾µÏñÖĞµÄĞéÄâµØÖ·(¼ÙµÄµØÖ·£¬ÎªÁË¸ú¾²Ì¬percpu±äÁ¿Ò»ÖÂ)£¬
-	 *¼ÓÉÏ±¾cpuËùÔÚpercpu¿Õ¼äÓë.data..percpu¶ÎµÄÆ«ÒÆÁ¿£¬¼´µÃµ½¸Ã¶¯Ì¬·ÖÅä
-	 *percpu±äÁ¿ÔÚ±¾cpu¸±±¾ÖĞµÄÄÚ´æµØÖ·
+	 *chunk->base_addr + offè¡¨ç¤ºåˆ†é…è¯¥sizeç©ºé—´çš„èµ·å§‹percpuå†…å­˜åœ°å€
+	 *æœ€ç»ˆè¿”å›çš„åœ°å€å³__per_cpu_start+offï¼Œå³å¾—åˆ°è¯¥åŠ¨æ€åˆ†é…percpuå˜é‡
+	 *åœ¨å†…æ ¸é•œåƒä¸­çš„ä¸€ä¸ªè™šæ‹Ÿå†…å­˜åœ°å€ã€‚å®é™…ä¸Šè¯¥åŠ¨æ€åˆ†é…percpuå˜é‡å¹¶ä¸
+	 *åœ¨æ­¤åœ°å€ä¸Šï¼Œåªæ˜¯ä¸ºäº†ä»¥åé€šè¿‡per_cpu(var, cpu)å¼•ç”¨è¯¥å˜é‡æ—¶ï¼Œä¸é™æ€
+	 *percpuå˜é‡ä¸€è‡´ï¼Œå› ä¸ºé™æ€percpuå˜é‡åœ¨å†…æ ¸é•œåƒä¸­æ˜¯æœ‰åˆ†é…å†…å­˜è™šæ‹Ÿåœ°å€
+	 *çš„(åœ¨.data..percpuæ®µä¸­)ã€‚ä½¿ç”¨per_cpu(var, cpu)æ—¶ï¼Œè¯¥åŠ¨æ€åˆ†é…percpu
+	 *å˜é‡çš„å†…æ ¸é•œåƒä¸­çš„è™šæ‹Ÿåœ°å€(å‡çš„åœ°å€ï¼Œä¸ºäº†è·Ÿé™æ€percpuå˜é‡ä¸€è‡´)ï¼Œ
+	 *åŠ ä¸Šæœ¬cpuæ‰€åœ¨percpuç©ºé—´ä¸.data..percpuæ®µçš„åç§»é‡ï¼Œå³å¾—åˆ°è¯¥åŠ¨æ€åˆ†é…
+	 *percpuå˜é‡åœ¨æœ¬cpuå‰¯æœ¬ä¸­çš„å†…å­˜åœ°å€
 	 */
 	ptr = __addr_to_pcpu_ptr(chunk->base_addr + off);
 	kmemleak_alloc_percpu(ptr, size, gfp);
@@ -1510,7 +1510,7 @@ phys_addr_t per_cpu_ptr_to_phys(void *addr)
  * Pointer to the allocated pcpu_alloc_info on success, NULL on
  * failure.
  */
-/*·ÖÅäpcpu_alloc_info½á¹¹£¬²¢³õÊ¼»¯*/
+/*åˆ†é…pcpu_alloc_infoç»“æ„ï¼Œå¹¶åˆå§‹åŒ–*/
 struct pcpu_alloc_info * __init pcpu_alloc_alloc_info(int nr_groups,
 						      int nr_units)
 {
@@ -1519,28 +1519,28 @@ struct pcpu_alloc_info * __init pcpu_alloc_alloc_info(int nr_groups,
 	void *ptr;
 	int unit;
 
-	/*¸ù¾İgroupÊıÒÔ¼°£¬group[0]ÖĞcpu¸öÊıÈ·¶¨pcpu_alloc_info½á¹¹Ìå´óĞ¡ai_size*/
+	/*æ ¹æ®groupæ•°ä»¥åŠï¼Œgroup[0]ä¸­cpuä¸ªæ•°ç¡®å®špcpu_alloc_infoç»“æ„ä½“å¤§å°ai_size*/
 	base_size = ALIGN(sizeof(*ai) + nr_groups * sizeof(ai->groups[0]),
 			  __alignof__(ai->groups[0].cpu_map[0]));
 	ai_size = base_size + nr_units * sizeof(ai->groups[0].cpu_map[0]);
 
-	/*·ÖÅä¿Õ¼ä*/
+	/*åˆ†é…ç©ºé—´*/
 	ptr = memblock_virt_alloc_nopanic(PFN_ALIGN(ai_size), 0);
 	if (!ptr)
 		return NULL;
 	ai = ptr;
-	/*Ö¸ÕëÖ¸ÏògroupµÄcpu_mapÊı×éµØÖ·´¦*/
+	/*æŒ‡é’ˆæŒ‡å‘groupçš„cpu_mapæ•°ç»„åœ°å€å¤„*/
 	ptr += base_size;
 
 	ai->groups[0].cpu_map = ptr;
 
-	/*³õÊ¼»¯group[0]µÄcpu_mapÊı×éÖµÎªNR_CPUS*/
+	/*åˆå§‹åŒ–group[0]çš„cpu_mapæ•°ç»„å€¼ä¸ºNR_CPUS*/
 	for (unit = 0; unit < nr_units; unit++)
 		ai->groups[0].cpu_map[unit] = NR_CPUS;
 
-	/*group¸öÊı*/
+	/*groupä¸ªæ•°*/
 	ai->nr_groups = nr_groups;
-	/*Õû¸öpcpu_alloc_info½á¹¹ÌåµÄ´óĞ¡*/
+	/*æ•´ä¸ªpcpu_alloc_infoç»“æ„ä½“çš„å¤§å°*/
 	ai->__ai_size = PFN_ALIGN(ai_size);
 
 	return ai;
@@ -1670,7 +1670,7 @@ static void pcpu_dump_alloc_info(const char *lvl,
  * RETURNS:
  * 0 on success, -errno on failure.
  */
-/*Îªpercpu½¨Á¢µÚÒ»¸öchunk */
+/*ä¸ºpercpuå»ºç«‹ç¬¬ä¸€ä¸ªchunk */
 int __init pcpu_setup_first_chunk(const struct pcpu_alloc_info *ai,
 				  void *base_addr)
 {
@@ -1711,34 +1711,34 @@ int __init pcpu_setup_first_chunk(const struct pcpu_alloc_info *ai,
 	PCPU_SETUP_BUG_ON(pcpu_verify_alloc_info(ai) < 0);
 
 	/* process group information and build config tables accordingly */
-	/*ÎªgroupÏà¹ØpercpuĞÅÏ¢±£´æÊı×é·ÖÅä¿Õ¼ä*/
+	/*ä¸ºgroupç›¸å…³percpuä¿¡æ¯ä¿å­˜æ•°ç»„åˆ†é…ç©ºé—´*/
 	group_offsets = memblock_virt_alloc(ai->nr_groups *
 					     sizeof(group_offsets[0]), 0);
 	group_sizes = memblock_virt_alloc(ai->nr_groups *
 					   sizeof(group_sizes[0]), 0);
-	/*ÎªÃ¿¸öcpuÏà¹ØpercpuĞÅÏ¢±£´æÊı×é·ÖÅä¿Õ¼ä*/
+	/*ä¸ºæ¯ä¸ªcpuç›¸å…³percpuä¿¡æ¯ä¿å­˜æ•°ç»„åˆ†é…ç©ºé—´*/
 	unit_map = memblock_virt_alloc(nr_cpu_ids * sizeof(unit_map[0]), 0);
 	unit_off = memblock_virt_alloc(nr_cpu_ids * sizeof(unit_off[0]), 0);
 
-	/*¶Ôunit_map¡¢pcpu_low_unit_cpuºÍpcpu_high_unit_cpu±äÁ¿³õÊ¼»¯*/
+	/*å¯¹unit_mapã€pcpu_low_unit_cpuå’Œpcpu_high_unit_cpuå˜é‡åˆå§‹åŒ–*/
 	for (cpu = 0; cpu < nr_cpu_ids; cpu++)
 		unit_map[cpu] = UINT_MAX;
 
 	pcpu_low_unit_cpu = NR_CPUS;
 	pcpu_high_unit_cpu = NR_CPUS;
 
-	/*±éÀúÃ¿Ò»groupµÄÃ¿Ò»¸öcpu*/
+	/*éå†æ¯ä¸€groupçš„æ¯ä¸€ä¸ªcpu*/
 	for (group = 0, unit = 0; group < ai->nr_groups; group++, unit += i) {
 		const struct pcpu_group_info *gi = &ai->groups[group];
 
-		/*È¡µÃ¸Ã×é´¦ÀíÆ÷µÄpercpuÄÚ´æ¿Õ¼äµÄÆ«ÒÆÁ¿*/
+		/*å–å¾—è¯¥ç»„å¤„ç†å™¨çš„percpuå†…å­˜ç©ºé—´çš„åç§»é‡*/
 		group_offsets[group] = gi->base_offset;
-		/*È¡µÃ¸Ã×é´¦ÀíÆ÷µÄpercpuÄÚ´æ¿Õ¼äÕ¼ÓÃµÄĞéÄâµØÖ·¿Õ¼ä´óĞ¡£¬¼´°üº¬¸Ä×éÖĞÃ¿¸öcpuËùÕ¼µÄpercpu¿Õ¼ä*/
+		/*å–å¾—è¯¥ç»„å¤„ç†å™¨çš„percpuå†…å­˜ç©ºé—´å ç”¨çš„è™šæ‹Ÿåœ°å€ç©ºé—´å¤§å°ï¼Œå³åŒ…å«æ”¹ç»„ä¸­æ¯ä¸ªcpuæ‰€å çš„percpuç©ºé—´*/
 		group_sizes[group] = gi->nr_units * ai->unit_size;
 
-		/*±éÀú¸ÃgroupÖĞµÄcpu*/
+		/*éå†è¯¥groupä¸­çš„cpu*/
 		for (i = 0; i < gi->nr_units; i++) {
-			/*µÃµ½¸ÃgroupÖĞµÄcpu idºÅ*/
+			/*å¾—åˆ°è¯¥groupä¸­çš„cpu idå·*/
 			cpu = gi->cpu_map[i];
 			if (cpu == NR_CPUS)
 				continue;
@@ -1747,9 +1747,9 @@ int __init pcpu_setup_first_chunk(const struct pcpu_alloc_info *ai,
 			PCPU_SETUP_BUG_ON(!cpu_possible(cpu));
 			PCPU_SETUP_BUG_ON(unit_map[cpu] != UINT_MAX);
 
-			/*¼ÆËãÃ¿¸öcpuµÄ¿çgroupµÄ±àºÅ£¬±£´æÔÚunit_mapÊı×éÖĞ*/
+			/*è®¡ç®—æ¯ä¸ªcpuçš„è·¨groupçš„ç¼–å·ï¼Œä¿å­˜åœ¨unit_mapæ•°ç»„ä¸­*/
 			unit_map[cpu] = unit + i;
-			/*¼ÆËãÃ¿¸öcpuµÄÔÚÕû¸öÏµÍ³percpuÄÚ´æ¿Õ¼äÖĞµÄÆ«ÒÆÁ¿£¬±£´æµ½Êı×éunit_offÖĞ*/
+			/*è®¡ç®—æ¯ä¸ªcpuçš„åœ¨æ•´ä¸ªç³»ç»Ÿpercpuå†…å­˜ç©ºé—´ä¸­çš„åç§»é‡ï¼Œä¿å­˜åˆ°æ•°ç»„unit_offä¸­*/
 			unit_off[cpu] = gi->base_offset + i * ai->unit_size;
 
 			/* determine low/high unit_cpu */
@@ -1761,7 +1761,7 @@ int __init pcpu_setup_first_chunk(const struct pcpu_alloc_info *ai,
 				pcpu_high_unit_cpu = cpu;
 		}
 	}
-	/*pcpu_nr_units±äÁ¿±£´æÏµÍ³ÖĞÓĞ¶àÉÙ¸öcpuµÄpercpuÄÚ´æ¿Õ¼ä*/
+	/*pcpu_nr_unitså˜é‡ä¿å­˜ç³»ç»Ÿä¸­æœ‰å¤šå°‘ä¸ªcpuçš„percpuå†…å­˜ç©ºé—´*/
 	pcpu_nr_units = unit;
 
 	for_each_possible_cpu(cpu)
@@ -1771,26 +1771,26 @@ int __init pcpu_setup_first_chunk(const struct pcpu_alloc_info *ai,
 #undef PCPU_SETUP_BUG_ON
 	pcpu_dump_alloc_info(KERN_DEBUG, ai);
 
-	/*¼ÇÂ¼ÏÂÈ«¾Ö²ÎÊı£¬ÁôÔÚpcpu_allocÊ±Ê¹ÓÃ*/
-	/*ÏµÍ³ÖĞgroupÊıÁ¿*/
+	/*è®°å½•ä¸‹å…¨å±€å‚æ•°ï¼Œç•™åœ¨pcpu_allocæ—¶ä½¿ç”¨*/
+	/*ç³»ç»Ÿä¸­groupæ•°é‡*/
 	pcpu_nr_groups = ai->nr_groups;
-	/*¼ÇÂ¼Ã¿¸ögroupµÄpercpuÄÚ´æÆ«ÒÆÁ¿Êı×é*/
+	/*è®°å½•æ¯ä¸ªgroupçš„percpuå†…å­˜åç§»é‡æ•°ç»„*/
 	pcpu_group_offsets = group_offsets;
-	/*¼ÇÂ¼Ã¿¸ögroupµÄpercpuÄÚ´æ¿Õ¼ä´óĞ¡Êı×é*/
+	/*è®°å½•æ¯ä¸ªgroupçš„percpuå†…å­˜ç©ºé—´å¤§å°æ•°ç»„*/
 	pcpu_group_sizes = group_sizes;
-	/*Õû¸öÏµÍ³ÖĞcpu(¿çgroup)µÄ±àºÅÊı×é*/
+	/*æ•´ä¸ªç³»ç»Ÿä¸­cpu(è·¨group)çš„ç¼–å·æ•°ç»„*/
 	pcpu_unit_map = unit_map;
-	/*Ã¿¸öcpuµÄpercpuÄÚ´æ¿Õ¼äÆ«ÒÆÁ¿*/
+	/*æ¯ä¸ªcpuçš„percpuå†…å­˜ç©ºé—´åç§»é‡*/
 	pcpu_unit_offsets = unit_off;
 
 	/* determine basic parameters */
-	/*Ã¿¸öcpuµÄpercpuÄÚ´æĞéÄâ¿Õ¼äËùÕ¼µÄÒ³ÃæÊıÁ¿*/
+	/*æ¯ä¸ªcpuçš„percpuå†…å­˜è™šæ‹Ÿç©ºé—´æ‰€å çš„é¡µé¢æ•°é‡*/
 	pcpu_unit_pages = ai->unit_size >> PAGE_SHIFT;
-	/*Ã¿¸öcpuµÄpercpuÄÚ´æĞéÄâ¿Õ¼ä´óĞ¡*/
+	/*æ¯ä¸ªcpuçš„percpuå†…å­˜è™šæ‹Ÿç©ºé—´å¤§å°*/
 	pcpu_unit_size = pcpu_unit_pages << PAGE_SHIFT;
 	/*PAGE_SIZE*/
 	pcpu_atom_size = ai->atom_size;
-	/*¼ÆËãpcpu_chunk½á¹¹µÄ´óĞ¡£¬¼ÓÉÏpopulatedÓòµÄ´óĞ¡*/
+	/*è®¡ç®—pcpu_chunkç»“æ„çš„å¤§å°ï¼ŒåŠ ä¸ŠpopulatedåŸŸçš„å¤§å°*/
 	pcpu_chunk_struct_size = sizeof(struct pcpu_chunk) +
 		BITS_TO_LONGS(pcpu_unit_pages) * sizeof(unsigned long);
 
@@ -1798,9 +1798,9 @@ int __init pcpu_setup_first_chunk(const struct pcpu_alloc_info *ai,
 	 * Allocate chunk slots.  The additional last slot is for
 	 * empty chunks.
 	 */
-	/*¼ÆËãpcpu_nr_slots£¬¼´pcpu_slotÊı×éµÄ×éÏîÊıÁ¿*/
+	/*è®¡ç®—pcpu_nr_slotsï¼Œå³pcpu_slotæ•°ç»„çš„ç»„é¡¹æ•°é‡*/
 	pcpu_nr_slots = __pcpu_size_to_slot(pcpu_unit_size) + 2;
-	/*Îªpcpu_slotÊı×é·ÖÅä¿Õ¼ä£¬²»Í¬sizeµÄchunck¹ÒÔÚ²»Í¬¡°pcpu_slot¡±ÏîÄ¿ÖĞ*/
+	/*ä¸ºpcpu_slotæ•°ç»„åˆ†é…ç©ºé—´ï¼Œä¸åŒsizeçš„chunckæŒ‚åœ¨ä¸åŒâ€œpcpu_slotâ€é¡¹ç›®ä¸­*/
 	pcpu_slot = memblock_virt_alloc(
 			pcpu_nr_slots * sizeof(pcpu_slot[0]), 0);
 	for (i = 0; i < pcpu_nr_slots; i++)
@@ -1813,43 +1813,43 @@ int __init pcpu_setup_first_chunk(const struct pcpu_alloc_info *ai,
 	 * covers static area + reserved area (mostly used for module
 	 * static percpu allocation).
 	 */
-	/*¹¹½¨¾²Ì¬chunck,¼´pcpu_reserved_chunk*/
+	/*æ„å»ºé™æ€chunck,å³pcpu_reserved_chunk*/
 	schunk = memblock_virt_alloc(pcpu_chunk_struct_size, 0);
 	INIT_LIST_HEAD(&schunk->list);
 	INIT_LIST_HEAD(&schunk->map_extend_list);
-	/*Õû¸öÏµÍ³ÖĞpercpuÄÚ´æµÄÆğÊ¼µØÖ·*/
+	/*æ•´ä¸ªç³»ç»Ÿä¸­percpuå†…å­˜çš„èµ·å§‹åœ°å€*/
 	schunk->base_addr = base_addr;
-	/*³õÊ¼»¯ÎªÒ»¸ö¾²Ì¬Êı×é*/
+	/*åˆå§‹åŒ–ä¸ºä¸€ä¸ªé™æ€æ•°ç»„*/
 	schunk->map = smap;
 	/*PERCPU_DYNAMIC_EARLY_SLOTS=128*/
 	schunk->map_alloc = ARRAY_SIZE(smap);
 	schunk->immutable = true;
 	/*
-	 *ÎïÀíÄÚ´æÒÑ¾­·ÖÅäÕâÀï±êÖ¾Ö®. Èôpcpu_unit_pages=8¼´Ã¿¸ö
-	 *cpuÕ¼ÓÃµÄpercpu¿Õ¼äÎª8Ò³µÄ¿Õ¼ä£¬ÔòpopulatedÓò±»ÉèÖÃÎª0xff
+	 *ç‰©ç†å†…å­˜å·²ç»åˆ†é…è¿™é‡Œæ ‡å¿—ä¹‹. è‹¥pcpu_unit_pages=8å³æ¯ä¸ª
+	 *cpuå ç”¨çš„percpuç©ºé—´ä¸º8é¡µçš„ç©ºé—´ï¼Œåˆ™populatedåŸŸè¢«è®¾ç½®ä¸º0xff
 	 */
 	bitmap_fill(schunk->populated, pcpu_unit_pages);
 	schunk->nr_populated = pcpu_unit_pages;
 
 	if (ai->reserved_size) {
-		/*Èç¹û´æÔÚpercpu±£Áô¿Õ¼ä£¬ÔÚÖ¸¶¨reserved·ÖÅäÊ±×÷Îª¿ÕÏĞ¿Õ¼äÊ¹ÓÃ*/
+		/*å¦‚æœå­˜åœ¨percpuä¿ç•™ç©ºé—´ï¼Œåœ¨æŒ‡å®šreservedåˆ†é…æ—¶ä½œä¸ºç©ºé—²ç©ºé—´ä½¿ç”¨*/
 		schunk->free_size = ai->reserved_size;
 		pcpu_reserved_chunk = schunk;
-		/*¾²Ì¬chunkµÄ´óĞ¡ÏŞÖÆ°üÀ¨£¬¶¨ÒåµÄ¾²Ì¬±äÁ¿µÄ¿Õ¼ä+±£ÁôµÄ¿Õ¼ä*/
+		/*é™æ€chunkçš„å¤§å°é™åˆ¶åŒ…æ‹¬ï¼Œå®šä¹‰çš„é™æ€å˜é‡çš„ç©ºé—´+ä¿ç•™çš„ç©ºé—´*/
 		pcpu_reserved_chunk_limit = ai->static_size + ai->reserved_size;
 	} else {
-		/*Èô²»´æÔÚ±£Áô¿Õ¼ä£¬Ôò½«¶¯Ì¬·ÖÅä¿Õ¼ä×÷Îª¿ÕÏĞ¿Õ¼äÊ¹ÓÃ*/
+		/*è‹¥ä¸å­˜åœ¨ä¿ç•™ç©ºé—´ï¼Œåˆ™å°†åŠ¨æ€åˆ†é…ç©ºé—´ä½œä¸ºç©ºé—²ç©ºé—´ä½¿ç”¨*/
 		schunk->free_size = dyn_size;
-		/*¸²¸Çµô¶¯Ì¬·ÖÅä¿Õ¼ä*/
+		/*è¦†ç›–æ‰åŠ¨æ€åˆ†é…ç©ºé—´*/
 		dyn_size = 0;			/* dynamic area covered */
 	}
-	/*¼ÇÂ¼¾²Ì¬chunkÖĞ¿ÕÏĞ¿ÉÊ¹ÓÃµÄpercpu¿Õ¼ä´óĞ¡*/
+	/*è®°å½•é™æ€chunkä¸­ç©ºé—²å¯ä½¿ç”¨çš„percpuç©ºé—´å¤§å°*/
 	schunk->contig_hint = schunk->free_size;
 
 	schunk->map[0] = 1;
 	/*
-	 *mapÊı×é±£´æ¿Õ¼äµÄÊ¹ÓÃÇé¿ö£¬¸ºÊıÎªÒÑÊ¹ÓÃµÄ¿Õ¼ä£¬
-	 *ÕıÊı±íÊ¾ÎªÒÔºó¿ÉÒÔ·ÖÅäµÄ¿Õ¼ä. map_used¼ÇÂ¼chunkÖĞ´æÔÚ¼¸¸ömapÏî
+	 *mapæ•°ç»„ä¿å­˜ç©ºé—´çš„ä½¿ç”¨æƒ…å†µï¼Œè´Ÿæ•°ä¸ºå·²ä½¿ç”¨çš„ç©ºé—´ï¼Œ
+	 *æ­£æ•°è¡¨ç¤ºä¸ºä»¥åå¯ä»¥åˆ†é…çš„ç©ºé—´. map_usedè®°å½•chunkä¸­å­˜åœ¨å‡ ä¸ªmapé¡¹
 	 */
 	schunk->map[1] = ai->static_size;
 	schunk->map_used = 1;
@@ -1858,27 +1858,27 @@ int __init pcpu_setup_first_chunk(const struct pcpu_alloc_info *ai,
 	schunk->map[schunk->map_used] |= 1;
 
 	/* init dynamic chunk if necessary */
-	/*¹¹½¨¶¯Ì¬chunk·ÖÅä¿Õ¼ä*/
+	/*æ„å»ºåŠ¨æ€chunkåˆ†é…ç©ºé—´*/
 	if (dyn_size) {
 		dchunk = memblock_virt_alloc(pcpu_chunk_struct_size, 0);
 		INIT_LIST_HEAD(&dchunk->list);
 		INIT_LIST_HEAD(&dchunk->map_extend_list);
-		/*Õû¸öÏµÍ³ÖĞpercpuÄÚ´æµÄÆğÊ¼µØÖ·*/
+		/*æ•´ä¸ªç³»ç»Ÿä¸­percpuå†…å­˜çš„èµ·å§‹åœ°å€*/
 		dchunk->base_addr = base_addr;
-		/*³õÊ¼»¯ÎªÒ»¸ö¾²Ì¬Êı×é*/
+		/*åˆå§‹åŒ–ä¸ºä¸€ä¸ªé™æ€æ•°ç»„*/
 		dchunk->map = dmap;
 		/*PERCPU_DYNAMIC_EARLY_SLOTS=128*/
 		dchunk->map_alloc = ARRAY_SIZE(dmap);
 		dchunk->immutable = true;
-		/*¼ÇÂ¼ÏÂÀ´·ÖÅäµÄÎïÀíÒ³*/
+		/*è®°å½•ä¸‹æ¥åˆ†é…çš„ç‰©ç†é¡µ*/
 		bitmap_fill(dchunk->populated, pcpu_unit_pages);
 		dchunk->nr_populated = pcpu_unit_pages;
 
-		/*ÉèÖÃ¶¯Ì¬chunkÖĞµÄ¿ÕÏĞ¿É·ÖÅä¿Õ¼ä´óĞ¡*/
+		/*è®¾ç½®åŠ¨æ€chunkä¸­çš„ç©ºé—²å¯åˆ†é…ç©ºé—´å¤§å°*/
 		dchunk->contig_hint = dchunk->free_size = dyn_size;
 		/*
-		 * mapÊı×é±£´æ¿Õ¼äµÄÊ¹ÓÃÇé¿ö£¬¸ºÊıÎªÒÑÊ¹ÓÃµÄ¿Õ¼ä
-		 *£¨¾²Ì¬±äÁ¿¿Õ¼äºÍreserved¿Õ¼ä£©£¬ÕıÊı±íÊ¾ÎªÒÔºó¿ÉÒÔ·ÖÅäµÄ¿Õ¼ä
+		 * mapæ•°ç»„ä¿å­˜ç©ºé—´çš„ä½¿ç”¨æƒ…å†µï¼Œè´Ÿæ•°ä¸ºå·²ä½¿ç”¨çš„ç©ºé—´
+		 *ï¼ˆé™æ€å˜é‡ç©ºé—´å’Œreservedç©ºé—´ï¼‰ï¼Œæ­£æ•°è¡¨ç¤ºä¸ºä»¥åå¯ä»¥åˆ†é…çš„ç©ºé—´
 		 */
 		dchunk->map[0] = 1;
 		dchunk->map[1] = pcpu_reserved_chunk_limit;
@@ -1888,8 +1888,8 @@ int __init pcpu_setup_first_chunk(const struct pcpu_alloc_info *ai,
 
 	/* link the first chunk in */
 	/*
-	 *°ÑµÚÒ»¸öchunkÁ´½Ó½ø¶ÔÓ¦µÄslotÁ´±í£¬reserverdµÄ¿Õ¼ä
-	 *ÓĞ×Ô¼ºµ¥¶ÀµÄchunk£ºpcpu_reserved_chunk
+	 *æŠŠç¬¬ä¸€ä¸ªchunké“¾æ¥è¿›å¯¹åº”çš„sloté“¾è¡¨ï¼Œreserverdçš„ç©ºé—´
+	 *æœ‰è‡ªå·±å•ç‹¬çš„chunkï¼špcpu_reserved_chunk
 	 */
 	pcpu_first_chunk = dchunk ?: schunk;
 	pcpu_nr_empty_pop_pages +=
@@ -1897,7 +1897,7 @@ int __init pcpu_setup_first_chunk(const struct pcpu_alloc_info *ai,
 	pcpu_chunk_relocate(pcpu_first_chunk, -1);
 
 	/* we're done */
-	/*pcpu_base_addr¼ÇÂ¼Õû¸öÏµÍ³ÖĞpercpuÄÚ´æµÄÆğÊ¼µØÖ·*/
+	/*pcpu_base_addrè®°å½•æ•´ä¸ªç³»ç»Ÿä¸­percpuå†…å­˜çš„èµ·å§‹åœ°å€*/
 	pcpu_base_addr = base_addr;
 	return 0;
 }
@@ -1972,7 +1972,7 @@ early_param("percpu_alloc", percpu_alloc_setup);
  * On success, pointer to the new allocation_info is returned.  On
  * failure, ERR_PTR value is returned.
  */
-/*ÊÕ¼¯ÕûÀí¸Ã¼Ü¹¹ÏÂµÄpercpuĞÅÏ¢*/
+/*æ”¶é›†æ•´ç†è¯¥æ¶æ„ä¸‹çš„percpuä¿¡æ¯*/
 static struct pcpu_alloc_info * __init pcpu_build_alloc_info(
 				size_t reserved_size, size_t dyn_size,
 				size_t atom_size,
@@ -1994,10 +1994,10 @@ static struct pcpu_alloc_info * __init pcpu_build_alloc_info(
 	memset(group_cnt, 0, sizeof(group_cnt));
 
 	/* calculate size_sum and ensure dyn_size is enough for early alloc */
-	/*¼ÆËãÃ¿¸öcpuËùÕ¼ÓĞµÄpercpu¿Õ¼ä´óĞ¡£¬°üÀ¨¾²Ì¬¿Õ¼ä+±£Áô¿Õ¼ä+¶¯Ì¬¿Õ¼ä*/
+	/*è®¡ç®—æ¯ä¸ªcpuæ‰€å æœ‰çš„percpuç©ºé—´å¤§å°ï¼ŒåŒ…æ‹¬é™æ€ç©ºé—´+ä¿ç•™ç©ºé—´+åŠ¨æ€ç©ºé—´*/
 	size_sum = PFN_ALIGN(static_size + reserved_size +
 			    max_t(size_t, dyn_size, PERCPU_DYNAMIC_EARLY_SIZE));
-	/*ÖØĞÂ¼ÆËã¶¯Ì¬·ÖÅäµÄpercpu¿Õ¼ä´óĞ¡*/
+	/*é‡æ–°è®¡ç®—åŠ¨æ€åˆ†é…çš„percpuç©ºé—´å¤§å°*/
 	dyn_size = size_sum - static_size - reserved_size;
 
 	/*
@@ -2006,12 +2006,12 @@ static struct pcpu_alloc_info * __init pcpu_build_alloc_info(
 	 * which can accommodate 4k aligned segments which are equal to
 	 * or larger than min_unit_size.
 	 */
-	/*¼ÆËãÃ¿¸öunitµÄ´óĞ¡£¬¼´Ã¿¸ögroupÖĞµÄÃ¿¸öcpuÕ¼ÓÃµÄpercpuÄÚ´æ´óĞ¡ÎªÒ»¸öunit*/
+	/*è®¡ç®—æ¯ä¸ªunitçš„å¤§å°ï¼Œå³æ¯ä¸ªgroupä¸­çš„æ¯ä¸ªcpuå ç”¨çš„percpuå†…å­˜å¤§å°ä¸ºä¸€ä¸ªunit*/
 	min_unit_size = max_t(size_t, size_sum, PCPU_MIN_UNIT_SIZE);
 
 	/*
-	 *atom_sizeÎªPAGE_SIZE£¬¼´4K. ½«min_unit_size°´4KÏòÉÏÉáÈë£¬ÀıÈçmin_unit_size=5k£¬
-	 *Ôòalloc_sizeÎªÁ½¸öÒ³Ãæ´óĞ¡¼´8K£¬Èômin_unit_size=9k£¬Ôòalloc_sizeÎªÈı¸öÒ³Ãæ´óĞ¡¼´12K
+	 *atom_sizeä¸ºPAGE_SIZEï¼Œå³4K. å°†min_unit_sizeæŒ‰4Kå‘ä¸Šèˆå…¥ï¼Œä¾‹å¦‚min_unit_size=5kï¼Œ
+	 *åˆ™alloc_sizeä¸ºä¸¤ä¸ªé¡µé¢å¤§å°å³8Kï¼Œè‹¥min_unit_size=9kï¼Œåˆ™alloc_sizeä¸ºä¸‰ä¸ªé¡µé¢å¤§å°å³12K
 	 */
 	alloc_size = roundup(min_unit_size, atom_size);
 	upa = alloc_size / min_unit_size;
@@ -2021,9 +2021,9 @@ static struct pcpu_alloc_info * __init pcpu_build_alloc_info(
 
 	/* group cpus according to their proximity */
 	/*
-	 * Îªcpu·Ö×é£¬½«½Ó½üµÄcpu·Öµ½Ò»×éÖĞ£¬ÒòÎªÃ»ÓĞ¶¨Òåcpu_distance_fnº¯ÊıÌå£¬
-	 * ËùÒÔËùÓĞµÄcpu·Öµ½Ò»¸ö×éÖĞ¡£¿ÉÒÔµÃµ½ËùÓĞµÄcpu¶¼ÊÇgroup=0£¬group_cnt[0]
-	 * ¼´ÊÇ¸Ã×éÖĞµÄcpu¸öÊı
+	 * ä¸ºcpuåˆ†ç»„ï¼Œå°†æ¥è¿‘çš„cpuåˆ†åˆ°ä¸€ç»„ä¸­ï¼Œå› ä¸ºæ²¡æœ‰å®šä¹‰cpu_distance_fnå‡½æ•°ä½“ï¼Œ
+	 * æ‰€ä»¥æ‰€æœ‰çš„cpuåˆ†åˆ°ä¸€ä¸ªç»„ä¸­ã€‚å¯ä»¥å¾—åˆ°æ‰€æœ‰çš„cpuéƒ½æ˜¯group=0ï¼Œgroup_cnt[0]
+	 * å³æ˜¯è¯¥ç»„ä¸­çš„cpuä¸ªæ•°
 	 */
 	for_each_possible_cpu(cpu) {
 		group = 0;
@@ -2078,15 +2078,15 @@ static struct pcpu_alloc_info * __init pcpu_build_alloc_info(
 	upa = best_upa;
 
 	/* allocate and fill alloc_info */
-	/*¼ÆËãÃ¿¸ögroupÖĞµÄcpu¸öÊı*/
+	/*è®¡ç®—æ¯ä¸ªgroupä¸­çš„cpuä¸ªæ•°*/
 	for (group = 0; group < nr_groups; group++)
 		nr_units += roundup(group_cnt[group], upa);
 
-	/*·ÖÅäpcpu_alloc_info½á¹¹¿Õ¼ä£¬²¢³õÊ¼»¯*/
+	/*åˆ†é…pcpu_alloc_infoç»“æ„ç©ºé—´ï¼Œå¹¶åˆå§‹åŒ–*/
 	ai = pcpu_alloc_alloc_info(nr_groups, nr_units);
 	if (!ai)
 		return ERR_PTR(-ENOMEM);
-	/*ÎªÃ¿¸ögroupµÄcpu_mapÖ¸Õë¸³ÖµÎªgroup[0]£¬group[0]ÖĞµÄcpu_mapÖĞµÄÖµ³õÊ¼»¯ÎªNR_CPUS*/
+	/*ä¸ºæ¯ä¸ªgroupçš„cpu_mapæŒ‡é’ˆèµ‹å€¼ä¸ºgroup[0]ï¼Œgroup[0]ä¸­çš„cpu_mapä¸­çš„å€¼åˆå§‹åŒ–ä¸ºNR_CPUS*/
 	cpu_map = ai->groups[0].cpu_map;
 
 	for (group = 0; group < nr_groups; group++) {
@@ -2094,17 +2094,17 @@ static struct pcpu_alloc_info * __init pcpu_build_alloc_info(
 		cpu_map += roundup(group_cnt[group], upa);
 	}
 
-	/*¾²Ì¬percpu±äÁ¿¿Õ¼ä*/
+	/*é™æ€percpuå˜é‡ç©ºé—´*/
 	ai->static_size = static_size;
-	/*±£Áôpercpu±äÁ¿¿Õ¼ä*/
+	/*ä¿ç•™percpuå˜é‡ç©ºé—´*/
 	ai->reserved_size = reserved_size;
-	/*¶¯Ì¬·ÖÅäµÄpercpu±äÁ¿¿Õ¼ä*/
+	/*åŠ¨æ€åˆ†é…çš„percpuå˜é‡ç©ºé—´*/
 	ai->dyn_size = dyn_size;
-	/*Ã¿¸öcpuÕ¼ÓÃµÄpercpu±äÁ¿¿Õ¼ä*/
+	/*æ¯ä¸ªcpuå ç”¨çš„percpuå˜é‡ç©ºé—´*/
 	ai->unit_size = alloc_size / upa;
 	/*PAGE_SIZE*/
 	ai->atom_size = atom_size;
-	/*Êµ¼Ê·ÖÅäµÄ¿Õ¼ä*/
+	/*å®é™…åˆ†é…çš„ç©ºé—´*/
 	ai->alloc_size = alloc_size;
 
 	for (group = 0, unit = 0; group_cnt[group]; group++) {
@@ -2115,11 +2115,11 @@ static struct pcpu_alloc_info * __init pcpu_build_alloc_info(
 		 * back-to-back.  The caller should update this to
 		 * reflect actual allocation.
 		 */
-		/*ÉèÖÃ×éÄÚµÄÏà¶ÔÓÚ0µØÖ·Æ«ÒÆÁ¿£¬ºó±ß»áÉèÖÃÕæÕıµÄ¶ÔÓÚpercpuÆğÊ¼µØÖ·µÄÆ«ÒÆÁ¿*/
+		/*è®¾ç½®ç»„å†…çš„ç›¸å¯¹äº0åœ°å€åç§»é‡ï¼Œåè¾¹ä¼šè®¾ç½®çœŸæ­£çš„å¯¹äºpercpuèµ·å§‹åœ°å€çš„åç§»é‡*/
 		gi->base_offset = unit * ai->unit_size;
 
 		/*
-		 *ÉèÖÃcpu_mapÊı×é£¬Êı×é±£´æ¸Ã×éÖĞµÄcpu idºÅ¡£ÒÔ¼°ÉèÖÃ×éÖĞµÄcpu¸öÊıgi->nr_units
+		 *è®¾ç½®cpu_mapæ•°ç»„ï¼Œæ•°ç»„ä¿å­˜è¯¥ç»„ä¸­çš„cpu idå·ã€‚ä»¥åŠè®¾ç½®ç»„ä¸­çš„cpuä¸ªæ•°gi->nr_units
 		 *gi->nr_units=0,cpu=0;  gi->nr_units=1,cpu=1; gi->nr_units=2,cpu=2
 		 */
 		for_each_possible_cpu(cpu)
@@ -2180,17 +2180,17 @@ int __init pcpu_embed_first_chunk(size_t reserved_size, size_t dyn_size,
 	unsigned long max_distance;
 	int group, i, highest_group, rc;
 
-	/*ÊÕ¼¯ÕûÀí¸Ã¼Ü¹¹ÏÂµÄpercpuĞÅÏ¢£¬½á¹û·ÅÔÚstruct pcpu_alloc_info½á¹¹ÖĞ*/
+	/*æ”¶é›†æ•´ç†è¯¥æ¶æ„ä¸‹çš„percpuä¿¡æ¯ï¼Œç»“æœæ”¾åœ¨struct pcpu_alloc_infoç»“æ„ä¸­*/
 	ai = pcpu_build_alloc_info(reserved_size, dyn_size, atom_size,
 				   cpu_distance_fn);
 	if (IS_ERR(ai))
 		return PTR_ERR(ai);
 
-	/*¼ÆËãÃ¿¸öcpuÕ¼ÓÃµÄpercpuÄÚ´æ¿Õ¼ä´óĞ¡£¬°üÀ¨¾²Ì¬¶¨Òå±äÁ¿Õ¼ÓÃ¿Õ¼ä+reserved¿Õ¼ä+¶¯Ì¬·ÖÅä¿Õ¼ä*/
+	/*è®¡ç®—æ¯ä¸ªcpuå ç”¨çš„percpuå†…å­˜ç©ºé—´å¤§å°ï¼ŒåŒ…æ‹¬é™æ€å®šä¹‰å˜é‡å ç”¨ç©ºé—´+reservedç©ºé—´+åŠ¨æ€åˆ†é…ç©ºé—´*/
 	size_sum = ai->static_size + ai->reserved_size + ai->dyn_size;
 	areas_size = PFN_ALIGN(ai->nr_groups * sizeof(void *));
 
-	/*areasÓÃÀ´±£´æÃ¿¸ögroupµÄpercpuÄÚ´æÆğÊ¼µØÖ·£¬ÎªÆä·ÖÅä¿Õ¼ä£¬×öÁÙÊ±´æ´¢Ê¹ÓÃ£¬ÓÃÍêÊÍ·Åµô*/
+	/*areasç”¨æ¥ä¿å­˜æ¯ä¸ªgroupçš„percpuå†…å­˜èµ·å§‹åœ°å€ï¼Œä¸ºå…¶åˆ†é…ç©ºé—´ï¼Œåšä¸´æ—¶å­˜å‚¨ä½¿ç”¨ï¼Œç”¨å®Œé‡Šæ”¾æ‰*/
 	areas = memblock_virt_alloc_nopanic(areas_size, 0);
 	if (!areas) {
 		rc = -ENOMEM;
@@ -2200,24 +2200,24 @@ int __init pcpu_embed_first_chunk(size_t reserved_size, size_t dyn_size,
 	/* allocate, copy and determine base address & max_distance */
 	highest_group = 0;
 	/*
-	 *Õë¶Ô¸ÃÏµÍ³ÏÂµÄÃ¿¸ögroup²Ù×÷£¬ÎªÃ¿¸ögroup·ÖÅäpercpuÄÚ´æÇøÓò£¬
-	 *Ç°±ßÖ»ÊÇ¼ÆËã³öpercpuĞÅÏ¢£¬²¢Ã»ÓĞ·ÖÅäpercpuµÄÄÚ´æ¿Õ¼ä
+	 *é’ˆå¯¹è¯¥ç³»ç»Ÿä¸‹çš„æ¯ä¸ªgroupæ“ä½œï¼Œä¸ºæ¯ä¸ªgroupåˆ†é…percpuå†…å­˜åŒºåŸŸï¼Œ
+	 *å‰è¾¹åªæ˜¯è®¡ç®—å‡ºpercpuä¿¡æ¯ï¼Œå¹¶æ²¡æœ‰åˆ†é…percpuçš„å†…å­˜ç©ºé—´
 	 */
 	for (group = 0; group < ai->nr_groups; group++) {
-		/*È¡³ö¸ÃgroupÏÂµÄ×éĞÅÏ¢*/
+		/*å–å‡ºè¯¥groupä¸‹çš„ç»„ä¿¡æ¯*/
 		struct pcpu_group_info *gi = &ai->groups[group];
 		unsigned int cpu = NR_CPUS;
 		void *ptr;
 
-		/*¼ì²écpu_mapÊı×é*/
+		/*æ£€æŸ¥cpu_mapæ•°ç»„*/
 		for (i = 0; i < gi->nr_units && cpu == NR_CPUS; i++)
 			cpu = gi->cpu_map[i];
 		BUG_ON(cpu == NR_CPUS);
 
 		/* allocate space for the whole group */
 		/*
-		 *Îª¸Ãgroup·ÖÅäpercpuÄÚ´æÇøÓò¡£³¤¶ÈÎª¸ÃgroupÀïµÄcpuÊıÄ¿XÃ¿¿Å´¦ÀíÆ÷µÄpercpuµİ½øµ¥Î»¡£
-         *º¯Êıpcpu_dfl_fc_allocÊÇ´ÓbootmemÀïÈ¡µÃÄÚ´æ£¬µÃµ½µÄÊÇÎïÀíÄÚ´æ£¬·µ»ØÎïÀíµØÖ·µÄÄÚ´æĞéÄâµØÖ·ptr
+		 *ä¸ºè¯¥groupåˆ†é…percpuå†…å­˜åŒºåŸŸã€‚é•¿åº¦ä¸ºè¯¥groupé‡Œçš„cpuæ•°ç›®Xæ¯é¢—å¤„ç†å™¨çš„percpué€’è¿›å•ä½ã€‚
+         *å‡½æ•°pcpu_dfl_fc_allocæ˜¯ä»bootmemé‡Œå–å¾—å†…å­˜ï¼Œå¾—åˆ°çš„æ˜¯ç‰©ç†å†…å­˜ï¼Œè¿”å›ç‰©ç†åœ°å€çš„å†…å­˜è™šæ‹Ÿåœ°å€ptr
 		 */
 		ptr = alloc_fn(cpu, gi->nr_units * ai->unit_size, atom_size);
 		if (!ptr) {
@@ -2226,12 +2226,12 @@ int __init pcpu_embed_first_chunk(size_t reserved_size, size_t dyn_size,
 		}
 		/* kmemleak tracks the percpu allocations separately */
 		kmemleak_free(ptr);
-		/*½«·ÖÅäµ½µÄ¸Ä×épercpuÄÚ´æĞéÄâÆğÊ¼µØÖ·±£´æÔÚareasÊı×éÖĞ*/
+		/*å°†åˆ†é…åˆ°çš„æ”¹ç»„percpuå†…å­˜è™šæ‹Ÿèµ·å§‹åœ°å€ä¿å­˜åœ¨areasæ•°ç»„ä¸­*/
 		areas[group] = ptr;
 
 		/*
-		 *±È½ÏÃ¿¸ögroupµÄpercpuÄÚ´æµØÖ·£¬±£´æ×îĞ¡µÄÄÚ´æµØÖ·£¬¼´percpu
-         *ÄÚ´æµÄÆğÊ¼µØÖ·, Îªºó±ß¼ÆËãgroupµÄpercpuÄÚ´æµØÖ·µÄÆ«ÒÆÁ¿
+		 *æ¯”è¾ƒæ¯ä¸ªgroupçš„percpuå†…å­˜åœ°å€ï¼Œä¿å­˜æœ€å°çš„å†…å­˜åœ°å€ï¼Œå³percpu
+         *å†…å­˜çš„èµ·å§‹åœ°å€, ä¸ºåè¾¹è®¡ç®—groupçš„percpuå†…å­˜åœ°å€çš„åç§»é‡
 		 */
 		base = min(ptr, base);
 		if (ptr > areas[highest_group])
@@ -2256,34 +2256,34 @@ int __init pcpu_embed_first_chunk(size_t reserved_size, size_t dyn_size,
 	 * allocations are complete; otherwise, we may end up with
 	 * overlapping groups.
 	 */
-	/*ÎªÃ¿¸ögroupÖĞµÄÃ¿¸öcpu½¨Á¢ÆäpercpuÇøÓò*/
+	/*ä¸ºæ¯ä¸ªgroupä¸­çš„æ¯ä¸ªcpuå»ºç«‹å…¶percpuåŒºåŸŸ*/
 	for (group = 0; group < ai->nr_groups; group++) {
-		/*È¡³ö¸ÃgroupÏÂµÄ×éĞÅÏ¢*/
+		/*å–å‡ºè¯¥groupä¸‹çš„ç»„ä¿¡æ¯*/
 		struct pcpu_group_info *gi = &ai->groups[group];
-		/*µÃµ½¸ÃgroupµÄpercpuÄÚ´æÆğÊ¼µØÖ·*/
+		/*å¾—åˆ°è¯¥groupçš„percpuå†…å­˜èµ·å§‹åœ°å€*/
 		void *ptr = areas[group];
 
-		/*±éÀú¸Ã×éÖĞµÄcpu£¬²¢µÃµ½Ã¿¸öcpu¶ÔÓ¦µÄpercpuÄÚ´æµØÖ·*/
+		/*éå†è¯¥ç»„ä¸­çš„cpuï¼Œå¹¶å¾—åˆ°æ¯ä¸ªcpuå¯¹åº”çš„percpuå†…å­˜åœ°å€*/
 		for (i = 0; i < gi->nr_units; i++, ptr += ai->unit_size) {
 			if (gi->cpu_map[i] == NR_CPUS) {
 				/* unused unit, free whole */
-				/*ÊÍ·ÅµôÎ´Ê¹ÓÃµÄunit*/
+				/*é‡Šæ”¾æ‰æœªä½¿ç”¨çš„unit*/
 				free_fn(ptr, ai->unit_size);
 				continue;
 			}
 			/* copy and return the unused part */
-			/*½«¾²Ì¬¶¨ÒåµÄpercpu±äÁ¿¿½±´µ½Ã¿¸öcpuµÄpercpuÄÚ´æÆğÊ¼µØÖ·*/
+			/*å°†é™æ€å®šä¹‰çš„percpuå˜é‡æ‹·è´åˆ°æ¯ä¸ªcpuçš„percpuå†…å­˜èµ·å§‹åœ°å€*/
 			memcpy(ptr, __per_cpu_load, ai->static_size);
 			/*
-			 *ÎªÃ¿¸öcpuÊÍ·Åµô¶àÓàµÄ¿Õ¼ä£¬¶àÓàµÄ¿Õ¼äÊÇÖ¸ai->unit_size
-			 *¼õÈ¥¾²Ì¬¶¨Òå±äÁ¿Õ¼ÓÃ¿Õ¼ä+reserved¿Õ¼ä+¶¯Ì¬·ÖÅä¿Õ¼ä
+			 *ä¸ºæ¯ä¸ªcpué‡Šæ”¾æ‰å¤šä½™çš„ç©ºé—´ï¼Œå¤šä½™çš„ç©ºé—´æ˜¯æŒ‡ai->unit_size
+			 *å‡å»é™æ€å®šä¹‰å˜é‡å ç”¨ç©ºé—´+reservedç©ºé—´+åŠ¨æ€åˆ†é…ç©ºé—´
 			 */
 			free_fn(ptr + size_sum, ai->unit_size - size_sum);
 		}
 	}
 
 	/* base address is now known, determine group base offsets */
-	/*¼ÆËãgroupµÄpercpuÄÚ´æµØÖ·µÄÆ«ÒÆÁ¿*/
+	/*è®¡ç®—groupçš„percpuå†…å­˜åœ°å€çš„åç§»é‡*/
 	for (group = 0; group < ai->nr_groups; group++) {
 		ai->groups[group].base_offset = areas[group] - base;
 	}
@@ -2292,7 +2292,7 @@ int __init pcpu_embed_first_chunk(size_t reserved_size, size_t dyn_size,
 		PFN_DOWN(size_sum), base, ai->static_size, ai->reserved_size,
 		ai->dyn_size, ai->unit_size);
 
-	/*Îªpercpu½¨Á¢µÚÒ»¸öchunk*/
+	/*ä¸ºpercpuå»ºç«‹ç¬¬ä¸€ä¸ªchunk*/
 	rc = pcpu_setup_first_chunk(ai, base);
 	goto out_free;
 
@@ -2343,7 +2343,7 @@ int __init pcpu_page_first_chunk(size_t reserved_size,
 
 	snprintf(psize_str, sizeof(psize_str), "%luK", PAGE_SIZE >> 10);
 
-	/*ÊÕ¼¯ÕûÀí¸Ã¼Ü¹¹ÏÂµÄpercpuĞÅÏ¢£¬½á¹û·ÅÔÚstruct pcpu_alloc_info½á¹¹ÖĞ*/
+	/*æ”¶é›†æ•´ç†è¯¥æ¶æ„ä¸‹çš„percpuä¿¡æ¯ï¼Œç»“æœæ”¾åœ¨struct pcpu_alloc_infoç»“æ„ä¸­*/
 	ai = pcpu_build_alloc_info(reserved_size, 0, PAGE_SIZE, NULL);
 	if (IS_ERR(ai))
 		return PTR_ERR(ai);
@@ -2354,11 +2354,11 @@ int __init pcpu_page_first_chunk(size_t reserved_size,
 		pcpu_free_alloc_info(ai);
 		return -EINVAL;
 	}
-	/*¼ÆËãÃ¿¸öcpuÕ¼ÓÃµÄpercpuÄÚ´æ¿Õ¼ä´óĞ¡*/
+	/*è®¡ç®—æ¯ä¸ªcpuå ç”¨çš„percpuå†…å­˜ç©ºé—´å¤§å°*/
 	unit_pages = ai->unit_size >> PAGE_SHIFT;
 
 	/* unaligned allocations can't be freed, round up to page size */
-	/*pagesÓÃÀ´±£´æÃ¿¸öunitµÄpercpuÄÚ´æÆğÊ¼µØÖ·£¬ÎªÆä·ÖÅä¿Õ¼ä£¬×öÁÙÊ±´æ´¢Ê¹ÓÃ£¬ÓÃÍêÊÍ·Åµô*/
+	/*pagesç”¨æ¥ä¿å­˜æ¯ä¸ªunitçš„percpuå†…å­˜èµ·å§‹åœ°å€ï¼Œä¸ºå…¶åˆ†é…ç©ºé—´ï¼Œåšä¸´æ—¶å­˜å‚¨ä½¿ç”¨ï¼Œç”¨å®Œé‡Šæ”¾æ‰*/
 	pages_size = PFN_ALIGN(unit_pages * num_possible_cpus() *
 			       sizeof(pages[0]));
 	pages = memblock_virt_alloc(pages_size, 0);
@@ -2378,7 +2378,7 @@ int __init pcpu_page_first_chunk(size_t reserved_size,
 			}
 			/* kmemleak tracks the percpu allocations separately */
 			kmemleak_free(ptr);
-			/*½«·ÖÅäµ½µÄ¸Ä×épercpuÄÚ´æĞéÄâÆğÊ¼µØÖ·±£´æÔÚpagesÊı×éÖĞ*/
+			/*å°†åˆ†é…åˆ°çš„æ”¹ç»„percpuå†…å­˜è™šæ‹Ÿèµ·å§‹åœ°å€ä¿å­˜åœ¨pagesæ•°ç»„ä¸­*/
 			pages[j++] = virt_to_page(ptr);
 		}
 	}
@@ -2410,7 +2410,7 @@ int __init pcpu_page_first_chunk(size_t reserved_size,
 		 */
 
 		/* copy static data */
-		/* ½«¾²Ì¬¶¨ÒåµÄpercpu±äÁ¿¿½±´µ½Ã¿¸öcpuµÄpercpuÄÚ´æÆğÊ¼µØÖ· */
+		/* å°†é™æ€å®šä¹‰çš„percpuå˜é‡æ‹·è´åˆ°æ¯ä¸ªcpuçš„percpuå†…å­˜èµ·å§‹åœ°å€ */
 		memcpy((void *)unit_addr, __per_cpu_load, ai->static_size);
 	}
 
@@ -2419,7 +2419,7 @@ int __init pcpu_page_first_chunk(size_t reserved_size,
 		unit_pages, psize_str, vm.addr, ai->static_size,
 		ai->reserved_size, ai->dyn_size);
 
-	/*Îªpercpu½¨Á¢µÚÒ»¸öchunk*/
+	/*ä¸ºpercpuå»ºç«‹ç¬¬ä¸€ä¸ªchunk*/
 	rc = pcpu_setup_first_chunk(ai, vm.addr);
 	goto out_free_ar;
 
@@ -2463,23 +2463,23 @@ static void __init pcpu_dfl_fc_free(void *ptr, size_t size)
 }
 
 /*
- *   ÔÚÏµÍ³³õÊ¼»¯ÆÚ¼ä£¬start_kernel()º¯ÊıÖĞµ÷ÓÃsetup_per_cpu_areas()º¯Êı£¬
- * ÓÃÓÚÎªÃ¿¸öcpuµÄper-cpu±äÁ¿¸±±¾·ÖÅä¿Õ¼ä£¬×¢ÒâÕâÊ±allocÄÚ´æ·ÖÅäÆ÷»¹Ã»
- * ½¨Á¢ÆğÀ´£¬¸Ãº¯Êıµ÷ÓÃalloc_bootmemº¯ÊıÎª³õÊ¼»¯ÆÚ¼äµÄÕâĞ©±äÁ¿¸±±¾·ÖÅäÎïÀí¿Õ¼ä¡£
- *   ÔÚ½¨Á¢percpuÄÚ´æ¹ÜÀí»úÖÆÖ®Ç°ÒªÕûÀí³ö¸Ã¼Ü¹¹ÏÂµÄ´¦ÀíÆ÷ĞÅÏ¢£¬°üÀ¨´¦ÀíÆ÷
- * ÈçºÎ·Ö×é¡¢Ã¿×é¶ÔÓ¦µÄ´¦ÀíÆ÷Î»Í¼¡¢¾²Ì¬¶¨ÒåµÄpercpu±äÁ¿Õ¼ÓÃÄÚ´æÇøÓò¡¢
- * Ã¿¿Å´¦ÀíÆ÷percpuĞéÄâÄÚ´æµİ½ø»ù±¾µ¥Î»µÈĞÅÏ¢¡£
- * setup_per_cpu_areas->ÎªÃ¿¸öcpuµÄper-cpu±äÁ¿¸±±¾·ÖÅä¿Õ¼ä
+ *   åœ¨ç³»ç»Ÿåˆå§‹åŒ–æœŸé—´ï¼Œstart_kernel()å‡½æ•°ä¸­è°ƒç”¨setup_per_cpu_areas()å‡½æ•°ï¼Œ
+ * ç”¨äºä¸ºæ¯ä¸ªcpuçš„per-cpuå˜é‡å‰¯æœ¬åˆ†é…ç©ºé—´ï¼Œæ³¨æ„è¿™æ—¶allocå†…å­˜åˆ†é…å™¨è¿˜æ²¡
+ * å»ºç«‹èµ·æ¥ï¼Œè¯¥å‡½æ•°è°ƒç”¨alloc_bootmemå‡½æ•°ä¸ºåˆå§‹åŒ–æœŸé—´çš„è¿™äº›å˜é‡å‰¯æœ¬åˆ†é…ç‰©ç†ç©ºé—´ã€‚
+ *   åœ¨å»ºç«‹percpuå†…å­˜ç®¡ç†æœºåˆ¶ä¹‹å‰è¦æ•´ç†å‡ºè¯¥æ¶æ„ä¸‹çš„å¤„ç†å™¨ä¿¡æ¯ï¼ŒåŒ…æ‹¬å¤„ç†å™¨
+ * å¦‚ä½•åˆ†ç»„ã€æ¯ç»„å¯¹åº”çš„å¤„ç†å™¨ä½å›¾ã€é™æ€å®šä¹‰çš„percpuå˜é‡å ç”¨å†…å­˜åŒºåŸŸã€
+ * æ¯é¢—å¤„ç†å™¨percpuè™šæ‹Ÿå†…å­˜é€’è¿›åŸºæœ¬å•ä½ç­‰ä¿¡æ¯ã€‚
+ * setup_per_cpu_areas->ä¸ºæ¯ä¸ªcpuçš„per-cpuå˜é‡å‰¯æœ¬åˆ†é…ç©ºé—´
  */
 
 /*
-¸øÃ¿¸öCPU·ÖÅäÄÚ´æ£¬²¢¿½±´.data.percpu¶ÎµÄÊı¾İ. 
-ÎªÏµÍ³ÖĞµÄÃ¿¸öCPUµÄper_cpu±äÁ¿ÉêÇë¿Õ¼ä.
-ÔÚSMPÏµÍ³ÖĞ, setup_per_cpu_areas³õÊ¼»¯Ô´´úÂëÖĞ(Ê¹ÓÃper_cpuºê)¶¨ÒåµÄ¾²Ì¬per-cpu±äÁ¿,
-ÕâÖÖ±äÁ¿¶ÔÏµÍ³ÖĞÃ¿¸öCPU¶¼ÓĞÒ»¸ö¶ÀÁ¢µÄ¸±±¾. 
-´ËÀà±äÁ¿±£´æÔÚÄÚºË¶ş½øÖÆÓ°ÏñµÄÒ»¸ö¶ÀÁ¢µÄ¶ÎÖĞ, 
-setup_per_cpu_areasµÄÄ¿µÄ¾ÍÊÇÎªÏµÍ³ÖĞ¸÷¸öCPU·Ö±ğ´´½¨Ò»·İÕâĞ©Êı¾İµÄ¸±±¾
-ÔÚ·ÇSMPÏµÍ³ÖĞÕâÊÇÒ»¸ö¿Õ²Ù×÷
+ç»™æ¯ä¸ªCPUåˆ†é…å†…å­˜ï¼Œå¹¶æ‹·è´.data.percpuæ®µçš„æ•°æ®. 
+ä¸ºç³»ç»Ÿä¸­çš„æ¯ä¸ªCPUçš„per_cpuå˜é‡ç”³è¯·ç©ºé—´.
+åœ¨SMPç³»ç»Ÿä¸­, setup_per_cpu_areasåˆå§‹åŒ–æºä»£ç ä¸­(ä½¿ç”¨per_cpuå®)å®šä¹‰çš„é™æ€per-cpuå˜é‡,
+è¿™ç§å˜é‡å¯¹ç³»ç»Ÿä¸­æ¯ä¸ªCPUéƒ½æœ‰ä¸€ä¸ªç‹¬ç«‹çš„å‰¯æœ¬. 
+æ­¤ç±»å˜é‡ä¿å­˜åœ¨å†…æ ¸äºŒè¿›åˆ¶å½±åƒçš„ä¸€ä¸ªç‹¬ç«‹çš„æ®µä¸­, 
+setup_per_cpu_areasçš„ç›®çš„å°±æ˜¯ä¸ºç³»ç»Ÿä¸­å„ä¸ªCPUåˆ†åˆ«åˆ›å»ºä¸€ä»½è¿™äº›æ•°æ®çš„å‰¯æœ¬
+åœ¨éSMPç³»ç»Ÿä¸­è¿™æ˜¯ä¸€ä¸ªç©ºæ“ä½œ
 */
 void __init setup_per_cpu_areas(void)
 {
@@ -2491,7 +2491,7 @@ void __init setup_per_cpu_areas(void)
 	 * Always reserve area for module percpu variables.  That's
 	 * what the legacy allocator did.
 	 */
-	/*Îªpercpu½¨Á¢µÚÒ»¸öchunk*/
+	/*ä¸ºpercpuå»ºç«‹ç¬¬ä¸€ä¸ªchunk*/
 	rc = pcpu_embed_first_chunk(PERCPU_MODULE_RESERVE,
 				    PERCPU_DYNAMIC_RESERVE, PAGE_SIZE, NULL,
 				    pcpu_dfl_fc_alloc, pcpu_dfl_fc_free);
@@ -2499,17 +2499,17 @@ void __init setup_per_cpu_areas(void)
 		panic("Failed to initialize percpu areas.");
 
 	/*
-	 * ÄÚºËÎªpercpu·ÖÅäÁËÒ»´ó¶Î¿Õ¼ä£¬ÔÚÕû¸öpercpu¿Õ¼äÖĞ¸ù¾İcpu¸öÊı½«
-	 * percpuµÄ¿Õ¼ä·ÖÎª²»Í¬µÄunit¡£¶øpcpu_base_addr±íÊ¾Õû¸öÏµÍ³ÖĞpercpu
-	 * µÄÆğÊ¼ÄÚ´æµØÖ·. __per_cpu_start±íÊ¾¾²Ì¬·ÖÅäµÄpercpuÆğÊ¼µØÖ·¡£
-	 * ¼´½ÚÇø".data..percpu"ÖĞÆğÊ¼µØÖ·¡£º¯ÊıÊ×ÏÈËã³ö¸±±¾¿Õ¼äÊ×µØÖ·(pcpu_base_addr)
-	 * Óë".data..percpu"sectionÊ×µØÖ·(__per_cpu_start)Ö®¼äµÄÆ«ÒÆÁ¿delta
+	 * å†…æ ¸ä¸ºpercpuåˆ†é…äº†ä¸€å¤§æ®µç©ºé—´ï¼Œåœ¨æ•´ä¸ªpercpuç©ºé—´ä¸­æ ¹æ®cpuä¸ªæ•°å°†
+	 * percpuçš„ç©ºé—´åˆ†ä¸ºä¸åŒçš„unitã€‚è€Œpcpu_base_addrè¡¨ç¤ºæ•´ä¸ªç³»ç»Ÿä¸­percpu
+	 * çš„èµ·å§‹å†…å­˜åœ°å€. __per_cpu_startè¡¨ç¤ºé™æ€åˆ†é…çš„percpuèµ·å§‹åœ°å€ã€‚
+	 * å³èŠ‚åŒº".data..percpu"ä¸­èµ·å§‹åœ°å€ã€‚å‡½æ•°é¦–å…ˆç®—å‡ºå‰¯æœ¬ç©ºé—´é¦–åœ°å€(pcpu_base_addr)
+	 * ä¸".data..percpu"sectioné¦–åœ°å€(__per_cpu_start)ä¹‹é—´çš„åç§»é‡delta
 	 */
 	delta = (unsigned long)pcpu_base_addr - (unsigned long)__per_cpu_start;
 	/*
-	 * ±éÀúÏµÍ³ÖĞµÄcpu£¬ÉèÖÃÃ¿¸öcpuµÄ__per_cpu_offsetÖ¸Õëpcpu_unit_offsets[cpu]
-	 * ±£´æ¶ÔÓ¦cpuËùÔÚ¸±±¾¿Õ¼äÏà¶ÔÓÚpcpu_base_addrµÄÆ«ÒÆÁ¿¼ÓÉÏdelta£¬
-	 * ÕâÑù¾Í¿ÉÒÔµÃµ½Ã¿¸öcpuµÄper-cpu±äÁ¿¸±±¾µÄÆ«ÒÆÁ¿, ·ÅÔÚ__per_cpu_offsetÊı×éÖĞ.
+	 * éå†ç³»ç»Ÿä¸­çš„cpuï¼Œè®¾ç½®æ¯ä¸ªcpuçš„__per_cpu_offsetæŒ‡é’ˆpcpu_unit_offsets[cpu]
+	 * ä¿å­˜å¯¹åº”cpuæ‰€åœ¨å‰¯æœ¬ç©ºé—´ç›¸å¯¹äºpcpu_base_addrçš„åç§»é‡åŠ ä¸Šdeltaï¼Œ
+	 * è¿™æ ·å°±å¯ä»¥å¾—åˆ°æ¯ä¸ªcpuçš„per-cpuå˜é‡å‰¯æœ¬çš„åç§»é‡, æ”¾åœ¨__per_cpu_offsetæ•°ç»„ä¸­.
 	 */
 	for_each_possible_cpu(cpu)
 		__per_cpu_offset[cpu] = delta + pcpu_unit_offsets[cpu];

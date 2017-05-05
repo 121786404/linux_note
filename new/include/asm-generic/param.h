@@ -2,7 +2,7 @@
 #define __ASM_GENERIC_PARAM_H
 
 #include <uapi/asm-generic/param.h>
-/*HZÓÃÀ´±íÊ¾ÏµÍ³Ê±ÖÓÖĞ¶Ï·¢ÉúµÄÆµÂÊ*/
+/*HZç”¨æ¥è¡¨ç¤ºç³»ç»Ÿæ—¶é’Ÿä¸­æ–­å‘ç”Ÿçš„é¢‘ç‡*/
 # undef HZ
 # define HZ		CONFIG_HZ	/* Internal kernel timer frequency */
 # define USER_HZ	100		/* some user interfaces are */

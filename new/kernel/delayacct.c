@@ -33,13 +33,13 @@ static int __init delayacct_setup_disable(char *str)
 __setup("nodelayacct", delayacct_setup_disable);
 
 /**
- * ÈÎÎñÑÓ³ÙÍ³¼Æ³õÊ¼»¯£¬ÒÀÀµÓÚtaskstatsÄ£¿é
+ * ä»»åŠ¡å»¶è¿Ÿç»Ÿè®¡åˆå§‹åŒ–ï¼Œä¾èµ–äºtaskstatsæ¨¡å—
  */
 void delayacct_init(void)
 {
-	//´´½¨slab¹ÜÀíÆ÷
+	//åˆ›å»ºslabç®¡ç†å™¨
 	delayacct_cache = KMEM_CACHE(task_delay_info, SLAB_PANIC|SLAB_ACCOUNT);
-	//ÎªinitÈÎÎñ·ÖÅädelayacctÄÚ´æ²¢¹ØÁªÆğÀ´¡£
+	//ä¸ºinitä»»åŠ¡åˆ†é…delayacctå†…å­˜å¹¶å…³è”èµ·æ¥ã€‚
 	delayacct_tsk_init(&init_task);
 }
 

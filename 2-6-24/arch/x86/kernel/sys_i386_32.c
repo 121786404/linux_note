@@ -121,8 +121,8 @@ asmlinkage int old_select(struct sel_arg_struct __user *arg)
  * This is really horribly ugly.
  */
 /**
- * ipc系统调用
- * call:要执行的操作，如SEMCTL
+ * ipc绯荤粺璋冪敤
+ * call:瑕佹墽琛岀殑鎿嶄綔锛屽SEMCTL
  */
 asmlinkage int sys_ipc (uint call, int first, int second,
 			int third, void __user *ptr, long fifth)

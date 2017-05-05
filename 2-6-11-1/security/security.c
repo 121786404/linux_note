@@ -26,7 +26,7 @@ extern void security_fixup_ops(struct security_operations *ops);
 
 struct security_operations *security_ops;	/* Initialized to NULL */
 
-/* ¼ì²éËùÓĞ»Øµ÷º¯ÊıÊÇ·ñÎª¿Õ£¬Èç¹ûÎª¿ÕÔòÉèÖÃÎªÄ¬ÈÏµÄ */
+/* æ£€æŸ¥æ‰€æœ‰å›è°ƒå‡½æ•°æ˜¯å¦ä¸ºç©ºï¼Œå¦‚æœä¸ºç©ºåˆ™è®¾ç½®ä¸ºé»˜è®¤çš„ */
 static inline int verify(struct security_operations *ops)
 {
 	/* verify the security_operations structure exists */
@@ -80,7 +80,7 @@ int __init security_init(void)
  * If there is already a security module registered with the kernel,
  * an error will be returned.  Otherwise 0 is returned on success.
  */
-/* ×¢²áÒ»¸ö°²È«²Ù×÷·û  
+/* æ³¨å†Œä¸€ä¸ªå®‰å…¨æ“ä½œç¬¦  
   */
 int register_security(struct security_operations *ops)
 {
@@ -90,8 +90,8 @@ int register_security(struct security_operations *ops)
 		return -EINVAL;
 	}
 
-        /* ÕâÀïµÄÔÚ×¢²áÖ®Ç°security_ops±äÁ¿±ØĞëÊÇdummy_security_ops£¬
-          * ÕâÑù×öµÄÄ¿µÄÊÇ£¿
+        /* è¿™é‡Œçš„åœ¨æ³¨å†Œä¹‹å‰security_opså˜é‡å¿…é¡»æ˜¯dummy_security_opsï¼Œ
+          * è¿™æ ·åšçš„ç›®çš„æ˜¯ï¼Ÿ
           */
 	if (security_ops != &dummy_security_ops)
 		return -EAGAIN;

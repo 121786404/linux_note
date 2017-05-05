@@ -5,13 +5,13 @@
  *
  * Copyright (C) 2012, Red Hat, Inc.  Rafael Aquini <aquini@redhat.com>
  *
- * �ڴ��Ballooning������ָ�����������ʱ��̬�ص�������ռ�õ�������
- * �ڴ���Դ,�ü����ڽ�Լ�ڴ���������ڴ淽�������Ե�����,Ŀǰ����
- * �������⻯������֧�������(ǰ���ǿͻ�������ϵͳ�б��밲װ����Ӧ
- * ��balloon����).�����ڴ�Ķ�̬���Ӻͼ��ٻᵼ���ڴ������Ƭ��,�ر���
- * ����2M�ߴ���������ڴ�ҳ��˵��������,�Ӷ����ؽ����ڴ�����.����balloon
- * �ڴ�ѹ����Ǩ�ƿ��ԺܺõĽ���ڿͻ�����ʹ�ô��ڴ�ҳʱ�ڴ������Ƭ������
- * �μ� http://delxu.blog.51cto.com/975660/288682
+ * 内存的Ballooning技术是指虚拟机在运行时动态地调整它所占用的宿主机
+ * 内存资源,该技术在节约内存和灵活分配内存方面有明显的优势,目前所有
+ * 主流虚拟化方案都支持这项技术(前提是客户机操作系统中必须安装有相应
+ * 的balloon驱动).由于内存的动态增加和减少会导致内存过度碎片化,特别是
+ * 对于2M尺寸的连续大内存页来说更加严重,从而严重降低内存性能.允许balloon
+ * 内存压缩和迁移可以很好的解决在客户机中使用大内存页时内存过度碎片化问题
+ * 参见 http://delxu.blog.51cto.com/975660/288682
  */
 #include <linux/mm.h>
 #include <linux/slab.h>
@@ -21,7 +21,7 @@
 /*
  * balloon_page_enqueue - allocates a new page and inserts it into the balloon
  *			  page list.
- * ����һ����ҳ�棬������Balloon device��pageҳ����.
+ * 分配一个新页面，并插入Balloon device的page页表中.
  * @b_dev_info: balloon device descriptor where we will insert a new page to
  *
  * Driver must call it to properly allocate a new enlisted balloon page

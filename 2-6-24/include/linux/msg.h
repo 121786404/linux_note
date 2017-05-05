@@ -65,39 +65,39 @@ struct msginfo {
 #include <linux/list.h>
 
 /* one msg_msg structure for each message */
-/* ÏûÏ¢¶ÓÁĞÖĞµÄÏûÏ¢£¬Ã¿Ò»¸öÏûÏ¢¶¼ÓÃÒ»¸öÒ³À´±£´æ£¬Ò³Ç°²¿Îª´Ë½á¹¹ */
+/* æ¶ˆæ¯é˜Ÿåˆ—ä¸­çš„æ¶ˆæ¯ï¼Œæ¯ä¸€ä¸ªæ¶ˆæ¯éƒ½ç”¨ä¸€ä¸ªé¡µæ¥ä¿å­˜ï¼Œé¡µå‰éƒ¨ä¸ºæ­¤ç»“æ„ */
 struct msg_msg {
-	/* Í¨¹ı´Ë×Ö¶Î½«ÏûÏ¢Á´½Óµ½Á´±íÖĞ */
+	/* é€šè¿‡æ­¤å­—æ®µå°†æ¶ˆæ¯é“¾æ¥åˆ°é“¾è¡¨ä¸­ */
 	struct list_head m_list; 
-	/* ÏûÏ¢ÀàĞÍ */
+	/* æ¶ˆæ¯ç±»å‹ */
 	long  m_type;          
-	/* ÏûÏ¢ÕıÎÄ³¤¶È£¬ÒÔ×Ö½Ú¼ÆËã */
+	/* æ¶ˆæ¯æ­£æ–‡é•¿åº¦ï¼Œä»¥å­—èŠ‚è®¡ç®— */
 	int m_ts;           /* message text size */
-	/* Èç¹ûÏûÏ¢³¬¹ıÒ»¸öÄÚ´æÒ³£¬ÔòÊ¹ÓÃ´ËÖ¸ÕëÖ¸ÏòÏÂÒ»Ò³ */
+	/* å¦‚æœæ¶ˆæ¯è¶…è¿‡ä¸€ä¸ªå†…å­˜é¡µï¼Œåˆ™ä½¿ç”¨æ­¤æŒ‡é’ˆæŒ‡å‘ä¸‹ä¸€é¡µ */
 	struct msg_msgseg* next;
 	void *security;
 	/* the actual message follows immediately */
 };
 
 /* one msq_queue structure for each present queue on the system */
-/* ÏûÏ¢¶ÓÁĞÊı¾İ½á¹¹ */
+/* æ¶ˆæ¯é˜Ÿåˆ—æ•°æ®ç»“æ„ */
 struct msg_queue {
 	struct kern_ipc_perm q_perm;
-	/* ÉÏÒ»´Î·¢ËÍ¡¢½ÓÊÕ¡¢ĞŞ¸ÄµÄÊ±¼ä */
+	/* ä¸Šä¸€æ¬¡å‘é€ã€æ¥æ”¶ã€ä¿®æ”¹çš„æ—¶é—´ */
 	time_t q_stime;			/* last msgsnd time */
 	time_t q_rtime;			/* last msgrcv time */
 	time_t q_ctime;			/* last change time */
-	/* ¶ÓÁĞÖĞµ±Ç°ÏûÏ¢ÊıÁ¿£¬ÒÔ×Ö½Ú±íÊ¾ */
+	/* é˜Ÿåˆ—ä¸­å½“å‰æ¶ˆæ¯æ•°é‡ï¼Œä»¥å­—èŠ‚è¡¨ç¤º */
 	unsigned long q_cbytes;		/* current number of bytes on queue */
-	/* µ±Ç°¶ÓÁĞÖĞµÄÏûÏ¢ÊıÁ¿ */
+	/* å½“å‰é˜Ÿåˆ—ä¸­çš„æ¶ˆæ¯æ•°é‡ */
 	unsigned long q_qnum;		/* number of messages in queue */
-	/* ¶ÓÁĞÖĞ×î´óµÄÏûÏ¢ÊıÁ¿ */
+	/* é˜Ÿåˆ—ä¸­æœ€å¤§çš„æ¶ˆæ¯æ•°é‡ */
 	unsigned long q_qbytes;		/* max number of bytes on queue */
-	/* ×îºóÒ»´Î·¢ËÍºÍ½ÓÊÕÏûÏ¢µÄ½ø³Ìid */
+	/* æœ€åä¸€æ¬¡å‘é€å’Œæ¥æ”¶æ¶ˆæ¯çš„è¿›ç¨‹id */
 	pid_t q_lspid;			/* pid of last msgsnd */
 	pid_t q_lrpid;			/* last receive pid */
 
-	/* Èı¸öÁ´±í£¬±íÊ¾ÕıÔÚË¯ÃßµÄ·¢ËÍÕß¡¢½ÓÊÕÕßºÍÏûÏ¢±¾Éí */
+	/* ä¸‰ä¸ªé“¾è¡¨ï¼Œè¡¨ç¤ºæ­£åœ¨ç¡çœ çš„å‘é€è€…ã€æ¥æ”¶è€…å’Œæ¶ˆæ¯æœ¬èº« */
 	struct list_head q_messages;
 	struct list_head q_receivers;
 	struct list_head q_senders;

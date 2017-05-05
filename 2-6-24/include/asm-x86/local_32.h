@@ -5,7 +5,7 @@
 #include <asm/system.h>
 #include <asm/atomic.h>
 
-/* ÔÚµ¥ºËÉÏ£¬Ô­×Ó±äÁ¿ÀàĞÍ */
+/* åœ¨å•æ ¸ä¸Šï¼ŒåŸå­å˜é‡ç±»å‹ */
 typedef struct
 {
 	atomic_long_t a;

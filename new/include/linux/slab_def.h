@@ -8,68 +8,68 @@
  */
 
 /**
- * slab·ÖÅäÆ÷ÃèÊö·û
+ * slabåˆ†é…å™¨æè¿°ç¬¦
  */
-/*slab·ÖÅäÆ÷,¹ÜÀíÆäÏÂËùÓĞµÄstruct slab*/
+/*slabåˆ†é…å™¨,ç®¡ç†å…¶ä¸‹æ‰€æœ‰çš„struct slab*/
 struct kmem_cache {
 	/**
-	 * ÎªÃ¿¸öCPU»º´æµÄÁÙÊ±¶ÔÏó£¬¿ÉÒÔ¼Ó¿ìÃ¿¸öCPUÉÏµÄ·ÖÅä¹ı³Ì
-	 * ÀàËÆÓÚ»ï°éÏµÍ³ÖĞµÄPCP
+	 * ä¸ºæ¯ä¸ªCPUç¼“å­˜çš„ä¸´æ—¶å¯¹è±¡ï¼Œå¯ä»¥åŠ å¿«æ¯ä¸ªCPUä¸Šçš„åˆ†é…è¿‡ç¨‹
+	 * ç±»ä¼¼äºä¼™ä¼´ç³»ç»Ÿä¸­çš„PCP
 	 */
 	struct array_cache __percpu *cpu_cache;
 
 /* 1) Cache tunables. Protected by slab_mutex */
 	/**
-	 * ÓÉslab_mutex±£»¤
-	 * batchcountÒ»´ÎĞÔÏò»º´æÖĞÌí¼Ó¶àÉÙ¸ö¶ÔÏó
-	 * limit»º´æ¶ÔÏóÊıÁ¿ÏŞÖÆ
+	 * ç”±slab_mutexä¿æŠ¤
+	 * batchcountä¸€æ¬¡æ€§å‘ç¼“å­˜ä¸­æ·»åŠ å¤šå°‘ä¸ªå¯¹è±¡
+	 * limitç¼“å­˜å¯¹è±¡æ•°é‡é™åˆ¶
 	 */
 	unsigned int batchcount;
 	unsigned int limit;
 	unsigned int shared;
 
-	//slabÍ·²¿´óĞ¡??
+	//slabå¤´éƒ¨å¤§å°??
 	unsigned int size;
-	//¼Ó¿ìÄÚ²¿¼ÆËã¹ı³ÌÓÃµÄÁÙÊ±±äÁ¿
+	//åŠ å¿«å†…éƒ¨è®¡ç®—è¿‡ç¨‹ç”¨çš„ä¸´æ—¶å˜é‡
 	struct reciprocal_value reciprocal_buffer_size;
 /* 2) touched by every alloc & free from the backend */
 
-	//slab¶ÔÏóÊôĞÔ£¬ÈçCFLGS_OFF_SLAB
+	//slabå¯¹è±¡å±æ€§ï¼Œå¦‚CFLGS_OFF_SLAB
 	unsigned int flags;		/* constant flags */
-	//Ã¿¸öslabÖĞµÄ¶ÔÏó¸öÊı
+	//æ¯ä¸ªslabä¸­çš„å¯¹è±¡ä¸ªæ•°
 	unsigned int num;		/* # of objs per slab */
 
 /* 3) cache_grow/shrink */
 	/* order of pgs per slab (2^n) */
-	//À©³ä»òÕßÊÕËõslabÊ±£¬·ÖÅä»òÕßÊÍ·ÅµÄÄÚ´æorder¡£
+	//æ‰©å……æˆ–è€…æ”¶ç¼©slabæ—¶ï¼Œåˆ†é…æˆ–è€…é‡Šæ”¾çš„å†…å­˜orderã€‚
 	unsigned int gfporder;
 
 	/* force GFP flags, e.g. GFP_DMA */
-	//·ÖÅäÄÚ´æµÄGFP±êÖ¾£¬ÒÀÀµÓÚÉÏ²ãµ÷ÓÃ·½Ê½¡£
+	//åˆ†é…å†…å­˜çš„GFPæ ‡å¿—ï¼Œä¾èµ–äºä¸Šå±‚è°ƒç”¨æ–¹å¼ã€‚
 	gfp_t allocflags;
 
-	//×ÅÉ«·¶Î§¡£
+	//ç€è‰²èŒƒå›´ã€‚
 	size_t colour;			/* cache colouring range */
-	//Á½´Î×ÅÉ«Ö®¼äµÄ²î
+	//ä¸¤æ¬¡ç€è‰²ä¹‹é—´çš„å·®
 	unsigned int colour_off;	/* colour offset */
-	//µ±kmem_cacheÎ»ÓÚslabÍâÃæÊ±£¬Ô¤ÏÈ·ÖÅäµÄkmem_cache¶ÔÏóÖ¸Õë¼°ÆäÊıÁ¿¡£
+	//å½“kmem_cacheä½äºslabå¤–é¢æ—¶ï¼Œé¢„å…ˆåˆ†é…çš„kmem_cacheå¯¹è±¡æŒ‡é’ˆåŠå…¶æ•°é‡ã€‚
 	struct kmem_cache *freelist_cache;
 	unsigned int freelist_size;
 
 	/* constructor func */
-	//·ÖÅäslabÊ±µÄ»Øµ÷
-	/*¹¹Ôìº¯Êı£¬µ±ÔÚkmem_cacheÖĞ·ÖÅäÒ»¸öĞÂµÄÊ±£¬
-	ÓÃÀ´³õÊ¼»¯slabÖĞµÄËùÓĞÄÚ´æ¶ÔÏó*/
+	//åˆ†é…slabæ—¶çš„å›è°ƒ
+	/*æ„é€ å‡½æ•°ï¼Œå½“åœ¨kmem_cacheä¸­åˆ†é…ä¸€ä¸ªæ–°çš„æ—¶ï¼Œ
+	ç”¨æ¥åˆå§‹åŒ–slabä¸­çš„æ‰€æœ‰å†…å­˜å¯¹è±¡*/
 	void (*ctor)(void *obj);
 
 /* 4) cache creation/removal */
-	//ÏÔÊ¾ÔÚproc/slabinfoÖĞµÄÃû³Æ
+	//æ˜¾ç¤ºåœ¨proc/slabinfoä¸­çš„åç§°
 	const char *name;
-	//Í¨¹ı´Ë×Ö¶Î½«¶ÔÏóÁ´½Óµ½cache_chainÁ´±í
+	//é€šè¿‡æ­¤å­—æ®µå°†å¯¹è±¡é“¾æ¥åˆ°cache_chainé“¾è¡¨
 	struct list_head list;
-	//ÒıÓÃ¼ÆÊı
+	//å¼•ç”¨è®¡æ•°
 	int refcount;
-	//slab¶ÔÏó´óĞ¡
+	//slabå¯¹è±¡å¤§å°
 	int object_size;
 	int align;
 

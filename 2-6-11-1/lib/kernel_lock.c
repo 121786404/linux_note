@@ -15,7 +15,7 @@
 /*
  * Debugging check.
  */
-/* 获取当前cpu的id */
+/* 鑾峰彇褰撳墠cpu鐨刬d */
 unsigned int smp_processor_id(void)
 {
 	unsigned long preempt_count = preempt_count();

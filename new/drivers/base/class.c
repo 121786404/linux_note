@@ -210,7 +210,7 @@ int __class_register(struct class *cls, struct lock_class_key *key)
 	cp->class = cls;
 	cls->p = cp;
 
-	/*½«Ö®Ç°Éú³ÉµÄclass¼ÓÈëµ½ÏµÍ³ÖĞ*/
+	/*å°†ä¹‹å‰ç”Ÿæˆçš„classåŠ å…¥åˆ°ç³»ç»Ÿä¸­*/
 	error = kset_register(&cp->subsys);
 	if (error) {
 		kfree(cp);
@@ -252,7 +252,7 @@ static void class_create_release(struct class *cls)
  * Note, the pointer created here is to be destroyed when finished by
  * making a call to class_destroy().
  */
- /*ÏòÏµÍ³×¢²áĞÂÉú³ÉµÄÀà¶ÔÏó*/
+ /*å‘ç³»ç»Ÿæ³¨å†Œæ–°ç”Ÿæˆçš„ç±»å¯¹è±¡*/
 struct class *__class_create(struct module *owner, const char *name,
 			     struct lock_class_key *key)
 {
@@ -288,7 +288,7 @@ EXPORT_SYMBOL_GPL(__class_create);
  * Note, the pointer to be destroyed must have been created with a call
  * to class_create().
  */
-/*ÓÃÓÚ´ÓÏµÍ³ÖĞ×¢ÏúÒ»¸öclass¶ÔÏó*/
+/*ç”¨äºä»ç³»ç»Ÿä¸­æ³¨é”€ä¸€ä¸ªclasså¯¹è±¡*/
 void class_destroy(struct class *cls)
 {
 	if ((cls == NULL) || (IS_ERR(cls)))
@@ -601,11 +601,11 @@ void class_compat_remove_link(struct class_compat *cls, struct device *dev,
 }
 EXPORT_SYMBOL_GPL(class_compat_remove_link);
 
-/*ÏµÍ³ÖĞÀàµÄÆğÔ´º¯Êı,ÔÚÏµÍ³³õÊ¼»¯ÆÚ¼äµ÷ÓÃ,Ö÷Òª×÷ÓÃÊÇ²úÉúÀà¶ÔÏóµÄ¶¥²ãkset---class_kset*/
+/*ç³»ç»Ÿä¸­ç±»çš„èµ·æºå‡½æ•°,åœ¨ç³»ç»Ÿåˆå§‹åŒ–æœŸé—´è°ƒç”¨,ä¸»è¦ä½œç”¨æ˜¯äº§ç”Ÿç±»å¯¹è±¡çš„é¡¶å±‚kset---class_kset*/
 int __init classes_init(void)
 {
-	/*ÔÚ/sysÄ¿Â¼ÏÂÉú³ÉÒ»¸öclassÄ¿Â¼,ÔÚÒÔºóµÄclassÏà¹Ø²Ù×÷ÖĞ,class_kset½«×÷ÎªÏµÍ³ÖĞ
-	 *ËùÓĞclassÄÚºË¶ÔÏóµÄ¶¥²ãkset*/
+	/*åœ¨/sysç›®å½•ä¸‹ç”Ÿæˆä¸€ä¸ªclassç›®å½•,åœ¨ä»¥åçš„classç›¸å…³æ“ä½œä¸­,class_ksetå°†ä½œä¸ºç³»ç»Ÿä¸­
+	 *æ‰€æœ‰classå†…æ ¸å¯¹è±¡çš„é¡¶å±‚kset*/
 	class_kset = kset_create_and_add("class", NULL, NULL);
 	if (!class_kset)
 		return -ENOMEM;

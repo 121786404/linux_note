@@ -260,7 +260,7 @@ static void driver_bound(struct device *dev)
 					     BUS_NOTIFY_BOUND_DRIVER, dev);
 }
 
-/*ÔÚsysfsÎÄ¼þÏµÍ³ÖÐ½¨Á¢°ó¶¨µÄÉè±¸ÓëÇý¶¯³ÌÐòÖ®¼äµÄÁ´½Ó·ûºÅÎÄ¼þ*/
+/*åœ¨sysfsæ–‡ä»¶ç³»ç»Ÿä¸­å»ºç«‹ç»‘å®šçš„è®¾å¤‡ä¸Žé©±åŠ¨ç¨‹åºä¹‹é—´çš„é“¾æŽ¥ç¬¦å·æ–‡ä»¶*/
 static int driver_sysfs_add(struct device *dev)
 {
 	int ret;
@@ -305,12 +305,12 @@ static void driver_sysfs_remove(struct device *dev)
  *
  * This function must be called with the device lock held.
  */
-/*½«Éè±¸ÓëËüµÄÇý¶¯³ÌÐò°ó¶¨ÆðÀ´*/
+/*å°†è®¾å¤‡ä¸Žå®ƒçš„é©±åŠ¨ç¨‹åºç»‘å®šèµ·æ¥*/
 int device_bind_driver(struct device *dev)
 {
 	int ret;
 
-	/*ÔÚsysfsÎÄ¼þÏµÍ³ÖÐ½¨Á¢°ó¶¨µÄÉè±¸ÓëÇý¶¯³ÌÐòÖ®¼äµÄÁ´½Ó·ûºÅÎÄ¼þ*/
+	/*åœ¨sysfsæ–‡ä»¶ç³»ç»Ÿä¸­å»ºç«‹ç»‘å®šçš„è®¾å¤‡ä¸Žé©±åŠ¨ç¨‹åºä¹‹é—´çš„é“¾æŽ¥ç¬¦å·æ–‡ä»¶*/
 	ret = driver_sysfs_add(dev);
 	if (!ret)
 		driver_bound(dev);
@@ -648,19 +648,19 @@ static void __device_attach_async_helper(void *_dev, async_cookie_t cookie)
 	put_device(dev);
 }
 
-/*½«µ±Ç°µÄÉè±¸°ó¶¨µ½ËüµÄÇý¶¯³ÌÐòÉÏ*/
+/*å°†å½“å‰çš„è®¾å¤‡ç»‘å®šåˆ°å®ƒçš„é©±åŠ¨ç¨‹åºä¸Š*/
 static int __device_attach(struct device *dev, bool allow_async)
 {
 	int ret = 0;
 
 	device_lock(dev);
-	/*²»Îª¿Õ,±íÃ÷ÒÑ¾­½øÐÐÁË°ó¶¨*/
+	/*ä¸ä¸ºç©º,è¡¨æ˜Žå·²ç»è¿›è¡Œäº†ç»‘å®š*/
 	if (dev->driver) {
 		if (device_is_bound(dev)) {
 			ret = 1;
 			goto out_unlock;
 		}
-		/*ÕâÖÖÇé¿öÏÂÖ»Ðèµ÷ÓÃ¸Ãº¯ÊýÔÚsysfsÎÄ¼þÊ÷ÖÐ½¨Á¢devÓëÆäÇý¶¯³ÌÐòÖ®¼äµÄ»¥Áª¹ØÏµ*/
+		/*è¿™ç§æƒ…å†µä¸‹åªéœ€è°ƒç”¨è¯¥å‡½æ•°åœ¨sysfsæ–‡ä»¶æ ‘ä¸­å»ºç«‹devä¸Žå…¶é©±åŠ¨ç¨‹åºä¹‹é—´çš„äº’è”å…³ç³»*/
 		ret = device_bind_driver(dev);
 		if (ret == 0)
 			ret = 1;
@@ -677,7 +677,7 @@ static int __device_attach(struct device *dev, bool allow_async)
 
 		if (dev->parent)
 			pm_runtime_get_sync(dev->parent);
-		/*±éÀúdevËùÔÚ×ÜÏßdev->busÉÏ¹ÒÔØµÄËùÓÐÇý¶¯³ÌÐò¶ÔÏó*/
+		/*éåŽ†devæ‰€åœ¨æ€»çº¿dev->busä¸ŠæŒ‚è½½çš„æ‰€æœ‰é©±åŠ¨ç¨‹åºå¯¹è±¡*/
 		ret = bus_for_each_drv(dev->bus, NULL, &data,
 					__device_attach_driver);
 		if (!ret && allow_async && data.have_async) {
@@ -776,7 +776,7 @@ static int __driver_attach(struct device *dev, void *data)
  * returns 0 and the @dev->driver is set, we've found a
  * compatible pair.
  */
- /*Ö´ÐÐÇý¶¯¼ÓÔØ*/
+ /*æ‰§è¡Œé©±åŠ¨åŠ è½½*/
 int driver_attach(struct device_driver *drv)
 {
 	return bus_for_each_dev(drv->bus, NULL, drv, __driver_attach);

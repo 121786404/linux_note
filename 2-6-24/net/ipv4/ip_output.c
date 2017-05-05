@@ -169,26 +169,26 @@ static inline int ip_finish_output2(struct sk_buff *skb)
 		IP_INC_STATS(IPSTATS_MIB_OUTBCASTPKTS);
 
 	/* Be paranoid, rather than too clever. */
-	/* ¿ÕÓà¿Õ¼ä²»×ãÒÔÈİÄÉL2²ãÍ·²¿ */
+	/* ç©ºä½™ç©ºé—´ä¸è¶³ä»¥å®¹çº³L2å±‚å¤´éƒ¨ */
 	if (unlikely(skb_headroom(skb) < hh_len && dev->header_ops)) {
 		struct sk_buff *skb2;
 
-		/* ÖØĞÂ·ÖÅä¿Õ¼ä */
+		/* é‡æ–°åˆ†é…ç©ºé—´ */
 		skb2 = skb_realloc_headroom(skb, LL_RESERVED_SPACE(dev));
-		if (skb2 == NULL) {/* ¿Õ¼ä²»×ã£¬ÊÍ·ÅÏÖÓĞ±¨ÎÄ²¢¶ªÆú */
+		if (skb2 == NULL) {/* ç©ºé—´ä¸è¶³ï¼Œé‡Šæ”¾ç°æœ‰æŠ¥æ–‡å¹¶ä¸¢å¼ƒ */
 			kfree_skb(skb);
 			return -ENOMEM;
 		}
 		if (skb->sk)
 			skb_set_owner_w(skb2, skb->sk);
-		/* ÊÍ·ÅÔ­±¨ÎÄ²¢·¢ËÍĞÂ±¨ÎÄ */
+		/* é‡Šæ”¾åŸæŠ¥æ–‡å¹¶å‘é€æ–°æŠ¥æ–‡ */
 		kfree_skb(skb);
 		skb = skb2;
 	}
 
-	if (dst->hh)/* »º´æÁËL2²ã±¨ÎÄÍ· */
+	if (dst->hh)/* ç¼“å­˜äº†L2å±‚æŠ¥æ–‡å¤´ */
 		return neigh_hh_output(dst->hh, skb);
-	else if (dst->neighbour)/* Ã»ÓĞ»º´æ£¬Ôòµ÷ÓÃdev_queue_xmit·¢ËÍ£¬¸Ãº¯Êı»á¹¹½¨L2²ãÍ·²¿ */
+	else if (dst->neighbour)/* æ²¡æœ‰ç¼“å­˜ï¼Œåˆ™è°ƒç”¨dev_queue_xmitå‘é€ï¼Œè¯¥å‡½æ•°ä¼šæ„å»ºL2å±‚å¤´éƒ¨ */
 		return dst->neighbour->output(skb);
 
 	if (net_ratelimit())
@@ -214,11 +214,11 @@ static int ip_finish_output(struct sk_buff *skb)
 		return dst_output(skb);
 	}
 #endif
-	/* ±¨ÎÄ³¤¶ÈÆğÀ´ÁËMTU£¬²¢ÇÒ²»Ö§³ÖGSO */
+	/* æŠ¥æ–‡é•¿åº¦èµ·æ¥äº†MTUï¼Œå¹¶ä¸”ä¸æ”¯æŒGSO */
 	if (skb->len > ip_skb_dst_mtu(skb) && !skb_is_gso(skb))
-		return ip_fragment(skb, ip_finish_output2);/* ·ÖÆ¬·¢ËÍ */
-	else/* ²»ĞèÒª·ÖÆ¬ */
-		return ip_finish_output2(skb);/* Ö±½Ó·¢ËÍ±¨ÎÄ */
+		return ip_fragment(skb, ip_finish_output2);/* åˆ†ç‰‡å‘é€ */
+	else/* ä¸éœ€è¦åˆ†ç‰‡ */
+		return ip_finish_output2(skb);/* ç›´æ¥å‘é€æŠ¥æ–‡ */
 }
 
 int ip_mc_output(struct sk_buff *skb)
@@ -295,7 +295,7 @@ int ip_output(struct sk_buff *skb)
 }
 
 /**
- * IP²ã·¢ËÍÖ÷º¯Êı
+ * IPå±‚å‘é€ä¸»å‡½æ•°
  */
 int ip_queue_xmit(struct sk_buff *skb, int ipfragok)
 {
@@ -309,18 +309,18 @@ int ip_queue_xmit(struct sk_buff *skb, int ipfragok)
 	 * f.e. by something like SCTP.
 	 */
 	rt = (struct rtable *) skb->dst;
-	if (rt != NULL)/* ÒÑ¾­È·¶¨±¨ÎÄÂ·ÓÉ */
+	if (rt != NULL)/* å·²ç»ç¡®å®šæŠ¥æ–‡è·¯ç”± */
 		goto packet_routed;
 
 	/* Make sure we can route this packet. */
-	/* ²éÕÒ±¨ÎÄËùÊôsocket£¬Èç¹û¸Ãsocket»º´æÁËÂ·ÓÉ£¬ÔòÊ¹ÓÃËü */
+	/* æŸ¥æ‰¾æŠ¥æ–‡æ‰€å±socketï¼Œå¦‚æœè¯¥socketç¼“å­˜äº†è·¯ç”±ï¼Œåˆ™ä½¿ç”¨å®ƒ */
 	rt = (struct rtable *)__sk_dst_check(sk, 0);
-	if (rt == NULL) {/* »¹Ã»ÓĞ»º´æÂ·ÓÉ£¬Ò²¾ÍÊÇµÚÒ»´Î·¢ËÍ±¨ÎÄ */
+	if (rt == NULL) {/* è¿˜æ²¡æœ‰ç¼“å­˜è·¯ç”±ï¼Œä¹Ÿå°±æ˜¯ç¬¬ä¸€æ¬¡å‘é€æŠ¥æ–‡ */
 		__be32 daddr;
 
 		/* Use correct destination address if we have options. */
 		daddr = inet->daddr;
-		if(opt && opt->srr)/* Ô´Õ¾Â·ÓÉÏŞÖÆ£¬Ç¿ÖÆÂ·ÓÉµ½Ö¸¶¨µÄÁ´Â· */
+		if(opt && opt->srr)/* æºç«™è·¯ç”±é™åˆ¶ï¼Œå¼ºåˆ¶è·¯ç”±åˆ°æŒ‡å®šçš„é“¾è·¯ */
 			daddr = opt->faddr;
 
 		{
@@ -375,11 +375,11 @@ packet_routed:
 			     (skb_shinfo(skb)->gso_segs ?: 1) - 1);
 
 	/* Add an IP checksum. */
-	ip_send_check(iph);/* Éú³É·¢ËÍĞ£ÑéºÍ */
+	ip_send_check(iph);/* ç”Ÿæˆå‘é€æ ¡éªŒå’Œ */
 
 	skb->priority = sk->sk_priority;
 
-	/* netfilter´¦Àíºó´«µİ¸ødst_output£¬ÓÉÇı¶¯·¢ËÍ±¨ÎÄ¡£ */
+	/* netfilterå¤„ç†åä¼ é€’ç»™dst_outputï¼Œç”±é©±åŠ¨å‘é€æŠ¥æ–‡ã€‚ */
 	return NF_HOOK(PF_INET, NF_IP_LOCAL_OUT, skb, NULL, rt->u.dst.dev,
 		       dst_output);
 
@@ -425,7 +425,7 @@ static void ip_copy_metadata(struct sk_buff *to, struct sk_buff *from)
  */
 
 /**
- * ½«IP±¨ÎÄ·ÖÆ¬
+ * å°†IPæŠ¥æ–‡åˆ†ç‰‡
  */
 int ip_fragment(struct sk_buff *skb, int (*output)(struct sk_buff*))
 {

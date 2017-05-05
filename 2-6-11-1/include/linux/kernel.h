@@ -29,7 +29,7 @@ extern const char linux_banner[];
 
 #define ARRAY_SIZE(x) (sizeof(x) / sizeof((x)[0]))
 
-/* ÒÔ¶àÉÙ×Ö½Ú¶ÔÆë£¬¶ÔÆëµÄÖ»ÄÜÊÇ2µÄn´Î */
+/* ä»¥å¤šå°‘å­—èŠ‚å¯¹é½ï¼Œå¯¹é½çš„åªèƒ½æ˜¯2çš„næ¬¡ */
 #define ALIGN(x,a) (((x)+(a)-1)&~((a)-1))
 
 #define	KERN_EMERG	"<0>"	/* system is unusable			*/

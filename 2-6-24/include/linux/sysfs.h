@@ -25,21 +25,21 @@ struct module;
  * until the tree gets cleaned up fully.
  */
 /**
- * kobjectÊôĞÔ£¬ÓÃÓÚsysfsÖĞµÄÒ»¸öÎÄ¼ş
+ * kobjectå±æ€§ï¼Œç”¨äºsysfsä¸­çš„ä¸€ä¸ªæ–‡ä»¶
  */
 struct attribute {
-	/* ÊôĞÔ¼°ÎÄ¼şÃû³Æ */
+	/* å±æ€§åŠæ–‡ä»¶åç§° */
 	const char		*name;
-	/* ËùÊôÄ£¿é */
+	/* æ‰€å±æ¨¡å— */
 	struct module		*owner;
-	/* ·ÃÎÊÈ¨ÏŞ */
+	/* è®¿é—®æƒé™ */
 	mode_t			mode;
 };
 
 struct attribute_group {
-	/* ÊôĞÔ×éµÄÃû³Æ */
+	/* å±æ€§ç»„çš„åç§° */
 	const char		*name;
-	/* ÒÔNULL½áÊøµÄÊôĞÔÊı×é */
+	/* ä»¥NULLç»“æŸçš„å±æ€§æ•°ç»„ */
 	struct attribute	**attrs;
 };
 
@@ -80,7 +80,7 @@ struct bin_attribute {
 };
 
 /**
- * ¶ÁĞ´sysfsÊôĞÔµÄ·½·¨
+ * è¯»å†™sysfså±æ€§çš„æ–¹æ³•
  */
 struct sysfs_ops {
 	ssize_t	(*show)(struct kobject *, struct attribute *,char *);

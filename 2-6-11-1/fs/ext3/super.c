@@ -430,7 +430,7 @@ static kmem_cache_t *ext3_inode_cachep;
 /*
  * Called inside transaction, so use GFP_NOFS
  */
-/* 通过超级块来分配相应的inode */
+/* 閫氳繃瓒呯骇鍧楁潵鍒嗛厤鐩稿簲鐨刬node */
 static struct inode *ext3_alloc_inode(struct super_block *sb)
 {
 	struct ext3_inode_info *ei;
@@ -467,7 +467,7 @@ static void init_once(void * foo, kmem_cache_t * cachep, unsigned long flags)
 	}
 }
  
-/* 初始化ext3的inode的slab */
+/* 鍒濆鍖杄xt3鐨刬node鐨剆lab */
 static int init_inodecache(void)
 {
 	ext3_inode_cachep = kmem_cache_create("ext3_inode_cache",
@@ -2486,7 +2486,7 @@ static struct file_system_type ext3_fs_type = {
 	.fs_flags	= FS_REQUIRES_DEV,
 };
 
-/* ext3文件系统模块的初始化 */
+/* ext3鏂囦欢绯荤粺妯″潡鐨勫垵濮嬪寲 */
 static int __init init_ext3_fs(void)
 {
 	int err = init_ext3_xattr();

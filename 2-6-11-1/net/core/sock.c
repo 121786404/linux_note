@@ -603,7 +603,7 @@ lenout:
   	return 0;
 }
 
-/* socketµÄ»º´æ */
+/* socketçš„ç¼“å­˜ */
 static kmem_cache_t *sk_cachep;
 
 /**
@@ -618,8 +618,8 @@ static kmem_cache_t *sk_cachep;
  *	private slabcaches have different sizes of the generic struct sock.
  *	1 has been kept as a way to say sizeof(struct sock).
  */
-/* ·ÖÅäÒ»¸östruct sock½á¹¹£¬
-  * ×îºóÁ½¸ö²ÎÊý¸øÓèÁËsock·ÖÅäµÄÁé»îÐÔ£¬ÀýÈçinet£¬unixÐ­ÒéÓò
+/* åˆ†é…ä¸€ä¸ªstruct sockç»“æž„ï¼Œ
+  * æœ€åŽä¸¤ä¸ªå‚æ•°ç»™äºˆäº†sockåˆ†é…çš„çµæ´»æ€§ï¼Œä¾‹å¦‚inetï¼Œunixåè®®åŸŸ
   */
 struct sock *sk_alloc(int family, int priority, int zero_it, kmem_cache_t *slab)
 {
@@ -627,7 +627,7 @@ struct sock *sk_alloc(int family, int priority, int zero_it, kmem_cache_t *slab)
 
 	if (!slab)
 		slab = sk_cachep;
-        /* ´ÓslabÖÐ·ÖÅäÒ»¸östruct sock */
+        /* ä»Žslabä¸­åˆ†é…ä¸€ä¸ªstruct sock */
 	sk = kmem_cache_alloc(slab, priority);
 	if (sk) {
 		if (zero_it) {
@@ -638,7 +638,7 @@ struct sock *sk_alloc(int family, int priority, int zero_it, kmem_cache_t *slab)
 		}
 		sk->sk_slab = slab;
 		
-                /* ½øÐÐ°²È«ÐÔ¼ì²é */
+                /* è¿›è¡Œå®‰å…¨æ€§æ£€æŸ¥ */
 		if (security_sk_alloc(sk, family, priority)) {
 			kmem_cache_free(slab, sk);
 			sk = NULL;
@@ -672,7 +672,7 @@ void sk_free(struct sock *sk)
 	module_put(owner);
 }
 
-/* ³õÊ¼»¯socketµÄslab»º´æ */
+/* åˆå§‹åŒ–socketçš„slabç¼“å­˜ */
 void __init sk_init(void)
 {
 	sk_cachep = kmem_cache_create("sock", sizeof(struct sock), 0,
@@ -1168,7 +1168,7 @@ void sk_stop_timer(struct sock *sk, struct timer_list* timer)
 
 EXPORT_SYMBOL(sk_stop_timer);
 
-/* ÉèÖÃsocketºÍsockµÄ¹ØÏµ */
+/* è®¾ç½®socketå’Œsockçš„å…³ç³» */
 void sock_init_data(struct socket *sock, struct sock *sk)
 {
 	skb_queue_head_init(&sk->sk_receive_queue);
@@ -1179,7 +1179,7 @@ void sock_init_data(struct socket *sock, struct sock *sk)
 
 	init_timer(&sk->sk_timer);
 	
-        /* ÉèÖÃsockµÄÄÚ´æ·ÖÅäºÍ½ÓÊÕ£¬·¢ËÍ»º´æ´óÐ¡ */
+        /* è®¾ç½®sockçš„å†…å­˜åˆ†é…å’ŒæŽ¥æ”¶ï¼Œå‘é€ç¼“å­˜å¤§å° */
 	sk->sk_allocation	=	GFP_KERNEL;
 	sk->sk_rcvbuf		=	sysctl_rmem_default;
 	sk->sk_sndbuf		=	sysctl_wmem_default;
@@ -1198,7 +1198,7 @@ void sock_init_data(struct socket *sock, struct sock *sk)
 	rwlock_init(&sk->sk_dst_lock);
 	rwlock_init(&sk->sk_callback_lock);
 
-        /* ÉèÖÃsockµÄÒ»Ð©»Øµ÷ */
+        /* è®¾ç½®sockçš„ä¸€äº›å›žè°ƒ */
 	sk->sk_state_change	=	sock_def_wakeup;
 	sk->sk_data_ready	=	sock_def_readable;
 	sk->sk_write_space	=	sock_def_write_space;
@@ -1356,7 +1356,7 @@ void sk_common_release(struct sock *sk)
 
 EXPORT_SYMBOL(sk_common_release);
 
-/* ·ÖÅäÐ­ÒéµÄslab·ÖÅä³Ø */
+/* åˆ†é…åè®®çš„slabåˆ†é…æ±  */
 int sk_alloc_slab(struct proto *prot, char *name)
 {
 	prot->slab = kmem_cache_create(name,

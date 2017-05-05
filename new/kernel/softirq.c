@@ -237,7 +237,7 @@ static inline void lockdep_softirq_end(bool in_hardirq)
 static inline bool lockdep_softirq_start(void) { return false; }
 static inline void lockdep_softirq_end(bool in_hardirq) { }
 #endif
-/*º¯ÊıµÄºËĞÄË¼ÏëÊÇ:´ÓCPU±¾µØµÄ_softirq_pendingµÄ×îµÍÎ»¿ªÊ¼,ÒÀ´ÎÍù¸ßÎ»É¨Ãè,Èç¹û·¢ÏÖÄ³Î»Îª1,ËµÃ÷¶ÔÓ¦¸ÃÎ»ÓĞ¸öµÈ´ıÖĞµÄsoftirqĞèÒª´¦Àí,ÄÇÃ´¾Íµ÷ÓÃsoft_vecÊı×éÖĞ¶ÔÓ¦ÏîµÄactionº¯Êı,Õâ¸ö¹ı³Ì»áÒ»Ö±³ÖĞøÏÂÈ¥,ÖªµÀ__softirq_pendingÎª0*/
+/*å‡½æ•°çš„æ ¸å¿ƒæ€æƒ³æ˜¯:ä»CPUæœ¬åœ°çš„_softirq_pendingçš„æœ€ä½ä½å¼€å§‹,ä¾æ¬¡å¾€é«˜ä½æ‰«æ,å¦‚æœå‘ç°æŸä½ä¸º1,è¯´æ˜å¯¹åº”è¯¥ä½æœ‰ä¸ªç­‰å¾…ä¸­çš„softirqéœ€è¦å¤„ç†,é‚£ä¹ˆå°±è°ƒç”¨soft_vecæ•°ç»„ä¸­å¯¹åº”é¡¹çš„actionå‡½æ•°,è¿™ä¸ªè¿‡ç¨‹ä¼šä¸€ç›´æŒç»­ä¸‹å»,çŸ¥é“__softirq_pendingä¸º0*/
 
 asmlinkage __visible void __softirq_entry __do_softirq(void)
 {
@@ -334,7 +334,7 @@ asmlinkage __visible void do_softirq(void)
 /*
  * Enter an interrupt context.
  */
-/*HARDIRQ²¿·ÖµÄ¿ªÊ¼,¸æËßÏµÍ³½øÈë³å¶Ï´¦ÀíµÄÉÏ°ë²¿·Ö£¬Óëirq_enter¶ÔÓ¦µÄÊÇirq_exit,irq_enter»á¸üĞÂÏµÍ³ÖĞµÄÒ»Ğ©Í³¼ÆÁ¿£¬Í¬Ê±»á°Ñµ±Ç°Õ»ÖĞµÄpreemtp_count±äÁ¿¼ÓÉÏHARDIRQ_OFFSETÀ´±êÊ¶Ò»¸öHARDIRQÖĞÉÏÏÂÎÄ*/
+/*HARDIRQéƒ¨åˆ†çš„å¼€å§‹,å‘Šè¯‰ç³»ç»Ÿè¿›å…¥å†²æ–­å¤„ç†çš„ä¸ŠåŠéƒ¨åˆ†ï¼Œä¸irq_enterå¯¹åº”çš„æ˜¯irq_exit,irq_enterä¼šæ›´æ–°ç³»ç»Ÿä¸­çš„ä¸€äº›ç»Ÿè®¡é‡ï¼ŒåŒæ—¶ä¼šæŠŠå½“å‰æ ˆä¸­çš„preemtp_countå˜é‡åŠ ä¸ŠHARDIRQ_OFFSETæ¥æ ‡è¯†ä¸€ä¸ªHARDIRQä¸­ä¸Šä¸‹æ–‡*/
 void irq_enter(void)
 {
 	rcu_irq_enter();
@@ -350,7 +350,7 @@ void irq_enter(void)
 
 	__irq_enter();
 }
-/*invoke_softirqÊÇÕæÕı´¦ÀíSOFTIRQ²¿·ÖµÄº¯Êı*/
+/*invoke_softirqæ˜¯çœŸæ­£å¤„ç†SOFTIRQéƒ¨åˆ†çš„å‡½æ•°*/
 static inline void invoke_softirq(void)
 {
 	if (ksoftirqd_running())
@@ -393,7 +393,7 @@ static inline void tick_irq_exit(void)
 /*
  * Exit an interrupt context. Process softirqs if needed and possible:
  */
- /*ÖĞ¶ÏÏÂ°ë²¿SOFTIRQ*/
+ /*ä¸­æ–­ä¸‹åŠéƒ¨SOFTIRQ*/
 void irq_exit(void)
 {
 #ifndef __ARCH_IRQ_EXIT_IRQS_DISABLED
@@ -433,8 +433,8 @@ inline void raise_softirq_irqoff(unsigned int nr)
 }
 
 /*
-    ½«Ò»¸öÈíÖĞ¶ÏÉèÖÃÎª¹ÒÆğ×´Ì¬
-    ÈÃËüÔÚÏÂ´Îµ÷ÓÃ do_softirq()º¯ÊıÊ±Í¶ÈëÔËĞĞ
+    å°†ä¸€ä¸ªè½¯ä¸­æ–­è®¾ç½®ä¸ºæŒ‚èµ·çŠ¶æ€
+    è®©å®ƒåœ¨ä¸‹æ¬¡è°ƒç”¨ do_softirq()å‡½æ•°æ—¶æŠ•å…¥è¿è¡Œ
 */
 void raise_softirq(unsigned int nr)
 {
@@ -442,8 +442,8 @@ void raise_softirq(unsigned int nr)
 
 	local_irq_save(flags);
 /*
-	ÔÚ´¥·¢ÈíÖĞ¶ÏÖ®Ç°»á½ûÓÃÖĞ¶Ï£¬´¥·¢ºó£¬ÔÙ»Ø¸´Ô­À´µÄ×´Ì¬£¬
-	Èç¹ûÖĞ¶Ï±¾ÉíÒÑ¾­±»½ûÖ¹ÁË£¬¿ÉÒÔÖ±½Óµ÷ÓÃraise_softirq_irqoff
+	åœ¨è§¦å‘è½¯ä¸­æ–­ä¹‹å‰ä¼šç¦ç”¨ä¸­æ–­ï¼Œè§¦å‘åï¼Œå†å›å¤åŸæ¥çš„çŠ¶æ€ï¼Œ
+	å¦‚æœä¸­æ–­æœ¬èº«å·²ç»è¢«ç¦æ­¢äº†ï¼Œå¯ä»¥ç›´æ¥è°ƒç”¨raise_softirq_irqoff
 */
 	raise_softirq_irqoff(nr);
 	local_irq_restore(flags);
@@ -454,7 +454,7 @@ void __raise_softirq_irqoff(unsigned int nr)
 	trace_softirq_raise(nr);
 	or_softirq_pending(1UL << nr);
 }
-/*×¢²áÈíÖĞ¶Ï´¦Àí³ÌĞò*/
+/*æ³¨å†Œè½¯ä¸­æ–­å¤„ç†ç¨‹åº*/
 void open_softirq(int nr, void (*action)(struct softirq_action *))
 {
 	softirq_vec[nr].action = action;
@@ -462,22 +462,22 @@ void open_softirq(int nr, void (*action)(struct softirq_action *))
 
 /*
  * Tasklets
- * tasklet_vecµÄÉùÃ÷
+ * tasklet_vecçš„å£°æ˜
  */
 struct tasklet_head {
-	struct tasklet_struct *head;	/*head×ÜÊÇÖ¸Ïòtasklet¶ÔÏóÁ´±íµÄµÚÒ»¸ö½Úµã*/
-	struct tasklet_struct **tail;	/*ÕâÊÇ¸öÖ¸Ïòtasklet¶ÔÏóÖ¸ÕëµÄÖ¸Õë,tail×ÜÊÇ±£´ætaskletÁ´±í×îºóÒ»¸ö½ÚµãËùÔÚtasklet¶ÔÏóÖĞnext³ÉÔ±µÄµØÖ·*/
+	struct tasklet_struct *head;	/*headæ€»æ˜¯æŒ‡å‘taskletå¯¹è±¡é“¾è¡¨çš„ç¬¬ä¸€ä¸ªèŠ‚ç‚¹*/
+	struct tasklet_struct **tail;	/*è¿™æ˜¯ä¸ªæŒ‡å‘taskletå¯¹è±¡æŒ‡é’ˆçš„æŒ‡é’ˆ,tailæ€»æ˜¯ä¿å­˜taskleté“¾è¡¨æœ€åä¸€ä¸ªèŠ‚ç‚¹æ‰€åœ¨taskletå¯¹è±¡ä¸­nextæˆå‘˜çš„åœ°å€*/
 };
 
 static DEFINE_PER_CPU(struct tasklet_head, tasklet_vec);
 static DEFINE_PER_CPU(struct tasklet_head, tasklet_hi_vec);
 /*
-ÔÚ tasklet ±»µ÷¶Èºó£¬Ö»ÒªÓĞ»ú»áËü¾Í»á¾¡ÔçµÄÖ´ĞĞ£¬
-Èç¹ûËü»¹Ã»ÔËĞĞ£¬ÓÖ±»µ÷¶ÈÁËÒ»´Î£¬ÄÇÃ´ËüÈÔÈ»Ö»»áÔËĞĞÒ»´Î¡£
+åœ¨ tasklet è¢«è°ƒåº¦åï¼Œåªè¦æœ‰æœºä¼šå®ƒå°±ä¼šå°½æ—©çš„æ‰§è¡Œï¼Œ
+å¦‚æœå®ƒè¿˜æ²¡è¿è¡Œï¼Œåˆè¢«è°ƒåº¦äº†ä¸€æ¬¡ï¼Œé‚£ä¹ˆå®ƒä»ç„¶åªä¼šè¿è¡Œä¸€æ¬¡ã€‚
 
-Èç¹ûËüÕıÔÚÖ´ĞĞ£¬ÔÚÁíÒ»¸ö´¦ÀíÆ÷ÉÏ tasklet ÓÖ±»µ÷¶ÈÁËÒ»´Î£¬
-ÄÇÃ´ĞÂµÄ tasklet »á±»ÖØĞÂµ÷¶ÈÔÙÔËĞĞÒ»´Î
-£¨²»ÊÇÍ¬Ê±ÔËĞĞ£¬ÔÙ´Îµ÷¶È£¬ÏÂ´ÎÓĞ»ú»áÔËĞĞÊ±²ÅÔËĞĞ£©
+å¦‚æœå®ƒæ­£åœ¨æ‰§è¡Œï¼Œåœ¨å¦ä¸€ä¸ªå¤„ç†å™¨ä¸Š tasklet åˆè¢«è°ƒåº¦äº†ä¸€æ¬¡ï¼Œ
+é‚£ä¹ˆæ–°çš„ tasklet ä¼šè¢«é‡æ–°è°ƒåº¦å†è¿è¡Œä¸€æ¬¡
+ï¼ˆä¸æ˜¯åŒæ—¶è¿è¡Œï¼Œå†æ¬¡è°ƒåº¦ï¼Œä¸‹æ¬¡æœ‰æœºä¼šè¿è¡Œæ—¶æ‰è¿è¡Œï¼‰
 */
 void __tasklet_schedule(struct tasklet_struct *t)
 {
@@ -515,7 +515,7 @@ void __tasklet_hi_schedule_first(struct tasklet_struct *t)
 }
 EXPORT_SYMBOL(__tasklet_hi_schedule_first);
 
-/*taskletÖ´ĞĞº¯Êı*/
+/*taskletæ‰§è¡Œå‡½æ•°*/
 static __latent_entropy void tasklet_action(struct softirq_action *a)
 {
 	struct tasklet_struct *list;
@@ -552,7 +552,7 @@ static __latent_entropy void tasklet_action(struct softirq_action *a)
 	}
 }
 
-/*tasklet_hi_actionÖ´ĞĞº¯Êı*/
+/*tasklet_hi_actionæ‰§è¡Œå‡½æ•°*/
 static __latent_entropy void tasklet_hi_action(struct softirq_action *a)
 {
 	struct tasklet_struct *list;
@@ -590,7 +590,7 @@ static __latent_entropy void tasklet_hi_action(struct softirq_action *a)
 }
 
 
-/*¶¯Ì¬³õÊ¼»¯tasklet¶ÔÏó*/
+/*åŠ¨æ€åˆå§‹åŒ–taskletå¯¹è±¡*/
 void tasklet_init(struct tasklet_struct *t,
 		  void (*func)(unsigned long), unsigned long data)
 {
@@ -669,14 +669,14 @@ void tasklet_hrtimer_init(struct tasklet_hrtimer *ttimer,
 EXPORT_SYMBOL_GPL(tasklet_hrtimer_init);
 
 /**
- * ³õÊ¼»¯ÈíÖĞ¶Ï
+ * åˆå§‹åŒ–è½¯ä¸­æ–­
  */
-/*ÏµÍ³³õÊ¼»¯ÆÚ¼äµ÷ÓÃ¸Ãº¯ÊıÎªTASKLET_SOFTIRQºÍHI_SOFTIRQ°²×°ÁËÖ´ĞĞº¯Êı*/
+/*ç³»ç»Ÿåˆå§‹åŒ–æœŸé—´è°ƒç”¨è¯¥å‡½æ•°ä¸ºTASKLET_SOFTIRQå’ŒHI_SOFTIRQå®‰è£…äº†æ‰§è¡Œå‡½æ•°*/
 void __init softirq_init(void)
 {
 	int cpu;
 
-	//³õÊ¼»¯Ã¿CPUÉÏµÄ¸ß¼¶¡¢ÆÕÍ¨taskletÁ´±í
+	//åˆå§‹åŒ–æ¯CPUä¸Šçš„é«˜çº§ã€æ™®é€štaskleté“¾è¡¨
 	for_each_possible_cpu(cpu) {
 		per_cpu(tasklet_vec, cpu).tail =
 			&per_cpu(tasklet_vec, cpu).head;
@@ -684,8 +684,8 @@ void __init softirq_init(void)
 			&per_cpu(tasklet_hi_vec, cpu).head;
 	}
 
-	//×¢²átaskletÈíÖĞ¶Ï
-	/*ÓÃÀ´¸øTASKLET_SOFTIRQºÍHI_SOFTIRQ°²×°¶ÔÓ¦µÄÖ´ĞĞº¯Êı*/
+	//æ³¨å†Œtaskletè½¯ä¸­æ–­
+	/*ç”¨æ¥ç»™TASKLET_SOFTIRQå’ŒHI_SOFTIRQå®‰è£…å¯¹åº”çš„æ‰§è¡Œå‡½æ•°*/
 	open_softirq(TASKLET_SOFTIRQ, tasklet_action);
 	open_softirq(HI_SOFTIRQ, tasklet_hi_action);
 }

@@ -376,12 +376,12 @@ int sysfs_add_file(struct dentry * dir, const struct attribute * attr, int type)
  *	@attr:	atrribute descriptor.
  */
 
-/* ÔÚsysÎÄ¼þÏµÍ³ÖÐ¸økobject´´½¨Ò»¸öÄ¿Â¼ */
+/* åœ¨sysæ–‡ä»¶ç³»ç»Ÿä¸­ç»™kobjectåˆ›å»ºä¸€ä¸ªç›®å½• */
 int sysfs_create_file(struct kobject * kobj, const struct attribute * attr)
 {
 	BUG_ON(!kobj || !kobj->dentry || !attr);
 
-        /* ÔÚÄÚºËËùÔÚ¶ÔÏóµÄÄ¿Â¼ÖÐ´´½¨»ù±¾ÊôÐÔÎÄ¼þ */
+        /* åœ¨å†…æ ¸æ‰€åœ¨å¯¹è±¡çš„ç›®å½•ä¸­åˆ›å»ºåŸºæœ¬å±žæ€§æ–‡ä»¶ */
 	return sysfs_add_file(kobj->dentry, attr, SYSFS_KOBJ_ATTR);
 
 }

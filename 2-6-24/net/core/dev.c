@@ -1758,8 +1758,8 @@ DEFINE_PER_CPU(struct netif_rx_stats, netdev_rx_stat) = { 0, };
  */
 
 /**
- * ´«Í³·½·¨´¦Àí±¨ÎÄµÄÍøÂç²ã´úÂë
- * ½«½ÓÊÕµ½µÄ±¨ÎÄ·Åµ½ÌØ¶¨CPUµÄµÈ´ý¶ÓÁÐÖÐ£¬²¢ÍË³öÖÐ¶ÏÉÏÏÂÎÄ
+ * ä¼ ç»Ÿæ–¹æ³•å¤„ç†æŠ¥æ–‡çš„ç½‘ç»œå±‚ä»£ç 
+ * å°†æŽ¥æ”¶åˆ°çš„æŠ¥æ–‡æ”¾åˆ°ç‰¹å®šCPUçš„ç­‰å¾…é˜Ÿåˆ—ä¸­ï¼Œå¹¶é€€å‡ºä¸­æ–­ä¸Šä¸‹æ–‡
  */
 int netif_rx(struct sk_buff *skb)
 {
@@ -1767,36 +1767,36 @@ int netif_rx(struct sk_buff *skb)
 	unsigned long flags;
 
 	/* if netpoll wants it, pretend we never saw it */
-	if (netpoll_rx(skb))/* netpoll¹¦ÄÜÐèÒª´¦Àí¸Ã±¨ÎÄ£¬ÍË³ö¡£¸Ã¹¦ÄÜÓÃÓÚÄÚºËµ÷ÊÔ */
+	if (netpoll_rx(skb))/* netpollåŠŸèƒ½éœ€è¦å¤„ç†è¯¥æŠ¥æ–‡ï¼Œé€€å‡ºã€‚è¯¥åŠŸèƒ½ç”¨äºŽå†…æ ¸è°ƒè¯• */
 		return NET_RX_DROP;
 
-	if (!skb->tstamp.tv64)/* ¼ÇÂ¼±¨ÎÄÊ±¼ä´Á */
+	if (!skb->tstamp.tv64)/* è®°å½•æŠ¥æ–‡æ—¶é—´æˆ³ */
 		net_timestamp(skb);
 
 	/*
 	 * The code is rearranged so that the path is the most
 	 * short when CPU is congested, but is still operating.
 	 */
-	local_irq_save(flags);/* ¹Ø±ÕÖÐ¶Ï */
+	local_irq_save(flags);/* å…³é—­ä¸­æ–­ */
 	queue = &__get_cpu_var(softnet_data);
 
 	__get_cpu_var(netdev_rx_stat).total++;
-	/* ±¾µØ±¨ÎÄ»º³å¶ÓÁÐ»¹¿ÉÒÔ±£´æÊý¾Ý */
+	/* æœ¬åœ°æŠ¥æ–‡ç¼“å†²é˜Ÿåˆ—è¿˜å¯ä»¥ä¿å­˜æ•°æ® */
 	if (queue->input_pkt_queue.qlen <= netdev_max_backlog) {
-		if (queue->input_pkt_queue.qlen) {/* »º³å¶ÓÁÐÖÐÒÑ¾­ÓÐÊý¾ÝÁË£¬²»±Ø´¥·¢ÈíÖÐ¶Ï */
+		if (queue->input_pkt_queue.qlen) {/* ç¼“å†²é˜Ÿåˆ—ä¸­å·²ç»æœ‰æ•°æ®äº†ï¼Œä¸å¿…è§¦å‘è½¯ä¸­æ–­ */
 enqueue:
-			dev_hold(skb->dev);/* ÒýÓÃÉè±¸²¢½«±¨ÎÄÌí¼Óµ½¶ÓÁÐÖÐ */
+			dev_hold(skb->dev);/* å¼•ç”¨è®¾å¤‡å¹¶å°†æŠ¥æ–‡æ·»åŠ åˆ°é˜Ÿåˆ—ä¸­ */
 			__skb_queue_tail(&queue->input_pkt_queue, skb);
 			local_irq_restore(flags);
 			return NET_RX_SUCCESS;
 		}
 
-		/* µÚÒ»´Î½«±¨ÎÄÌí¼Óµ½¶ÓÁÐÖÐ£¬´¥·¢ÈíÖÐ¶Ï¡£ÈíÖÐ¶Ï´¦Àíº¯ÊýÊÇnet_rx_action */
+		/* ç¬¬ä¸€æ¬¡å°†æŠ¥æ–‡æ·»åŠ åˆ°é˜Ÿåˆ—ä¸­ï¼Œè§¦å‘è½¯ä¸­æ–­ã€‚è½¯ä¸­æ–­å¤„ç†å‡½æ•°æ˜¯net_rx_action */
 		napi_schedule(&queue->backlog);
 		goto enqueue;
 	}
 
-	/* »º³åÇøÒÑ¾­ÂúÁË£¬¶ªÆú±¨ÎÄ²¢ÊÍ·Å±¨ÎÄ */
+	/* ç¼“å†²åŒºå·²ç»æ»¡äº†ï¼Œä¸¢å¼ƒæŠ¥æ–‡å¹¶é‡Šæ”¾æŠ¥æ–‡ */
 	__get_cpu_var(netdev_rx_stat).dropped++;
 	local_irq_restore(flags);
 
@@ -2109,7 +2109,7 @@ out:
 }
 
 /**
- * ´«Í³·½·¨¶Ô±¨ÎÄµÄÈíÖÐ¶Ï´¦Àí
+ * ä¼ ç»Ÿæ–¹æ³•å¯¹æŠ¥æ–‡çš„è½¯ä¸­æ–­å¤„ç†
  */
 static int process_backlog(struct napi_struct *napi, int quota)
 {
@@ -2118,12 +2118,12 @@ static int process_backlog(struct napi_struct *napi, int quota)
 	unsigned long start_time = jiffies;
 
 	napi->weight = weight_p;
-	do {/* ´¦ÀíËùÓÐ±¨ÎÄ£¬Ö±µ½³¬Ê±»òÕß´ïµ½Åä¶î */
+	do {/* å¤„ç†æ‰€æœ‰æŠ¥æ–‡ï¼Œç›´åˆ°è¶…æ—¶æˆ–è€…è¾¾åˆ°é…é¢ */
 		struct sk_buff *skb;
 		struct net_device *dev;
 
 		local_irq_disable();
-		/* È¡³ö±¨ÎÄ */
+		/* å–å‡ºæŠ¥æ–‡ */
 		skb = __skb_dequeue(&queue->input_pkt_queue);
 		if (!skb) {
 			__napi_complete(napi);
@@ -2135,7 +2135,7 @@ static int process_backlog(struct napi_struct *napi, int quota)
 
 		dev = skb->dev;
 
-		/* ½«±¨ÎÄ·Ö·¢µ½Ð­ÒéÕ» */
+		/* å°†æŠ¥æ–‡åˆ†å‘åˆ°åè®®æ ˆ */
 		netif_receive_skb(skb);
 
 		dev_put(dev);
@@ -2163,7 +2163,7 @@ EXPORT_SYMBOL(__napi_schedule);
 
 
 /**
- * ´¦Àí±¨ÎÄµÄÈíÖÐ¶Ï
+ * å¤„ç†æŠ¥æ–‡çš„è½¯ä¸­æ–­
  */
 static void net_rx_action(struct softirq_action *h)
 {
@@ -2174,7 +2174,7 @@ static void net_rx_action(struct softirq_action *h)
 
 	local_irq_disable();
 
-	/* ±éÀú±¾µØ¶ÓÁÐÖÐ£¬ËùÓÐÐèÒª´¦ÀíµÄÉè±¸ */
+	/* éåŽ†æœ¬åœ°é˜Ÿåˆ—ä¸­ï¼Œæ‰€æœ‰éœ€è¦å¤„ç†çš„è®¾å¤‡ */
 	while (!list_empty(list)) {
 		struct napi_struct *n;
 		int work, weight;
@@ -2186,7 +2186,7 @@ static void net_rx_action(struct softirq_action *h)
 		 * jiffies to pass before breaking out.  The test
 		 * used to be "jiffies - start_time > 1".
 		 */
-		if (unlikely(budget <= 0 || jiffies != start_time))/* ³¬¹ý´¦ÀíÅä¶îÁË */
+		if (unlikely(budget <= 0 || jiffies != start_time))/* è¶…è¿‡å¤„ç†é…é¢äº† */
 			goto softnet_break;
 
 		local_irq_enable();
@@ -2209,7 +2209,7 @@ static void net_rx_action(struct softirq_action *h)
 		 * accidently calling ->poll() when NAPI is not scheduled.
 		 */
 		work = 0;
-		if (test_bit(NAPI_STATE_SCHED, &n->state))/* µ÷ÓÃÉè±¸µÄ´¦Àí»Øµ÷£¬¶Ô´«Í³Éè±¸À´ÊÇ£¬ÊÇprocess_backlog */
+		if (test_bit(NAPI_STATE_SCHED, &n->state))/* è°ƒç”¨è®¾å¤‡çš„å¤„ç†å›žè°ƒï¼Œå¯¹ä¼ ç»Ÿè®¾å¤‡æ¥æ˜¯ï¼Œæ˜¯process_backlog */
 			work = n->poll(n, weight);
 
 		WARN_ON_ONCE(work > weight);

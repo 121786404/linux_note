@@ -21,7 +21,7 @@
 #include <asm/atomic.h>
 
 /**
- * 引用计数对象 
+ * 寮曠敤璁℃暟瀵硅薄 
  */
 struct kref {
 	atomic_t refcount;

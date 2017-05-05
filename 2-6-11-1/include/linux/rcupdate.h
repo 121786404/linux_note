@@ -48,7 +48,7 @@
  * @func: actual update function to call after the grace period.
  */
 
-/* rcu机制结构 */
+/* rcu鏈哄埗缁撴瀯 */
 struct rcu_head {
 	struct rcu_head *next;
 	void (*func)(struct rcu_head *head);

@@ -30,17 +30,17 @@ typedef int (*wait_queue_func_t)(wait_queue_t *wait, unsigned mode, int sync, vo
 int default_wake_function(wait_queue_t *wait, unsigned mode, int sync, void *key);
 
 /**
- * µÈ´ı¶ÓÁĞÖĞµÄÈÎÎñ
+ * ç­‰å¾…é˜Ÿåˆ—ä¸­çš„ä»»åŠ¡
  */
 struct __wait_queue {
-	/* µÈ´ı±êÖ¾£¬ÈçWQ_FLAG_EXCLUSIVE */
+	/* ç­‰å¾…æ ‡å¿—ï¼Œå¦‚WQ_FLAG_EXCLUSIVE */
 	unsigned int flags;
 #define WQ_FLAG_EXCLUSIVE	0x01
-	/* Ë½ÓĞÊı¾İ£¬Ò»°ãÊÇµÈ´ıÈÎÎñ */
+	/* ç§æœ‰æ•°æ®ï¼Œä¸€èˆ¬æ˜¯ç­‰å¾…ä»»åŠ¡ */
 	void *private;
-	/* »Øµ÷º¯Êı */
+	/* å›è°ƒå‡½æ•° */
 	wait_queue_func_t func;
-	/* Í¨¹ı´Ë×Ö¶Î½«½á¹¹·Åµ½¶ÓÁĞÖĞ */
+	/* é€šè¿‡æ­¤å­—æ®µå°†ç»“æ„æ”¾åˆ°é˜Ÿåˆ—ä¸­ */
 	struct list_head task_list;
 };
 
@@ -54,11 +54,11 @@ struct wait_bit_queue {
 	wait_queue_t wait;
 };
 
-/* µÈ´ı¶ÓÁĞÃèÊö·û */
+/* ç­‰å¾…é˜Ÿåˆ—æè¿°ç¬¦ */
 struct __wait_queue_head {
-	/* ±£»¤µÈ´ı¶ÓÁĞµÄ×ÔĞıËø */
+	/* ä¿æŠ¤ç­‰å¾…é˜Ÿåˆ—çš„è‡ªæ—‹é” */
 	spinlock_t lock;
-	/* µÈ´ı¶ÓÁĞÍ·£¬Æä³ÉÔ±ÊÇ__wait_queue */
+	/* ç­‰å¾…é˜Ÿåˆ—å¤´ï¼Œå…¶æˆå‘˜æ˜¯__wait_queue */
 	struct list_head task_list;
 };
 typedef struct __wait_queue_head wait_queue_head_t;

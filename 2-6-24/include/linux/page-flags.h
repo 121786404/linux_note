@@ -67,43 +67,43 @@
  * FLAGS_RESERVED which defines the width of the fields section
  * (see linux/mmzone.h).  New flags must _not_ overlap with this area.
  */
-/* Ò³ÃæÊÇ·ñ±»Ëø¶¨¡£µ±´Ó´ÅÅÌ¶ÁÈ¡Êı¾İ½øÄÚ´æÊ±£¬»áËø¶¨Ò³Ãæ¡£ */
+/* é¡µé¢æ˜¯å¦è¢«é”å®šã€‚å½“ä»ç£ç›˜è¯»å–æ•°æ®è¿›å†…å­˜æ—¶ï¼Œä¼šé”å®šé¡µé¢ã€‚ */
 #define PG_locked	 	 0	/* Page is locked. Don't touch. */
-/* ¸ÃÒ³IO²Ù×÷ÆÚ¼ä·¢Éú´íÎó */
+/* è¯¥é¡µIOæ“ä½œæœŸé—´å‘ç”Ÿé”™è¯¯ */
 #define PG_error		 1
 /**
- * ¸Ã±êÖ¾ÓëPG_activeÒ»Æğ£¬¿ØÖÆÊ¹ÓÃ¸ÃÒ³µÄ»îÔ¾³Ì¶È£¬ÔÚÒ³½»»»Ê±ÓĞÓÃ 
- * ÄÚºËÃ¿´Î·ÃÎÊÁËÄ³Ò³Ê±ÉèÖÃ´Ë±êÖ¾
+ * è¯¥æ ‡å¿—ä¸PG_activeä¸€èµ·ï¼Œæ§åˆ¶ä½¿ç”¨è¯¥é¡µçš„æ´»è·ƒç¨‹åº¦ï¼Œåœ¨é¡µäº¤æ¢æ—¶æœ‰ç”¨ 
+ * å†…æ ¸æ¯æ¬¡è®¿é—®äº†æŸé¡µæ—¶è®¾ç½®æ­¤æ ‡å¿—
  */
 #define PG_referenced		 2
-/* Êı¾İÓë´ÅÅÌÒ»ÖÂ£¬µ±³É¹¦´Ó´ÅÅÌ¶ÁÈ¡Êı¾İºóÉèÖÃ´Ë±êÖ¾ */
+/* æ•°æ®ä¸ç£ç›˜ä¸€è‡´ï¼Œå½“æˆåŠŸä»ç£ç›˜è¯»å–æ•°æ®åè®¾ç½®æ­¤æ ‡å¿— */
 #define PG_uptodate		 3
 
-/* Ò³ÃæÒÑ¾­±»¸ÄĞ´£¬µ«ÊÇ»¹Ã»ÓĞĞ´»Øµ½´ÅÅÌ */
+/* é¡µé¢å·²ç»è¢«æ”¹å†™ï¼Œä½†æ˜¯è¿˜æ²¡æœ‰å†™å›åˆ°ç£ç›˜ */
 #define PG_dirty	 	 4
-/* Ò³ÃæÎ»ÓÚÁ½¸öÁ´±íÖĞ:»î¶¯Á´±í»ò·Ç»î¶¯Á´±í */
+/* é¡µé¢ä½äºä¸¤ä¸ªé“¾è¡¨ä¸­:æ´»åŠ¨é“¾è¡¨æˆ–éæ´»åŠ¨é“¾è¡¨ */
 #define PG_lru			 5
 #define PG_active		 6
-/* Ò³ÃæÊôÓÚslab·ÖÅäÆ÷ */
+/* é¡µé¢å±äºslabåˆ†é…å™¨ */
 #define PG_slab			 7	/* slab debug (Suparna wants this) */
 
 #define PG_owner_priv_1		 8	/* Owner use. If pagecache, fs may use*/
 #define PG_arch_1		 9
 #define PG_reserved		10
-/* Ò³Ãæprivate³ÉÔ±·Ç¿Õ£¬±ØĞëÉèÖÃ´ËÒ³¡£ÓÃÓÚ´æ´¢»º³åÇø»òÆäËûÏµÍ³(ÈçNFS) */
+/* é¡µé¢privateæˆå‘˜éç©ºï¼Œå¿…é¡»è®¾ç½®æ­¤é¡µã€‚ç”¨äºå­˜å‚¨ç¼“å†²åŒºæˆ–å…¶ä»–ç³»ç»Ÿ(å¦‚NFS) */
 #define PG_private		11	/* If pagecache, has fs-private data */
 
-/* ÕıÔÚ»ØĞ´Ò³ÃæÄÚÈİµ½´ÅÅÌ */
+/* æ­£åœ¨å›å†™é¡µé¢å†…å®¹åˆ°ç£ç›˜ */
 #define PG_writeback		12	/* Page is under writeback */
-/* ¸ÃÒ³ÊôÓÚ×éºÏÒ³ */
+/* è¯¥é¡µå±äºç»„åˆé¡µ */
 #define PG_compound		14	/* Part of a compound page */
-/* Ò³ÊôĞÔ½»»»»º´æ£¬´ËÊ±ÔÚprivate±£´æÁËswp_entry_t */
+/* é¡µå±æ€§äº¤æ¢ç¼“å­˜ï¼Œæ­¤æ—¶åœ¨privateä¿å­˜äº†swp_entry_t */
 #define PG_swapcache		15	/* Swap page: swp_entry_t in private */
 
 #define PG_mappedtodisk		16	/* Has blocks allocated on-disk */
-/* ÔÚÄÚ´æ½ôÕÅÊ±£¬ÄÚºË¾ö¶¨»ØÊÕ´ËÒ³ */
+/* åœ¨å†…å­˜ç´§å¼ æ—¶ï¼Œå†…æ ¸å†³å®šå›æ”¶æ­¤é¡µ */
 #define PG_reclaim		17	/* To be reclaimed asap */
-/* Ò³¿ÕÏĞÇÒ°üº¬ÔÚ»ï°éÏµÍ³ÖĞ */
+/* é¡µç©ºé—²ä¸”åŒ…å«åœ¨ä¼™ä¼´ç³»ç»Ÿä¸­ */
 #define PG_buddy		19	/* Page is free, on buddy lists */
 
 /* PG_readahead is only used for file reads; PG_reclaim is only for writes */

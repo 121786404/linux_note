@@ -42,11 +42,11 @@
 #define DMAPOOL_DEBUG 1
 #endif
 /**
- * ��������������Ҫ�ֶ���С��һ��ӳ���ڴ������DMA�����ӻ�I/O
- * ����buffer����ʹ��DMA�ر���dma_alloc_coherent�����һҳ���
- * ҳ�ڴ�����ã�DMA���ú���dma_pool_create�������ú���
- * dma_pool_alloc��DMA���з���һ��һ���ڴ棬�ú���dmp_pool_free
- * ���ڴ�ص�DMA���У�ʹ�ú���dma_pool_destory�ͷ�DMA�ص���Դ��
+ * 许多驱动程序需要又多又小的一致映射内存区域给DMA描述子或I/O
+ * 缓存buffer，这使用DMA池比用dma_alloc_coherent分配的一页或多
+ * 页内存区域好，DMA池用函数dma_pool_create创建，用函数
+ * dma_pool_alloc从DMA池中分配一块一致内存，用函数dmp_pool_free
+ * 放内存回到DMA池中，使用函数dma_pool_destory释放DMA池的资源。
  */
 
 struct dma_pool {		/* the pool */
@@ -136,18 +136,18 @@ static DEVICE_ATTR(pools, S_IRUGO, show_pools, NULL);
  * boundaries of 4KBytes.
  */
 /**
- *����dma_pool_create��DMA����һ��һ���ڴ��أ������name
- *��DMA�ص����֣���������ã�����dev�ǽ�ִ��DMA���̵��豸������
- *size��DMA����Ŀ�Ĵ�С������align�ǿ�Ķ���Ҫ����2���ݣ�
- *����allocation����û�п�Խ�߽�Ŀ�������0��
+ *函数dma_pool_create给DMA创建一个一致内存块池，其参数name
+ *是DMA池的名字，用于诊断用，参数dev是将执行DMA过程的设备，参数
+ *size是DMA池里的块的大小，参数align是块的对齐要求，是2的幂，
+ *参数allocation返回没有跨越边界的块数（或0）
  *
- *����dma_pool_create���ش����Ĵ���Ҫ���ַ�����DMA�أ�������
- *ʧ�ܷ���null���Ա�����DMA�أ�����dma_pool_alloc����������
- *�ڴ棬��Щ�ڴ涼��һ��DMAӳ�䣬�ɱ��豸���ʣ���û��ʹ�û���
- *ˢ�»��ƣ���Ϊ����ԭ�򣬷���Ŀ��ʵ�ʳߴ������Ĵ����
- *�����0���ڴ棬�Ӻ���dma_pool_alloc���صĶ��󽫲���Խsize
- *�߽磨�粻��Խ4K�ֽڱ߽磩������ڸ����DMA�������е�ַ����
- *���豸��˵�������ġ�
+ *函数dma_pool_create返回创建的带有要求字符串的DMA池，若创建
+ *失败返回null。对被给的DMA池，函数dma_pool_alloc被用来分配
+ *内存，这些内存都是一致DMA映射，可被设备访问，且没有使用缓存
+ *刷新机制，因为对齐原因，分配的块的实际尺寸比请求的大。如果
+ *分配非0的内存，从函数dma_pool_alloc返回的对象将不跨越size
+ *边界（如不跨越4K字节边界）。这对在个体的DMA传输上有地址限制
+ *的设备来说是有利的。
  */
 struct dma_pool *dma_pool_create(const char *name, struct device *dev,
 				 size_t size, size_t align, size_t boundary)
@@ -166,7 +166,7 @@ struct dma_pool *dma_pool_create(const char *name, struct device *dev,
 	else if (size < 4)
 		size = 4;
 
-	/* ���봦�� */
+	/* 对齐处理 */
 	if ((size % align) != 0)
 		size = ALIGN(size, align);
 
@@ -177,7 +177,7 @@ struct dma_pool *dma_pool_create(const char *name, struct device *dev,
 	else if ((boundary < size) || (boundary & (boundary - 1)))
 		return NULL;
 
-	/* ����dma_pool�ṹ����ռ� */
+	/* 分配dma_pool结构对象空间 */
 	retval = kmalloc_node(sizeof(*retval), GFP_KERNEL, dev_to_node(dev));
 	if (!retval)
 		return retval;
@@ -186,7 +186,7 @@ struct dma_pool *dma_pool_create(const char *name, struct device *dev,
 
 	retval->dev = dev;
 
-	/* ��ʼ��dma_pool�ṹ����retval */
+	/* 初始化dma_pool结构对象retval */
 	INIT_LIST_HEAD(&retval->page_list);
 	spin_lock_init(&retval->lock);
 	retval->size = size;
@@ -292,7 +292,7 @@ static void pool_free_page(struct dma_pool *pool, struct dma_page *page)
  * and that nothing will try to use the pool after this call.
  */
 /**
- * �ͷ�DMA�ڴ����ء�
+ * 释放DMA内存分配池。
  */
 void dma_pool_destroy(struct dma_pool *pool)
 {
@@ -345,14 +345,14 @@ EXPORT_SYMBOL(dma_pool_destroy);
  * If such a memory block can't be allocated, %NULL is returned.
  */
 /**
- *����dma_pool_alloc��DMA���з���һ��һ���ڴ棬�����pool
- *�ǽ��������DMA�أ�����mem_flags��GFP_*λ���룬����handle
- *��ָ����DMA��ַ������dma_pool_alloc���ص�ǰû�õĿ��
- *�ں������ַ����ͨ��handle��������DMA��ַ������ڴ��
- *���ܱ����䣬����null
+ *函数dma_pool_alloc从DMA池中分配一块一致内存，其参数pool
+ *是将产生块的DMA池，参数mem_flags是GFP_*位掩码，参数handle
+ *是指向块的DMA地址，函数dma_pool_alloc返回当前没用的块的
+ *内核虚拟地址，并通过handle给出它的DMA地址，如果内存块
+ *不能被分配，返回null
  *
- *����dma_pool_alloc������dma_alloc_coherentҳ������������С��
- *�����ױ����ߵ���������ʹ�á�����ܹ���slab������������
+ *函数dma_pool_alloc包裹了dma_alloc_coherent页分配器，这样小块
+ *更容易被总线的主控制器使用。这可能共享slab分配器的内容
  */
 void *dma_pool_alloc(struct dma_pool *pool, gfp_t mem_flags,
 		     dma_addr_t *handle)
@@ -384,9 +384,9 @@ void *dma_pool_alloc(struct dma_pool *pool, gfp_t mem_flags,
 	page->in_use++;
 	offset = page->offset;
 	page->offset = *(int *)(page->vaddr + offset);
-	/* ���������ַ */
+	/* 返回虚拟地址 */
 	retval = offset + page->vaddr;
-	/* ���DMA��ַ */
+	/* 相对DMA地址 */
 	*handle = offset + page->dma;
 #ifdef	DMAPOOL_DEBUG
 	{
@@ -448,7 +448,7 @@ static struct dma_page *pool_find_page(struct dma_pool *pool, dma_addr_t dma)
  * unless it is first re-allocated.
  */
 /**
- * �ͷ�DMA�ڴ档
+ * 释放DMA内存。
  */
 void dma_pool_free(struct dma_pool *pool, void *vaddr, dma_addr_t dma)
 {

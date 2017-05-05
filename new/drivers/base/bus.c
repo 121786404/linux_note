@@ -126,7 +126,7 @@ static const struct sysfs_ops bus_sysfs_ops = {
 	.store	= bus_attr_store,
 };
 
-/*Éú³ÉbusµÄÊôĞÔÎÄ¼ş*/
+/*ç”Ÿæˆbusçš„å±æ€§æ–‡ä»¶*/
 int bus_create_file(struct bus_type *bus, struct bus_attribute *attr)
 {
 	int error;
@@ -162,25 +162,25 @@ static struct kobj_type bus_ktype = {
 	.release	= bus_release,
 };
 
-/*¾ö¶¨ÊÇ·ñÏòÓÃ»§¿Õ¼ä·¢ËÍueventÏûÏ¢*/
+/*å†³å®šæ˜¯å¦å‘ç”¨æˆ·ç©ºé—´å‘é€ueventæ¶ˆæ¯*/
 static int bus_uevent_filter(struct kset *kset, struct kobject *kobj)
 {
 	struct kobj_type *ktype = get_ktype(kobj);
 
 	if (ktype == &bus_ktype)
 		return 1;
-	/*Èç¹ûÒªÇó·¢ËÍueventÏûÏ¢µÄkobj¶ÔÏóÀàĞÍ²»ÊÇ×ÜÏßÀàĞÍ,ÄÇÃ´º¯Êı½«·µ»Ø0,ÒâÎ¶×Åuevent
-	 *ÒâÎ¶×ÅueventÏûÏ¢½«²»»á·¢ËÍµ½ÓÃ»§¿Õ¼ä,ËùÒÔbus_uevent_opsÊ¹µÃbus_ksetÖ»ÓÃÀ´·¢ËÍ
-	 *busÀàĞÍµÄÄÚºËÄÚºË¶ÔÏó²úÉúµÄueventÏûÏ¢*/
+	/*å¦‚æœè¦æ±‚å‘é€ueventæ¶ˆæ¯çš„kobjå¯¹è±¡ç±»å‹ä¸æ˜¯æ€»çº¿ç±»å‹,é‚£ä¹ˆå‡½æ•°å°†è¿”å›0,æ„å‘³ç€uevent
+	 *æ„å‘³ç€ueventæ¶ˆæ¯å°†ä¸ä¼šå‘é€åˆ°ç”¨æˆ·ç©ºé—´,æ‰€ä»¥bus_uevent_opsä½¿å¾—bus_ksetåªç”¨æ¥å‘é€
+	 *busç±»å‹çš„å†…æ ¸å†…æ ¸å¯¹è±¡äº§ç”Ÿçš„ueventæ¶ˆæ¯*/
 	return 0;
 }
 
-/*¶¥²ãksetµÄÊÂ¼ş´¦Àíº¯Êı*/
+/*é¡¶å±‚ksetçš„äº‹ä»¶å¤„ç†å‡½æ•°*/
 static const struct kset_uevent_ops bus_uevent_ops = {
-	.filter = bus_uevent_filter,/*¾ö¶¨ÊÇ·ñÏòÓÃ»§¿Õ¼ä·¢ËÍueventÏûÏ¢*/
+	.filter = bus_uevent_filter,/*å†³å®šæ˜¯å¦å‘ç”¨æˆ·ç©ºé—´å‘é€ueventæ¶ˆæ¯*/
 };
 
-/*busµÄ¶¥²ãkset*/
+/*busçš„é¡¶å±‚kset*/
 static struct kset *bus_kset;
 
 /* Manually detach a device from its associated driver. */
@@ -242,18 +242,18 @@ static ssize_t bind_store(struct device_driver *drv, const char *buf,
 }
 static DRIVER_ATTR_WO(bind);
 
-/*ÏÔÊ¾×ÜÏßÊôĞÔµÄº¯Êı*/
+/*æ˜¾ç¤ºæ€»çº¿å±æ€§çš„å‡½æ•°*/
 static ssize_t show_drivers_autoprobe(struct bus_type *bus, char *buf)
 {
 	return sprintf(buf, "%d\n", bus->p->drivers_autoprobe);
 }
 
-/*ĞŞ¸Ä×ÜÏßÊôĞÔµÄº¯Êı*/
+/*ä¿®æ”¹æ€»çº¿å±æ€§çš„å‡½æ•°*/
 static ssize_t store_drivers_autoprobe(struct bus_type *bus,
 				       const char *buf, size_t count)
 {
 	if (buf[0] == '0')
-		/*ÊÇ·ñ½øĞĞÉè±¸ÓëÇı¶¯µÄ°ó¶¨¹¤×÷*/
+		/*æ˜¯å¦è¿›è¡Œè®¾å¤‡ä¸é©±åŠ¨çš„ç»‘å®šå·¥ä½œ*/
 		bus->p->drivers_autoprobe = 0;
 	else
 		bus->p->drivers_autoprobe = 1;
@@ -317,7 +317,7 @@ int bus_for_each_dev(struct bus_type *bus, struct device *start,
 	if (!bus || !bus->p)
 		return -EINVAL;
 
-	/*³õÊ¼»¯Ò»¸öklist,´ÓÉè±¸start¿ªÊ¼*/
+	/*åˆå§‹åŒ–ä¸€ä¸ªklist,ä»è®¾å¤‡startå¼€å§‹*/
 	klist_iter_init_node(&bus->p->klist_devices, &i,
 			     (start ? &start->p->knode_bus : NULL));
 	while ((dev = next_device(&i)) && !error)
@@ -458,7 +458,7 @@ static struct device_driver *next_driver(struct klist_iter *i)
  * in the callback. It must also be sure to increment the refcount
  * so it doesn't disappear before returning to the caller.
  */
-/*±éÀúdevËùÔÚ×ÜÏßdev->busÉÏ¹ÒÔØµÄËùÓĞÇı¶¯³ÌĞò¶ÔÏó*/
+/*éå†devæ‰€åœ¨æ€»çº¿dev->busä¸ŠæŒ‚è½½çš„æ‰€æœ‰é©±åŠ¨ç¨‹åºå¯¹è±¡*/
 int bus_for_each_drv(struct bus_type *bus, struct device_driver *start,
 		     void *data, int (*fn)(struct device_driver *, void *))
 {
@@ -557,7 +557,7 @@ out_put:
  *
  * - Automatically probe for a driver if the bus allows it.
  */
-/*Ò»¸öÌåÏÖÉè±¸Çı¶¯Ä£ĞÍÖĞ×ÜÏß Éè±¸ÓëÇı¶¯Ïà»¥¹µÍ¨µÄÖØÒªº¯Êı*/
+/*ä¸€ä¸ªä½“ç°è®¾å¤‡é©±åŠ¨æ¨¡å‹ä¸­æ€»çº¿ è®¾å¤‡ä¸é©±åŠ¨ç›¸äº’æ²Ÿé€šçš„é‡è¦å‡½æ•°*/
 void bus_probe_device(struct device *dev)
 {
 	struct bus_type *bus = dev->bus;
@@ -634,7 +634,7 @@ static void remove_bind_files(struct device_driver *drv)
 }
 
 static BUS_ATTR(drivers_probe, S_IWUSR, NULL, store_drivers_probe);
-/*±íÃ÷¶ÔrootÓÃ»§¶øÑÔ¾ßÓĞ¶ÁÓëĞ´µÄÈ¨ÏŞ*/
+/*è¡¨æ˜å¯¹rootç”¨æˆ·è€Œè¨€å…·æœ‰è¯»ä¸å†™çš„æƒé™*/
 static BUS_ATTR(drivers_autoprobe, S_IWUSR | S_IRUGO,
 		show_drivers_autoprobe, store_drivers_autoprobe);
 
@@ -642,7 +642,7 @@ static int add_probe_files(struct bus_type *bus)
 {
 	int retval;
 
-	/*Éú³É×ÜÏßÊôĞÔÎÄ¼ş*/
+	/*ç”Ÿæˆæ€»çº¿å±æ€§æ–‡ä»¶*/
 	retval = bus_create_file(bus, &bus_attr_drivers_probe);
 	if (retval)
 		goto out;
@@ -686,7 +686,7 @@ static void driver_attach_async(void *_drv, async_cookie_t cookie)
  * bus_add_driver - Add a driver to the bus.
  * @drv: driver.
  */
-/*½øĞĞÊµ¼ÊµÄÇı¶¯×¢²á*/
+/*è¿›è¡Œå®é™…çš„é©±åŠ¨æ³¨å†Œ*/
 int bus_add_driver(struct device_driver *drv)
 {
 	struct bus_type *bus;
@@ -699,19 +699,19 @@ int bus_add_driver(struct device_driver *drv)
 
 	pr_debug("bus: '%s': add driver %s\n", bus->name, drv->name);
 
-	/*Ê×ÏÈ·ÖÅäÁËÒ»¿éÀàĞÍÎªstruct driver_privateµÄ¿Õ¼ä¶ÔÏópriv*/
+	/*é¦–å…ˆåˆ†é…äº†ä¸€å—ç±»å‹ä¸ºstruct driver_privateçš„ç©ºé—´å¯¹è±¡priv*/
 	priv = kzalloc(sizeof(*priv), GFP_KERNEL);
 	if (!priv) {
 		error = -ENOMEM;
 		goto out_put_bus;
 	}
 	klist_init(&priv->klist_devices, NULL, NULL);
-	/*½«privÓëdrv¶ÔÏó½¨Á¢ÁË¹ØÁª*/
+	/*å°†privä¸drvå¯¹è±¡å»ºç«‹äº†å…³è”*/
 	priv->driver = drv;
 	drv->p = priv;
 	priv->kobj.kset = bus->p->drivers_kset;
-	/*°ÑdrvËù¶ÔÓ¦µÄÄÚºË¶ÔÏó¼ÓÈëµ½sysfsÎÄ¼şÊ÷ÖĞ,Èç´Ë½«ÔÚ/sys/bus/driversÄ¿Â¼ÏÂĞÂ½¨
-	 *Ò»Ä¿Â¼,ÆäÃû³ÆÎªdrv->name*/
+	/*æŠŠdrvæ‰€å¯¹åº”çš„å†…æ ¸å¯¹è±¡åŠ å…¥åˆ°sysfsæ–‡ä»¶æ ‘ä¸­,å¦‚æ­¤å°†åœ¨/sys/bus/driversç›®å½•ä¸‹æ–°å»º
+	 *ä¸€ç›®å½•,å…¶åç§°ä¸ºdrv->name*/
 	error = kobject_init_and_add(&priv->kobj, &driver_ktype, NULL,
 				     "%s", drv->name);
 	if (error)
@@ -731,7 +731,7 @@ int bus_add_driver(struct device_driver *drv)
 	}
 	module_add_driver(drv->owner, drv);
 
-	/*ÔÚĞÂ½¨µÄdrvÄ¿Â¼ÖĞÉú³ÉÊôĞÔÎÄ¼ş*/
+	/*åœ¨æ–°å»ºçš„drvç›®å½•ä¸­ç”Ÿæˆå±æ€§æ–‡ä»¶*/
 	error = driver_create_file(drv, &driver_attr_uevent);
 	if (error) {
 		printk(KERN_ERR "%s: uevent attr (%s) failed\n",
@@ -905,13 +905,13 @@ static BUS_ATTR(uevent, S_IWUSR, NULL, bus_uevent_store);
  * infrastructure, then register the children subsystems it has:
  * the devices and drivers that belong to the subsystem.
  */
-/*ÏòÏµÍ³×¢²áÒ»¸öbus*/
+/*å‘ç³»ç»Ÿæ³¨å†Œä¸€ä¸ªbus*/
 int bus_register(struct bus_type *bus)
 {
 	int retval;
 	struct subsys_private *priv;
 	struct lock_class_key *key = &bus->lock_key;
-	/*·ÖÅäÒ»¸östruct subsys_privateÀàĞÍµÄ¶ÔÏó*/
+	/*åˆ†é…ä¸€ä¸ªstruct subsys_privateç±»å‹çš„å¯¹è±¡*/
 	priv = kzalloc(sizeof(struct subsys_private), GFP_KERNEL);
 	if (!priv)
 		return -ENOMEM;
@@ -921,32 +921,32 @@ int bus_register(struct bus_type *bus)
 
 	BLOCKING_INIT_NOTIFIER_HEAD(&priv->bus_notifier);
 
-	/*ÎªbusËùÔÚµÄÄÚºË¶ÔÏóÉè¶¨Ãû³Æ,¸ÃÃû³Æ½«ÏÔÊ¾ÔÚsysfsÎÄ¼şÏµÍ³Ê÷ÖĞ*/
+	/*ä¸ºbusæ‰€åœ¨çš„å†…æ ¸å¯¹è±¡è®¾å®šåç§°,è¯¥åç§°å°†æ˜¾ç¤ºåœ¨sysfsæ–‡ä»¶ç³»ç»Ÿæ ‘ä¸­*/
 	retval = kobject_set_name(&priv->subsys.kobj, "%s", bus->name);
 	if (retval)
 		goto out;
 
-	/*bus×÷ÎªÒ»¸öksetÀàĞÍµÄÄÚºË¶ÔÏó,Æä¶ÔÏóÊôĞÔµÈÌØĞÔÌåÏÖÔÚstruct subsys_private¶ÔÏóµÄ
-	 *subsys³ÉÔ±ÖĞ,ÕâÊÇ¸öksetĞÍµÄ±äÁ¿,ËùÒÔ×¢²áÒ»¸öbus,½«Í¬Ê±¸³Óè¸ÃbusÌØ¶¨µÄÊôĞÔÌØÖÊ*/
-	 /*Ö¸Ã÷ÁËµ±Ç°×¢²áµÄbus¶ÔÏóËùÊôµÄÉÏ²ãkset¶ÔÏó,¾ÍÊÇbuses_initÖĞ´´½¨µÄÃûÎªbusµÄkset*/
+	/*busä½œä¸ºä¸€ä¸ªksetç±»å‹çš„å†…æ ¸å¯¹è±¡,å…¶å¯¹è±¡å±æ€§ç­‰ç‰¹æ€§ä½“ç°åœ¨struct subsys_privateå¯¹è±¡çš„
+	 *subsysæˆå‘˜ä¸­,è¿™æ˜¯ä¸ªksetå‹çš„å˜é‡,æ‰€ä»¥æ³¨å†Œä¸€ä¸ªbus,å°†åŒæ—¶èµ‹äºˆè¯¥busç‰¹å®šçš„å±æ€§ç‰¹è´¨*/
+	 /*æŒ‡æ˜äº†å½“å‰æ³¨å†Œçš„buså¯¹è±¡æ‰€å±çš„ä¸Šå±‚ksetå¯¹è±¡,å°±æ˜¯buses_initä¸­åˆ›å»ºçš„åä¸ºbusçš„kset*/
 	priv->subsys.kobj.kset = bus_kset;
-	/*Ö¸Ã÷ÁËµ±Ç°×¢²áµÄbusµÄÊôĞÔÀàĞÍbus_ktype,ºóÕß¶¨ÒåÁË¸ÃÌØ¶¨busÉÏµÄÒ»Ğ©Óë×ÜÏßÊôĞÔ
-	 *ÎÄ¼şÏà¹ØµÄ²Ù×÷*/
+	/*æŒ‡æ˜äº†å½“å‰æ³¨å†Œçš„busçš„å±æ€§ç±»å‹bus_ktype,åè€…å®šä¹‰äº†è¯¥ç‰¹å®šbusä¸Šçš„ä¸€äº›ä¸æ€»çº¿å±æ€§
+	 *æ–‡ä»¶ç›¸å…³çš„æ“ä½œ*/
 	priv->subsys.kobj.ktype = &bus_ktype;
 	priv->drivers_autoprobe = 1;
 
-	/*ÔÚkset/busÄ¿Â¼ÏÂÎªµ±Ç°×¢²áµÄbusÉú³ÉÒ»¸öĞÂµÄÄ¿Â¼,ÓÃÀ´½«µ±Ç°²Ù×÷µÄbusËù¶ÔÓ¦µÄkset
-	 *¼ÓÈëµ½sysfsÎÄ¼şÏµÍ³Ê÷ÖĞ*/
+	/*åœ¨kset/busç›®å½•ä¸‹ä¸ºå½“å‰æ³¨å†Œçš„busç”Ÿæˆä¸€ä¸ªæ–°çš„ç›®å½•,ç”¨æ¥å°†å½“å‰æ“ä½œçš„busæ‰€å¯¹åº”çš„kset
+	 *åŠ å…¥åˆ°sysfsæ–‡ä»¶ç³»ç»Ÿæ ‘ä¸­*/
 	retval = kset_register(&priv->subsys);
 	if (retval)
 		goto out;
 
-	/*Éú³ÉbusµÄÊôĞÔÎÄ¼ş*/
+	/*ç”Ÿæˆbusçš„å±æ€§æ–‡ä»¶*/
 	retval = bus_create_file(bus, &bus_attr_uevent);
 	if (retval)
 		goto bus_uevent_fail;
 
-	/*Îªµ±Ç°bus²úÉúÈİÄÉÉè±¸µÄksetÈİÆ÷,Ëü½«Éú³ÉÒ»¸ökset¶ÔÏó²¢½«Æä¼ÓÈëµ½sysfsÎÄ¼şÏµÍ³ÖĞ*/
+	/*ä¸ºå½“å‰busäº§ç”Ÿå®¹çº³è®¾å¤‡çš„ksetå®¹å™¨,å®ƒå°†ç”Ÿæˆä¸€ä¸ªksetå¯¹è±¡å¹¶å°†å…¶åŠ å…¥åˆ°sysfsæ–‡ä»¶ç³»ç»Ÿä¸­*/
 	priv->devices_kset = kset_create_and_add("devices", NULL,
 						 &priv->subsys.kobj);
 	if (!priv->devices_kset) {
@@ -954,7 +954,7 @@ int bus_register(struct bus_type *bus)
 		goto bus_devices_fail;
 	}
 
-	/*Îªµ±Ç°bus²úÉúÈİÄÉÇı¶¯µÄksetÈİÆ÷,Ëü½«Éú³ÉÒ»¸ökset¶ÔÏó²¢½«Æä¼ÓÈëµ½sysfsÎÄ¼şÏµÍ³ÖĞ**/
+	/*ä¸ºå½“å‰busäº§ç”Ÿå®¹çº³é©±åŠ¨çš„ksetå®¹å™¨,å®ƒå°†ç”Ÿæˆä¸€ä¸ªksetå¯¹è±¡å¹¶å°†å…¶åŠ å…¥åˆ°sysfsæ–‡ä»¶ç³»ç»Ÿä¸­**/
 	priv->drivers_kset = kset_create_and_add("drivers", NULL,
 						 &priv->subsys.kobj);
 	if (!priv->drivers_kset) {
@@ -964,11 +964,11 @@ int bus_register(struct bus_type *bus)
 
 	INIT_LIST_HEAD(&priv->interfaces);
 	__mutex_init(&priv->mutex, "subsys mutex", key);
-	/*³õÊ¼»¯busÉÏµÄÉè±¸ÓëÇı¶¯µÄÁ´±í*/
+	/*åˆå§‹åŒ–busä¸Šçš„è®¾å¤‡ä¸é©±åŠ¨çš„é“¾è¡¨*/
 	klist_init(&priv->klist_devices, klist_devices_get, klist_devices_put);
 	klist_init(&priv->klist_drivers, NULL, NULL);
 
-	/*Îªµ±Ç°busÔö¼ÓprobeÏà¹ØµÄÊôĞÔÎÄ¼ş*/
+	/*ä¸ºå½“å‰buså¢åŠ probeç›¸å…³çš„å±æ€§æ–‡ä»¶*/
 	retval = add_probe_files(bus);
 	if (retval)
 		goto bus_probe_files_fail;
@@ -1175,8 +1175,8 @@ int subsys_interface_register(struct subsys_interface *sif)
 	if (sif->add_dev) {
 		subsys_dev_iter_init(&iter, subsys, NULL, NULL);
 /* 
-±éÀú×ÓÏµÍ³ÏÂÃæµÄÃ¿Ò»¸ö×ÓÉè±¸£¬È»ºóÓÃÕâ¸ö×ÓÉè±¸×÷Îª²ÎÊı£¬
-µ÷ÓÃcpufrq_interface½á¹¹µÄadd_dev»Øµ÷º¯Êı 
+éå†å­ç³»ç»Ÿä¸‹é¢çš„æ¯ä¸€ä¸ªå­è®¾å¤‡ï¼Œç„¶åç”¨è¿™ä¸ªå­è®¾å¤‡ä½œä¸ºå‚æ•°ï¼Œ
+è°ƒç”¨cpufrq_interfaceç»“æ„çš„add_devå›è°ƒå‡½æ•° 
 */
 		while ((dev = subsys_dev_iter_next(&iter)))
 			sif->add_dev(dev, sif); // call cpufreq_add_dev
@@ -1311,11 +1311,11 @@ EXPORT_SYMBOL_GPL(subsys_virtual_register);
 
 int __init buses_init(void)
 {
-	/*½«´´½¨Ò»¸öÃû³ÆÎªbusµÄkset²¢½«Æä¼ÓÈëµ½sysfsÎÄ¼şÏµÍ³ÖĞ,Ö÷Òªbus_uevent_ops¶¨ÒåÁË
-	 *µ±busÕâ¸öksetÖĞÓĞ×´Ì¬±ä»¯Ê±,ÓÃÀ´Í¨ÖªÓÃ»§¿Õ¼äueventÏûÏ¢µÄ²Ù×÷¼¯;µ±ksetÖĞÓĞ×´Ì¬µÄ
-	 *±ä»¯Ê±,Èç¹ûĞèÒªÏòÓÃ»§¿Õ¼ä·¢ËÍeventÏûÏ¢,½«ÓÉ¸ÃksetµÄ×î¶¥²ãksetÀ´Ö´ĞĞ,ÒòÎªbus_kset
-	 *ÊÇÏµÍ³ÖĞËùÓĞbus_subsystem×î¶¥²ãµÄkset,ËùÒÔbusÖĞµÄueventµ÷ÓÃ×îÖÕ»á»ã¼¯µ½ÕâÀïµÄ
-	 *bus_uevent_opsÖĞ,Õâ¸ö²Ù×÷¼¯ÖĞÖ»¶¨ÒåÁËÒ»¸öfilter²Ù×÷,ÒÔ¾ö¶¨ÊÇ·ñÍ¨ÖªÓÃ»§¿Õ¼ä*/
+	/*å°†åˆ›å»ºä¸€ä¸ªåç§°ä¸ºbusçš„ksetå¹¶å°†å…¶åŠ å…¥åˆ°sysfsæ–‡ä»¶ç³»ç»Ÿä¸­,ä¸»è¦bus_uevent_opså®šä¹‰äº†
+	 *å½“busè¿™ä¸ªksetä¸­æœ‰çŠ¶æ€å˜åŒ–æ—¶,ç”¨æ¥é€šçŸ¥ç”¨æˆ·ç©ºé—´ueventæ¶ˆæ¯çš„æ“ä½œé›†;å½“ksetä¸­æœ‰çŠ¶æ€çš„
+	 *å˜åŒ–æ—¶,å¦‚æœéœ€è¦å‘ç”¨æˆ·ç©ºé—´å‘é€eventæ¶ˆæ¯,å°†ç”±è¯¥ksetçš„æœ€é¡¶å±‚ksetæ¥æ‰§è¡Œ,å› ä¸ºbus_kset
+	 *æ˜¯ç³»ç»Ÿä¸­æ‰€æœ‰bus_subsystemæœ€é¡¶å±‚çš„kset,æ‰€ä»¥busä¸­çš„ueventè°ƒç”¨æœ€ç»ˆä¼šæ±‡é›†åˆ°è¿™é‡Œçš„
+	 *bus_uevent_opsä¸­,è¿™ä¸ªæ“ä½œé›†ä¸­åªå®šä¹‰äº†ä¸€ä¸ªfilteræ“ä½œ,ä»¥å†³å®šæ˜¯å¦é€šçŸ¥ç”¨æˆ·ç©ºé—´*/
 	bus_kset = kset_create_and_add("bus", &bus_uevent_ops, NULL);
 	if (!bus_kset)
 		return -ENOMEM;

@@ -14,14 +14,14 @@
 #define PROT_GROWSDOWN	0x01000000	/* mprotect flag: extend change to start of growsdown vma */
 #define PROT_GROWSUP	0x02000000	/* mprotect flag: extend change to end of growsup vma */
 
-/* ÔÚ½ø³ÌÖ®¼ä¹²ÏíÓ³Éä */
+/* åœ¨è¿›ç¨‹ä¹‹é—´å…±äº«æ˜ å°„ */
 #define MAP_SHARED	0x01		/* Share changes */
-/* Ë½ÓĞÓ³Éä£¬¶ÔÓ³ÉäÇøÓòµÄĞ´Èë²»Ó°ÏìÎÄ¼şÊı¾İ */
+/* ç§æœ‰æ˜ å°„ï¼Œå¯¹æ˜ å°„åŒºåŸŸçš„å†™å…¥ä¸å½±å“æ–‡ä»¶æ•°æ® */
 #define MAP_PRIVATE	0x02		/* Changes are private */
 #define MAP_TYPE	0x0f		/* Mask for type of mapping */
-/* Ö»ÄÜÓ³Éäµ½Ö¸¶¨µÄµØÖ· */
+/* åªèƒ½æ˜ å°„åˆ°æŒ‡å®šçš„åœ°å€ */
 #define MAP_FIXED	0x10		/* Interpret addr exactly */
-/* ÄäÃûÓ³Éä£¬²»ÓëÈÎºÎÎÄ¼şÏà¹ØÁª */
+/* åŒ¿åæ˜ å°„ï¼Œä¸ä¸ä»»ä½•æ–‡ä»¶ç›¸å…³è” */
 #define MAP_ANONYMOUS	0x20		/* don't use a file */
 
 #define MS_ASYNC	1		/* sync memory asynchronously */

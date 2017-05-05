@@ -52,10 +52,10 @@ EXPORT_SYMBOL(generic_fillattr);
 int vfs_getattr_nosec(struct path *path, struct kstat *stat)
 {
 	struct inode *inode = d_backing_inode(path->dentry);
-    /* Èç¹û¸ÃÎÄ¼şÏµÍ³¶¨ÒåÁËÕâ¸öinodeµÄ×Ô¶¨Òå²Ù×÷º¯Êı£¬¾ÍÖ´ĞĞËü */
+    /* å¦‚æœè¯¥æ–‡ä»¶ç³»ç»Ÿå®šä¹‰äº†è¿™ä¸ªinodeçš„è‡ªå®šä¹‰æ“ä½œå‡½æ•°ï¼Œå°±æ‰§è¡Œå®ƒ */
 	if (inode->i_op->getattr)
 		return inode->i_op->getattr(path->mnt, path->dentry, stat);
-    /* Èç¹ûÎÄ¼şÏµÍ³Ã»ÓĞ¶¨ÒåinodeµÄ²Ù×÷º¯Êı£¬ÔòÖ´ĞĞÍ¨ÓÃµÄº¯Êı */
+    /* å¦‚æœæ–‡ä»¶ç³»ç»Ÿæ²¡æœ‰å®šä¹‰inodeçš„æ“ä½œå‡½æ•°ï¼Œåˆ™æ‰§è¡Œé€šç”¨çš„å‡½æ•° */
 	generic_fillattr(inode, stat);
 	return 0;
 }
@@ -65,7 +65,7 @@ EXPORT_SYMBOL(vfs_getattr_nosec);
 int vfs_getattr(struct path *path, struct kstat *stat)
 {
 	int retval;
-    /* ¶Ô»ñÈ¡inodeÊôĞÔ²Ù×÷½øĞĞ°²È«ĞÔ¼ì²é */
+    /* å¯¹è·å–inodeå±æ€§æ“ä½œè¿›è¡Œå®‰å…¨æ€§æ£€æŸ¥ */
 	retval = security_inode_getattr(path);
 	if (retval)
 		return retval;
@@ -179,11 +179,11 @@ SYSCALL_DEFINE2(stat, const char __user *, filename,
 {
 	struct kstat stat;
 	int error;
-    /* vfs_statÓÃÓÚ¶ÁÈ¡ÎÄ¼şÔªÊı¾İÖÁstat */ 
+    /* vfs_statç”¨äºè¯»å–æ–‡ä»¶å…ƒæ•°æ®è‡³stat */ 
 	error = vfs_stat(filename, &stat);
 	if (error)
 		return error;
-    /* ÕâÀï½öÊÇ´ÓÄÚºËµÄÔªÊı¾İ½á¹¹stat¸´ÖÆµ½ÓÃ»§²ãµÄÊı¾İ½á¹¹statbufÖĞ */ 
+    /* è¿™é‡Œä»…æ˜¯ä»å†…æ ¸çš„å…ƒæ•°æ®ç»“æ„statå¤åˆ¶åˆ°ç”¨æˆ·å±‚çš„æ•°æ®ç»“æ„statbufä¸­ */ 
 	return cp_old_stat(&stat, statbuf);
 }
 

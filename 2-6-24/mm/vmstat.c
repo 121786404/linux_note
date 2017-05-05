@@ -78,7 +78,7 @@ void vm_events_fold_cpu(int cpu)
  *
  * vm_stat contains the global counters
  */
-/* ÏµÍ³ÄÚ´æÒ³µÄ×´Ì¬,¿ÉÓÃÓÚpdflushÏß³Ì */
+/* ç³»ç»Ÿå†…å­˜é¡µçš„çŠ¶æ€,å¯ç”¨äºpdflushçº¿ç¨‹ */
 atomic_long_t vm_stat[NR_VM_ZONE_STAT_ITEMS];
 EXPORT_SYMBOL(vm_stat);
 

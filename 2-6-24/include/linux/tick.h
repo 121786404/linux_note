@@ -21,11 +21,11 @@ struct tick_device {
 };
 
 enum tick_nohz_mode {
-	/* ÖÜÆÚĞÔÊ±ÖÓ´¦ÓÚ»î¶¯×´Ì¬£¬NOHZÎ´ÉúĞ§ */
+	/* å‘¨æœŸæ€§æ—¶é’Ÿå¤„äºæ´»åŠ¨çŠ¶æ€ï¼ŒNOHZæœªç”Ÿæ•ˆ */
 	NOHZ_MODE_INACTIVE,
-	/* ¶¯Ì¬tickÔËĞĞÓÚµÍ¾«¶ÈÄ£Ê½ */
+	/* åŠ¨æ€tickè¿è¡Œäºä½ç²¾åº¦æ¨¡å¼ */
 	NOHZ_MODE_LOWRES,
-	/* ¶¯Ì¬tickÔËĞĞÓÚ¸ß¾«¶ÈÄ£Ê½ */
+	/* åŠ¨æ€tickè¿è¡Œäºé«˜ç²¾åº¦æ¨¡å¼ */
 	NOHZ_MODE_HIGHRES,
 };
 
@@ -45,31 +45,31 @@ enum tick_nohz_mode {
  * @idle_sleeptime:	Sum of the time slept in idle with sched tick stopped
  * @sleep_length:	Duration of the current idle sleep
  */
-/* ¶¯Ì¬Ê±ÖÓ */
+/* åŠ¨æ€æ—¶é’Ÿ */
 struct tick_sched {
-	/* ¸ß¾«¶ÈÄ£Ê½ÏÂ£¬µ÷¶ÈÖÜÆÚĞÔtickµÄ¶¨Ê±Æ÷ */
+	/* é«˜ç²¾åº¦æ¨¡å¼ä¸‹ï¼Œè°ƒåº¦å‘¨æœŸæ€§tickçš„å®šæ—¶å™¨ */
 	struct hrtimer			sched_timer;
 	unsigned long			check_clocks;
-	/* ÔËĞĞÄ£Ê½ */
+	/* è¿è¡Œæ¨¡å¼ */
 	enum tick_nohz_mode		nohz_mode;
-	/* ½øÈëidleÇ°£¬ÉÏÒ»¸öÊ±ÖÓµÄµ½ÆÚÊ±¼ä */
+	/* è¿›å…¥idleå‰ï¼Œä¸Šä¸€ä¸ªæ—¶é’Ÿçš„åˆ°æœŸæ—¶é—´ */
 	ktime_t				idle_tick;
-	/* ÖÜÆÚĞÔÊ±ÖÓÊÇ·ñÒÑ¾­Í£ÓÃ */
+	/* å‘¨æœŸæ€§æ—¶é’Ÿæ˜¯å¦å·²ç»åœç”¨ */
 	int				tick_stopped;
-	/* ½øÈëIDLEÊ±µÄjiffies */
+	/* è¿›å…¥IDLEæ—¶çš„jiffies */
 	unsigned long			idle_jiffies;
-	/* ÊÔÍ¼Í£ÓÃÖÜÆÚĞÔÊ±ÖÓµÄ´ÎÊı */
+	/* è¯•å›¾åœç”¨å‘¨æœŸæ€§æ—¶é’Ÿçš„æ¬¡æ•° */
 	unsigned long			idle_calls;
-	/* Í£ÓÃÖÜÆÚĞÔÊ±ÖÓµÄ´ÎÊı */
+	/* åœç”¨å‘¨æœŸæ€§æ—¶é’Ÿçš„æ¬¡æ•° */
 	unsigned long			idle_sleeps;
 	ktime_t				idle_entrytime;
-	/* ÉÏÒ»´Î½ûÓÃÖÜÆÚÊ±ÖÓµÄ×¼È·Ê±¼ä */
+	/* ä¸Šä¸€æ¬¡ç¦ç”¨å‘¨æœŸæ—¶é’Ÿçš„å‡†ç¡®æ—¶é—´ */
 	ktime_t				idle_sleeptime;
-	/* ½ûÓÃÖÜÆÚĞÔÊ±ÖÓµÄ³¤¶È */
+	/* ç¦ç”¨å‘¨æœŸæ€§æ—¶é’Ÿçš„é•¿åº¦ */
 	ktime_t				sleep_length;
 	unsigned long			last_jiffies;
 	unsigned long			next_jiffies;
-	/* ÏÂÒ»¸öµ½ÆÚÊ±¼ä */
+	/* ä¸‹ä¸€ä¸ªåˆ°æœŸæ—¶é—´ */
 	ktime_t				idle_expires;
 };
 

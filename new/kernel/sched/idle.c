@@ -219,7 +219,7 @@ static void do_idle(void)
 	__current_set_polling();
 	tick_nohz_idle_enter();
 /*
-Ñ­»·ÅĞ¶Ïneed_reschedÒÔ½µµÍÍË³öÑÓ³Ù£¬ÓÃidle()À´½ÚÄÜ
+å¾ªç¯åˆ¤æ–­need_reschedä»¥é™ä½é€€å‡ºå»¶è¿Ÿï¼Œç”¨idle()æ¥èŠ‚èƒ½
 */
 	while (!need_resched()) {
 		check_pgt_cache();
@@ -345,8 +345,8 @@ void cpu_startup_entry(enum cpuhp_state state)
 	cpuhp_online_idle(state);
 	
     /* 
-        µ÷ÓÃcpu_idle()£¬0ºÅÏß³Ì½øÈëidleº¯ÊıµÄÑ­»·£¬
-        ÔÚ¸ÃÑ­»·ÖĞ»áÖÜÆÚĞÔµØ¼ì²é¡£
+        è°ƒç”¨cpu_idle()ï¼Œ0å·çº¿ç¨‹è¿›å…¥idleå‡½æ•°çš„å¾ªç¯ï¼Œ
+        åœ¨è¯¥å¾ªç¯ä¸­ä¼šå‘¨æœŸæ€§åœ°æ£€æŸ¥ã€‚
       */
 	while (1)
 		do_idle();

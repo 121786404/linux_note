@@ -6,21 +6,21 @@
 enum pid_type
 {
     /*
-    pid�� Linux �����������ռ���Ψһ��ʶ���̶����������һ�����룬��������ID�ţ�
-    ���PID����ʹ�� fork �� clone ϵͳ����ʱ�����Ľ��̾������ں˷���һ���µ�Ψһ��PIDֵ
+    pid是 Linux 中在其命名空间中唯一标识进程而分配给它的一个号码，称做进程ID号，
+    简称PID。在使用 fork 或 clone 系统调用时产生的进程均会由内核分配一个新的唯一的PID值
     */
 	PIDTYPE_PID,
 	/*
-    �����Ľ��̿�����ɽ����飨ʹ��setpgrpϵͳ���ã���
-    ��������Լ����������ڽ��̷����źŵĲ���
-    �����ùܵ����ӵĽ��̴���ͬһ�������ڡ�
-    ������ID����PGID���������ڵ����н��̶�����ͬ��PGID�����ڸ����鳤��PID
+    独立的进程可以组成进程组（使用setpgrp系统调用），
+    进程组可以简化向所有组内进程发送信号的操作
+    例如用管道连接的进程处在同一进程组内。
+    进程组ID叫做PGID，进程组内的所有进程都有相同的PGID，等于该组组长的PID
 	*/
 	PIDTYPE_PGID,
 	/*
-    ������������Ժϲ���һ���Ự�飨ʹ��setsidϵͳ���ã���
-    ���������ն˳�����ơ��Ự�������н��̶�����ͬ��SID,
-    ������task_struct��session��Ա��
+    几个进程组可以合并成一个会话组（使用setsid系统调用），
+    可以用于终端程序设计。会话组中所有进程都有相同的SID,
+    保存在task_struct的session成员中
 	*/
 	PIDTYPE_SID,
 	PIDTYPE_MAX
@@ -62,43 +62,43 @@ enum pid_type
  * find_pid_ns() using the int nr and struct pid_namespace *ns.
  */
 /*
-upid ��������PID�������ռ�Ľṹ��
-���������ռ�����ã�ʹ�ý����ܹ����䵽��ͬ�������ռ���ȥ��
-���ҽ������Լ����ڵ������ռ������žֲ���PID������Ǿֲ�PID��
-��˸��������ռ��PID�п����ظ���Ҳ����һ��PID����Ϊ�������ʹ�ã�
+upid 用来关联PID和命名空间的结构体
+正是命名空间的作用，使得进程能够分配到不同的命名空间中去，
+而且进程在自己所在的命名空间中有着局部的PID，这就是局部PID，
+因此各个命名空间的PID有可能重复，也即是一个PID可能为多个进程使用，
 */
 struct upid {
 	/* Try to keep pid_chain in the same cacheline as nr for find_vpid */
-	int nr; // ID�����ֵ
-	struct pid_namespace *ns; // ָ�������ռ��ָ��
-	struct hlist_node pid_chain; // ָ��PID��ϣ�б���ָ�룬���ڹ������ڵ�PID
+	int nr; // ID具体的值
+	struct pid_namespace *ns; // 指向命名空间的指针
+	struct hlist_node pid_chain; // 指向PID哈希列表的指针，用于关联对于的PID
 };
 
 struct pid
 {
-	atomic_t count;  // ʹ�ø�PID��task����Ŀ
-	unsigned int level; // ��PID�������ռ����Ŀ��Ҳ���ǰ����ý��̵������ռ�����
-	/* ʹ�ø�pid�Ľ��̵��б�,ÿ���������һ��ɢ�б�ͷ,�ֱ��Ӧ������������ 
+	atomic_t count;  // 使用该PID的task的数目
+	unsigned int level; // 该PID的命名空间的数目，也就是包含该进程的命名空间的深度
+	/* 使用该pid的进程的列表,每个数组项都是一个散列表头,分别对应以下三种类型 
 	lists of tasks that use this pid */
 	/*
-    tasks��һ�����飬ÿ���������һ��ɢ�б�ͷ��
-    ��Ӧ��һ��ID����,PIDTYPE_PID, PIDTYPE_PGID, PIDTYPE_SID�� PIDTYPE_MAX��ʾID���͵���Ŀ��
-    �������Ǳ�Ҫ�ģ���Ϊһ��ID�������ڼ������̡�
-    ���й���ͬһ����ID��task_structʵ������ͨ�����б�����������
+    tasks是一个数组，每个数组项都是一个散列表头，
+    对应于一个ID类型,PIDTYPE_PID, PIDTYPE_PGID, PIDTYPE_SID（ PIDTYPE_MAX表示ID类型的数目）
+    这样做是必要的，因为一个ID可能用于几个进程。
+    所有共享同一给定ID的task_struct实例，都通过该列表连接起来。
 	*/
 	struct hlist_head tasks[PIDTYPE_MAX];
 	struct rcu_head rcu;
 	/*
-        һ��upid��ʵ�����飬ÿ�����������һ�������ռ䣬
-        ������ʾһ��PID�������ڲ�ͬ�������ռ䣬
-        ��Ԫ�ط���ĩβ���������������Ӹ��ӵ���
+        一个upid的实例数组，每个数组项代表一个命名空间，
+        用来表示一个PID可以属于不同的命名空间，
+        该元素放在末尾，可以向数组添加附加的项
 	*/
 	struct upid numbers[1];
 };
 
 extern struct pid init_struct_pid;
 /*
-pid�Ĺ�ϣ���洢�ṹ
+pid的哈希表存储结构
 */
 struct pid_link
 {

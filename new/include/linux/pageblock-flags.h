@@ -26,9 +26,9 @@
 #include <linux/types.h>
 
 /*
-�ڳ�ʼ���ڼ�, �ں��Զ�ȷ�����ڴ����е�ÿ����ͬ��Ǩ�����ͷ���,
-��pageblock_flags�ж��������㹻�洢NR_PAGEBLOCK_BITS������λ�Ŀռ䡣
-��ǰ����ʾһ�������ڴ�����Ǩ��������Ҫ3������λ
+在初始化期间, 内核自动确保对内存域中的每个不同的迁移类型分组,
+在pageblock_flags中都分配了足够存储NR_PAGEBLOCK_BITS个比特位的空间。
+当前，表示一个连续内存区的迁移类型需要3个比特位
 */
 /* Bit indices that affect a whole block of pages */
 enum pageblock_bits {

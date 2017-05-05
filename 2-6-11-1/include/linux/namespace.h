@@ -5,7 +5,7 @@
 #include <linux/mount.h>
 #include <linux/sched.h>
 
-/* ×ÊÔ´¸ôÀëµÄÃû³Æ¿Õ¼ä */
+/* èµ„æºéš”ç¦»çš„åç§°ç©ºé—´ */
 struct namespace {
 	atomic_t		count;
 	struct vfsmount *	root;
@@ -34,7 +34,7 @@ static inline void exit_namespace(struct task_struct *p)
 	}
 }
 
-/* Ôö¼ÓÃû³Æ¿Õ¼äÒýÓÃ¼ÆÊý */
+/* å¢žåŠ åç§°ç©ºé—´å¼•ç”¨è®¡æ•° */
 static inline void get_namespace(struct namespace *namespace)
 {
 	atomic_inc(&namespace->count);

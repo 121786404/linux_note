@@ -26,8 +26,8 @@ u64 smp_irq_stat_cpu(unsigned int cpu);
 #endif
 
 #define arch_irq_stat_cpu	smp_irq_stat_cpu
-/*__ARCH_IRQ_EXIT_IRQS_DISABLED�Ǹ���ϵ�ܹ���صĺ�,����������HARDIRQ����
- * ����ʱ��û�йرմ�������Ӧ�ⲿ�жϵ�����,���������__ARCH_IRQ_EXIT_IRQS_DISABLED,����ζ���ڴ���SOFTIRQ����ʱ,���Ա�֤�ⲿ�ж��Ѿ��ر�,��ʱ����ֱ�ӵ���_do_softire,����֮ǰҪ��һЩ�ж����ε�����,��֤_do_softirq��ʼִ��ʱ�ж��ǹرյ�*/
+/*__ARCH_IRQ_EXIT_IRQS_DISABLED是个体系架构相关的宏,用来决定在HARDIRQ部分
+ * 结束时有没有关闭处理器响应外部中断的能力,如果定义了__ARCH_IRQ_EXIT_IRQS_DISABLED,就意味着在处理SOFTIRQ部分时,可以保证外部中断已经关闭,此时可以直接调用_do_softire,不过之前要做一些中断屏蔽的事情,保证_do_softirq开始执行时中断是关闭的*/
 #define __ARCH_IRQ_EXIT_IRQS_DISABLED	1
 
 #endif /* __ASM_HARDIRQ_H */

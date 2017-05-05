@@ -97,7 +97,7 @@ static inline struct page * rb_insert_page_cache(struct inode * inode,
 #include <linux/kernel.h>
 #include <linux/stddef.h>
 
-/* °üº¬×óÓÒ×ÓÊ÷ºÍ¸¸½Úµã£¬ÒÔ¼°½ÚµãµÄÑÕÉ«Öµ  */
+/* åŒ…å«å·¦å³å­æ ‘å’Œçˆ¶èŠ‚ç‚¹ï¼Œä»¥åŠèŠ‚ç‚¹çš„é¢œè‰²å€¼  */
 struct rb_node
 {
 	struct rb_node *rb_parent;
@@ -108,7 +108,7 @@ struct rb_node
 	struct rb_node *rb_left;
 };
 
-/* ºìºÚÊ÷µÄ¸ú½Úµã */
+/* çº¢é»‘æ ‘çš„è·ŸèŠ‚ç‚¹ */
 struct rb_root
 {
 	struct rb_node *rb_node;

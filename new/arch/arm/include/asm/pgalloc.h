@@ -133,20 +133,20 @@ static inline void __pmd_populate(pmd_t *pmdp, phys_addr_t pte,
 {
 	pmdval_t pmdval = (pte + PTE_HWTABLE_OFF) | prot;
 /*
-	pmd[0]µÄÖµ¼´Îªpmdval£¬Ò²¼´Í¨¹ıearly_alloc(memblockËã·¨)·ÖÅäµÄÎïÀíÒ³ÃæµØÖ·pte    
-	×ª»¯ÎªÎïÀíµØÖ·ºó¼ÓÉÏ±£»¤±êÖ¾¡£
+	pmd[0]çš„å€¼å³ä¸ºpmdvalï¼Œä¹Ÿå³é€šè¿‡early_alloc(memblockç®—æ³•)åˆ†é…çš„ç‰©ç†é¡µé¢åœ°å€pte    
+	è½¬åŒ–ä¸ºç‰©ç†åœ°å€ååŠ ä¸Šä¿æŠ¤æ ‡å¿—ã€‚
 */
 	pmdp[0] = __pmd(pmdval);
 #ifndef CONFIG_ARM_LPAE
 /*
-    pmd[1]µÄÖµÊÇpmd[0]µÄÖµµÄÆ«ÒÆ£¬ËüÆ«ÒÆÁË256¸öPTEÒ³±íÏî£¬
-    ÓÉÓÚÃ¿¸öPTEÒ³±íÏîÒ²ÊÇ4×Ö½Ú£¬    
-    ËùÒÔÆ«ÒÆµÄµÄÎïÀíµØÖ·Îª256 * sizeof(pte_t)¡£
+    pmd[1]çš„å€¼æ˜¯pmd[0]çš„å€¼çš„åç§»ï¼Œå®ƒåç§»äº†256ä¸ªPTEé¡µè¡¨é¡¹ï¼Œ
+    ç”±äºæ¯ä¸ªPTEé¡µè¡¨é¡¹ä¹Ÿæ˜¯4å­—èŠ‚ï¼Œ    
+    æ‰€ä»¥åç§»çš„çš„ç‰©ç†åœ°å€ä¸º256 * sizeof(pte_t)ã€‚
 */
 	pmdp[1] = __pmd(pmdval + 256 * sizeof(pte_t));
 #endif
 /*
-    Ë¢ĞÂTLB»º³å£¬Ê¹ÏµÍ³µÄcpu¶¼¿ÉÒÔ¿´¼û¸ÃÓ³ÉäµÄ±ä»¯
+    åˆ·æ–°TLBç¼“å†²ï¼Œä½¿ç³»ç»Ÿçš„cpuéƒ½å¯ä»¥çœ‹è§è¯¥æ˜ å°„çš„å˜åŒ–
 */
 	flush_pmd_entry(pmdp);
 }

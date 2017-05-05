@@ -1035,36 +1035,36 @@ extern ctl_handler sysctl_ms_jiffies;
 
 /* A sysctl table is an array of struct ctl_table: */
 /**
- * sysctlÃèÊö·û
+ * sysctlæè¿°ç¬¦
  */
 struct ctl_table 
 {
-	/* ÓÃÓÚsysctlÏµÍ³µ÷ÓÃ£¬Ö¸¶¨·ÃÎÊÄÄÒ»¸ösysctl£¬ÔÚÍ¬Ò»²ã´ÎÖĞ£¬ĞèÒªÎ¨Ò»¡£ */
+	/* ç”¨äºsysctlç³»ç»Ÿè°ƒç”¨ï¼ŒæŒ‡å®šè®¿é—®å“ªä¸€ä¸ªsysctlï¼Œåœ¨åŒä¸€å±‚æ¬¡ä¸­ï¼Œéœ€è¦å”¯ä¸€ã€‚ */
 	int ctl_name;			/* Binary ID */
-	/* ÔÚproc/sysÏÂµÄÎÄ¼şÃû */
+	/* åœ¨proc/sysä¸‹çš„æ–‡ä»¶å */
 	const char *procname;		/* Text ID for /proc/sys, or zero */
-	/* ÌØ¶¨Êı¾İ£¬Í¨ÓÃ²ã²»Ê¹ÓÃ */
+	/* ç‰¹å®šæ•°æ®ï¼Œé€šç”¨å±‚ä¸ä½¿ç”¨ */
 	void *data;
-	/* ÄÜ½ÓÊÕºÍÊä³öµÄÊı¾İµÄ×î´ó³¤¶È */
+	/* èƒ½æ¥æ”¶å’Œè¾“å‡ºçš„æ•°æ®çš„æœ€å¤§é•¿åº¦ */
 	int maxlen;
-	/* ·ÃÎÊÈ¨ÏŞ */
+	/* è®¿é—®æƒé™ */
 	mode_t mode;
-	/* Ö¸ÕëÊı×é£¬Ö¸Ïò×Ó½Úµã */
+	/* æŒ‡é’ˆæ•°ç»„ï¼ŒæŒ‡å‘å­èŠ‚ç‚¹ */
 	struct ctl_table *child;
-	/* ¸¸½Úµã */
+	/* çˆ¶èŠ‚ç‚¹ */
 	struct ctl_table *parent;	/* Automatically set */
-	/* ÒÔÒ×ÓÚÀí½âµÄĞÎÊ½ÏòÓÃ»§Êä³öÊı¾İ */
+	/* ä»¥æ˜“äºç†è§£çš„å½¢å¼å‘ç”¨æˆ·è¾“å‡ºæ•°æ® */
 	proc_handler *proc_handler;	/* Callback for text formatting */
-	/* ÓÉÄÚºËµ÷ÓÃ´Ë¹ı³ÌÀ´²Ù×İsysctlµÄÖµ */
+	/* ç”±å†…æ ¸è°ƒç”¨æ­¤è¿‡ç¨‹æ¥æ“çºµsysctlçš„å€¼ */
 	ctl_handler *strategy;		/* Callback function for all r/w */
-	/* Í¨ÓÃ´úÂë²»Ê¹ÓÃÕâÁ½¸öÖµ£¬Í¨³£ÓÉÌØ¶¨proc¹ı³ÌÊ¹ÓÃ£¬¶¨ÒåÊıÖµµÄÉÏÏÂÏŞ */
+	/* é€šç”¨ä»£ç ä¸ä½¿ç”¨è¿™ä¸¤ä¸ªå€¼ï¼Œé€šå¸¸ç”±ç‰¹å®šprocè¿‡ç¨‹ä½¿ç”¨ï¼Œå®šä¹‰æ•°å€¼çš„ä¸Šä¸‹é™ */
 	void *extra1;
 	void *extra2;
 };
 
 /* struct ctl_table_header is used to maintain dynamic lists of
    struct ctl_table trees. */
-/* ÓÃÓÚÒÔÁ´±íµÄĞÎÊ½¹ÜÀísysctl */
+/* ç”¨äºä»¥é“¾è¡¨çš„å½¢å¼ç®¡ç†sysctl */
 struct ctl_table_header
 {
 	struct ctl_table *ctl_table;

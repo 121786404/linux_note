@@ -7,7 +7,7 @@
  *
  * Copyright IBM Corp. 2007-2010 Mel Gorman <mel@csn.ul.ie>
  *
- * ÔÊĞí¶Ô´óÄÚ´æÒ³(huge pages)½øĞĞÑ¹Ëõ.Ö÷ÒªÊÇÎªÁË½â¾ö´óÄÚ´æÒ³µÄËéÆ¬ÎÊÌâ
+ * å…è®¸å¯¹å¤§å†…å­˜é¡µ(huge pages)è¿›è¡Œå‹ç¼©.ä¸»è¦æ˜¯ä¸ºäº†è§£å†³å¤§å†…å­˜é¡µçš„ç¢ç‰‡é—®é¢˜
  * http://lwn.net/Articles/368869/ <Memory compaction>
  */
 #include <linux/cpu.h>

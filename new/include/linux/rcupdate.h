@@ -868,10 +868,10 @@ static inline void rcu_preempt_sleep_check(void)
  * read-side critical sections may be preempted and they may also block, but
  * only when acquiring spinlocks that are subject to priority inheritance.
  */
- /*RCU ÁÙ½ÖÇøÖĞ²»»á·¢Éú½ø³ÌÇĞ»»*/
+ /*RCU ä¸´è¡—åŒºä¸­ä¸ä¼šå‘ç”Ÿè¿›ç¨‹åˆ‡æ¢*/
 static inline void rcu_read_lock(void)
 {
-	/*½ûÖ¹ÇÀÕ¼*/
+	/*ç¦æ­¢æŠ¢å */
 	__rcu_read_lock();
 	__acquire(RCU);
 	rcu_lock_acquire(&rcu_lock_map);
@@ -924,7 +924,7 @@ static inline void rcu_read_lock(void)
  *
  * See rcu_read_lock() for more information.
  */
- /*¶ÁÕßÔÚ¶ÁÈ¡ÓÉRCU±£»¤µÄ¹²ÏíÊı¾İÊ±Ê¹ÓÃ¸Ãº¯Êı±ê¼ÇËü½øÈë¶Á¶ËÁÙ½çÇø¡£*/
+ /*è¯»è€…åœ¨è¯»å–ç”±RCUä¿æŠ¤çš„å…±äº«æ•°æ®æ—¶ä½¿ç”¨è¯¥å‡½æ•°æ ‡è®°å®ƒè¿›å…¥è¯»ç«¯ä¸´ç•ŒåŒºã€‚*/
 static inline void rcu_read_unlock(void)
 {
 	RCU_LOCKDEP_WARN(!rcu_is_watching(),
@@ -951,8 +951,8 @@ static inline void rcu_read_unlock(void)
  * rcu_read_unlock_bh() from one task if the matching rcu_read_lock_bh()
  * was invoked from some other task.
  */
- /* ¸Ãº¯ÊıÓërcu_read_lockÅä¶ÔÊ¹ÓÃ£¬ÓÃÒÔ±ê¼Ç¶ÁÕßÍË³ö¶Á¶ËÁÙ½çÇø¡£
-  * ¼ĞÔÚÕâÁ½¸öº¯ÊıÖ®¼äµÄ´úÂëÇø³ÆÎª"¶Á¶ËÁÙ½çÇø*/
+ /* è¯¥å‡½æ•°ä¸rcu_read_locké…å¯¹ä½¿ç”¨ï¼Œç”¨ä»¥æ ‡è®°è¯»è€…é€€å‡ºè¯»ç«¯ä¸´ç•ŒåŒºã€‚
+  * å¤¹åœ¨è¿™ä¸¤ä¸ªå‡½æ•°ä¹‹é—´çš„ä»£ç åŒºç§°ä¸º"è¯»ç«¯ä¸´ç•ŒåŒº*/
 static inline void rcu_read_lock_bh(void)
 {
 	local_bh_disable();

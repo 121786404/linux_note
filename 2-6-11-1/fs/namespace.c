@@ -38,16 +38,16 @@ static inline int sysfs_init(void)
 
 /* spinlock for vfsmount related operations, inplace of dcache_lock */
  __cacheline_aligned_in_smp DEFINE_SPINLOCK(vfsmount_lock);
-/* ÊÇÒ»¸öÊı×é¿Õ¼ä£¬Êı×éÖĞµÄÃ¿¸öÔªËØ¶¼±íÊ¾Ò»¸öË«ÏòÁ´±í */
+/* æ˜¯ä¸€ä¸ªæ•°ç»„ç©ºé—´ï¼Œæ•°ç»„ä¸­çš„æ¯ä¸ªå…ƒç´ éƒ½è¡¨ç¤ºä¸€ä¸ªåŒå‘é“¾è¡¨ */
 static struct list_head *mount_hashtable;
-/* mount_hashtableÖĞµÄÔªËØ¸öÊıÓÃ2µÄhash_bits·½±íÊ¾
-  * hash_maskÎª2µÄhash_bits·½¼õ1
+/* mount_hashtableä¸­çš„å…ƒç´ ä¸ªæ•°ç”¨2çš„hash_bitsæ–¹è¡¨ç¤º
+  * hash_maskä¸º2çš„hash_bitsæ–¹å‡1
   */
 static int hash_mask, hash_bits;
-/* ×¨ÃÅÓÃÀ´·ÖÅästruct vfsmount µÄcache */
+/* ä¸“é—¨ç”¨æ¥åˆ†é…struct vfsmount çš„cache */
 static kmem_cache_t *mnt_cache; 
 
-/* ¸ù¾İ¹ÒÔØµãÖ¸ÕëºÍ¹ÒÔØµã¶ÔÓ¦µÄÎÄ¼şÏµÍ³ÖĞµÄdentryÖ¸ÕëÀ´hashÒ»¸öË÷Òı */
+/* æ ¹æ®æŒ‚è½½ç‚¹æŒ‡é’ˆå’ŒæŒ‚è½½ç‚¹å¯¹åº”çš„æ–‡ä»¶ç³»ç»Ÿä¸­çš„dentryæŒ‡é’ˆæ¥hashä¸€ä¸ªç´¢å¼• */
 static inline unsigned long hash(struct vfsmount *mnt, struct dentry *dentry)
 {
 	unsigned long tmp = ((unsigned long) mnt / L1_CACHE_BYTES);
@@ -56,7 +56,7 @@ static inline unsigned long hash(struct vfsmount *mnt, struct dentry *dentry)
 	return tmp & hash_mask;
 }
 
-/* ´Ómnt_cacheÖĞ·ÖÅäÒ»¸ö¹ÒÔØµã */
+/* ä»mnt_cacheä¸­åˆ†é…ä¸€ä¸ªæŒ‚è½½ç‚¹ */
 struct vfsmount *alloc_vfsmnt(const char *name)
 {
 	struct vfsmount *mnt = kmem_cache_alloc(mnt_cache, GFP_KERNEL); 
@@ -80,7 +80,7 @@ struct vfsmount *alloc_vfsmnt(const char *name)
 	return mnt;
 }
 
-/* ÊÍ·Å¹ÒÔØµãÃû³ÆºÍ¹ÒÔØµã±¾Éí */
+/* é‡Šæ”¾æŒ‚è½½ç‚¹åç§°å’ŒæŒ‚è½½ç‚¹æœ¬èº« */
 void free_vfsmnt(struct vfsmount *mnt)
 {
 	kfree(mnt->mnt_devname);
@@ -91,7 +91,7 @@ void free_vfsmnt(struct vfsmount *mnt)
  * Now, lookup_mnt increments the ref count before returning
  * the vfsmount struct.
  */
-/* ¸ù¾İ¹ÒÔØµãºÍ¹ÒÔØµãÎÄ¼şÏµÍ³ÖĞµÄÄ¿Â¼À´²éÕÒ¹ÒÔØµ½dentryÄ¿Â¼ÉÏµÄ¹ÒÔØµã */
+/* æ ¹æ®æŒ‚è½½ç‚¹å’ŒæŒ‚è½½ç‚¹æ–‡ä»¶ç³»ç»Ÿä¸­çš„ç›®å½•æ¥æŸ¥æ‰¾æŒ‚è½½åˆ°dentryç›®å½•ä¸Šçš„æŒ‚è½½ç‚¹ */
 struct vfsmount *lookup_mnt(struct vfsmount *mnt, struct dentry *dentry)
 {
 	struct list_head * head = mount_hashtable + hash(mnt, dentry);
@@ -102,11 +102,11 @@ struct vfsmount *lookup_mnt(struct vfsmount *mnt, struct dentry *dentry)
 	for (;;) {
 		tmp = tmp->next;
 		p = NULL;
-                /* ±íÃ÷Ë«ÏòÁ´±íËÑË÷Íê±Ï */
+                /* è¡¨æ˜åŒå‘é“¾è¡¨æœç´¢å®Œæ¯• */
 		if (tmp == head)
 			break;
 		p = list_entry(tmp, struct vfsmount, mnt_hash);
-                /* ¸¸¹ÒÔØµãºÍ¹ÒÔØÄ¿Â¼ÏàÍ¬ */
+                /* çˆ¶æŒ‚è½½ç‚¹å’ŒæŒ‚è½½ç›®å½•ç›¸åŒ */
 		if (p->mnt_parent == mnt && p->mnt_mountpoint == dentry) {
 			found = mntget(p);
 			break;
@@ -134,9 +134,9 @@ static void detach_mnt(struct vfsmount *mnt, struct nameidata *old_nd)
 
 static void attach_mnt(struct vfsmount *mnt, struct nameidata *nd)
 {
-        /* ÉèÖÃ¸¸¹ÒÔØµã */
+        /* è®¾ç½®çˆ¶æŒ‚è½½ç‚¹ */
 	mnt->mnt_parent = mntget(nd->mnt);
-        /* ÉèÖÃÔÚ¸¸ÎÄ¼şÏµÍ³ÖĞ£¬¹ÒÔØµãµÄÄ¿Â¼ */
+        /* è®¾ç½®åœ¨çˆ¶æ–‡ä»¶ç³»ç»Ÿä¸­ï¼ŒæŒ‚è½½ç‚¹çš„ç›®å½• */
 	mnt->mnt_mountpoint = dget(nd->dentry);
 	list_add(&mnt->mnt_hash, mount_hashtable+hash(nd->mnt, nd->dentry));
 	list_add_tail(&mnt->mnt_child, &nd->mnt->mnt_mounts);
@@ -159,22 +159,22 @@ static struct vfsmount *next_mnt(struct vfsmount *p, struct vfsmount *root)
 	return list_entry(next, struct vfsmount, mnt_child);
 }
 
-/*  ¿ËÂ¡¹ÒÔØµã£¬µ±ÏµÍ³ÖĞµÄÄ³Ò»¸öÄ¿Â¼ĞèÒª¹ÒÔØµ½ÁíÒ»¸öÄ¿Â¼Ê±
-  *  ÄÇÃ´»á½«Õâ¸öÄ¿Â¼×÷ÎªĞÂ¹ÒÔØµãµÄ¸ùÄ¿Â¼£¬¶ø¹ÒÔØµã¶ÔÓ¦µÄ³¬¼¶¿é
-  *  µÄ¸ùÄ¿Â¼ÈÎÈ»ÊÇÎÄ¼şÏµÍ³µÄ¸ùÄ¿Â¼ 
+/*  å…‹éš†æŒ‚è½½ç‚¹ï¼Œå½“ç³»ç»Ÿä¸­çš„æŸä¸€ä¸ªç›®å½•éœ€è¦æŒ‚è½½åˆ°å¦ä¸€ä¸ªç›®å½•æ—¶
+  *  é‚£ä¹ˆä¼šå°†è¿™ä¸ªç›®å½•ä½œä¸ºæ–°æŒ‚è½½ç‚¹çš„æ ¹ç›®å½•ï¼Œè€ŒæŒ‚è½½ç‚¹å¯¹åº”çš„è¶…çº§å—
+  *  çš„æ ¹ç›®å½•ä»»ç„¶æ˜¯æ–‡ä»¶ç³»ç»Ÿçš„æ ¹ç›®å½• 
   */ 
 static struct vfsmount *
 clone_mnt(struct vfsmount *old, struct dentry *root)
 {
-        /* ×¢Òâ³¬¼¶¿éÊÇ¹²ÏíµÄ */
+        /* æ³¨æ„è¶…çº§å—æ˜¯å…±äº«çš„ */
 	struct super_block *sb = old->mnt_sb;
-        /* ·ÖÅäÒ»¸öÉè±¸ÃûÎªmnt_devnameµÄ¹ÒÔØµã */
+        /* åˆ†é…ä¸€ä¸ªè®¾å¤‡åä¸ºmnt_devnameçš„æŒ‚è½½ç‚¹ */
 	struct vfsmount *mnt = alloc_vfsmnt(old->mnt_devname);
 
 	if (mnt) {
 		mnt->mnt_flags = old->mnt_flags;
 		atomic_inc(&sb->s_active);
-                /* ÉèÖÃ¹ÒÔØµãµÄ³¬¼¶¿é */
+                /* è®¾ç½®æŒ‚è½½ç‚¹çš„è¶…çº§å— */
 		mnt->mnt_sb = sb;
 		mnt->mnt_root = dget(root);
                 /* */
@@ -597,8 +597,8 @@ static struct vfsmount *copy_tree(struct vfsmount *mnt, struct dentry *dentry)
 	return NULL;
 }
 
-/* mnt±íÊ¾Îª±»¹ÒÔØÄ¿Â¼·ÖÅäµÄÒ»¸ö¹ÒÔØµã½á¹¹
-  * nd±íÊ¾¹ÒÔØµãÄ¿Â¼µÄĞÅÏ¢  
+/* mntè¡¨ç¤ºä¸ºè¢«æŒ‚è½½ç›®å½•åˆ†é…çš„ä¸€ä¸ªæŒ‚è½½ç‚¹ç»“æ„
+  * ndè¡¨ç¤ºæŒ‚è½½ç‚¹ç›®å½•çš„ä¿¡æ¯  
   */
 static int graft_tree(struct vfsmount *mnt, struct nameidata *nd)
 {
@@ -641,9 +641,9 @@ out_unlock:
 /*
  * do loopback mount.
  */
-/* ½«ÎÄ¼şÏµÍ³ÖĞµÄÒ»¸öÄ¿Â¼¹ÒÔØµ½ÁíÒ»¸öÄ¿Â¼ÉÏ£¬
-  * Ò²¾ÍÊÇÈÃ¸ÃÄ¿Â¼ÔÚÁíÒ»¸ö Ä¿Â¼ÖĞ¿É¼û £¬ÆäÖĞ 
-  * old_name±íÊ¾ĞèÒª±»¹ÒÔØµÄÄ¿Â¼ 
+/* å°†æ–‡ä»¶ç³»ç»Ÿä¸­çš„ä¸€ä¸ªç›®å½•æŒ‚è½½åˆ°å¦ä¸€ä¸ªç›®å½•ä¸Šï¼Œ
+  * ä¹Ÿå°±æ˜¯è®©è¯¥ç›®å½•åœ¨å¦ä¸€ä¸ª ç›®å½•ä¸­å¯è§ ï¼Œå…¶ä¸­ 
+  * old_nameè¡¨ç¤ºéœ€è¦è¢«æŒ‚è½½çš„ç›®å½• 
   */ 
 static int do_loopback(struct nameidata *nd, char *old_name, int recurse)
 {
@@ -654,7 +654,7 @@ static int do_loopback(struct nameidata *nd, char *old_name, int recurse)
 		return err;
 	if (!old_name || !*old_name)
 		return -EINVAL;
-        /* ²éÕÒµ½±»¹ÒÔØÄ¿Â¼µÄĞÅÏ¢ */
+        /* æŸ¥æ‰¾åˆ°è¢«æŒ‚è½½ç›®å½•çš„ä¿¡æ¯ */
 	err = path_lookup(old_name, LOOKUP_FOLLOW, &old_nd);
 	if (err)
 		return err;
@@ -788,7 +788,7 @@ out:
  * create a new mount for userspace and request it to be added into the
  * namespace's tree
  */
-/* °ÑÒ»¸öÉè±¸¹ÒÔØÄ³¸ö¹ÒÔØµãÖ®ÉÏ */
+/* æŠŠä¸€ä¸ªè®¾å¤‡æŒ‚è½½æŸä¸ªæŒ‚è½½ç‚¹ä¹‹ä¸Š */
 static int do_new_mount(struct nameidata *nd, char *type, int flags,
 			int mnt_flags, char *name, void *data)
 {
@@ -801,7 +801,7 @@ static int do_new_mount(struct nameidata *nd, char *type, int flags,
 	if (!capable(CAP_SYS_ADMIN))
 		return -EPERM;
 
-        /* µÃµ½Ò»¸ö¹ÒÔØµã£¬ */
+        /* å¾—åˆ°ä¸€ä¸ªæŒ‚è½½ç‚¹ï¼Œ */
 	mnt = do_kern_mount(type, flags, name, data);
 	if (IS_ERR(mnt))
 		return PTR_ERR(mnt);
@@ -820,7 +820,7 @@ int do_add_mount(struct vfsmount *newmnt, struct nameidata *nd,
 
 	down_write(&current->namespace->sem);
 	/* Something was mounted here while we slept */
-        /* ÖĞ¼ä¿ÉÄÜ¹ÒÔØºÃ¼¸´Î */
+        /* ä¸­é—´å¯èƒ½æŒ‚è½½å¥½å‡ æ¬¡ */
 	while(d_mountpoint(nd->dentry) && follow_down(&nd->mnt, &nd->dentry))
 		;
 	err = -EINVAL;
@@ -1036,11 +1036,11 @@ int copy_mount_options(const void __user *data, unsigned long *where)
  * Therefore, if this magic number is present, it carries no information
  * and must be discarded.
  */
-/* ÄÚºËµÄÕæÕı¹ÒÔØº¯Êı
-  * dev_name±íÊ¾¹ÒÔØµÄÉè±¸ 
-  * dir_name±íÊ¾¹ÒÔØµã 
-  * type_page±íÊ¾¹ÒÔØÉè±¸µÄÀàĞÍ 
-  * flag¹ÒÔØ±ê¼Ç 
+/* å†…æ ¸çš„çœŸæ­£æŒ‚è½½å‡½æ•°
+  * dev_nameè¡¨ç¤ºæŒ‚è½½çš„è®¾å¤‡ 
+  * dir_nameè¡¨ç¤ºæŒ‚è½½ç‚¹ 
+  * type_pageè¡¨ç¤ºæŒ‚è½½è®¾å¤‡çš„ç±»å‹ 
+  * flagæŒ‚è½½æ ‡è®° 
   */
 long do_mount(char * dev_name, char * dir_name, char *type_page,
 		  unsigned long flags, void *data_page)
@@ -1073,7 +1073,7 @@ long do_mount(char * dev_name, char * dir_name, char *type_page,
 	flags &= ~(MS_NOSUID|MS_NOEXEC|MS_NODEV|MS_ACTIVE);
 
 	/* ... and get the mountpoint */
-        /* ¸ù¾İÂ·¾¶ÏÈ»ñÈ¡¹ÒÔØµãµÄĞÅÏ¢ */
+        /* æ ¹æ®è·¯å¾„å…ˆè·å–æŒ‚è½½ç‚¹çš„ä¿¡æ¯ */
 	retval = path_lookup(dir_name, LOOKUP_FOLLOW, &nd);
 	if (retval)
 		return retval;
@@ -1082,7 +1082,7 @@ long do_mount(char * dev_name, char * dir_name, char *type_page,
 	if (retval)
 		goto dput_out;
 
-        /* ĞŞ¸Ä¹ÒÔØµã±ê¼Ç£¬Ïàµ±ÓÚÖØĞÂ¹ÒÔØ */
+        /* ä¿®æ”¹æŒ‚è½½ç‚¹æ ‡è®°ï¼Œç›¸å½“äºé‡æ–°æŒ‚è½½ */
 	if (flags & MS_REMOUNT)
 		retval = do_remount(&nd, flags & ~MS_REMOUNT, mnt_flags,
 				    data_page);
@@ -1098,7 +1098,7 @@ dput_out:
 	return retval;
 }
 
-/* ¿½±´Ãû³Æ¿Õ¼ä */
+/* æ‹·è´åç§°ç©ºé—´ */
 int copy_namespace(int flags, struct task_struct *tsk)
 {
 	struct namespace *namespace = tsk->namespace;
@@ -1112,7 +1112,7 @@ int copy_namespace(int flags, struct task_struct *tsk)
 
 	get_namespace(namespace);
 
-        /* Èç¹û²»ÊÇĞÂ½¨Ãû³Æ¿Õ¼ä£¬Ôò²»×öÈÎºÎ´¦Àí */
+        /* å¦‚æœä¸æ˜¯æ–°å»ºåç§°ç©ºé—´ï¼Œåˆ™ä¸åšä»»ä½•å¤„ç† */
 	if (!(flags & CLONE_NEWNS))
 		return 0;
 
@@ -1125,7 +1125,7 @@ int copy_namespace(int flags, struct task_struct *tsk)
 	if (!new_ns)
 		goto out;
 
-        /* ÉèÖÃÒıÓÃ¼ÆÊıºÍ³õÊ¼»¯ĞÅºÅÁ¿ */
+        /* è®¾ç½®å¼•ç”¨è®¡æ•°å’Œåˆå§‹åŒ–ä¿¡å·é‡ */
 	atomic_set(&new_ns->count, 1);
 	init_rwsem(&new_ns->sem);
 	INIT_LIST_HEAD(&new_ns->list);
@@ -1187,8 +1187,8 @@ out:
 	return -ENOMEM;
 }
 
-/* ÏµÍ³¹ÒÔÚº¯Êı
-  * type±íÊ¾ÎÄ¼şÏµÍ³µÄÀàĞÍ 
+/* ç³»ç»ŸæŒ‚åœ¨å‡½æ•°
+  * typeè¡¨ç¤ºæ–‡ä»¶ç³»ç»Ÿçš„ç±»å‹ 
   */
 asmlinkage long sys_mount(char __user * dev_name, char __user * dir_name,
 			  char __user * type, unsigned long flags,
@@ -1236,10 +1236,10 @@ out1:
  * Replace the fs->{rootmnt,root} with {mnt,dentry}. Put the old values.
  * It can block. Requires the big lock held.
  */
-/* ÉèÖÃµ±Ç°½ø³ÌµÄ¶ÔÓ¦ÎÄ¼şÏµÍ³µÄ¸ùÄ¿Â¼dentry£¬Ò²¾ÍÊÇ¾ø¶ÔÂ·¾¶²éÕÒÊ±
-  * ´ÓÄÄ¸öÄ¿Â¼¿ªÊ¼£¬ÒÔ¼°¸úÄ¿Â¼ËùÔÚÎÄ¼şÏµÍ³µÄ¹ÒÔØµã£¬ÎªÊ²Ã´×ÜÊÇÒªÓĞ¹ÒÔØµãÕâ¸öÖ¸Õë 
-  * ÒòÎª¹ÒÔØµã¶ÔÓ¦µÄ¸úÄ¿Â¼ÏµÍ³ÊÇÎÄ¼şÏµÍ³µÄÊµ¼ÊÇé¿ö£¬ÓÃ»§¿ÉÒÔÍ¨¹ıÏµÍ³µ÷ÓÃÀ´¸ü¸Ä½ø³ÌµÄ¸úÄ¿Â¼ 
-  * Ò²¿ÉÒÔ°Ñ¸ü¸Ä¹ıºóµÄ¸ùÄ¿Â¼¸ø¸Ä»ØÈ¥ 
+/* è®¾ç½®å½“å‰è¿›ç¨‹çš„å¯¹åº”æ–‡ä»¶ç³»ç»Ÿçš„æ ¹ç›®å½•dentryï¼Œä¹Ÿå°±æ˜¯ç»å¯¹è·¯å¾„æŸ¥æ‰¾æ—¶
+  * ä»å“ªä¸ªç›®å½•å¼€å§‹ï¼Œä»¥åŠè·Ÿç›®å½•æ‰€åœ¨æ–‡ä»¶ç³»ç»Ÿçš„æŒ‚è½½ç‚¹ï¼Œä¸ºä»€ä¹ˆæ€»æ˜¯è¦æœ‰æŒ‚è½½ç‚¹è¿™ä¸ªæŒ‡é’ˆ 
+  * å› ä¸ºæŒ‚è½½ç‚¹å¯¹åº”çš„è·Ÿç›®å½•ç³»ç»Ÿæ˜¯æ–‡ä»¶ç³»ç»Ÿçš„å®é™…æƒ…å†µï¼Œç”¨æˆ·å¯ä»¥é€šè¿‡ç³»ç»Ÿè°ƒç”¨æ¥æ›´æ”¹è¿›ç¨‹çš„è·Ÿç›®å½• 
+  * ä¹Ÿå¯ä»¥æŠŠæ›´æ”¹è¿‡åçš„æ ¹ç›®å½•ç»™æ”¹å›å» 
   */
 void set_fs_root(struct fs_struct *fs, struct vfsmount *mnt,
 		 struct dentry *dentry)
@@ -1262,7 +1262,7 @@ void set_fs_root(struct fs_struct *fs, struct vfsmount *mnt,
  * Replace the fs->{pwdmnt,pwd} with {mnt,dentry}. Put the old values.
  * It can block. Requires the big lock held.
  */
-/* ÉèÖÃfsµÄpwd */
+/* è®¾ç½®fsçš„pwd */
 void set_fs_pwd(struct fs_struct *fs, struct vfsmount *mnt,
 		struct dentry *dentry)
 {
@@ -1415,7 +1415,7 @@ static void __init init_mount_tree(void)
 	struct namespace *namespace;
 	struct task_struct *g, *p;
 
-        /* ¹ÒÔØrootfsÎÄ¼şÏµÍ³ */
+        /* æŒ‚è½½rootfsæ–‡ä»¶ç³»ç»Ÿ */
 	mnt = do_kern_mount("rootfs", 0, "rootfs", NULL);
 	if (IS_ERR(mnt))
 		panic("Can't create rootfs");
@@ -1429,7 +1429,7 @@ static void __init init_mount_tree(void)
 	namespace->root = mnt;
 	mnt->mnt_namespace = namespace;
 
-        /* ÉèÖÃ0ºÃ½ø³ÌµÄÃû³Æ¿Õ¼ä */
+        /* è®¾ç½®0å¥½è¿›ç¨‹çš„åç§°ç©ºé—´ */
 	init_task.namespace = namespace;
 	read_lock(&tasklist_lock);
 	do_each_thread(g, p) {
@@ -1438,9 +1438,9 @@ static void __init init_mount_tree(void)
 	} while_each_thread(g, p);
 	read_unlock(&tasklist_lock);
 
-        /* ÉèÖÃµ±Ç°½ø³ÌµÄ¹¤×÷Ä¿Â¼ºÍ'/'Ä¿Â¼£¬×¢Òâ´ËÊ±µÄµ±Ç°½ø³Ì¾ÍÊÇ
-          * 1ºÅ½ø³Ì £¬ÔÚÖ®ºóµÄ½ø³Ì¸´ÖÆ¹ı³Ìµ±ÖĞ£¬×ÔÈ»¶¼»á¸´ÖÆ¹ıÈ¥£¬³ı·Ç×Ô¼ºÈ¥¸ü¸Ä 
-          * ÕâÒ²ÒâÎ¶×Å1ºÅ½ø³ÌµÄ¸ùÄ¿Â¼ºÍµ±Ç°¹¤×÷Ä¿Â¼µÄÂ·¾¶¶¼Îª'/'  
+        /* è®¾ç½®å½“å‰è¿›ç¨‹çš„å·¥ä½œç›®å½•å’Œ'/'ç›®å½•ï¼Œæ³¨æ„æ­¤æ—¶çš„å½“å‰è¿›ç¨‹å°±æ˜¯
+          * 1å·è¿›ç¨‹ ï¼Œåœ¨ä¹‹åçš„è¿›ç¨‹å¤åˆ¶è¿‡ç¨‹å½“ä¸­ï¼Œè‡ªç„¶éƒ½ä¼šå¤åˆ¶è¿‡å»ï¼Œé™¤éè‡ªå·±å»æ›´æ”¹ 
+          * è¿™ä¹Ÿæ„å‘³ç€1å·è¿›ç¨‹çš„æ ¹ç›®å½•å’Œå½“å‰å·¥ä½œç›®å½•çš„è·¯å¾„éƒ½ä¸º'/'  
           */
 	set_fs_pwd(current->fs, namespace->root, namespace->root->mnt_root);
 	set_fs_root(current->fs, namespace->root, namespace->root->mnt_root);
@@ -1468,9 +1468,9 @@ void __init mnt_init(unsigned long mempages)
 	 * We don't guarantee that "sizeof(struct list_head)" is necessarily
 	 * a power-of-two.
 	 */
-        /* ¼ÆËãmount_hashtableÖĞÔªËØµÄ¸öÊı */
+        /* è®¡ç®—mount_hashtableä¸­å…ƒç´ çš„ä¸ªæ•° */
 	nr_hash = (1UL << order) * PAGE_SIZE / sizeof(struct list_head);
-        /* ¼ÆËãnr_hash¸öÔªËØÓÃ2µÄ¶àÉÙ´Î·½¿ÉÒÔ±íÊ¾ */
+        /* è®¡ç®—nr_hashä¸ªå…ƒç´ ç”¨2çš„å¤šå°‘æ¬¡æ–¹å¯ä»¥è¡¨ç¤º */
 	hash_bits = 0;
 	do {
 		hash_bits++;
@@ -1481,7 +1481,7 @@ void __init mnt_init(unsigned long mempages)
 	 * Re-calculate the actual number of entries and the mask
 	 * from the number of bits we can fit.
 	 */
-        /* ×îÖÕnr_hashÊÇÔÚ×î½Ó½ü2µÄn´Î·½µÄµØ·½ÏòÏÂÈ¡Õû */
+        /* æœ€ç»ˆnr_hashæ˜¯åœ¨æœ€æ¥è¿‘2çš„næ¬¡æ–¹çš„åœ°æ–¹å‘ä¸‹å–æ•´ */
 	nr_hash = 1UL << hash_bits;
 	hash_mask = nr_hash-1;
 
@@ -1489,7 +1489,7 @@ void __init mnt_init(unsigned long mempages)
 			nr_hash, order, (PAGE_SIZE << order));
 
 	/* And initialize the newly allocated array */
-        /* ½«ËùÓĞµÄË«ÏòÁ´±í³õÊ¼»¯ */
+        /* å°†æ‰€æœ‰çš„åŒå‘é“¾è¡¨åˆå§‹åŒ– */
 	d = mount_hashtable;
 	i = nr_hash;
 	do {
@@ -1497,11 +1497,11 @@ void __init mnt_init(unsigned long mempages)
 		d++;
 		i--;
 	} while (i);
-        /* ³õÊ¼»¯sysfsÎÄ¼şÏµÍ³ */
+        /* åˆå§‹åŒ–sysfsæ–‡ä»¶ç³»ç»Ÿ */
 	sysfs_init();
-        /* ³õÊ¼»¯rootfs */
+        /* åˆå§‹åŒ–rootfs */
 	init_rootfs();
-        /* ¹¹Ôì'/'Ä¿Â¼ */
+        /* æ„é€ '/'ç›®å½• */
 	init_mount_tree();
 }
 

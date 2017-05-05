@@ -57,7 +57,7 @@ static inline int ext2_inode_is_fast_symlink(struct inode *inode)
  * Called at the last iput() if i_nlink is zero.
  */
 /**
- * µ±É¾³ıÎÄ¼ş£¬²¢ÇÒinodeÒıÓÃ¼ÆÊı±»iputµİ¼õÎª0Ê±£¬µ÷ÓÃ´Ëº¯ÊıÏú»ÙÎÄ¼şinode.
+ * å½“åˆ é™¤æ–‡ä»¶ï¼Œå¹¶ä¸”inodeå¼•ç”¨è®¡æ•°è¢«iputé€’å‡ä¸º0æ—¶ï¼Œè°ƒç”¨æ­¤å‡½æ•°é”€æ¯æ–‡ä»¶inode.
  */
 void ext2_delete_inode (struct inode * inode)
 {
@@ -70,9 +70,9 @@ void ext2_delete_inode (struct inode * inode)
 	ext2_update_inode(inode, inode_needs_sync(inode));
 
 	inode->i_size = 0;
-	if (inode->i_blocks)/* ÊÍ·ÅÓ²ÅÌÉÏÓëinodeÏà¹ØµÄÊı¾İ¿é */
+	if (inode->i_blocks)/* é‡Šæ”¾ç¡¬ç›˜ä¸Šä¸inodeç›¸å…³çš„æ•°æ®å— */
 		ext2_truncate (inode);
-	ext2_free_inode (inode);/* ÊÍ·ÅinodeÕ¼ÓÃµÄÊı¾İ¿Õ¼ä */
+	ext2_free_inode (inode);/* é‡Šæ”¾inodeå ç”¨çš„æ•°æ®ç©ºé—´ */
 
 	return;
 no_delete:
@@ -80,14 +80,14 @@ no_delete:
 }
 
 /**
- * Èç¹ûext2_get_branch¼ì²âµ½Ã»ÓĞÖ¸ÏòÏÂÒ»¸ö²ã´Î¼ä½Ó¿é»òÕßÊı¾İ¿é£¬Ôò·µ»Ø´ËÊµÀı¡£
+ * å¦‚æœext2_get_branchæ£€æµ‹åˆ°æ²¡æœ‰æŒ‡å‘ä¸‹ä¸€ä¸ªå±‚æ¬¡é—´æ¥å—æˆ–è€…æ•°æ®å—ï¼Œåˆ™è¿”å›æ­¤å®ä¾‹ã€‚
  */
 typedef struct {
-	/* keyÔÚÄÚ´æÖĞµÄµØÖ· */
+	/* keyåœ¨å†…å­˜ä¸­çš„åœ°å€ */
 	__le32	*p;
-	/* ¿éºÅ */
+	/* å—å· */
 	__le32	key;
-	/* ÔÚÄÚ´æÖĞ±£´æ¿éµÄÊı¾İ */
+	/* åœ¨å†…å­˜ä¸­ä¿å­˜å—çš„æ•°æ® */
 	struct buffer_head *bh;
 } Indirect;
 
@@ -145,16 +145,16 @@ static int ext2_block_to_path(struct inode *inode,
 	int n = 0;
 	int final = 0;
 
-	if (i_block < 0) {/* ¿éºÅ±ØÈ»´Ó0¿ªÊ¼£¬²»¿ÉÄÜĞ¡ÓÚ0 */
+	if (i_block < 0) {/* å—å·å¿…ç„¶ä»0å¼€å§‹ï¼Œä¸å¯èƒ½å°äº0 */
 		ext2_warning (inode->i_sb, "ext2_block_to_path", "block < 0");
-	} else if (i_block < direct_blocks) {/* ¿éºÅĞ¡ÓÚÖ±½Ó¿éµÄÊıÄ¿£¬Ö±½Ó·µ»Ø¡£ */
-		offsets[n++] = i_block;/* Ö±½Ó¼ÇÂ¼¿éºÅµ½·µ»Ø½á¹ûÖĞ */
+	} else if (i_block < direct_blocks) {/* å—å·å°äºç›´æ¥å—çš„æ•°ç›®ï¼Œç›´æ¥è¿”å›ã€‚ */
+		offsets[n++] = i_block;/* ç›´æ¥è®°å½•å—å·åˆ°è¿”å›ç»“æœä¸­ */
 		final = direct_blocks;
-	} else if ( (i_block -= direct_blocks) < indirect_blocks) {/* Ò»´Î¼ä½Ó¿é */
-		offsets[n++] = EXT2_IND_BLOCK;/* µÚÒ»¸öÆ«ÒÆÊÇµÚ12Ïî£¬Ò»´Î¼ä½Ó¿éÔÚË÷ÒıÖĞµÄÎ»ÖÃ */
+	} else if ( (i_block -= direct_blocks) < indirect_blocks) {/* ä¸€æ¬¡é—´æ¥å— */
+		offsets[n++] = EXT2_IND_BLOCK;/* ç¬¬ä¸€ä¸ªåç§»æ˜¯ç¬¬12é¡¹ï¼Œä¸€æ¬¡é—´æ¥å—åœ¨ç´¢å¼•ä¸­çš„ä½ç½® */
 		offsets[n++] = i_block;
 		final = ptrs;
-	} else if ((i_block -= indirect_blocks) < double_blocks) {/* ¶ş´Î¼ä½Ó¿é */
+	} else if ((i_block -= indirect_blocks) < double_blocks) {/* äºŒæ¬¡é—´æ¥å— */
 		offsets[n++] = EXT2_DIND_BLOCK;
 		offsets[n++] = i_block >> ptrs_bits;
 		offsets[n++] = i_block & (ptrs - 1);
@@ -302,7 +302,7 @@ static unsigned long ext2_find_near(struct inode *inode, Indirect *ind)
  */
 
 /**
- * ÎªÎÄ¼ş¿é²éÕÒÒ»¸öÀíÏëµÄÎ»ÖÃ£¬ĞèÒªÈÃÎÄ¼ş¿é¾¡¿ÉÄÜÁ¬Ğø£¬¾¡¿ÉÄÜ½Ó½ü¡£
+ * ä¸ºæ–‡ä»¶å—æŸ¥æ‰¾ä¸€ä¸ªç†æƒ³çš„ä½ç½®ï¼Œéœ€è¦è®©æ–‡ä»¶å—å°½å¯èƒ½è¿ç»­ï¼Œå°½å¯èƒ½æ¥è¿‘ã€‚
  */
 static inline int ext2_find_goal(struct inode *inode,
 				 long block,
@@ -317,12 +317,12 @@ static inline int ext2_find_goal(struct inode *inode,
 	 * try the heuristic for sequential allocation,
 	 * failing that at least try to get decent locality.
 	 */
-	if (block_i && (block == block_i->last_alloc_logical_block + 1)/* ±¾´Î·ÖÅäµÄÂß¼­¿éºÅÓëÉÏÒ»´ÎµÄ¿éºÅÏàÁÚ£¬ËµÃ÷ÊÇÁ¬Ğø·ÖÅä */
-		&& (block_i->last_alloc_physical_block != 0)) {/* ·ÖÅäÁËÎïÀí¿é */
-		return block_i->last_alloc_physical_block + 1;/* ÀíÏëµÄ¿éÊÇ½ôÁÚÉÏ´Î·ÖÅäµÄÎïÀí¿é */
+	if (block_i && (block == block_i->last_alloc_logical_block + 1)/* æœ¬æ¬¡åˆ†é…çš„é€»è¾‘å—å·ä¸ä¸Šä¸€æ¬¡çš„å—å·ç›¸é‚»ï¼Œè¯´æ˜æ˜¯è¿ç»­åˆ†é… */
+		&& (block_i->last_alloc_physical_block != 0)) {/* åˆ†é…äº†ç‰©ç†å— */
+		return block_i->last_alloc_physical_block + 1;/* ç†æƒ³çš„å—æ˜¯ç´§é‚»ä¸Šæ¬¡åˆ†é…çš„ç‰©ç†å— */
 	}
 
-	/* ¾¡¿ÉÄÜ²éÕÒÓë¼ä½Ó¿éÁÚ½üµÄ¿é */
+	/* å°½å¯èƒ½æŸ¥æ‰¾ä¸é—´æ¥å—é‚»è¿‘çš„å— */
 	return ext2_find_near(inode, partial);
 }
 
@@ -395,10 +395,10 @@ static int ext2_alloc_blocks(struct inode *inode,
 	 */
 	target = blks + indirect_blks;
 
-	while (1) {/* ·´¸´Ñ­»·£¬Ö±µ½·ÖÅäµ½ºÏÊÊµÄ¿é */
+	while (1) {/* åå¤å¾ªç¯ï¼Œç›´åˆ°åˆ†é…åˆ°åˆé€‚çš„å— */
 		count = target;
 		/* allocating blocks for indirect blocks and direct blocks */
-		/* ext2_new_blocks¾¡Á¿·ÖÅä×ã¹»µÄÁ¬Ğø¿é */
+		/* ext2_new_blockså°½é‡åˆ†é…è¶³å¤Ÿçš„è¿ç»­å— */
 		current_block = ext2_new_blocks(inode,goal,&count,err);
 		if (*err)
 			goto failed_out;
@@ -453,7 +453,7 @@ failed_out:
  */
 
 /**
- * Îª¿é·ÖÅä¼ä½Ó¿éºÍÊı¾İ¿é£¬²¢½¨Á¢¿éµÄ¼ä½ÓÁ´¡£
+ * ä¸ºå—åˆ†é…é—´æ¥å—å’Œæ•°æ®å—ï¼Œå¹¶å»ºç«‹å—çš„é—´æ¥é“¾ã€‚
  */
 static int ext2_alloc_branch(struct inode *inode,
 			int indirect_blks, int *blks, ext2_fsblk_t goal,
@@ -467,13 +467,13 @@ static int ext2_alloc_branch(struct inode *inode,
 	ext2_fsblk_t new_blocks[4];
 	ext2_fsblk_t current_block;
 
-	/* ·ÖÅäËùĞèÒªµÄ¿é */
+	/* åˆ†é…æ‰€éœ€è¦çš„å— */
 	num = ext2_alloc_blocks(inode, goal, indirect_blks,
 				*blks, new_blocks, &err);
 	if (err)
 		return err;
 
-	/* ½¨Á¢¿é¼äµÄÁªÏµ */
+	/* å»ºç«‹å—é—´çš„è”ç³» */
 	branch[0].key = cpu_to_le32(new_blocks[0]);
 	/*
 	 * metadata blocks and data blocks are allocated.
@@ -610,17 +610,17 @@ static int ext2_get_blocks(struct inode *inode,
 	int count = 0;
 	ext2_fsblk_t first_block = 0;
 
-	/* ¸ù¾İ¿éÔÚÎÄ¼şÖĞµÄÎ»ÖÃ£¬ÕÒµ½Êı¾İµÄÂ·¾¶¡£ÒòÎªext2¿ÉÄÜÓĞÈı²ã¼ä½Ó¿é */
+	/* æ ¹æ®å—åœ¨æ–‡ä»¶ä¸­çš„ä½ç½®ï¼Œæ‰¾åˆ°æ•°æ®çš„è·¯å¾„ã€‚å› ä¸ºext2å¯èƒ½æœ‰ä¸‰å±‚é—´æ¥å— */
 	depth = ext2_block_to_path(inode,iblock,offsets,&blocks_to_boundary);
 
-	if (depth == 0)/* ¿éºÅ²»ºÏ·¨ */
+	if (depth == 0)/* å—å·ä¸åˆæ³• */
 		return (err);
 reread:
-	/* ¸ù¾İÂ·¾¶£¬¶ÁÈ¡Ä¿±ê¿éÖĞµÄÊı¾İ */
+	/* æ ¹æ®è·¯å¾„ï¼Œè¯»å–ç›®æ ‡å—ä¸­çš„æ•°æ® */
 	partial = ext2_get_branch(inode, depth, offsets, chain, &err);
 
 	/* Simplest case - block found, no allocation needed */
-	if (!partial) {/* ¿éÊÇ´æÔÚµÄ£¬²»ÓÃĞÂ´´½¨ */
+	if (!partial) {/* å—æ˜¯å­˜åœ¨çš„ï¼Œä¸ç”¨æ–°åˆ›å»º */
 		first_block = le32_to_cpu(chain[depth - 1].key);
 		clear_buffer_new(bh_result); /* What's this do? */
 		count++;
@@ -648,21 +648,21 @@ reread:
 	}
 
 	/* Next simple case - plain lookup or failed read of indirect block */
-	if (!create || err == -EIO)/* ¿é²»´æÔÚ£¬µ«ÊÇ²»ÔÊĞí´´½¨ĞÂ¿é£¬»òÕß³öÏÖIOÒì³£ */
+	if (!create || err == -EIO)/* å—ä¸å­˜åœ¨ï¼Œä½†æ˜¯ä¸å…è®¸åˆ›å»ºæ–°å—ï¼Œæˆ–è€…å‡ºç°IOå¼‚å¸¸ */
 		goto cleanup;
 
-	/* »ñµÃ±£»¤inodeµÄËø */
+	/* è·å¾—ä¿æŠ¤inodeçš„é” */
 	mutex_lock(&ei->truncate_mutex);
 
 	/*
 	 * Okay, we need to do block allocation.  Lazily initialize the block
 	 * allocation info here if necessary
 	*/
-	/* ĞèÒª·ÖÅäĞÂ¿é£¬³õÊ¼»¯Ô¤·ÖÅä¶ÔÏó */
+	/* éœ€è¦åˆ†é…æ–°å—ï¼Œåˆå§‹åŒ–é¢„åˆ†é…å¯¹è±¡ */
 	if (S_ISREG(inode->i_mode) && (!ei->i_block_alloc_info))
 		ext2_init_block_alloc_info(inode);
 
-	/* ²éÕÒÀíÏëµÄÎ»ÖÃ */
+	/* æŸ¥æ‰¾ç†æƒ³çš„ä½ç½® */
 	goal = ext2_find_goal(inode, iblock, chain, partial);
 
 	/* the number of blocks need to allocate for [d,t]indirect blocks */
@@ -671,13 +671,13 @@ reread:
 	 * Next look up the indirect map to count the totoal number of
 	 * direct blocks to allocate for this branch.
 	 */
-	/* ¼ÆËãÊı¾İ¿éºÍ¼ä½Ó¿éµÄ×ÜÊı */
+	/* è®¡ç®—æ•°æ®å—å’Œé—´æ¥å—çš„æ€»æ•° */
 	count = ext2_blks_to_allocate(partial, indirect_blks,
 					maxblocks, blocks_to_boundary);
 	/*
 	 * XXX ???? Block out ext2_truncate while we alter the tree
 	 */
-	/* ·ÖÅäËùÓĞµÄÊı¾İ¿éºÍ¼ä½Ó¿é */
+	/* åˆ†é…æ‰€æœ‰çš„æ•°æ®å—å’Œé—´æ¥å— */
 	err = ext2_alloc_branch(inode, indirect_blks, &count, goal,
 				offsets + (partial - chain), partial);
 
@@ -698,7 +698,7 @@ reread:
 		}
 	}
 
-	/* ½«×îÖÕµÄ²ã´Î½á¹¹Ìí¼Óµ½ÏÖ´æµÄÊı¾İ½á¹¹ÖĞ */
+	/* å°†æœ€ç»ˆçš„å±‚æ¬¡ç»“æ„æ·»åŠ åˆ°ç°å­˜çš„æ•°æ®ç»“æ„ä¸­ */
 	ext2_splice_branch(inode, iblock, partial, indirect_blks, count);
 	mutex_unlock(&ei->truncate_mutex);
 	set_buffer_new(bh_result);
@@ -724,7 +724,7 @@ changed:
 }
 
 /**
- * ¶ÁÈ¡ext2ÎÄ¼ş¿é»òÕßÔÚ´ÅÅÌÖĞ´´½¨ĞÂ¿é
+ * è¯»å–ext2æ–‡ä»¶å—æˆ–è€…åœ¨ç£ç›˜ä¸­åˆ›å»ºæ–°å—
  */
 int ext2_get_block(struct inode *inode, sector_t iblock, struct buffer_head *bh_result, int create)
 {
@@ -740,7 +740,7 @@ int ext2_get_block(struct inode *inode, sector_t iblock, struct buffer_head *bh_
 }
 
 /**
- * Ğ´ÎÄ¼şÒ³Ãæ¡£
+ * å†™æ–‡ä»¶é¡µé¢ã€‚
  */
 static int ext2_writepage(struct page *page, struct writeback_control *wbc)
 {
@@ -748,7 +748,7 @@ static int ext2_writepage(struct page *page, struct writeback_control *wbc)
 }
 
 /**
- * µØÖ·¿Õ¼ä²Ù×÷£¬ÇëÒ³ÃæÊı¾İ
+ * åœ°å€ç©ºé—´æ“ä½œï¼Œè¯·é¡µé¢æ•°æ®
  */
 static int ext2_readpage(struct file *file, struct page *page)
 {

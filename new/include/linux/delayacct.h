@@ -30,24 +30,24 @@
 #define DELAYACCT_PF_BLKIO	0x00000002	/* I am waiting on IO */
 
 /*
-delayacct��һ����д����ָper-task delay accounting��
-���feature��ͳ��ÿһ��task�ĵȴ�ϵͳ��Դ��ʱ�䣨����ȴ�CPU��memeory����IO����
-��Щͳ����Ϣ�����ھ�׼��ȷ��task����ϵͳ��Դ�����ȼ���
+delayacct是一个缩写，是指per-task delay accounting。
+这个feature是统计每一个task的等待系统资源的时间（例如等待CPU、memeory或者IO）。
+这些统计信息有助于精准的确定task访问系统资源的优先级。
 
-һ������/�߳̿��ܻ���Ϊ�����ԭ���delay��
-1���ý���/�̴߳���runnable�����ǵȴ�����������ִ��
-2���ý���/�̷߳���synchronous block I/O������/�̴߳�������״̬��ֱ��I/O�����
-3������/�߳���ִ�й����еȴ�page swapping in��
-       �����ڴ����ޣ�ϵͳ�����ܰѽ��̵ĸ����Σ����ĶΡ����ݶεȣ��������������ڴ��У�
-       ��������Щû���������ڴ�Ķεĵ�ַ��ʱ�򣬾ͻ��д��̲�����
-       ���½���delay�������и�רҵ���������capacity misses
-4������/�߳������ڴ棬����������Դ���޶�����page frame reclaim�Ķ�����
+一个进程/线程可能会因为下面的原因而delay：
+1、该进程/线程处于runnable，但是等待调度器调度执行
+2、该进程/线程发起synchronous block I/O，进程/线程处于阻塞状态，直到I/O的完成
+3、进程/线程在执行过程中等待page swapping in。
+       由于内存有限，系统不可能把进程的各个段（正文段、数据段等）都保存在物理内存中，
+       当访问那些没有在物理内存的段的地址的时候，就会有磁盘操作，
+       导致进程delay，这里有个专业的术语叫做capacity misses
+4、进程/线程申请内存，但是由于资源受限而导致page frame reclaim的动作。
 
-ϵͳΪ�ζ���Щdelay��Ϣ����ͳ���أ���Ҫ��ϵͳȷ�����е����ȼ���ʱ���������ԣ�
-1��task priority������ý���/�̳߳�ʱ��ĵȴ�CPU����ô���������Ե��߸���������ȼ���
-2��IO priority������ý���/�̳߳�ʱ��ĵȴ�I/O����ôI/O���������Ե��߸������I/O���ȼ���
-3��rss limit value�� rss��ȫ����resident set size����ʾ�������ڴ��Ӧ�������ַ�ռ䡣
-       ���������ڴ���Դ���ޣ���������Ҫ����ʹ�á�rss limit value�����˸�������rss�����ޡ�
+系统为何对这些delay信息进行统计呢？主要让系统确定下列的优先级的时候更有针对性：
+1、task priority。如果该进程/线程长时间的等待CPU，那么调度器可以调高该任务的优先级。
+2、IO priority。如果该进程/线程长时间的等待I/O，那么I/O调度器可以调高该任务的I/O优先级。
+3、rss limit value。 rss的全称是resident set size，表示有物理内存对应的虚拟地址空间。
+       由于物理内存资源有限，各个进程要合理使用。rss limit value定义了各个进程rss的上限。
 */
 #ifdef CONFIG_TASK_DELAY_ACCT
 

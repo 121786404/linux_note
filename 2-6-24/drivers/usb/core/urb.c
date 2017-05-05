@@ -60,15 +60,15 @@ void usb_init_urb(struct urb *urb)
  * The driver must call usb_free_urb() when it is finished with the urb.
  */
 /**
- * ´´½¨URBµÄ×¨ÓÃº¯Êı¡£
- * 		iso_packets:		µÈÊ±´«Êä°üµÄÊıÄ¿¡£
+ * åˆ›å»ºURBçš„ä¸“ç”¨å‡½æ•°ã€‚
+ * 		iso_packets:		ç­‰æ—¶ä¼ è¾“åŒ…çš„æ•°ç›®ã€‚
  */
 struct urb *usb_alloc_urb(int iso_packets, gfp_t mem_flags)
 {
 	struct urb *urb;
 
 	/**
-	 * ¸ù¾İµÈÊ±´«Êä°üµÄÊıÄ¿£¬¼ÆËãÒª·ÖÅäµÄÊı¾İ½á¹¹´óĞ¡²¢·ÖÅäÄÚ´æ¡£
+	 * æ ¹æ®ç­‰æ—¶ä¼ è¾“åŒ…çš„æ•°ç›®ï¼Œè®¡ç®—è¦åˆ†é…çš„æ•°æ®ç»“æ„å¤§å°å¹¶åˆ†é…å†…å­˜ã€‚
 	 */
 	urb = kmalloc(sizeof(struct urb) +
 		iso_packets * sizeof(struct usb_iso_packet_descriptor),
@@ -78,7 +78,7 @@ struct urb *usb_alloc_urb(int iso_packets, gfp_t mem_flags)
 		return NULL;
 	}
 	/**
-	 * ³õÊ¼»¯ÒıÓÃ¼ÆÊı£¬²¢½øĞĞÆäËûÒ»Ğ©³õÊ¼»¯¡£
+	 * åˆå§‹åŒ–å¼•ç”¨è®¡æ•°ï¼Œå¹¶è¿›è¡Œå…¶ä»–ä¸€äº›åˆå§‹åŒ–ã€‚
 	 */
 	usb_init_urb(urb);
 	return urb;
@@ -95,13 +95,13 @@ struct urb *usb_alloc_urb(int iso_packets, gfp_t mem_flags)
  * done elsewhere.
  */
 /**
- * ÊÍ·ÅURBµÄº¯Êı¡£
+ * é‡Šæ”¾URBçš„å‡½æ•°ã€‚
  */
 void usb_free_urb(struct urb *urb)
 {
 	if (urb)
 		/**
-		 * Èç¹ûÒıÓÃ¼ÆÊı¼õÎª0£¬Ôòµ÷ÓÃurb_destroyÊÍ·ÅËü¡£
+		 * å¦‚æœå¼•ç”¨è®¡æ•°å‡ä¸º0ï¼Œåˆ™è°ƒç”¨urb_destroyé‡Šæ”¾å®ƒã€‚
 		 */
 		kref_put(&urb->kref, urb_destroy);
 }
@@ -292,7 +292,7 @@ EXPORT_SYMBOL_GPL(usb_unanchor_urb);
  *
  */
 /**
- * ÏòÖ÷»ú¿ØÖÆÆ÷Ìá½»URB¡£
+ * å‘ä¸»æœºæ§åˆ¶å™¨æäº¤URBã€‚
  */
 int usb_submit_urb(struct urb *urb, gfp_t mem_flags)
 {
@@ -302,32 +302,32 @@ int usb_submit_urb(struct urb *urb, gfp_t mem_flags)
 	int				is_out;
 
 	/**
-	 * ²»ÄÜ´«ÊäNULL¶ÔÏó¡£
-	 * hcprivÊÇÁô¸øÖ÷»ú¿ØÖÆÆ÷Ê¹ÓÃµÄ£¬Èç¹û±»Õ¼ÓÃ£¬Ò²ÊÇ²»ÔÊĞíµÄ¡£
-	 * Èç¹û²»Ö¸¶¨Íê³É»Øµ÷º¯Êı£¬Ò²ÊÇ²»ÔÊĞíµÄ¡£
+	 * ä¸èƒ½ä¼ è¾“NULLå¯¹è±¡ã€‚
+	 * hcprivæ˜¯ç•™ç»™ä¸»æœºæ§åˆ¶å™¨ä½¿ç”¨çš„ï¼Œå¦‚æœè¢«å ç”¨ï¼Œä¹Ÿæ˜¯ä¸å…è®¸çš„ã€‚
+	 * å¦‚æœä¸æŒ‡å®šå®Œæˆå›è°ƒå‡½æ•°ï¼Œä¹Ÿæ˜¯ä¸å…è®¸çš„ã€‚
 	 */
 	if (!urb || urb->hcpriv || !urb->complete)
 		return -EINVAL;
 	/**
-	 * ±ØĞëÖ¸¶¨¹ØÁªµÄUSBÉè±¸£¬²¢ÇÒÉè±¸×´Ì¬±ØĞë¸ßÓÚUSB_STATE_DEFAULT
-	 * Éè±¸Ò²±ØĞë¹ØÁª×ÜÏß£¬Éè±¸ºÅÒ²±ØĞë´óÓÚ0.
-	 * Éè±¸ºÅÒ²²»ÄÜÎª0£¬ÒòÎªÔÚÉè±¸Ã»ÓĞ½øÈëUSB_STATE_ADDRESS×´Ì¬Ê±£¬ÓÃÉè±¸0À´ÏìÓ¦Ö÷»úµÄÇëÇó¡£
-	 * µ±´ÓUSB_STATE_DEFAULT×´Ì¬½øÈëUSB_STATE_ADDRESSÊ±£¬ĞèÒª½«devnumÉèÖÃÎªĞèÒªµÄÉè±¸ºÅ£¬µ±ÒÑ¾­½øÈëUSB_STATE_ADDRESSÊ±£¬devnum¸ü²»ÄÜÎª0ÁË¡£
+	 * å¿…é¡»æŒ‡å®šå…³è”çš„USBè®¾å¤‡ï¼Œå¹¶ä¸”è®¾å¤‡çŠ¶æ€å¿…é¡»é«˜äºUSB_STATE_DEFAULT
+	 * è®¾å¤‡ä¹Ÿå¿…é¡»å…³è”æ€»çº¿ï¼Œè®¾å¤‡å·ä¹Ÿå¿…é¡»å¤§äº0.
+	 * è®¾å¤‡å·ä¹Ÿä¸èƒ½ä¸º0ï¼Œå› ä¸ºåœ¨è®¾å¤‡æ²¡æœ‰è¿›å…¥USB_STATE_ADDRESSçŠ¶æ€æ—¶ï¼Œç”¨è®¾å¤‡0æ¥å“åº”ä¸»æœºçš„è¯·æ±‚ã€‚
+	 * å½“ä»USB_STATE_DEFAULTçŠ¶æ€è¿›å…¥USB_STATE_ADDRESSæ—¶ï¼Œéœ€è¦å°†devnumè®¾ç½®ä¸ºéœ€è¦çš„è®¾å¤‡å·ï¼Œå½“å·²ç»è¿›å…¥USB_STATE_ADDRESSæ—¶ï¼Œdevnumæ›´ä¸èƒ½ä¸º0äº†ã€‚
 	 */
 	if (!(dev = urb->dev) ||
 	    (dev->state < USB_STATE_DEFAULT) ||
 	    (!dev->bus) || (dev->devnum <= 0))
 		return -ENODEV;
 	/**
-	 * ÕâÀïÅĞ¶ÏÉè±¸µÄÖ÷»ú¿ØÖÆÆ÷ÊÇ·ñ´¦ÓÚµçÔ´»î¶¯×´Ì¬¡£
-	 * Í¬Ê±ÅĞ¶ÏÉè±¸±¾ÉíÊÇ·ñ±»¹ÒÆğ¡£
+	 * è¿™é‡Œåˆ¤æ–­è®¾å¤‡çš„ä¸»æœºæ§åˆ¶å™¨æ˜¯å¦å¤„äºç”µæºæ´»åŠ¨çŠ¶æ€ã€‚
+	 * åŒæ—¶åˆ¤æ–­è®¾å¤‡æœ¬èº«æ˜¯å¦è¢«æŒ‚èµ·ã€‚
 	 */
 	if (dev->bus->controller->power.power_state.event != PM_EVENT_ON
 			|| dev->state == USB_STATE_SUSPENDED)
 		return -EHOSTUNREACH;
 
 	/**
-	 * ÉèÖÃÕâ¸ö×´Ì¬£¬±íÊ¾URBµÄ¿ØÖÆÈ¨ÒÑ¾­ÔÚcoreºÍHCDÖĞ¡£
+	 * è®¾ç½®è¿™ä¸ªçŠ¶æ€ï¼Œè¡¨ç¤ºURBçš„æ§åˆ¶æƒå·²ç»åœ¨coreå’ŒHCDä¸­ã€‚
 	 */
 	ep = (usb_pipein(urb->pipe) ? dev->ep_in : dev->ep_out)
 			[usb_pipeendpoint(urb->pipe)];
@@ -337,7 +337,7 @@ int usb_submit_urb(struct urb *urb, gfp_t mem_flags)
 	urb->ep = ep;
 	urb->status = -EINPROGRESS;
 	/**
-	 * ³õÊ¼»¯ÒÑ¾­´«ÊäµÄ³¤¶ÈÎª0£¬ÕâÑù£¬µ±ºóÃæ³ö´íÊ±£¬¾Í¿ÉÒÔÏòÉÏ²ã·µ»Ø0.
+	 * åˆå§‹åŒ–å·²ç»ä¼ è¾“çš„é•¿åº¦ä¸º0ï¼Œè¿™æ ·ï¼Œå½“åé¢å‡ºé”™æ—¶ï¼Œå°±å¯ä»¥å‘ä¸Šå±‚è¿”å›0.
 	 */
 	urb->actual_length = 0;
 
@@ -345,7 +345,7 @@ int usb_submit_urb(struct urb *urb, gfp_t mem_flags)
 	 * and don't need to duplicate tests
 	 */
 	/**
-	 * »ñµÃ¹ÜµÀµÄÀàĞÍºÍ·½Ïò¡£
+	 * è·å¾—ç®¡é“çš„ç±»å‹å’Œæ–¹å‘ã€‚
 	 */
 	pipe = urb->pipe;
 	temp = usb_pipetype(pipe);
@@ -364,11 +364,11 @@ int usb_submit_urb(struct urb *urb, gfp_t mem_flags)
 			(is_out ? URB_DIR_OUT : URB_DIR_IN);
 
 	/**
-	 * »ñµÃ¶ËµãµÄ×î´ó°ü³¤¡£
+	 * è·å¾—ç«¯ç‚¹çš„æœ€å¤§åŒ…é•¿ã€‚
 	 */
 	max = usb_maxpacket(dev, pipe, is_out);
 	/**
-	 * Èç¹û°ü³¤Ğ¡ÓÚµÈÓÚ0£¬ËµÃ÷¸Ã¶Ëµã´ËÊ±»¹Ã»ÓĞ³õÊ¼»¯£¬·µ»Ø´íÎó¡£
+	 * å¦‚æœåŒ…é•¿å°äºç­‰äº0ï¼Œè¯´æ˜è¯¥ç«¯ç‚¹æ­¤æ—¶è¿˜æ²¡æœ‰åˆå§‹åŒ–ï¼Œè¿”å›é”™è¯¯ã€‚
 	 */
 	if (max <= 0) {
 		dev_dbg(&dev->dev,
@@ -383,44 +383,44 @@ int usb_submit_urb(struct urb *urb, gfp_t mem_flags)
 	 * while we're checking, initialize return status.
 	 */
 	/**
-	 * ¶ÔµÈÊ±´«ÊäĞèÒª½øĞĞÌØÊâ´¦Àí¡£
+	 * å¯¹ç­‰æ—¶ä¼ è¾“éœ€è¦è¿›è¡Œç‰¹æ®Šå¤„ç†ã€‚
 	 */
 	if (temp == PIPE_ISOCHRONOUS) {
 		int	n, len;
 
 		/* "high bandwidth" mode, 1-3 packets/uframe? */
 		/**
-		 * ¸ßËÙ¶Ëµã¡£ÔÊĞíÔÚÃ¿Ò»Ö¡ÖĞ½øĞĞ2µ½3´Î´«Êä¡£
+		 * é«˜é€Ÿç«¯ç‚¹ã€‚å…è®¸åœ¨æ¯ä¸€å¸§ä¸­è¿›è¡Œ2åˆ°3æ¬¡ä¼ è¾“ã€‚
 		 */
 		if (dev->speed == USB_SPEED_HIGH) {
 			/**
-			 * ¶ÔÕâÖÖ¶ËµãÀ´Ëµ£¬µÚ12ºÍ13Î»±íÊ¾ÁËÃ¿¸öÎ¢Ö¡¿ÉÒÔ¶îÍâ´«ÊäµÄ°ü¡£
+			 * å¯¹è¿™ç§ç«¯ç‚¹æ¥è¯´ï¼Œç¬¬12å’Œ13ä½è¡¨ç¤ºäº†æ¯ä¸ªå¾®å¸§å¯ä»¥é¢å¤–ä¼ è¾“çš„åŒ…ã€‚
 			 */
 			int	mult = 1 + ((max >> 11) & 0x03);
 			/**
-			 * ºóÃæ10Î»²ÅÊÇÕæÕıµÄ°ü³¤¡£
+			 * åé¢10ä½æ‰æ˜¯çœŸæ­£çš„åŒ…é•¿ã€‚
 			 */
 			max &= 0x07ff;
 			max *= mult;
 		}
 
 		/**
-		 * ¶ÔµÈÊ±´«ÊäÀ´Ëµ£¬°ü¸öÊıĞ¡ÓÚµÈÓÚ0±íÊ¾Ã»ÓĞ°üĞèÒª´«Êä¡£
+		 * å¯¹ç­‰æ—¶ä¼ è¾“æ¥è¯´ï¼ŒåŒ…ä¸ªæ•°å°äºç­‰äº0è¡¨ç¤ºæ²¡æœ‰åŒ…éœ€è¦ä¼ è¾“ã€‚
 		 */
 		if (urb->number_of_packets <= 0)		    
 			return -EINVAL;
 		/**
-		 * ´¦ÀíµÈÊ±´«ÊäµÄÃ¿¸ö°ü¡£
+		 * å¤„ç†ç­‰æ—¶ä¼ è¾“çš„æ¯ä¸ªåŒ…ã€‚
 		 */
 		for (n = 0; n < urb->number_of_packets; n++) {
 			len = urb->iso_frame_desc[n].length;
 			/**
-			 * °ü³¤¶ÈĞ¡ÓÚ0»òÕß´óÓÚ×î´ó°ü³¤£¬ÍË³ö¡£
+			 * åŒ…é•¿åº¦å°äº0æˆ–è€…å¤§äºæœ€å¤§åŒ…é•¿ï¼Œé€€å‡ºã€‚
 			 */
 			if (len < 0 || len > max) 
 				return -EMSGSIZE;
 			/**
-			 * ÉèÖÃ°üÃèÊö·ûµÄ³õÖµ¡£
+			 * è®¾ç½®åŒ…æè¿°ç¬¦çš„åˆå€¼ã€‚
 			 */
 			urb->iso_frame_desc[n].status = -EXDEV;
 			urb->iso_frame_desc[n].actual_length = 0;
@@ -429,7 +429,7 @@ int usb_submit_urb(struct urb *urb, gfp_t mem_flags)
 
 	/* the I/O buffer must be mapped/unmapped, except when length=0 */
 	/**
-	 * »º³åÇø³¤¶È²»ÄÜĞ¡ÓÚ0¡£µÈÓÚ0ÊÇÔÊĞíµÄ¡£ÒòÎªÓĞÊ±²¢²»ĞèÒª´«ÊäÊı¾İ¡£
+	 * ç¼“å†²åŒºé•¿åº¦ä¸èƒ½å°äº0ã€‚ç­‰äº0æ˜¯å…è®¸çš„ã€‚å› ä¸ºæœ‰æ—¶å¹¶ä¸éœ€è¦ä¼ è¾“æ•°æ®ã€‚
 	 */
 	if (urb->transfer_buffer_length < 0)
 		return -EMSGSIZE;
@@ -480,20 +480,20 @@ int usb_submit_urb(struct urb *urb, gfp_t mem_flags)
 	 * EHCI can use smaller non-default values).
 	 */
 	/**
-	 * µÈÊ±´«ÊäºÍÖĞ¶Ï´«ÊäÊÇÁ½ÖÖÖÜÆÚĞÔµÄ´«ÊäÀàĞÍ£¬ĞèÒª¶ÔÆä´¦ÀíÒ»ÏÂinterval¡£
+	 * ç­‰æ—¶ä¼ è¾“å’Œä¸­æ–­ä¼ è¾“æ˜¯ä¸¤ç§å‘¨æœŸæ€§çš„ä¼ è¾“ç±»å‹ï¼Œéœ€è¦å¯¹å…¶å¤„ç†ä¸€ä¸‹intervalã€‚
 	 */
 	switch (xfertype) {
 	case USB_ENDPOINT_XFER_ISOC:
 	case USB_ENDPOINT_XFER_INT:
 		/* too small? */
 		/**
-		 * ¼ä¸ôÊ±¼äĞ¡ÓÚµÈÓÚ0£¬·Ç·¨Öµ¡£
+		 * é—´éš”æ—¶é—´å°äºç­‰äº0ï¼Œéæ³•å€¼ã€‚
 		 */
 		if (urb->interval <= 0)
 			return -EINVAL;
 		/* too big? */
 		/**
-		 * ¸ù¾İÉè±¸µÄËÙ¶È£¬¼ÆËãÖÜÆÚµÄ×î´óÖµ¡£
+		 * æ ¹æ®è®¾å¤‡çš„é€Ÿåº¦ï¼Œè®¡ç®—å‘¨æœŸçš„æœ€å¤§å€¼ã€‚
 		 */
 		switch (dev->speed) {
 		case USB_SPEED_HIGH:	/* units are microframes */
@@ -501,7 +501,7 @@ int usb_submit_urb(struct urb *urb, gfp_t mem_flags)
 			if (urb->interval > (1024 * 8))
 				urb->interval = 1024 * 8;
 			/**
-			 * temp×ÜÊÇ2µÄn´ÎÃİ¡£
+			 * tempæ€»æ˜¯2çš„næ¬¡å¹‚ã€‚
 			 */
 			max = 1024 * 8;
 			break;
@@ -527,7 +527,7 @@ int usb_submit_urb(struct urb *urb, gfp_t mem_flags)
 	}
 
 	/**
-	 * ÏòHCD¿ØÖÆÆ÷Ìá½»URB¡£
+	 * å‘HCDæ§åˆ¶å™¨æäº¤URBã€‚
 	 */
 	return usb_hcd_submit_urb(urb, mem_flags);
 }
@@ -592,7 +592,7 @@ int usb_submit_urb(struct urb *urb, gfp_t mem_flags)
  * place.
  */
 /**
- * Òì²½µÄÈ¡ÏûÒ»¸öURB¡£
+ * å¼‚æ­¥çš„å–æ¶ˆä¸€ä¸ªURBã€‚
  */
 int usb_unlink_urb(struct urb *urb)
 {
@@ -626,40 +626,40 @@ int usb_unlink_urb(struct urb *urb)
  * situations where the caller can't schedule().
  */
 /**
- * Í¬²½µÈ´ıurb±»ÖÕÖ¹¡£
+ * åŒæ­¥ç­‰å¾…urbè¢«ç»ˆæ­¢ã€‚
  */
 void usb_kill_urb(struct urb *urb)
 {
 	/**
-	 * ÓÉÓÚÊÇÍ¬²½µÈ´ı£¬Òò´Ë±¾º¯Êı¿ÉÄÜ»áË¯Ãß¡£
+	 * ç”±äºæ˜¯åŒæ­¥ç­‰å¾…ï¼Œå› æ­¤æœ¬å‡½æ•°å¯èƒ½ä¼šç¡çœ ã€‚
 	 */
 	might_sleep();
 	/**
-	 * Èç¹ûURBÒªµ½´ïµÄÉè±¸Ã»ÓĞ×ÜÏß£¬ÔòÖ±½Ó·µ»Ø¡£
+	 * å¦‚æœURBè¦åˆ°è¾¾çš„è®¾å¤‡æ²¡æœ‰æ€»çº¿ï¼Œåˆ™ç›´æ¥è¿”å›ã€‚
 	 */
 	if (!(urb && urb->dev && urb->dev->bus))
 		return;
 	mutex_lock(&reject_mutex);
 	/**
-	 * Ôö¼Óreject×Ö¶ÎµÄÖµºó£¬±íÊ¾HCDÒÑ¾­²»ÔÙ½ÓÊÜÕâ¸öURBÁË¡£
-	 * ÕâÑù£¬Èç¹ûÆäËûµØ·½ÊÔÍ¼½«URBÌá½»¸øÖ÷»ú¿ØÖÆÆ÷£¬ÄÇÃ´»áÊ§°Ü¡£
+	 * å¢åŠ rejectå­—æ®µçš„å€¼åï¼Œè¡¨ç¤ºHCDå·²ç»ä¸å†æ¥å—è¿™ä¸ªURBäº†ã€‚
+	 * è¿™æ ·ï¼Œå¦‚æœå…¶ä»–åœ°æ–¹è¯•å›¾å°†URBæäº¤ç»™ä¸»æœºæ§åˆ¶å™¨ï¼Œé‚£ä¹ˆä¼šå¤±è´¥ã€‚
 	 */
 	++urb->reject;
 	mutex_unlock(&reject_mutex);
 
 	/**
-	 * Í¨ÖªHCDÇı¶¯£¬ÒªÖÕÖ¹Õâ¸öURBÁË¡£
+	 * é€šçŸ¥HCDé©±åŠ¨ï¼Œè¦ç»ˆæ­¢è¿™ä¸ªURBäº†ã€‚
 	 */
 	usb_hcd_unlink_urb(urb, -ENOENT);
 	/**
-	 * µÈ´ıÇı¶¯»½ĞÑ±¾Ïß³Ì¡£
-	 * HCDÇı¶¯ÔÚ½«URB½»»¹¸øCOREÊ±£¬»áÅĞ¶Ïreject£¬Èç¹û´óÓÚ0£¬Ôò»½ĞÑusb_kill_urb_queueÉÏµÄ¶ÓÁĞ¡£
+	 * ç­‰å¾…é©±åŠ¨å”¤é†’æœ¬çº¿ç¨‹ã€‚
+	 * HCDé©±åŠ¨åœ¨å°†URBäº¤è¿˜ç»™COREæ—¶ï¼Œä¼šåˆ¤æ–­rejectï¼Œå¦‚æœå¤§äº0ï¼Œåˆ™å”¤é†’usb_kill_urb_queueä¸Šçš„é˜Ÿåˆ—ã€‚
 	 */
 	wait_event(usb_kill_urb_queue, atomic_read(&urb->use_count) == 0);
 
 	mutex_lock(&reject_mutex);
 	/**
-	 * ½«rejectµİ¼õ»ØÈ¥¡£
+	 * å°†rejecté€’å‡å›å»ã€‚
 	 */
 	--urb->reject;
 	mutex_unlock(&reject_mutex);

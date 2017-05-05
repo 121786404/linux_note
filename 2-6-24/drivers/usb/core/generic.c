@@ -41,7 +41,7 @@ static int is_activesync(struct usb_interface_descriptor *desc)
 }
 
 /**
- * ΪUSB�豸ѡ��һ�����ʵ����á�
+ * 为USB设备选择一个合适的配置。
  */
 static int choose_configuration(struct usb_device *udev)
 {
@@ -54,7 +54,7 @@ static int choose_configuration(struct usb_device *udev)
 	c = udev->config;
 	num_configs = udev->descriptor.bNumConfigurations;
 	/**
-	 * �����������в���һ������ʵ����á�
+	 * 从所有配置有查找一个最合适的配置。
 	 */
 	for (i = 0; i < num_configs; (i++, c++)) {
 		struct usb_interface_descriptor	*desc = NULL;
@@ -104,7 +104,7 @@ static int choose_configuration(struct usb_device *udev)
 
 		/* Rule out configs that draw too much bus current */
 		/**
-		 * ������Ҫ��ĵ����ϸߣ��������豸�ĵ�����
+		 * 该配置要求的电流较高，超过了设备的电流。
 		 */
 		if (c->desc.bMaxPower * 2 > udev->bus_mA) {
 			insufficient_power++;
@@ -128,7 +128,7 @@ static int choose_configuration(struct usb_device *udev)
 		 * Reason: Linux is more likely to have a class driver
 		 * than a vendor-specific driver. */
 		/**
-		 * ���ǳ��̱�׼��
+		 * 不是厂商标准。
 		 */
 		else if (udev->descriptor.bDeviceClass !=
 						USB_CLASS_VENDOR_SPEC &&
@@ -141,7 +141,7 @@ static int choose_configuration(struct usb_device *udev)
 		/* If all the remaining configs are vendor-specific,
 		 * choose the first one. */
 		/**
-		 * �ڳ��̱�׼����ѡ���һ����
+		 * 在厂商标准里面选择第一个。
 		 */
 		else if (!best)
 			best = c;
@@ -167,7 +167,7 @@ static int choose_configuration(struct usb_device *udev)
 }
 
 /**
- * USB�豸̽�⣬���豸���ܵ��ڶ�������ѡ��һ���������ã��Ӷ����豸��������״̬��
+ * USB设备探测，从设备可能的众多配置中选择一个合适配置，从而让设备进入配置状态。
  */
 static int generic_probe(struct usb_device *udev)
 {
@@ -180,7 +180,7 @@ static int generic_probe(struct usb_device *udev)
 	 * with the driver core and lets interface drivers bind to them.
 	 */
 	/**
-	 * Ϊ�豸ѡ��һ�����ʵ����á�
+	 * 为设备选择一个合适的配置。
 	 */
 	c = choose_configuration(udev);
 		if (c >= 0) {

@@ -52,8 +52,8 @@ struct file;
 #define UMH_WAIT_EXEC	1	/* wait for the exec, but not the process */
 #define UMH_WAIT_PROC	2	/* wait for the process to complete */
 #define UMH_KILLABLE	4	/* wait for EXEC/PROC killable */
-/*sub_infoÊÇÒ»struct subprocess_infoÀàĞÍµÄ±äÁ¿,¹¤×÷¶ÓÁĞ½Úµã×÷ÎªËüµÄÒ»¸öÄÚÇ¶¶ÔÏó,
- *sub_infoÆäËû³ÉÔ±ÓÃÀ´´æ´¢ÔËĞĞÓÃ»§Ì¬½ø³ÌµÄÒ»Ğ©ĞÅÏ¢,Ö÷ÒªÊÇ»·¾³±äÁ¿*/
+/*sub_infoæ˜¯ä¸€struct subprocess_infoç±»å‹çš„å˜é‡,å·¥ä½œé˜Ÿåˆ—èŠ‚ç‚¹ä½œä¸ºå®ƒçš„ä¸€ä¸ªå†…åµŒå¯¹è±¡,
+ *sub_infoå…¶ä»–æˆå‘˜ç”¨æ¥å­˜å‚¨è¿è¡Œç”¨æˆ·æ€è¿›ç¨‹çš„ä¸€äº›ä¿¡æ¯,ä¸»è¦æ˜¯ç¯å¢ƒå˜é‡*/
 
 struct subprocess_info {
 	struct work_struct work;

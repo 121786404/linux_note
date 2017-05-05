@@ -118,16 +118,16 @@ static struct file_system_type proc_fs_type = {
 };
 
 /**
- * ³õÊ¼»¯procÎÄ¼şÏµÍ³
+ * åˆå§‹åŒ–procæ–‡ä»¶ç³»ç»Ÿ
  */
 void __init proc_root_init(void)
 {
 	int err;
 
-	//´´½¨proc_inode»º´æ¹ÜÀíÆ÷
+	//åˆ›å»ºproc_inodeç¼“å­˜ç®¡ç†å™¨
 	proc_init_inodecache();
 	set_proc_pid_nlink();
-	//×¢²áprocÎÄ¼şÏµÍ³¡£
+	//æ³¨å†Œprocæ–‡ä»¶ç³»ç»Ÿã€‚
 	err = register_filesystem(&proc_fs_type);
 	if (err)
 		return;
@@ -135,13 +135,13 @@ void __init proc_root_init(void)
 	//proc/self
 	proc_self_init();
 	proc_thread_self_init();
-	//´´½¨/proc/mountsµÄÈíÁ´½Ó
+	//åˆ›å»º/proc/mountsçš„è½¯é“¾æ¥
 	proc_symlink("mounts", NULL, "self/mounts");
 
-	//net×ÓÏµÍ³µÄproc
+	//netå­ç³»ç»Ÿçš„proc
 	proc_net_init();
 
-	//´´½¨Ò»Ğ©procÄ¿Â¼ 
+	//åˆ›å»ºä¸€äº›procç›®å½• 
 #ifdef CONFIG_SYSVIPC
 	proc_mkdir("sysvipc", NULL);
 #endif

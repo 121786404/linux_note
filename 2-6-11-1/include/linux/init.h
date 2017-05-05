@@ -187,14 +187,14 @@ void __init parse_early_param(void);
  function. */
 
 /* Each module must use one module_init(), or one no_module_init */
-/* ËùÓĞµÄÄ£¿é³õÊ¼»¯º¯Êı¶¼±»±ğÃûÎªinit_moduleº¯Êı */
+/* æ‰€æœ‰çš„æ¨¡å—åˆå§‹åŒ–å‡½æ•°éƒ½è¢«åˆ«åä¸ºinit_moduleå‡½æ•° */
 #define module_init(initfn)					\
 	static inline initcall_t __inittest(void)		\
 	{ return initfn; }					\
 	int init_module(void) __attribute__((alias(#initfn)));
 
 /* This is only required if you want to be unloadable. */
-/* Ä£¿éÍË³öº¯ÊıÒ²ÊÇÈ¡ÁË±ğÃû */
+/* æ¨¡å—é€€å‡ºå‡½æ•°ä¹Ÿæ˜¯å–äº†åˆ«å */
 #define module_exit(exitfn)					\
 	static inline exitcall_t __exittest(void)		\
 	{ return exitfn; }					\

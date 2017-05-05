@@ -286,7 +286,7 @@ int setup_irq(unsigned int irq, struct irqaction *new)
 	 * so we have to be careful not to interfere with a
 	 * running system.
 	 */
-	if (new->flags & IRQF_SAMPLE_RANDOM) {/* ½«ÖĞ¶Ï×÷ÎªËæ»úÔ´ */
+	if (new->flags & IRQF_SAMPLE_RANDOM) {/* å°†ä¸­æ–­ä½œä¸ºéšæœºæº */
 		/*
 		 * This function might sleep, we want to call it first,
 		 * outside of the atomic block.
@@ -301,10 +301,10 @@ int setup_irq(unsigned int irq, struct irqaction *new)
 	/*
 	 * The following block of code has to be executed atomically
 	 */
-	spin_lock_irqsave(&desc->lock, flags);/* »ñÈ¡ÖĞ¶Ï×ÔĞıËø */
+	spin_lock_irqsave(&desc->lock, flags);/* è·å–ä¸­æ–­è‡ªæ—‹é” */
 	p = &desc->action;
 	old = *p;
-	if (old) {/* ÒÑ¾­¹Ò½ÓÁËÖĞ¶Ï */
+	if (old) {/* å·²ç»æŒ‚æ¥äº†ä¸­æ–­ */
 		/*
 		 * Can't share interrupts unless both agree to and are
 		 * the same type (level, edge, polarity). So both flag
@@ -314,7 +314,7 @@ int setup_irq(unsigned int irq, struct irqaction *new)
 		if (!((old->flags & new->flags) & IRQF_SHARED) ||
 		    ((old->flags ^ new->flags) & IRQF_TRIGGER_MASK)) {
 			old_name = old->name;
-			goto mismatch;/* Ô­ÖĞ¶Ï²»ÔÊĞí¹²ÏíÖĞ¶Ï */
+			goto mismatch;/* åŸä¸­æ–­ä¸å…è®¸å…±äº«ä¸­æ–­ */
 		}
 
 #if defined(CONFIG_IRQ_PER_CPU)
@@ -325,7 +325,7 @@ int setup_irq(unsigned int irq, struct irqaction *new)
 #endif
 
 		/* add new interrupt at end of irq queue */
-		do {/* ¹Ò½Óµ½Á´±íÄ©Î² */
+		do {/* æŒ‚æ¥åˆ°é“¾è¡¨æœ«å°¾ */
 			p = &old->next;
 			old = *p;
 		} while (old);
@@ -338,7 +338,7 @@ int setup_irq(unsigned int irq, struct irqaction *new)
 	if (new->flags & IRQF_NOBALANCING)
 		desc->status |= IRQ_NO_BALANCING;
 
-	if (!shared) {/* µÚÒ»´Î¹Ò½ÓÖĞ¶Ï */
+	if (!shared) {/* ç¬¬ä¸€æ¬¡æŒ‚æ¥ä¸­æ–­ */
 		irq_chip_set_defaults(desc->chip);
 
 #if defined(CONFIG_IRQ_PER_CPU)
@@ -366,10 +366,10 @@ int setup_irq(unsigned int irq, struct irqaction *new)
 		desc->status &= ~(IRQ_AUTODETECT | IRQ_WAITING |
 				  IRQ_INPROGRESS);
 
-		if (!(desc->status & IRQ_NOAUTOEN)) {/* ²»ÊÇÌ½²â½×¶Î */
+		if (!(desc->status & IRQ_NOAUTOEN)) {/* ä¸æ˜¯æ¢æµ‹é˜¶æ®µ */
 			desc->depth = 0;
 			desc->status &= ~IRQ_DISABLED;
-			if (desc->chip->startup)/* ³õÊ¼»¯ÖĞ¶Ï */
+			if (desc->chip->startup)/* åˆå§‹åŒ–ä¸­æ–­ */
 				desc->chip->startup(irq);
 			else
 				desc->chip->enable(irq);
@@ -382,7 +382,7 @@ int setup_irq(unsigned int irq, struct irqaction *new)
 	desc->irqs_unhandled = 0;
 	spin_unlock_irqrestore(&desc->lock, flags);
 
- 	/* ÔÚprocÖĞ×¢²áÖĞ¶Ï */
+ 	/* åœ¨procä¸­æ³¨å†Œä¸­æ–­ */
 	new->irq = irq;
 	register_irq_proc(irq);
 	new->dir = NULL;
@@ -516,7 +516,7 @@ EXPORT_SYMBOL(free_irq);
  *
  */
 /**
- * ×¢²áISR´¦Àí³ÌĞò
+ * æ³¨å†ŒISRå¤„ç†ç¨‹åº
  */
 int request_irq(unsigned int irq, irq_handler_t handler,
 		unsigned long irqflags, const char *devname, void *dev_id)
@@ -536,7 +536,7 @@ int request_irq(unsigned int irq, irq_handler_t handler,
 	 * which interrupt is which (messes up the interrupt freeing
 	 * logic etc).
 	 */
-	if ((irqflags & IRQF_SHARED) && !dev_id)/* ºÏ·¨ĞÔ¼ì²é */
+	if ((irqflags & IRQF_SHARED) && !dev_id)/* åˆæ³•æ€§æ£€æŸ¥ */
 		return -EINVAL;
 	if (irq >= NR_IRQS)
 		return -EINVAL;
@@ -545,7 +545,7 @@ int request_irq(unsigned int irq, irq_handler_t handler,
 	if (!handler)
 		return -EINVAL;
 
-	/* ·ÖÅäirqactionÃèÊö·û */
+	/* åˆ†é…irqactionæè¿°ç¬¦ */
 	action = kmalloc(sizeof(struct irqaction), GFP_ATOMIC);
 	if (!action)
 		return -ENOMEM;
@@ -575,7 +575,7 @@ int request_irq(unsigned int irq, irq_handler_t handler,
 	}
 #endif
 
-	/* ×¢²áÖĞ¶Ï */
+	/* æ³¨å†Œä¸­æ–­ */
 	retval = setup_irq(irq, action);
 	if (retval)
 		kfree(action);

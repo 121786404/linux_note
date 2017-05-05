@@ -59,7 +59,7 @@ static DEFINE_RWLOCK(queue_lock);
 static int peer_pid;
 static unsigned int copy_range;
 static unsigned int queue_total;
-/* ´´½¨µÄ·À»ğÇ½Ì×½Ó×Ö */
+/* åˆ›å»ºçš„é˜²ç«å¢™å¥—æ¥å­— */
 static struct sock *ipqnl;
 static LIST_HEAD(queue_list);
 static DECLARE_MUTEX(ipqnl_sem);
@@ -555,7 +555,7 @@ ipq_rcv_sk(struct sock *sk, int len)
 	} while (ipqnl && ipqnl->sk_receive_queue.qlen);
 }
 
-/* Éè±¸Í¨ÖªÁ´ÊÂ¼ş´¦Àí»Øµ÷ */
+/* è®¾å¤‡é€šçŸ¥é“¾äº‹ä»¶å¤„ç†å›è°ƒ */
 static int
 ipq_rcv_dev_event(struct notifier_block *this,
                   unsigned long event, void *ptr)
@@ -572,14 +572,14 @@ static struct notifier_block ipq_dev_notifier = {
 	.notifier_call	= ipq_rcv_dev_event,
 };
 
-/* ·À»ğÇ½µÄÍ¨ÖªÊÂ¼ş´¦Àíº¯Êı */
+/* é˜²ç«å¢™çš„é€šçŸ¥äº‹ä»¶å¤„ç†å‡½æ•° */
 static int
 ipq_rcv_nl_event(struct notifier_block *this,
                  unsigned long event, void *ptr)
 {
 	struct netlink_notify *n = ptr;
 
-	/* ¶Ô·À»ğÇ½ÊÕµ½µÄÊı¾İ°ü½øĞĞÌõ¼şÅĞ¶Ï´¦Àí */
+	/* å¯¹é˜²ç«å¢™æ”¶åˆ°çš„æ•°æ®åŒ…è¿›è¡Œæ¡ä»¶åˆ¤æ–­å¤„ç† */
 	if (event == NETLINK_URELEASE &&
 	    n->protocol == NETLINK_FIREWALL && n->pid) {
 		write_lock_bh(&queue_lock);
@@ -670,7 +670,7 @@ init_or_cleanup(int init)
 		goto cleanup;
 
 	netlink_register_notifier(&ipq_nl_notifier);
-        /* ´´½¨·À»ğÇ½µÄnetlinkÌ×½Ó×Ö */
+        /* åˆ›å»ºé˜²ç«å¢™çš„netlinkå¥—æ¥å­— */
 	ipqnl = netlink_kernel_create(NETLINK_FIREWALL, ipq_rcv_sk);
 	if (ipqnl == NULL) {
 		printk(KERN_ERR "ip_queue: failed to create netlink socket\n");
@@ -715,7 +715,7 @@ cleanup_netlink_notifier:
 	return status;
 }
 
-/* ÔÚip²ã¾Í½¨Á¢Æğ·À»ğÇ½Ì×½Ó×Ö */
+/* åœ¨ipå±‚å°±å»ºç«‹èµ·é˜²ç«å¢™å¥—æ¥å­— */
 static int __init init(void)
 {
 	

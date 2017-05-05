@@ -11,12 +11,12 @@
 #define _LINUX_NOTIFIER_H
 #include <linux/errno.h>
 
-/* м╗ж╙а╢╣дт╙кь╫А╧╧ */
+/* И─ Г÷╔И⌠╬Г └Е┘┐Г╢═Г╩⌠Ф·└ */
 struct notifier_block
 {
 	int (*notifier_call)(struct notifier_block *self, unsigned long, void *);
 	struct notifier_block *next;
-	int priority;       /* м╗ж╙а╢╣дсеох╪╤ё╛╟╢уусеох╪╤╢с╦ъ╣╫╣меепР */
+	int priority;       /* И─ Г÷╔И⌠╬Г └Д╪≤Е┘┬Г╨╖О╪▄Ф▄┴Г┘╖Д╪≤Е┘┬Г╨╖Д╩▌И╚≤Е┬╟Д╫▌Ф▌▓Е╨▐ */
 };
 
 

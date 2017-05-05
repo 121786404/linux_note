@@ -45,30 +45,30 @@
  * one msg_receiver structure for each sleeping receiver:
  */
 /**
- * ÏûÏ¢½ÓÊÕÕß
+ * æ¶ˆæ¯æ¥æ”¶è€…
  */
 struct msg_receiver {
-	/* Í¨¹ı´Ë×Ö¶ÎÁ´½ÓÈë½ÓÊÕÕßÁ´±í */
+	/* é€šè¿‡æ­¤å­—æ®µé“¾æ¥å…¥æ¥æ”¶è€…é“¾è¡¨ */
 	struct list_head	r_list;
-	/* ½ÓÊÕÕßÈÎÎñ */
+	/* æ¥æ”¶è€…ä»»åŠ¡ */
 	struct task_struct	*r_tsk;
 
 	int			r_mode;
-	/* ÏûÏ¢ÀàĞÍ */
+	/* æ¶ˆæ¯ç±»å‹ */
 	long			r_msgtype;
-	/* ÏûÏ¢×î´ó³¤¶È */
+	/* æ¶ˆæ¯æœ€å¤§é•¿åº¦ */
 	long			r_maxsize;
 
-	/* ÓÃÓÚ½ÓÊÕÏûÏ¢µÄ»º³åÇø */
+	/* ç”¨äºæ¥æ”¶æ¶ˆæ¯çš„ç¼“å†²åŒº */
 	struct msg_msg		*volatile r_msg;
 };
 
 /* one msg_sender for each sleeping sender */
-/* ÏûÏ¢·¢ËÍÕß */
+/* æ¶ˆæ¯å‘é€è€… */
 struct msg_sender {
-	/* Í¨¹ı´Ë×Ö¶Î½«ÆäÁ´ÈëÁ´±íÖĞ */
+	/* é€šè¿‡æ­¤å­—æ®µå°†å…¶é“¾å…¥é“¾è¡¨ä¸­ */
 	struct list_head	list;
-	/* ·¢ËÍÈÎÎñ */
+	/* å‘é€ä»»åŠ¡ */
 	struct task_struct	*tsk;
 };
 

@@ -35,9 +35,9 @@ static inline void pgd_clear(pgd_t *pgd)	{ }
  */
 #define set_pgd(pgdptr, pgdval)			set_pud((pud_t *)(pgdptr), (pud_t) { pgdval })
 /*
-²ÎÊıÎªÖ¸ÏòÒ³È«¾ÖÄ¿Â¼ÏîµÄÖ¸Õë pgd ºÍÏßĞÔµØÖ· addr ¡£
-Õâ¸öºê²úÉúÒ³ÉÏ¼¶Ä¿Â¼ÖĞÄ¿Â¼Ïî addr ¶ÔÓ¦µÄÏßĞÔµØÖ·¡£
-ÔÚÁ½¼¶»òÈı¼¶·ÖÒ³ÏµÍ³ÖĞ£¬¸Ãºê²úÉú pgd £¬¼´Ò»¸öÒ³È«¾ÖÄ¿Â¼ÏîµÄµØÖ·
+å‚æ•°ä¸ºæŒ‡å‘é¡µå…¨å±€ç›®å½•é¡¹çš„æŒ‡é’ˆ pgd å’Œçº¿æ€§åœ°å€ addr ã€‚
+è¿™ä¸ªå®äº§ç”Ÿé¡µä¸Šçº§ç›®å½•ä¸­ç›®å½•é¡¹ addr å¯¹åº”çš„çº¿æ€§åœ°å€ã€‚
+åœ¨ä¸¤çº§æˆ–ä¸‰çº§åˆ†é¡µç³»ç»Ÿä¸­ï¼Œè¯¥å®äº§ç”Ÿ pgd ï¼Œå³ä¸€ä¸ªé¡µå…¨å±€ç›®å½•é¡¹çš„åœ°å€
 */
 static inline pud_t * pud_offset(pgd_t * pgd, unsigned long address)
 {
@@ -47,8 +47,8 @@ static inline pud_t * pud_offset(pgd_t * pgd, unsigned long address)
 #define pud_val(x)				(pgd_val((x).pgd))
 #define __pud(x)				((pud_t) { __pgd(x) } )
 /*
-Í¨¹ıÒ³È«¾ÖÄ¿Â¼Ïî pgd ²úÉúÒ³ÉÏ¼¶Ä¿Â¼ËùÔÚÒ³¿òµÄÒ³ÃèÊö·ûµØÖ·¡£
-ÔÚÁ½¼¶»òÈı¼¶·ÖÒ³ÏµÍ³ÖĞ£¬¸ÃºêµÈ¼ÛÓÚ pud_page() £¬ºóÕßÓ¦ÓÃÓÚÒ³ÉÏ¼¶Ä¿Â¼Ïî
+é€šè¿‡é¡µå…¨å±€ç›®å½•é¡¹ pgd äº§ç”Ÿé¡µä¸Šçº§ç›®å½•æ‰€åœ¨é¡µæ¡†çš„é¡µæè¿°ç¬¦åœ°å€ã€‚
+åœ¨ä¸¤çº§æˆ–ä¸‰çº§åˆ†é¡µç³»ç»Ÿä¸­ï¼Œè¯¥å®ç­‰ä»·äº pud_page() ï¼Œåè€…åº”ç”¨äºé¡µä¸Šçº§ç›®å½•é¡¹
 */
 #define pgd_page(pgd)				(pud_page((pud_t){ pgd }))
 #define pgd_page_vaddr(pgd)			(pud_page_vaddr((pud_t){ pgd }))

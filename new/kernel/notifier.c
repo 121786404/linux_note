@@ -22,14 +22,14 @@ static int notifier_chain_register(struct notifier_block **nl,
 		struct notifier_block *n)
 {
 	/**
-	 * ±éÀúÍ¨ÖªÁ´£¬°´ÓÅÏÈ¼¶²éÕÒ²åÈëÎ»ÖÃ
+	 * éå†é€šçŸ¥é“¾ï¼ŒæŒ‰ä¼˜å…ˆçº§æŸ¥æ‰¾æ’å…¥ä½ç½®
 	 */
 	while ((*nl) != NULL) {
 		if (n->priority > (*nl)->priority)
 			break;
 		nl = &((*nl)->next);
 	}
-	//½«ÕìÌıÕß²åÈëÁ´±í¡£
+	//å°†ä¾¦å¬è€…æ’å…¥é“¾è¡¨ã€‚
 	n->next = *nl;
 	rcu_assign_pointer(*nl, n);
 	return 0;
@@ -349,7 +349,7 @@ EXPORT_SYMBOL_GPL(blocking_notifier_call_chain);
  *	Currently always returns zero.
  */
 /**
- * ½«ÊÂ¼şÕìÌıÕß×¢²áµ½Í¨ÖªÁ´ÖĞ¡£
+ * å°†äº‹ä»¶ä¾¦å¬è€…æ³¨å†Œåˆ°é€šçŸ¥é“¾ä¸­ã€‚
  */
 int raw_notifier_chain_register(struct raw_notifier_head *nh,
 		struct notifier_block *n)

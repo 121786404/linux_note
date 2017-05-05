@@ -49,29 +49,29 @@ static void tick_do_update_jiffies64(ktime_t now)
 	ktime_t delta;
 
 	/* Reevalute with xtime_lock held */
-	write_seqlock(&xtime_lock);/* »ñµÃĞ´Ë³ĞòËø */
+	write_seqlock(&xtime_lock);/* è·å¾—å†™é¡ºåºé” */
 
-	/* ¼ÆËãµ±Ç°Ê±¼äÓëÉÏ´Î¸üĞÂjiffiesµÄÊ±¼ä²îÖµ */
+	/* è®¡ç®—å½“å‰æ—¶é—´ä¸ä¸Šæ¬¡æ›´æ–°jiffiesçš„æ—¶é—´å·®å€¼ */
 	delta = ktime_sub(now, last_jiffies_update);
-	if (delta.tv64 >= tick_period.tv64) {/* ±¾´ÎÊ±¼äÓëÉÏ´Î¸üĞÂÊ±¼ä³¬¹ıÒ»¸ötick£¬ĞèÒª¸üĞÂjiffies */
+	if (delta.tv64 >= tick_period.tv64) {/* æœ¬æ¬¡æ—¶é—´ä¸ä¸Šæ¬¡æ›´æ–°æ—¶é—´è¶…è¿‡ä¸€ä¸ªtickï¼Œéœ€è¦æ›´æ–°jiffies */
 
-		/* Ò»°ãÇé¿öÏÂ£¬Ö»»á³¬¹ıÒ»¸öjiffies£¬¶ø²»ÊÇ¶à¸ö */
+		/* ä¸€èˆ¬æƒ…å†µä¸‹ï¼Œåªä¼šè¶…è¿‡ä¸€ä¸ªjiffiesï¼Œè€Œä¸æ˜¯å¤šä¸ª */
 		delta = ktime_sub(delta, tick_period);
 		last_jiffies_update = ktime_add(last_jiffies_update,
 						tick_period);
 
 		/* Slow path for long timeouts */
-		if (unlikely(delta.tv64 >= tick_period.tv64)) {/* ³¬¹ıÒ»¸ötick */
+		if (unlikely(delta.tv64 >= tick_period.tv64)) {/* è¶…è¿‡ä¸€ä¸ªtick */
 			s64 incr = ktime_to_ns(tick_period);
 
-			/* ¼ÆËã³¬¹ıÁË¶àÉÙ¸ötick */
+			/* è®¡ç®—è¶…è¿‡äº†å¤šå°‘ä¸ªtick */
 			ticks = ktime_divns(delta, incr);
 
-			/* ¸üĞÂjiffiesÊ±¼ä */
+			/* æ›´æ–°jiffiesæ—¶é—´ */
 			last_jiffies_update = ktime_add_ns(last_jiffies_update,
 							   incr * ticks);
 		}
-		/* ¸üĞÂjiffies¼ÆÊı */
+		/* æ›´æ–°jiffiesè®¡æ•° */
 		do_timer(++ticks);
 	}
 	write_sequnlock(&xtime_lock);
@@ -156,21 +156,21 @@ void tick_nohz_update_jiffies(void)
  * just interrupted by an interrupt which did not cause a reschedule.
  */
 /**
- * Í£ÓÃÖÜÆÚĞÔÊ±ÖÓ
+ * åœç”¨å‘¨æœŸæ€§æ—¶é’Ÿ
  */
 void tick_nohz_stop_sched_tick(void)
 {
 	unsigned long seq, last_jiffies, next_jiffies, delta_jiffies, flags;
 	struct tick_sched *ts;
 	ktime_t last_update, expires, now, delta;
-	/* »ñÈ¡µ±Ç°CPUµÄÊ±ÖÓÉè±¸ */
+	/* è·å–å½“å‰CPUçš„æ—¶é’Ÿè®¾å¤‡ */
 	struct clock_event_device *dev = __get_cpu_var(tick_cpu_device).evtdev;
 	int cpu;
 
 	local_irq_save(flags);
 
 	cpu = smp_processor_id();
-	/* »ñÈ¡µ±Ç°CPUµÄ¶¯Ì¬Ê±ÖÓÅäÖÃ */
+	/* è·å–å½“å‰CPUçš„åŠ¨æ€æ—¶é’Ÿé…ç½® */
 	ts = &per_cpu(tick_cpu_sched, cpu);
 
 	/*
@@ -180,15 +180,15 @@ void tick_nohz_stop_sched_tick(void)
 	 * this here the jiffies might be stale and do_timer() never
 	 * invoked.
 	 */
-	if (unlikely(!cpu_online(cpu))) {/* µ±Ç°CPUÒÑ¾­ÀëÏßÁË */
-		if (cpu == tick_do_timer_cpu)/* Èç¹ûµ±Ç°CPU¸ºÔğ¸üĞÂjiffies£¬ÔòÇå³ıÏà¹ØÈ«¾Ö±äÁ¿ */
+	if (unlikely(!cpu_online(cpu))) {/* å½“å‰CPUå·²ç»ç¦»çº¿äº† */
+		if (cpu == tick_do_timer_cpu)/* å¦‚æœå½“å‰CPUè´Ÿè´£æ›´æ–°jiffiesï¼Œåˆ™æ¸…é™¤ç›¸å…³å…¨å±€å˜é‡ */
 			tick_do_timer_cpu = -1;
 	}
 
 	if (unlikely(ts->nohz_mode == NOHZ_MODE_INACTIVE))
 		goto end;
 
-	if (need_resched())/* ÓĞĞÂÈÎÎñĞèÒªÔËĞĞ£¬²»ÄÜÍ£Ö¹¶¯Ì¬Ê±ÖÓ */
+	if (need_resched())/* æœ‰æ–°ä»»åŠ¡éœ€è¦è¿è¡Œï¼Œä¸èƒ½åœæ­¢åŠ¨æ€æ—¶é’Ÿ */
 		goto end;
 
 	cpu = smp_processor_id();
@@ -202,7 +202,7 @@ void tick_nohz_stop_sched_tick(void)
 		}
 	}
 
-	/* ¸üĞÂ¶¯Ì¬Ê±ÖÓµÄÍ³¼ÆĞÅÏ¢ */
+	/* æ›´æ–°åŠ¨æ€æ—¶é’Ÿçš„ç»Ÿè®¡ä¿¡æ¯ */
 	now = ktime_get();
 	/*
 	 * When called from irq_exit we need to account the idle sleep time
@@ -224,9 +224,9 @@ void tick_nohz_stop_sched_tick(void)
 	} while (read_seqretry(&xtime_lock, seq));
 
 	/* Get the next timer wheel timer */
-	/* µÃµ½ÏÂÒ»´Î¶¨Ê±Æ÷µÄµ½ÆÚÊ±¼ä */
+	/* å¾—åˆ°ä¸‹ä¸€æ¬¡å®šæ—¶å™¨çš„åˆ°æœŸæ—¶é—´ */
 	next_jiffies = get_next_timer_interrupt(last_jiffies);
-	/* ÏÂÒ»´Î¶¨Ê±Æ÷Óë×îºóÒ»´ÎÊ±ÖÓµÄ¼ä¸ô */
+	/* ä¸‹ä¸€æ¬¡å®šæ—¶å™¨ä¸æœ€åä¸€æ¬¡æ—¶é’Ÿçš„é—´éš” */
 	delta_jiffies = next_jiffies - last_jiffies;
 
 	if (rcu_needs_cpu(cpu))
@@ -235,11 +235,11 @@ void tick_nohz_stop_sched_tick(void)
 	 * Do not stop the tick, if we are only one off
 	 * or if the cpu is required for rcu
 	 */
-	if (!ts->tick_stopped && delta_jiffies == 1)/* ÏÂÒ»´Î¶¨Ê±Æ÷ºÜ¿ì¾Í»áµ½À´£¬Ã»ÓĞ±ØÒªÍ£Ö¹¶¯Ì¬Ê±ÖÓ */
+	if (!ts->tick_stopped && delta_jiffies == 1)/* ä¸‹ä¸€æ¬¡å®šæ—¶å™¨å¾ˆå¿«å°±ä¼šåˆ°æ¥ï¼Œæ²¡æœ‰å¿…è¦åœæ­¢åŠ¨æ€æ—¶é’Ÿ */
 		goto out;
 
 	/* Schedule the tick, if we are at least one jiffie off */
-	if ((long)delta_jiffies >= 1) {/* ÏÂÒ»¸öÊÂ¼şÔÚÒ»¸öjiffiesÒÔºó */
+	if ((long)delta_jiffies >= 1) {/* ä¸‹ä¸€ä¸ªäº‹ä»¶åœ¨ä¸€ä¸ªjiffiesä»¥å */
 
 		if (delta_jiffies > 1)
 			cpu_set(cpu, nohz_cpu_mask);
@@ -272,7 +272,7 @@ void tick_nohz_stop_sched_tick(void)
 		 * jiffies might be stale and do_timer() never
 		 * invoked.
 		 */
-		if (cpu == tick_do_timer_cpu)/* Èç¹ûµ±Ç°CPU¸ºÔğ¸üĞÂÊ±ÖÓ£¬Ôò½«ÆäÖÃÎª£­1£¬ÆäËûCPU¾ù¿ÉÒÔÉèÖÃÊ±ÖÓ */
+		if (cpu == tick_do_timer_cpu)/* å¦‚æœå½“å‰CPUè´Ÿè´£æ›´æ–°æ—¶é’Ÿï¼Œåˆ™å°†å…¶ç½®ä¸ºï¼1ï¼Œå…¶ä»–CPUå‡å¯ä»¥è®¾ç½®æ—¶é’Ÿ */
 			tick_do_timer_cpu = -1;
 
 		ts->idle_sleeps++;
@@ -294,7 +294,7 @@ void tick_nohz_stop_sched_tick(void)
 		 * calculate the expiry time for the next timer wheel
 		 * timer
 		 */
-		/* ÉèÖÃÊ±ÖÓ£¬Ê¹ÆäÔÚÔ¤ÆÚµÄÊ±ºòµ½À´ */
+		/* è®¾ç½®æ—¶é’Ÿï¼Œä½¿å…¶åœ¨é¢„æœŸçš„æ—¶å€™åˆ°æ¥ */
 		expires = ktime_add_ns(last_update, tick_period.tv64 *
 				       delta_jiffies);
 		ts->idle_expires = expires;
@@ -342,7 +342,7 @@ ktime_t tick_nohz_get_sleep_length(void)
  * Restart the idle tick when the CPU is woken up from idle
  */
 /**
- * ÖØÆô¶¯Ì¬Ê±ÖÓ
+ * é‡å¯åŠ¨æ€æ—¶é’Ÿ
  */
 void tick_nohz_restart_sched_tick(void)
 {
@@ -421,15 +421,15 @@ static int tick_nohz_reprogram(struct tick_sched *ts, ktime_t now)
  * The nohz low res interrupt handler
  */
 /**
- * ÔÚ´ò¿ªNOHZÊ±£¬Ê±ÖÓÖĞ¶ÏµÄ´¦Àíº¯Êı
+ * åœ¨æ‰“å¼€NOHZæ—¶ï¼Œæ—¶é’Ÿä¸­æ–­çš„å¤„ç†å‡½æ•°
  */
 static void tick_nohz_handler(struct clock_event_device *dev)
 {
-	/* »ñµÃµ±Ç°CPUµÄNOHZ¶¨Ê±Æ÷ */
+	/* è·å¾—å½“å‰CPUçš„NOHZå®šæ—¶å™¨ */
 	struct tick_sched *ts = &__get_cpu_var(tick_cpu_sched);
 	struct pt_regs *regs = get_irq_regs();
 	int cpu = smp_processor_id();
-	ktime_t now = ktime_get();/* È¡µ±Ç°Ê±¼ä */
+	ktime_t now = ktime_get();/* å–å½“å‰æ—¶é—´ */
 
 	dev->next_event.tv64 = KTIME_MAX;
 
@@ -444,7 +444,7 @@ static void tick_nohz_handler(struct clock_event_device *dev)
 		tick_do_timer_cpu = cpu;
 
 	/* Check, if the jiffies need an update */
-	if (tick_do_timer_cpu == cpu)/* µ±Ç°CPUÓÃÓÚ¸üĞÂjiffies£¬¸üĞÂÆäÖµ */
+	if (tick_do_timer_cpu == cpu)/* å½“å‰CPUç”¨äºæ›´æ–°jiffiesï¼Œæ›´æ–°å…¶å€¼ */
 		tick_do_update_jiffies64(now);
 
 	/*
@@ -460,19 +460,19 @@ static void tick_nohz_handler(struct clock_event_device *dev)
 		ts->idle_jiffies++;
 	}
 
-	/* ¸üĞÂ±¾CPUÉÏµÄ½ø³ÌÍ³¼Æ */
+	/* æ›´æ–°æœ¬CPUä¸Šçš„è¿›ç¨‹ç»Ÿè®¡ */
 	update_process_times(user_mode(regs));
-	/* ±¾CPUÉÏµÄprofile´¦Àí */
+	/* æœ¬CPUä¸Šçš„profileå¤„ç† */
 	profile_tick(CPU_PROFILING);
 
 	/* Do not restart, when we are in the idle loop */
-	if (ts->tick_stopped)/* ÖÜÆÚĞÔ¶¨Ê±Æ÷ÒÑ¾­Í£ÓÃ£¬ÍË³ö */
+	if (ts->tick_stopped)/* å‘¨æœŸæ€§å®šæ—¶å™¨å·²ç»åœç”¨ï¼Œé€€å‡º */
 		return;
 
-	/* ĞèÒªÆôÓÃÖÜÆÚĞÔ¶¨Ê±Æ÷£¬¶ÔÉè±¸½øĞĞÖØĞÂ±à³Ì */
+	/* éœ€è¦å¯ç”¨å‘¨æœŸæ€§å®šæ—¶å™¨ï¼Œå¯¹è®¾å¤‡è¿›è¡Œé‡æ–°ç¼–ç¨‹ */
 	while (tick_nohz_reprogram(ts, now)) {
 		now = ktime_get();
-		/* ÏÂÒ»¸ötickÒÑ¾­µ½ÆÚ£¬ÕâÀïÖØĞÂ¸üĞÂjiffies */
+		/* ä¸‹ä¸€ä¸ªtickå·²ç»åˆ°æœŸï¼Œè¿™é‡Œé‡æ–°æ›´æ–°jiffies */
 		tick_do_update_jiffies64(now);
 	}
 }
@@ -531,7 +531,7 @@ static inline void tick_nohz_switch_to_nohz(void) { }
  * Called with interrupts disabled and timer->base->cpu_base->lock held.
  */
 /**
- * ¸ß·Ö±æÂÊÊ±ÖÓÏÂµÄ¶¯Ì¬Ê±ÖÓ´¦Àíº¯Êı
+ * é«˜åˆ†è¾¨ç‡æ—¶é’Ÿä¸‹çš„åŠ¨æ€æ—¶é’Ÿå¤„ç†å‡½æ•°
  */
 static enum hrtimer_restart tick_sched_timer(struct hrtimer *timer)
 {
@@ -550,12 +550,12 @@ static enum hrtimer_restart tick_sched_timer(struct hrtimer *timer)
 	 * this duty, then the jiffies update is still serialized by
 	 * xtime_lock.
 	 */
-	if (unlikely(tick_do_timer_cpu == -1))/* Èç¹ûËùÓĞCPU¶¼·ÅÆúÁËÖ÷CPUµÄÖ°Ôğ£¬ÔòÓÉµ±Ç°CPUÀ´³Ğµ£´ËÖ°Ôğ */
+	if (unlikely(tick_do_timer_cpu == -1))/* å¦‚æœæ‰€æœ‰CPUéƒ½æ”¾å¼ƒäº†ä¸»CPUçš„èŒè´£ï¼Œåˆ™ç”±å½“å‰CPUæ¥æ‰¿æ‹…æ­¤èŒè´£ */
 		tick_do_timer_cpu = cpu;
 #endif
 
 	/* Check, if the jiffies need an update */
-	if (tick_do_timer_cpu == cpu)/* ¸üĞÂÈ«¾ÖÊ±ÖÓ */
+	if (tick_do_timer_cpu == cpu)/* æ›´æ–°å…¨å±€æ—¶é’Ÿ */
 		tick_do_update_jiffies64(now);
 
 	/*

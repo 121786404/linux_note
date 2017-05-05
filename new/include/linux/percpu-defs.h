@@ -109,11 +109,11 @@
  * Variant on the per-CPU variable declaration/definition theme used for
  * ordinary per-CPU variables.
  */
- /*¾²Ì¬per-CPU±äÁ¿µÄÉùÃ÷*/
+ /*é™æ€per-CPUå˜é‡çš„å£°æ˜*/
 #define DECLARE_PER_CPU(type, name)					\
 	DECLARE_PER_CPU_SECTION(type, name, "")
 
-/*¶¨ÒåÒ»¸öper-CPU±äÁ¿*/
+/*å®šä¹‰ä¸€ä¸ªper-CPUå˜é‡*/
 #define DEFINE_PER_CPU(type, name)					\
 	DEFINE_PER_CPU_SECTION(type, name, "")
 

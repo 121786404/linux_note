@@ -15,13 +15,13 @@ typedef struct transaction_s	transaction_t;	/* Compound transaction type */
 struct buffer_head;
 
 /**
- * ÈÕÖ¾»º³åÇø
+ * æ—¥å¿—ç¼“å†²åŒº
  */
 struct journal_head {
 	/*
 	 * Points back to our buffer_head. [jbd_lock_bh_journal_head()]
 	 */
-	/* Òª²Ù×÷µÄÊı¾İ»º³åÇø */
+	/* è¦æ“ä½œçš„æ•°æ®ç¼“å†²åŒº */
 	struct buffer_head *b_bh;
 
 	/*
@@ -62,7 +62,7 @@ struct journal_head {
 	 * transaction's data or metadata journaling list.
 	 * [j_list_lock] [jbd_lock_bh_state()]
 	 */
-	/* ÈÕÖ¾ËùÊôµÄÊÂÎñ */
+	/* æ—¥å¿—æ‰€å±çš„äº‹åŠ¡ */
 	transaction_t *b_transaction;
 
 	/*
@@ -77,7 +77,7 @@ struct journal_head {
 	 * Doubly-linked list of buffers on a transaction's data, metadata or
 	 * forget queue. [t_list_lock] [jbd_lock_bh_state()]
 	 */
-	/* ÓëÄ³¸öÈÕÖ¾Ïà¹ØµÄËùÓĞÈÕÖ¾»º³åÇø */
+	/* ä¸æŸä¸ªæ—¥å¿—ç›¸å…³çš„æ‰€æœ‰æ—¥å¿—ç¼“å†²åŒº */
 	struct journal_head *b_tnext, *b_tprev;
 
 	/*

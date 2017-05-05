@@ -28,47 +28,47 @@ struct fs_struct;
  * nsproxy is copied.
  */
  /*
- ĞéÄâ»¯¼¼ÊõĞèÒª×ÊÔ´¸ôÀë£¬Ò²¾ÍÊÇËµ£¬
- ²»Í¬µÄĞéÄâÖ÷»ú£¨Êµ¼ÊÉÏÔÚÒ»Ì¨ÎïÀíÖ÷»úÉÏ£©×ÊÔ´ÊÇ»¥Ïà²»¿É¼ûµÄ¡£
- Òò´Ë£¬linux kernelÔö¼ÓÁËÈô¸É¸öname space£¬ÀıÈçuser name space¡¢PID namespace¡¢IPC namespace¡¢uts namespace¡¢network namespaceµÈ¡£
- ÒÔPID namespaceÎªÀı£¬Ô­À´µÄlinux kernelÖĞ£¬PIDÎ¨Ò»µÄ±êÊ¶ÁËÒ»¸öprocess£¬
- ÔÚÒıÈëPID namespaceÖ®ºó£¬²»Í¬µÄnamespace¿ÉÒÔÓµÓĞÍ¬ÑùµÄID£¬
- Ò²¾ÍÊÇËµ£¬±êÊ¶Ò»¸ö½ø³ÌµÄÊÇPID namespace £« PID¡£
+ è™šæ‹ŸåŒ–æŠ€æœ¯éœ€è¦èµ„æºéš”ç¦»ï¼Œä¹Ÿå°±æ˜¯è¯´ï¼Œ
+ ä¸åŒçš„è™šæ‹Ÿä¸»æœºï¼ˆå®é™…ä¸Šåœ¨ä¸€å°ç‰©ç†ä¸»æœºä¸Šï¼‰èµ„æºæ˜¯äº’ç›¸ä¸å¯è§çš„ã€‚
+ å› æ­¤ï¼Œlinux kernelå¢åŠ äº†è‹¥å¹²ä¸ªname spaceï¼Œä¾‹å¦‚user name spaceã€PID namespaceã€IPC namespaceã€uts namespaceã€network namespaceç­‰ã€‚
+ ä»¥PID namespaceä¸ºä¾‹ï¼ŒåŸæ¥çš„linux kernelä¸­ï¼ŒPIDå”¯ä¸€çš„æ ‡è¯†äº†ä¸€ä¸ªprocessï¼Œ
+ åœ¨å¼•å…¥PID namespaceä¹‹åï¼Œä¸åŒçš„namespaceå¯ä»¥æ‹¥æœ‰åŒæ ·çš„IDï¼Œ
+ ä¹Ÿå°±æ˜¯è¯´ï¼Œæ ‡è¯†ä¸€ä¸ªè¿›ç¨‹çš„æ˜¯PID namespace ï¼‹ PIDã€‚
 
- user namespaceÊÇlinux kernelÖ§³ÖĞéÄâ»¯Ö®ºóÒıÈëµÄÒ»¸ö»úÖÆ£¬
-¿ÉÒÔÔÊĞíÏµÍ³´´½¨²»Í¬µÄuser namespace£¨Ö®Ç°ÏµÍ³Ö»ÓĞÒ»¸öuser namespace£©¡£
-user namespaceÓÃÀ´¹ÜÀíuser IDºÍgroup IDµÄÓ³Éä¡£
-Ò»¸öuser namespaceĞÎ³ÉÒ»¸öcontainer£¬
-¸Ãuser namespaceµÄuser IDºÍgroup IDµÄÈ¨ÏŞ±»ÏŞ¶¨ÔÚcontainerÄÚ²¿¡£
-Ò²¾ÍÊÇËµ£¬Ä³Ò»¸öuser namespaceÖĞµÄroot£¨UIDµÈÓÚ0£©²¢·Ç¾ß±¸ÈÎÒâµÄÈ¨ÏŞ£¬
-Ëû½ö½öÊÇÔÚ¸Ãuser namespaceÖĞÊÇprivilegesµÄ£¬
-ÔÚ¸Ãuser namespaceÖ®Íâ£¬¸Ãuser²¢·ÇÊÇÌØÈ¨ÓÃ»§¡£
+ user namespaceæ˜¯linux kernelæ”¯æŒè™šæ‹ŸåŒ–ä¹‹åå¼•å…¥çš„ä¸€ä¸ªæœºåˆ¶ï¼Œ
+å¯ä»¥å…è®¸ç³»ç»Ÿåˆ›å»ºä¸åŒçš„user namespaceï¼ˆä¹‹å‰ç³»ç»Ÿåªæœ‰ä¸€ä¸ªuser namespaceï¼‰ã€‚
+user namespaceç”¨æ¥ç®¡ç†user IDå’Œgroup IDçš„æ˜ å°„ã€‚
+ä¸€ä¸ªuser namespaceå½¢æˆä¸€ä¸ªcontainerï¼Œ
+è¯¥user namespaceçš„user IDå’Œgroup IDçš„æƒé™è¢«é™å®šåœ¨containerå†…éƒ¨ã€‚
+ä¹Ÿå°±æ˜¯è¯´ï¼ŒæŸä¸€ä¸ªuser namespaceä¸­çš„rootï¼ˆUIDç­‰äº0ï¼‰å¹¶éå…·å¤‡ä»»æ„çš„æƒé™ï¼Œ
+ä»–ä»…ä»…æ˜¯åœ¨è¯¥user namespaceä¸­æ˜¯privilegesçš„ï¼Œ
+åœ¨è¯¥user namespaceä¹‹å¤–ï¼Œè¯¥userå¹¶éæ˜¯ç‰¹æƒç”¨æˆ·ã€‚
 
- Linux Namespaces»úÖÆ±¾Éí¾ÍÊÇÎªÁËÊµÏÖ container based virtualizaiton¿ª·¢µÄ¡£
- ËüÌá¹©ÁËÒ»Ì×ÇáÁ¿¼¶¡¢¸ßĞ§ÂÊµÄÏµÍ³×ÊÔ´¸ôÀë·½°¸£¬Ô¶±È´«Í³µÄĞéÄâ»¯¼¼Êõ¿ªÏúĞ¡£¬²»¹ıËüÒ²²»ÊÇÍêÃÀµÄ£¬ËüÎªÄÚºËµÄ¿ª·¢´øÀ´ÁË¸ü¶àµÄ¸´ÔÓĞÔ£¬ËüÔÚ¸ôÀëĞÔºÍÈİ´íĞÔÉÏ¸ú´«Í³µÄĞéÄâ»¯¼¼Êõ±ÈÒ²»¹ÓĞ²î¾à¡£
+ Linux Namespacesæœºåˆ¶æœ¬èº«å°±æ˜¯ä¸ºäº†å®ç° container based virtualizaitonå¼€å‘çš„ã€‚
+ å®ƒæä¾›äº†ä¸€å¥—è½»é‡çº§ã€é«˜æ•ˆç‡çš„ç³»ç»Ÿèµ„æºéš”ç¦»æ–¹æ¡ˆï¼Œè¿œæ¯”ä¼ ç»Ÿçš„è™šæ‹ŸåŒ–æŠ€æœ¯å¼€é”€å°ï¼Œä¸è¿‡å®ƒä¹Ÿä¸æ˜¯å®Œç¾çš„ï¼Œå®ƒä¸ºå†…æ ¸çš„å¼€å‘å¸¦æ¥äº†æ›´å¤šçš„å¤æ‚æ€§ï¼Œå®ƒåœ¨éš”ç¦»æ€§å’Œå®¹é”™æ€§ä¸Šè·Ÿä¼ ç»Ÿçš„è™šæ‹ŸåŒ–æŠ€æœ¯æ¯”ä¹Ÿè¿˜æœ‰å·®è·ã€‚
 
  */
 struct nsproxy {
 	atomic_t count;
 	/*
-    UTSÃüÃû¿Õ¼ä°üº¬ÁËÔËĞĞÄÚºËµÄÃû³Æ¡¢°æ±¾¡¢µ×²ãÌåÏµ½á¹¹ÀàĞÍµÈĞÅÏ¢¡£
-    UTSÊÇUNIX Timesharing SystemµÄ¼ò³Æ
+    UTSå‘½åç©ºé—´åŒ…å«äº†è¿è¡Œå†…æ ¸çš„åç§°ã€ç‰ˆæœ¬ã€åº•å±‚ä½“ç³»ç»“æ„ç±»å‹ç­‰ä¿¡æ¯ã€‚
+    UTSæ˜¯UNIX Timesharing Systemçš„ç®€ç§°
 	*/
 	struct uts_namespace *uts_ns;
 	/*
-    ±£´æÔÚstruct ipc_namespaceÖĞµÄËùÓĞÓë½ø³Ì¼äÍ¨ĞÅ£¨IPC£©ÓĞ¹ØµÄĞÅÏ¢
+    ä¿å­˜åœ¨struct ipc_namespaceä¸­çš„æ‰€æœ‰ä¸è¿›ç¨‹é—´é€šä¿¡ï¼ˆIPCï¼‰æœ‰å…³çš„ä¿¡æ¯
 	*/
 	struct ipc_namespace *ipc_ns;
 	/*
-    ÒÑ¾­×°ÔØµÄÎÄ¼şÏµÍ³µÄÊÓÍ¼£¬ÔÚstruct mnt_namespaceÖĞ¸ø³ö
+    å·²ç»è£…è½½çš„æ–‡ä»¶ç³»ç»Ÿçš„è§†å›¾ï¼Œåœ¨struct mnt_namespaceä¸­ç»™å‡º
 	*/
 	struct mnt_namespace *mnt_ns;
 	/*
-    ÓĞ¹Ø½ø³ÌIDµÄĞÅÏ¢£¬ÓÉstruct pid_namespaceÌá¹©
+    æœ‰å…³è¿›ç¨‹IDçš„ä¿¡æ¯ï¼Œç”±struct pid_namespaceæä¾›
 	*/
 	struct pid_namespace *pid_ns_for_children;
 	/*
-        ËùÓĞÍøÂçÏà¹ØµÄÃüÃû¿Õ¼ä²ÎÊı
+        æ‰€æœ‰ç½‘ç»œç›¸å…³çš„å‘½åç©ºé—´å‚æ•°
 	*/
 	struct net 	     *net_ns;
 	struct cgroup_namespace *cgroup_ns;

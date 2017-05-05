@@ -264,7 +264,7 @@ static handle_t *new_handle(int nblocks)
  * Return a pointer to a newly allocated handle, or NULL on failure
  */
 /**
- * ¿ªÆôÒ»¸öÈÕÖ¾
+ * å¼€å¯ä¸€ä¸ªæ—¥å¿—
  */
 handle_t *journal_start(journal_t *journal, int nblocks)
 {
@@ -1120,7 +1120,7 @@ no_journal:
  * completes its commit.
  */
 /**
- * ½«ĞŞ¸ÄµÄÔªÊı¾İĞ´»Øµ½ÈÕÖ¾ÖĞ¡£
+ * å°†ä¿®æ”¹çš„å…ƒæ•°æ®å†™å›åˆ°æ—¥å¿—ä¸­ã€‚
  */
 int journal_dirty_metadata(handle_t *handle, struct buffer_head *bh)
 {
@@ -1335,7 +1335,7 @@ drop:
  * transaction began.
  */
 /**
- * ½áÊøÒ»¸öÈÕÖ¾
+ * ç»“æŸä¸€ä¸ªæ—¥å¿—
  */
 int journal_stop(handle_t *handle)
 {

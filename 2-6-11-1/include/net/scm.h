@@ -34,7 +34,7 @@ static __inline__ void scm_destroy(struct scm_cookie *scm)
 		__scm_destroy(scm);
 }
 
-/* sock表示发送消息的socket */
+/* sock琛ㄧず鍙戦�佹秷鎭殑socket */
 static __inline__ int scm_send(struct socket *sock, struct msghdr *msg,
 			       struct scm_cookie *scm)
 {

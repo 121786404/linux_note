@@ -716,7 +716,7 @@ static unsigned long descriptor_loc(struct super_block *sb,
 }
 
 /**
- * Èç¹ûext2³¬¼¶¿é²»ÔÚÄÚ´æÖĞ£¬Ôò»Øµ÷´Ëº¯Êı´Ó´ÅÅÌÖĞ¶ÁÈ¡Êı¾İ
+ * å¦‚æœext2è¶…çº§å—ä¸åœ¨å†…å­˜ä¸­ï¼Œåˆ™å›è°ƒæ­¤å‡½æ•°ä»ç£ç›˜ä¸­è¯»å–æ•°æ®
  */
 static int ext2_fill_super(struct super_block *sb, void *data, int silent)
 {
@@ -748,7 +748,7 @@ static int ext2_fill_super(struct super_block *sb, void *data, int silent)
 	 * This is important for devices that have a hardware
 	 * sectorsize that is larger than the default.
 	 */
-	/* ¸ù¾İÉè±¸µÄÊôĞÔ£¬Ô¤¹ÀÒ»¸ö¿é³¤¶È¡£Ò»°ãÎª1024£¬Èç¹û¿éÉè±¸µÄ¿é³¤¶È´óÓÚ1024£¬ÔòÊ¹ÓÃ¿éÉè±¸µÄ³¤¶È¡£ */
+	/* æ ¹æ®è®¾å¤‡çš„å±æ€§ï¼Œé¢„ä¼°ä¸€ä¸ªå—é•¿åº¦ã€‚ä¸€èˆ¬ä¸º1024ï¼Œå¦‚æœå—è®¾å¤‡çš„å—é•¿åº¦å¤§äº1024ï¼Œåˆ™ä½¿ç”¨å—è®¾å¤‡çš„é•¿åº¦ã€‚ */
 	blocksize = sb_min_blocksize(sb, BLOCK_SIZE);
 	if (!blocksize) {
 		printk ("EXT2-fs: unable to set blocksize\n");
@@ -766,7 +766,7 @@ static int ext2_fill_super(struct super_block *sb, void *data, int silent)
 		logic_sb_block = sb_block;
 	}
 
-	/* ¶ÁÈ¡³¬¼¶¿éËùÔÚµÄÊı¾İ¿é */
+	/* è¯»å–è¶…çº§å—æ‰€åœ¨çš„æ•°æ®å— */
 	if (!(bh = sb_bread(sb, logic_sb_block))) {
 		printk ("EXT2-fs: unable to read superblock\n");
 		goto failed_sbi;
@@ -775,17 +775,17 @@ static int ext2_fill_super(struct super_block *sb, void *data, int silent)
 	 * Note: s_es must be initialized as soon as possible because
 	 *       some ext2 macro-instructions depend on its value
 	 */
-	/* ´ÅÅÌÉÏµÄ³¬¼¶¿éÖ¸Õë */
+	/* ç£ç›˜ä¸Šçš„è¶…çº§å—æŒ‡é’ˆ */
 	es = (struct ext2_super_block *) (((char *)bh->b_data) + offset);
 	sbi->s_es = es;
 	sb->s_magic = le16_to_cpu(es->s_magic);
 
-	/* ¼ì²éÎïÀíÉè±¸ÉÏµÄÄ§·¨Öµ£¬¿´ÊÇ·ñÕæµÄÊÇext2ÎÄ¼ş·ÖÇø */
+	/* æ£€æŸ¥ç‰©ç†è®¾å¤‡ä¸Šçš„é­”æ³•å€¼ï¼Œçœ‹æ˜¯å¦çœŸçš„æ˜¯ext2æ–‡ä»¶åˆ†åŒº */
 	if (sb->s_magic != EXT2_SUPER_MAGIC)
 		goto cantfind_ext2;
 
 	/* Set defaults before we parse the mount options */
-	/* ´Ó´ÅÅÌÉÏ¶ÁÈ¡Ä¬ÈÏµÄ¼ÓÔØÑ¡Ïî */
+	/* ä»ç£ç›˜ä¸Šè¯»å–é»˜è®¤çš„åŠ è½½é€‰é¡¹ */
 	def_mount_opts = le32_to_cpu(es->s_default_mount_opts);
 	if (def_mount_opts & EXT2_DEFM_DEBUG)
 		set_opt(sbi->s_mount_opt, DEBUG);
@@ -814,7 +814,7 @@ static int ext2_fill_super(struct super_block *sb, void *data, int silent)
 	
 	set_opt(sbi->s_mount_opt, RESERVATION);
 
-	/* ·ÖÎö¼ÓÔØÑ¡Ïî */
+	/* åˆ†æåŠ è½½é€‰é¡¹ */
 	if (!parse_options ((char *) data, sbi))
 		goto failed_mount;
 
@@ -861,8 +861,8 @@ static int ext2_fill_super(struct super_block *sb, void *data, int silent)
 	}
 
 	/* If the blocksize doesn't match, re-read the thing.. */
-	if (sb->s_blocksize != blocksize) {/* Êµ¼ÊµÄ¿é³¤¶ÈÓëÔ¤¹ÀµÄ³¤¶È²»Ò»ÖÂ */
-		brelse(bh);/* ÊÍ·ÅÔ­À´µÄ´ÅÅÌÊı¾İ */
+	if (sb->s_blocksize != blocksize) {/* å®é™…çš„å—é•¿åº¦ä¸é¢„ä¼°çš„é•¿åº¦ä¸ä¸€è‡´ */
+		brelse(bh);/* é‡Šæ”¾åŸæ¥çš„ç£ç›˜æ•°æ® */
 
 		if (!sb_set_blocksize(sb, blocksize)) {
 			printk(KERN_ERR "EXT2-fs: blocksize too small for device.\n");
@@ -871,7 +871,7 @@ static int ext2_fill_super(struct super_block *sb, void *data, int silent)
 
 		logic_sb_block = (sb_block*BLOCK_SIZE) / blocksize;
 		offset = (sb_block*BLOCK_SIZE) % blocksize;
-		bh = sb_bread(sb, logic_sb_block);/* ÖØĞÂ¶ÁÈ¡³¬¼¶¿é */
+		bh = sb_bread(sb, logic_sb_block);/* é‡æ–°è¯»å–è¶…çº§å— */
 		if(!bh) {
 			printk("EXT2-fs: Couldn't read superblock on "
 			       "2nd try.\n");
@@ -988,7 +988,7 @@ static int ext2_fill_super(struct super_block *sb, void *data, int silent)
 			goto failed_mount_group_desc;
 		}
 	}
-	/* ¶ÁÈ¡×éÃèÊö·û£¬²¢¼ì²éÆäÒ»ÖÂĞÔ */
+	/* è¯»å–ç»„æè¿°ç¬¦ï¼Œå¹¶æ£€æŸ¥å…¶ä¸€è‡´æ€§ */
 	if (!ext2_check_descriptors (sb)) {
 		printk ("EXT2-fs: group descriptors corrupted!\n");
 		goto failed_mount2;
@@ -1012,7 +1012,7 @@ static int ext2_fill_super(struct super_block *sb, void *data, int silent)
 	sbi->s_rsv_window_head.rsv_goal_size = 0;
 	ext2_rsv_window_add(sb, &sbi->s_rsv_window_head);
 
-	/* ¼ÆËã¿ÕÏĞ¿éÊıÄ¿¡¢¿ÕÏĞinodeÊıÄ¿ºÍÄ¿Â¼ÊıÄ¿£¬²¢¾İ´Ë³õÊ¼»¯½üËÆ¼ÆÊıÖµ */
+	/* è®¡ç®—ç©ºé—²å—æ•°ç›®ã€ç©ºé—²inodeæ•°ç›®å’Œç›®å½•æ•°ç›®ï¼Œå¹¶æ®æ­¤åˆå§‹åŒ–è¿‘ä¼¼è®¡æ•°å€¼ */
 	err = percpu_counter_init(&sbi->s_freeblocks_counter,
 				ext2_count_free_blocks(sb));
 	if (!err) {
@@ -1049,7 +1049,7 @@ static int ext2_fill_super(struct super_block *sb, void *data, int silent)
 	if (EXT2_HAS_COMPAT_FEATURE(sb, EXT3_FEATURE_COMPAT_HAS_JOURNAL))
 		ext2_warning(sb, __FUNCTION__,
 			"mounting ext3 filesystem as ext2");
-	/* ½øĞĞÒ»Ğ©¼ì²é¹¤×÷£¬²¢½«³¬¼¶¿é»ØĞ´µ½´ÅÅÌ£¬ÒòÎªĞŞ¸ÄÁË×°ÔØ¼ÆÊıºÍÈÕÆÚ */
+	/* è¿›è¡Œä¸€äº›æ£€æŸ¥å·¥ä½œï¼Œå¹¶å°†è¶…çº§å—å›å†™åˆ°ç£ç›˜ï¼Œå› ä¸ºä¿®æ”¹äº†è£…è½½è®¡æ•°å’Œæ—¥æœŸ */
 	ext2_setup_super (sb, es, sb->s_flags & MS_RDONLY);
 	return 0;
 
@@ -1274,7 +1274,7 @@ static int ext2_statfs (struct dentry * dentry, struct kstatfs * buf)
 }
 
 /**
- * ¶ÁÈ¡ext2ÎÄ¼şÏµÍ³³¬¼¶¿é
+ * è¯»å–ext2æ–‡ä»¶ç³»ç»Ÿè¶…çº§å—
  */
 static int ext2_get_sb(struct file_system_type *fs_type,
 	int flags, const char *dev_name, void *data, struct vfsmount *mnt)

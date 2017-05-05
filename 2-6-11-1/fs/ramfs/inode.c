@@ -48,7 +48,7 @@ static struct backing_dev_info ramfs_backing_dev_info = {
 	.memory_backed	= 1,	/* Does not contribute to dirty memory */
 };
 
-/* ´´½¨ramfsÎÄ¼şÏµÍ³µÄinode */
+/* åˆ›å»ºramfsæ–‡ä»¶ç³»ç»Ÿçš„inode */
 struct inode *ramfs_get_inode(struct super_block *sb, int mode, dev_t dev)
 {
 	struct inode * inode = new_inode(sb);
@@ -177,7 +177,7 @@ static struct super_operations ramfs_ops = {
 	.drop_inode	= generic_delete_inode,
 };
 
-/* Ìî³ärootfsµÄ³¬¼¶¿é£¬ÉèÖÃ³¬¼¶¿éµÄ¸ùÄ¿Â¼ºÍ¸ùÄ¿Â¼¶ÔÓ¦µÄinode  */
+/* å¡«å……rootfsçš„è¶…çº§å—ï¼Œè®¾ç½®è¶…çº§å—çš„æ ¹ç›®å½•å’Œæ ¹ç›®å½•å¯¹åº”çš„inode  */
 static int ramfs_fill_super(struct super_block * sb, void * data, int silent)
 {
 	struct inode * inode;
@@ -208,7 +208,7 @@ struct super_block *ramfs_get_sb(struct file_system_type *fs_type,
 	return get_sb_nodev(fs_type, flags, data, ramfs_fill_super);
 }
 
-/* »ñÈ¡¸ùÎÄ¼şÏµÍ³µÄ³¬¼¶¿é */
+/* è·å–æ ¹æ–‡ä»¶ç³»ç»Ÿçš„è¶…çº§å— */
 static struct super_block *rootfs_get_sb(struct file_system_type *fs_type,
 	int flags, const char *dev_name, void *data)
 {
@@ -221,7 +221,7 @@ static struct file_system_type ramfs_fs_type = {
 	.kill_sb	= kill_litter_super,
 };
 
-/* ×¢ÒârootfsÊÇÒ»ÖÖÄÚ´æÀàĞÍµÄÎÄ¼şÏµÍ³ */
+/* æ³¨æ„rootfsæ˜¯ä¸€ç§å†…å­˜ç±»å‹çš„æ–‡ä»¶ç³»ç»Ÿ */
 static struct file_system_type rootfs_fs_type = {
 	.name		= "rootfs",
 	.get_sb		= rootfs_get_sb,
@@ -241,7 +241,7 @@ static void __exit exit_ramfs_fs(void)
 module_init(init_ramfs_fs)
 module_exit(exit_ramfs_fs)
 
-/* ³õÊ¼»¯rootfsÎÄ¼şÏµÍ³ */
+/* åˆå§‹åŒ–rootfsæ–‡ä»¶ç³»ç»Ÿ */
 int __init init_rootfs(void)
 {
 	return register_filesystem(&rootfs_fs_type);

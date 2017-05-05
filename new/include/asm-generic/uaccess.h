@@ -38,7 +38,7 @@ static inline void set_fs(mm_segment_t fs)
 #define VERIFY_READ	0
 #define VERIFY_WRITE	1
 
-/*access_ok�������û��ռ�ĵ�ַָ��from��ĳ����Ч�Լ��飬��������ϵ�ṹ��أ���armƽ̨��Ϊ(linux/include/asm-arm/uaccess.h)*/
+/*access_ok用来对用户空间的地址指针from作某种有效性检验，这个宏和体系结构相关，在arm平台上为(linux/include/asm-arm/uaccess.h)*/
 #define access_ok(type, addr, size) __access_ok((unsigned long)(addr),(size))
 
 /*
@@ -159,10 +159,10 @@ static inline __must_check long __copy_to_user(void __user *to,
 	__pu_err;						\
 })
 
-/* �������һЩ�����ͱ���(char,int,long)�Ŀ�������,���ڸ������͵ı���,������
- * �ṹ,�����޷�ʤ��
- * �������ں˿ռ��һ�������ͱ���x������ptrָ����û��ռ���,�������Զ��жϱ���
- * ������,�ɹ�����0,���򷵻�-EFAULT*/
+/* 用来完成一些简单类型变量(char,int,long)的拷贝任务,对于复合类型的变量,如数据
+ * 结构,函数无法胜任
+ * 用来将内核空间的一个简单类型变量x拷贝到ptr指向的用户空间中,函数能自动判断变量
+ * 的类型,成功返回0,否则返回-EFAULT*/
 #define put_user(x, ptr)					\
 ({								\
 	void *__p = (ptr);					\
@@ -226,9 +226,9 @@ extern int __put_user_bad(void) __attribute__((noreturn));
 	__gu_err;						\
 })
 
-/* �������һЩ�����ͱ���(char,int,long)�Ŀ�������,���ڸ������͵ı���,������
- * �ṹ,�����޷�ʤ��
- * ���û��ռ�ptrָ������ݿ������ں˿ռ�ı���x��,�����ɹ�����0,���򷵻�-EFAULT*/
+/* 用来完成一些简单类型变量(char,int,long)的拷贝任务,对于复合类型的变量,如数据
+ * 结构,函数无法胜任
+ * 将用户空间ptr指向的数据拷贝到内核空间的变量x中,函数成功返回0,否则返回-EFAULT*/
 #define get_user(x, ptr)					\
 ({								\
 	const void *__p = (ptr);				\
@@ -264,17 +264,17 @@ extern int __get_user_bad(void) __attribute__((noreturn));
 #endif
 
 /**
- * @to:���ں˿ռ��ָ��
- * @from:���û��ռ��ָ��
- * @n: ��ʾ���û��ռ����ں˿ռ俽�����ݵ��ֽ���
- * ����ֵ:�ɹ�����0,���򷵻�û����ɿ������ֽ���
+ * @to:是内核空间的指针
+ * @from:是用户空间的指针
+ * @n: 表示从用户空间向内核空间拷贝数据的字节数
+ * 返回值:成功返回0,否则返回没有完成拷贝的字节数
  */
 static inline long copy_from_user(void *to,
 		const void __user * from, unsigned long n)
 {
 	unsigned long res = n;
 	might_fault();
-	/*access_ok�������û��ռ�ĵ�ַָ��from��ĳ����Ч�Լ���,����ϵ�ܹ���ص�*/
+	/*access_ok用来对用户空间的地址指针from作某种有效性检验,宏体系架构相关的*/
 	if (likely(access_ok(VERIFY_READ, from, n)))
 		res = __copy_from_user(to, from, n);
 	if (unlikely(res))
@@ -283,19 +283,19 @@ static inline long copy_from_user(void *to,
 }
 
 /**
- * @to:�û��ռ�ָ��
- * @from:�ں˿ռ�ָ��
- * @n :Ҫ�������ֽ���
- * ����ֵ:�����ɹ�����0,���򷵻���δ���������ֽ���
+ * @to:用户空间指针
+ * @from:内核空间指针
+ * @n :要拷贝的字节数
+ * 返回值:拷贝成功返回0,否则返回尚未被拷贝的字节数
  */
 static inline long copy_to_user(void __user *to,
 		const void *from, unsigned long n)
 {
-	/* �����ڶ�����CONFIG_PREEMPT_VOLUNTARY������»��γ�һ����ʽ����ռ����
-	 * ��,���������ܻ��Զ�����CPU,��֮,copy_from_user�п����õ�ǰ���̽���
-	 * ˯��״̬*/
+	/* 函数在定义了CONFIG_PREEMPT_VOLUNTARY的情况下会形成一个显式的抢占调度
+	 * 点,即函数可能会自动放弃CPU,总之,copy_from_user有可能让当前进程进入
+	 * 睡眠状态*/
 	might_fault();
-	/*access_ok�������û��ռ�ĵ�ַָ��to��ĳ����Ч�Լ���,����ϵ�ܹ���ص�*/
+	/*access_ok用来对用户空间的地址指针to作某种有效性检验,宏体系架构相关的*/
 	if (access_ok(VERIFY_WRITE, to, n))
 		return __copy_to_user(to, from, n);
 	else

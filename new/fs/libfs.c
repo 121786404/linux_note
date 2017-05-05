@@ -972,24 +972,24 @@ int __generic_file_fsync(struct file *file, loff_t start, loff_t end,
 	struct inode *inode = file->f_mapping->host;
 	int err;
 	int ret;
-    /* Í¬²½¸ÃÎÄ¼ş»º´æÖĞ´¦ÓÚstartµ½end·¶Î§ÄÚµÄÔàÒ³ */
+    /* åŒæ­¥è¯¥æ–‡ä»¶ç¼“å­˜ä¸­å¤„äºstartåˆ°endèŒƒå›´å†…çš„è„é¡µ */
 	err = filemap_write_and_wait_range(inode->i_mapping, start, end);
 	if (err)
 		return err;
 
 	inode_lock(inode);
-	/* Í¬²½¸Ãinode¶ÔÓ¦µÄ»º´æ */ 
+	/* åŒæ­¥è¯¥inodeå¯¹åº”çš„ç¼“å­˜ */ 
 	ret = sync_mapping_buffers(inode->i_mapping);
-    /* inode×´Ì¬Ã»ÓĞ±ä»¯£¬ÎŞĞèÍ¬²½£¬¿ÉÒÔÖ±½Ó·µ»Ø */
+    /* inodeçŠ¶æ€æ²¡æœ‰å˜åŒ–ï¼Œæ— éœ€åŒæ­¥ï¼Œå¯ä»¥ç›´æ¥è¿”å› */
 	if (!(inode->i_state & I_DIRTY_ALL))
 		goto out;
     /*
-		Èç¹ûÊÇfdatasyncÔò½ö×öÊı¾İÍ¬²½£¬²¢ÇÒÈô¸ÃinodeÃ»ÓĞÓ°ÏìÈÎºÎÊı¾İ·½Ãæ²Ù×÷µÄ±ä»¯£¨±ÈÈçÎÄ¼ş³¤¶È£©£¬Ôò¿ÉÒÔÖ±½Ó·µ»Ø 
+		å¦‚æœæ˜¯fdatasyncåˆ™ä»…åšæ•°æ®åŒæ­¥ï¼Œå¹¶ä¸”è‹¥è¯¥inodeæ²¡æœ‰å½±å“ä»»ä½•æ•°æ®æ–¹é¢æ“ä½œçš„å˜åŒ–ï¼ˆæ¯”å¦‚æ–‡ä»¶é•¿åº¦ï¼‰ï¼Œåˆ™å¯ä»¥ç›´æ¥è¿”å› 
       */
 	if (datasync && !(inode->i_state & I_DIRTY_DATASYNC))
 		goto out;
     /*  
-        Í¬²½inodeµÄÔªÊı¾İ  
+        åŒæ­¥inodeçš„å…ƒæ•°æ®  
       */
 	err = sync_inode_metadata(inode, 1);
 	if (ret == 0)

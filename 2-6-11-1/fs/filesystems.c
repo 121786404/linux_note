@@ -27,7 +27,7 @@
  *	Once the reference is obtained we can drop the spinlock.
  */
 
-/* ÏµÍ³ÖĞÎÄ¼şÏµÍ³µÄÈ«¾Ö±äÁ¿ */
+/* ç³»ç»Ÿä¸­æ–‡ä»¶ç³»ç»Ÿçš„å…¨å±€å˜é‡ */
 static struct file_system_type *file_systems;
 static DEFINE_RWLOCK(file_systems_lock);
 
@@ -42,7 +42,7 @@ void put_filesystem(struct file_system_type *fs)
 	module_put(fs->owner);
 }
 
-/* ·µ»ØÃû³ÆÎªnameµÄfile_system_type£¬×¢Òâº¯Êı×îºóµÄ·µ»ØÀàĞÍ */
+/* è¿”å›åç§°ä¸ºnameçš„file_system_typeï¼Œæ³¨æ„å‡½æ•°æœ€åçš„è¿”å›ç±»å‹ */
 static struct file_system_type **find_filesystem(const char *name)
 {
 	struct file_system_type **p;
@@ -65,7 +65,7 @@ static struct file_system_type **find_filesystem(const char *name)
  *	unregistered.
  */
  
-/* ×¢²áÒ»¸öÎÄ¼şÏµÍ³ */
+/* æ³¨å†Œä¸€ä¸ªæ–‡ä»¶ç³»ç»Ÿ */
 int register_filesystem(struct file_system_type * fs)
 {
 	int res = 0;
@@ -78,11 +78,11 @@ int register_filesystem(struct file_system_type * fs)
 	INIT_LIST_HEAD(&fs->fs_supers);
 	write_lock(&file_systems_lock);
 	p = find_filesystem(fs->name);
-        /* Èç¹ûÒÑ¾­±»×¢²á£¬Ôò·µ»ØÃ¦×´Ì¬  */
+        /* å¦‚æœå·²ç»è¢«æ³¨å†Œï¼Œåˆ™è¿”å›å¿™çŠ¶æ€  */
 	if (*p)
 		res = -EBUSY;
 	else
-		*p = fs;        /* ÉèÖÃÁ´±í¹ØÏµ£¬Ò²¾ÍÊÇ´æ·ÅÔÚÁ´±íµÄ×îÄ©¶Ë */
+		*p = fs;        /* è®¾ç½®é“¾è¡¨å…³ç³»ï¼Œä¹Ÿå°±æ˜¯å­˜æ”¾åœ¨é“¾è¡¨çš„æœ€æœ«ç«¯ */
 	write_unlock(&file_systems_lock);
 	return res;
 }
@@ -218,7 +218,7 @@ int get_filesystem_list(char * buf)
 	return len;
 }
 
-/* ¸ù¾İÎÄ¼şÏµÍ³Ãû³ÆÀ´»ñÈ¡ÎÄ¼şÏµÍ³ÀàĞÍ,Ò²¾ÍÊÇ·µ»Øfile_system_type½á¹¹ */
+/* æ ¹æ®æ–‡ä»¶ç³»ç»Ÿåç§°æ¥è·å–æ–‡ä»¶ç³»ç»Ÿç±»å‹,ä¹Ÿå°±æ˜¯è¿”å›file_system_typeç»“æ„ */
 struct file_system_type *get_fs_type(const char *name)
 {
 	struct file_system_type *fs;

@@ -356,15 +356,15 @@ static unsigned long __init setup_memory(void)
 	return max_low_pfn;
 }
 
-/* ÔÚIA32ÏµÍ³ÖĞ×¢²áÄÚ´æÇø */
+/* åœ¨IA32ç³»ç»Ÿä¸­æ³¨å†Œå†…å­˜åŒº */
 void __init zone_sizes_init(void)
 {
 	unsigned long max_zone_pfns[MAX_NR_ZONES];
 	memset(max_zone_pfns, 0, sizeof(max_zone_pfns));
-	/* Ç°16M×÷ÎªDMAÇøÓòµÄ±ß½ç£¬4096Ò³ */
+	/* å‰16Mä½œä¸ºDMAåŒºåŸŸçš„è¾¹ç•Œï¼Œ4096é¡µ */
 	max_zone_pfns[ZONE_DMA] =
 		virt_to_phys((char *)MAX_DMA_ADDRESS) >> PAGE_SHIFT;
-	/* Ö¸¶¨NORMAL¡¢HIGHMEMÇøµÄ±ß½ç */
+	/* æŒ‡å®šNORMALã€HIGHMEMåŒºçš„è¾¹ç•Œ */
 	max_zone_pfns[ZONE_NORMAL] = max_low_pfn;
 #ifdef CONFIG_HIGHMEM
 	max_zone_pfns[ZONE_HIGHMEM] = highend_pfn;
@@ -373,7 +373,7 @@ void __init zone_sizes_init(void)
 	add_active_range(0, 0, max_low_pfn);
 #endif
 
-	/* ¸ù¾İ»î¶¯ÄÚ´æÇø(ÓÃÓÚ³õÊ¼»¯½×¶Î)µÄĞÅÏ¢£¬¹¹½¨ÌåÏµÎŞ¹ØµÄÊı¾İ½á¹¹ */
+	/* æ ¹æ®æ´»åŠ¨å†…å­˜åŒº(ç”¨äºåˆå§‹åŒ–é˜¶æ®µ)çš„ä¿¡æ¯ï¼Œæ„å»ºä½“ç³»æ— å…³çš„æ•°æ®ç»“æ„ */
 	free_area_init_nodes(max_zone_pfns);
 }
 #else
@@ -430,10 +430,10 @@ void __init setup_bootmem_allocator(void)
 	/*
 	 * Initialize the boot-time allocator (with low memory only):
 	 */
-	/* ½«Ò³Ö¡·¶Î§±£´æµ½»î¶¯ÄÚ´æÇøÓòÖĞ£¬²¢½«ËùÓĞµÄÒ³±ê¼ÇÎª¿ÉÓÃ */
+	/* å°†é¡µå¸§èŒƒå›´ä¿å­˜åˆ°æ´»åŠ¨å†…å­˜åŒºåŸŸä¸­ï¼Œå¹¶å°†æ‰€æœ‰çš„é¡µæ ‡è®°ä¸ºå¯ç”¨ */
 	bootmap_size = init_bootmem(min_low_pfn, max_low_pfn);
 
-	/* ¸ù¾İBIOSÌá¹©µÄĞÅÏ¢£¬½«¿ÉÓÃÇøÓò±ê¼ÇÎª¿ÉÓÃ */
+	/* æ ¹æ®BIOSæä¾›çš„ä¿¡æ¯ï¼Œå°†å¯ç”¨åŒºåŸŸæ ‡è®°ä¸ºå¯ç”¨ */
 	register_bootmem_low_pages(max_low_pfn);
 
 	/*
@@ -442,7 +442,7 @@ void __init setup_bootmem_allocator(void)
 	 * the (very unlikely) case of us accidentally initializing the
 	 * bootmem allocator with an invalid RAM area.
 	 */
-	/* ±£´æÄÚºË´úÂë¶ÎÇøÓò */
+	/* ä¿å­˜å†…æ ¸ä»£ç æ®µåŒºåŸŸ */
 	reserve_bootmem(__pa_symbol(_text), (PFN_PHYS(min_low_pfn) +
 			 bootmap_size + PAGE_SIZE-1) - __pa_symbol(_text));
 
@@ -450,7 +450,7 @@ void __init setup_bootmem_allocator(void)
 	 * reserve physical page 0 - it's a special BIOS page on many boxes,
 	 * enabling clean reboots, SMP operation, laptop functions.
 	 */
-	/* ±£ÁôµÚÒ»¸öÎïÀíÒ³ */
+	/* ä¿ç•™ç¬¬ä¸€ä¸ªç‰©ç†é¡µ */
 	reserve_bootmem(0, PAGE_SIZE);
 
 	/* reserve EBDA region, it's a 4K region */
@@ -591,7 +591,7 @@ void __init setup_arch(char **cmdline_p)
 		efi_init();
 	else {
 		printk(KERN_INFO "BIOS-provided physical RAM map:\n");
-		/* ÌØ¶¨ÓÚ»úÆ÷µÄº¯Êı£¬´´½¨Ò»¸öÁĞ±í£¬È·¶¨ÏµÍ³Õ¼¾İµÄÄÚ´æÇøºÍ¿ÕÏĞÄÚ´æÇø¡£²¢´òÓ¡³öÀ´ */
+		/* ç‰¹å®šäºæœºå™¨çš„å‡½æ•°ï¼Œåˆ›å»ºä¸€ä¸ªåˆ—è¡¨ï¼Œç¡®å®šç³»ç»Ÿå æ®çš„å†…å­˜åŒºå’Œç©ºé—²å†…å­˜åŒºã€‚å¹¶æ‰“å°å‡ºæ¥ */
 		print_memory_map(memory_setup());
 	}
 
@@ -611,7 +611,7 @@ void __init setup_arch(char **cmdline_p)
 	bss_resource.start = virt_to_phys(&__bss_start);
 	bss_resource.end = virt_to_phys(&__bss_stop)-1;
 
-	/* ½âÎöboot²ÎÊı£¬Èçmem,highmem,memmap */
+	/* è§£æbootå‚æ•°ï¼Œå¦‚mem,highmem,memmap */
 	parse_early_param();
 
 	if (user_defined_memmap) {
@@ -622,7 +622,7 @@ void __init setup_arch(char **cmdline_p)
 	strlcpy(command_line, boot_command_line, COMMAND_LINE_SIZE);
 	*cmdline_p = command_line;
 
-	/* ÓĞÁ¬ĞøÄÚ´æºÍ²»Á¬ĞøÄÚ´æÁ½¸ö°æ±¾£¬È·¶¨¿ÉÓÃÎïÀíÄÚ´æÒ³µÄÊıÁ¿£¬³õÊ¼»¯bootmem·ÖÅäÆ÷£¬·ÖÅäÄÚ´æÇø */
+	/* æœ‰è¿ç»­å†…å­˜å’Œä¸è¿ç»­å†…å­˜ä¸¤ä¸ªç‰ˆæœ¬ï¼Œç¡®å®šå¯ç”¨ç‰©ç†å†…å­˜é¡µçš„æ•°é‡ï¼Œåˆå§‹åŒ–bootmemåˆ†é…å™¨ï¼Œåˆ†é…å†…å­˜åŒº */
 	max_low_pfn = setup_memory();
 
 #ifdef CONFIG_VMI
@@ -646,12 +646,12 @@ void __init setup_arch(char **cmdline_p)
 #ifdef CONFIG_SMP
 	smp_alloc_memory(); /* AP processor realmode stacks in low memory*/
 #endif
-	/* ³õÊ¼»¯ÄÚ´æÒ³±í²¢Æô¶¯ÄÚ´æ·ÖÒ³£¬²¢ÇÒÖ§³ÖPAE */
+	/* åˆå§‹åŒ–å†…å­˜é¡µè¡¨å¹¶å¯åŠ¨å†…å­˜åˆ†é¡µï¼Œå¹¶ä¸”æ”¯æŒPAE */
 	paging_init();
-	/* ³õÊ¼»¯ÏµÍ³ÖĞËùÓĞ½ÚµãµÄpgdat_tÊµÀı */
+	/* åˆå§‹åŒ–ç³»ç»Ÿä¸­æ‰€æœ‰èŠ‚ç‚¹çš„pgdat_tå®ä¾‹ */
 	remapped_pgdat_init();
 	sparse_init();
-	/* ³õÊ¼»¯»î¶¯ÄÚ´æÇø */
+	/* åˆå§‹åŒ–æ´»åŠ¨å†…å­˜åŒº */
 	zone_sizes_init();
 
 	/*
@@ -694,7 +694,7 @@ void __init setup_arch(char **cmdline_p)
 		get_smp_config();
 #endif
 
-	/* Í¨¹ı·ÖÎöe820µÄĞÅÏ¢£¬´´½¨ÄÚ´æÁĞ±í */
+	/* é€šè¿‡åˆ†æe820çš„ä¿¡æ¯ï¼Œåˆ›å»ºå†…å­˜åˆ—è¡¨ */
 	e820_register_memory();
 	e820_mark_nosave_regions();
 

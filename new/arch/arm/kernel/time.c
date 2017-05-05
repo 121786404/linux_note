@@ -113,13 +113,13 @@ int __init register_persistent_clock(clock_access_fn read_boot,
 }
 
 /**
- * ³õÊ¼»¯Ó²¼þÊ±ÖÓ
+ * åˆå§‹åŒ–ç¡¬ä»¶æ—¶é’Ÿ
  */
 void __init time_init(void)
 {
-	//µ÷ÓÃ»úÆ÷µÄÊ±ÖÓ³õÊ¼»¯
-	if (machine_desc->init_time) {//ÔÚarch/arm/mack-xxxx/mack-xxxx.cÖÐÊ¹ÓÃMACHINE_STARTÉèÖÃ
-		machine_desc->init_time();//Èçqt2410_init_time
+	//è°ƒç”¨æœºå™¨çš„æ—¶é’Ÿåˆå§‹åŒ–
+	if (machine_desc->init_time) {//åœ¨arch/arm/mack-xxxx/mack-xxxx.cä¸­ä½¿ç”¨MACHINE_STARTè®¾ç½®
+		machine_desc->init_time();//å¦‚qt2410_init_time
 	} else {
 #ifdef CONFIG_COMMON_CLK
 		of_clk_init(NULL);

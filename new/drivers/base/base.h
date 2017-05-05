@@ -25,25 +25,25 @@
  * bus_type/class to be statically allocated safely.  Nothing outside of the
  * driver core should ever touch these fields.
  */
-/*Ò»¸öÓÃÀ´¹ÜÀíÆäÉÏÉè±¸ÓëÇı¶¯µÄÊı¾İ½á¹¹*/
+/*ä¸€ä¸ªç”¨æ¥ç®¡ç†å…¶ä¸Šè®¾å¤‡ä¸é©±åŠ¨çš„æ•°æ®ç»“æ„*/
 struct subsys_private {
-	/*ÓÃÀ´±íÊ¾¸ÃbusËùÔÚµÄ×ÓÏµÍ³,ÔÚÄÚºËÖĞËùÓĞÍ¨¹ıbus_register×¢²á½øÏµÍ³µÄbusËùÔÚµÄkset
-	 *¶¼½«Ö¸Ïòbus_kset,»»¾ä»°Ëµ,bus_ksetÊÇÏµÍ³ÖĞËùÓĞbusÄÚºË¶ÔÏóµÄÈİÆ÷,¶øĞÂ×¢²áµÄbus
-	 *±¾ÉíÒ²ÊÇÒ»¸öksetĞÍ¶ÔÏó,±êÊ¶ÁËÏµÍ³ÖĞµ±Ç°×ÜÏß¶ÔÏóÓëbus_kset¼äµÄÁ¥Êô¹ØÏµ*/
+	/*ç”¨æ¥è¡¨ç¤ºè¯¥busæ‰€åœ¨çš„å­ç³»ç»Ÿ,åœ¨å†…æ ¸ä¸­æ‰€æœ‰é€šè¿‡bus_registeræ³¨å†Œè¿›ç³»ç»Ÿçš„busæ‰€åœ¨çš„kset
+	 *éƒ½å°†æŒ‡å‘bus_kset,æ¢å¥è¯è¯´,bus_ksetæ˜¯ç³»ç»Ÿä¸­æ‰€æœ‰buså†…æ ¸å¯¹è±¡çš„å®¹å™¨,è€Œæ–°æ³¨å†Œçš„bus
+	 *æœ¬èº«ä¹Ÿæ˜¯ä¸€ä¸ªksetå‹å¯¹è±¡,æ ‡è¯†äº†ç³»ç»Ÿä¸­å½“å‰æ€»çº¿å¯¹è±¡ä¸bus_kseté—´çš„éš¶å±å…³ç³»*/
 	struct kset subsys;
 	struct kset *devices_kset;
 	struct list_head interfaces;
 	struct mutex mutex;
-	/*±íÊ¾¸ÃbusÉÏËùÓĞÇı¶¯µÄ¼¯ºÏ,ÈİÄÉ¸Ã×ÜÏßÉÏËùÓĞÇı¶¯µÄkset,Óë´Ë¶ÔÓ¦klist³ÉÔ±ÔòÒÔÁ´±í
-	 *µÄĞÎÊ½½«¸Ã×ÜÏßÉÏµÄËùÓĞÇı¶¯Á´½Óµ½ÁËÒ»Æğ*/
+	/*è¡¨ç¤ºè¯¥busä¸Šæ‰€æœ‰é©±åŠ¨çš„é›†åˆ,å®¹çº³è¯¥æ€»çº¿ä¸Šæ‰€æœ‰é©±åŠ¨çš„kset,ä¸æ­¤å¯¹åº”klistæˆå‘˜åˆ™ä»¥é“¾è¡¨
+	 *çš„å½¢å¼å°†è¯¥æ€»çº¿ä¸Šçš„æ‰€æœ‰é©±åŠ¨é“¾æ¥åˆ°äº†ä¸€èµ·*/
 	struct kset *drivers_kset;
-	/*±íÊ¾busÉÏËùÓĞÉè±¸ºÍÇı¶¯µÄÁ´±í*/
+	/*è¡¨ç¤ºbusä¸Šæ‰€æœ‰è®¾å¤‡å’Œé©±åŠ¨çš„é“¾è¡¨*/
 	struct klist klist_devices;
 	struct klist klist_drivers;
 	struct blocking_notifier_head bus_notifier;
-	/*±íÊ¾µ±ÏòÏµÍ³ÖĞ×¢²áÄ³Ò»Éè±¸»òÕßÇı¶¯µÄÊ±ºò,ÊÇ·ñ½øĞĞÉè±¸ÓëÇı¶¯µÄ°ó¶¨²Ù×÷*/
+	/*è¡¨ç¤ºå½“å‘ç³»ç»Ÿä¸­æ³¨å†ŒæŸä¸€è®¾å¤‡æˆ–è€…é©±åŠ¨çš„æ—¶å€™,æ˜¯å¦è¿›è¡Œè®¾å¤‡ä¸é©±åŠ¨çš„ç»‘å®šæ“ä½œ*/
 	unsigned int drivers_autoprobe:1;
-	/*Ö¸ÏòÓëstruct buf_type_private¶ÔÏóÏà¹ØÁªµÄbus*/
+	/*æŒ‡å‘ä¸struct buf_type_privateå¯¹è±¡ç›¸å…³è”çš„bus*/
 	struct bus_type *bus;
 
 	struct kset glue_dirs;

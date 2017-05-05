@@ -33,7 +33,7 @@ extern bool freezing_slow_path(struct task_struct *p);
  */
 static inline bool freezing(struct task_struct *p)
 {
-    // Èç¹û system_freezing_cnt Îª 0£¬ËµÃ÷È«¾Ö freeze »¹Ã»ÓĞ¿ªÊ¼
+    // å¦‚æœ system_freezing_cnt ä¸º 0ï¼Œè¯´æ˜å…¨å±€ freeze è¿˜æ²¡æœ‰å¼€å§‹
 	if (likely(!atomic_read(&system_freezing_cnt)))
 		return false;
 	return freezing_slow_path(p);
@@ -55,10 +55,10 @@ extern void thaw_kernel_threads(void);
 static inline bool try_to_freeze_unsafe(void)
 {
 	might_sleep();
-    // µ±Ç°½ø³ÌÊÇ·ñ¿ÉÒÔ±» freeze
+    // å½“å‰è¿›ç¨‹æ˜¯å¦å¯ä»¥è¢« freeze
 	if (likely(!freezing(current)))
 		return false;
-    // µ÷ÓÃ __refrigerator() freeze µ±Ç°½ø³Ì
+    // è°ƒç”¨ __refrigerator() freeze å½“å‰è¿›ç¨‹
 	return __refrigerator(false);
 }
 

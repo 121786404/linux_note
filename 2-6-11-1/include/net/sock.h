@@ -102,15 +102,15 @@ struct sock;
   *	This is the minimal network layer representation of sockets, the header
   *	for struct sock and struct tcp_tw_bucket.
   */
-/* sockµÄÍ¨ÓÃ±äÁ¿½á¹¹ */
+/* sockçš„é€šç”¨å˜é‡ç»“æž„ */
 struct sock_common {
 	unsigned short		skc_family;
-	volatile unsigned char	skc_state;              /* sockµÄ×´Ì¬ */
+	volatile unsigned char	skc_state;              /* sockçš„çŠ¶æ€ */
 	unsigned char		skc_reuse;
 	int			skc_bound_dev_if;
 	struct hlist_node	skc_node;
-	struct hlist_node	skc_bind_node;       /* netlink×é²¥Á´±í */
-	atomic_t		skc_refcnt;      /* sockµÄÒýÓÃ¼ÆÊý */
+	struct hlist_node	skc_bind_node;       /* netlinkç»„æ’­é“¾è¡¨ */
+	atomic_t		skc_refcnt;      /* sockçš„å¼•ç”¨è®¡æ•° */
 };
 
 /**
@@ -180,9 +180,9 @@ struct sock_common {
   *	@sk_destruct - called at sock freeing time, i.e. when all refcnt == 0
  */
 
-/* sock½á¹¹£¬×¢Òâ²»Í¬µÄ´«Êä²ãÐ­Òé¶¼ÒÔ
-  * CÓïÑÔÖÐµÄÄÚ´æ¶ÔÆëÀ´ÊµÏÖ£¬ÈçinetÐ­Òé×åµÄinet_sock£¬
-  * tcpÐ­ÒéµÄÎªtcp_sock£¬udpÐ­ÒéµÄudp_sock
+/* sockç»“æž„ï¼Œæ³¨æ„ä¸åŒçš„ä¼ è¾“å±‚åè®®éƒ½ä»¥
+  * Cè¯­è¨€ä¸­çš„å†…å­˜å¯¹é½æ¥å®žçŽ°ï¼Œå¦‚inetåè®®æ—çš„inet_sockï¼Œ
+  * tcpåè®®çš„ä¸ºtcp_sockï¼Œudpåè®®çš„udp_sock
   */
 struct sock {
 	/*
@@ -202,18 +202,18 @@ struct sock {
 	unsigned char		sk_use_write_queue;
 	unsigned char		sk_userlocks;
 	socket_lock_t		sk_lock;
-	/* sockµÄ½ÓÊÕ»º´æ´óÐ¡£¬Ò²¾ÍÊÇ¶Á»º´æ¿Õ¼ä×î´ó²»ÄÜ³¬¹ý¸Ã±äÁ¿ */
+	/* sockçš„æŽ¥æ”¶ç¼“å­˜å¤§å°ï¼Œä¹Ÿå°±æ˜¯è¯»ç¼“å­˜ç©ºé—´æœ€å¤§ä¸èƒ½è¶…è¿‡è¯¥å˜é‡ */
 	int			sk_rcvbuf;
-        /* µÈ´ý²Ù×÷socketµÄ½ø³Ì¶ÓÁÐ£¬µ±ÓÐÊý¾ÝÊ±»á»½ÐÑ¸Ä¶ÓÁÐÖÐµÄËùÓÐ½ø³Ì£¬
-          * ²¢Ö´ÐÐµÈ´ýµÄ»Øµ÷º¯Êý£¬ÈçÔÚepollÖÐ£¬µ±socket¿ÉÒÔ¶ÁÐ´Ê±£¬´ËÊ±»áµ÷ÓÃ 
-          * ×¢²áµÄ»Øµ÷º¯ÊýÀ´¸ü¸ÄÒÑ¾­×¼±¸ºÃµÄ¶ÓÁÐ  
+        /* ç­‰å¾…æ“ä½œsocketçš„è¿›ç¨‹é˜Ÿåˆ—ï¼Œå½“æœ‰æ•°æ®æ—¶ä¼šå”¤é†’æ”¹é˜Ÿåˆ—ä¸­çš„æ‰€æœ‰è¿›ç¨‹ï¼Œ
+          * å¹¶æ‰§è¡Œç­‰å¾…çš„å›žè°ƒå‡½æ•°ï¼Œå¦‚åœ¨epollä¸­ï¼Œå½“socketå¯ä»¥è¯»å†™æ—¶ï¼Œæ­¤æ—¶ä¼šè°ƒç”¨ 
+          * æ³¨å†Œçš„å›žè°ƒå‡½æ•°æ¥æ›´æ”¹å·²ç»å‡†å¤‡å¥½çš„é˜Ÿåˆ—  
           */
 	wait_queue_head_t	*sk_sleep;         
 	struct dst_entry	*sk_dst_cache;
 	rwlock_t		sk_dst_lock;
 	struct xfrm_policy	*sk_policy[2];
 	atomic_t		sk_rmem_alloc;
-	struct sk_buff_head	sk_receive_queue;			/* ½ÓÊÕ¶ÓÁÐ */
+	struct sk_buff_head	sk_receive_queue;			/* æŽ¥æ”¶é˜Ÿåˆ— */
 	atomic_t		sk_wmem_alloc;
 	struct sk_buff_head	sk_write_queue;
 	atomic_t		sk_omem_alloc;
@@ -248,20 +248,20 @@ struct sock {
 	__u32			sk_priority;
 	unsigned short		sk_type;
 	unsigned char		sk_localroute;
-	unsigned char		sk_protocol;    /* Ð­Òé±ê¼Ç */
+	unsigned char		sk_protocol;    /* åè®®æ ‡è®° */
 	struct ucred		sk_peercred;
 	int			sk_rcvlowat;
-	long			sk_rcvtimeo;	    /* ÔÚ½ÓÊÕÊý¾ÝµÄÊ±ºòµÈ¶à¾Ã³¬Ê± */
+	long			sk_rcvtimeo;	    /* åœ¨æŽ¥æ”¶æ•°æ®çš„æ—¶å€™ç­‰å¤šä¹…è¶…æ—¶ */
 	long			sk_sndtimeo;
 	struct sk_filter      	*sk_filter;
-	void			*sk_protinfo;       /* ÔÚnetlinkÐ­ÒéÖÐ¶ÔÓ¦struct netlink_opt½á¹¹ */
+	void			*sk_protinfo;       /* åœ¨netlinkåè®®ä¸­å¯¹åº”struct netlink_optç»“æž„ */
 	kmem_cache_t		*sk_slab;
 	struct timer_list	sk_timer;
 	struct timeval		sk_stamp;
-        /* sock¶ÔÓ¦µÄsocket½á¹¹ */
+        /* sockå¯¹åº”çš„socketç»“æž„ */
 	struct socket		*sk_socket;
 	void			*sk_user_data;
-        /* Ä£¿éµÄÓµÓÐÕß */
+        /* æ¨¡å—çš„æ‹¥æœ‰è€… */
 	struct module		*sk_owner;
 	struct page		*sk_sndmsg_page;
 	__u32			sk_sndmsg_off;
@@ -270,7 +270,7 @@ struct sock {
 	void			*sk_security;
 	__u8			sk_queue_shrunk;
 	/* three bytes hole, try to pack */
-        /* sockµ±ÖÐµÄÒ»Ð©»Øµ÷ */
+        /* sockå½“ä¸­çš„ä¸€äº›å›žè°ƒ */
 	void			(*sk_state_change)(struct sock *sk);
 	void			(*sk_data_ready)(struct sock *sk, int bytes);
 	void			(*sk_write_space)(struct sock *sk);
@@ -335,7 +335,7 @@ static __inline__ int __sk_del_node_init(struct sock *sk)
    modifications.
  */
 
-/* Ôö¼ÓskµÄÒýÓÃ¼ÆÊý */
+/* å¢žåŠ skçš„å¼•ç”¨è®¡æ•° */
 static inline void sock_hold(struct sock *sk)
 {
 	atomic_inc(&sk->sk_refcnt);
@@ -344,13 +344,13 @@ static inline void sock_hold(struct sock *sk)
 /* Ungrab socket in the context, which assumes that socket refcnt
    cannot hit zero, f.e. it is true in context of any socketcall.
  */
-/* ÊÍ·ÅsockµÄÒýÓÃ¼ÆÊý */
+/* é‡Šæ”¾sockçš„å¼•ç”¨è®¡æ•° */
 static inline void __sock_put(struct sock *sk)
 {
 	atomic_dec(&sk->sk_refcnt);
 }
 
-/* ½«×Ô¼º´Óskc_nodeÁ´±íÖÐÒÆ³ý */
+/* å°†è‡ªå·±ä»Žskc_nodeé“¾è¡¨ä¸­ç§»é™¤ */
 static __inline__ int sk_del_node_init(struct sock *sk)
 {
 	int rc = __sk_del_node_init(sk);
@@ -374,23 +374,23 @@ static __inline__ void sk_add_node(struct sock *sk, struct hlist_head *list)
 	__sk_add_node(sk, list);
 }
 
-/* É¾³ý²Ù×÷ */
+/* åˆ é™¤æ“ä½œ */
 static __inline__ void __sk_del_bind_node(struct sock *sk)
 {
 	__hlist_del(&sk->sk_bind_node);
 }
 
-/* Ìí¼Ó²Ù×÷ */
+/* æ·»åŠ æ“ä½œ */
 static __inline__ void sk_add_bind_node(struct sock *sk,
 					struct hlist_head *list)
 {
 	hlist_add_head(&sk->sk_bind_node, list);
 }
 
-/* __sk±íÊ¾È¡³öµÄÊý¾Ý½á¹¹Ö¸Õë
-  * node±íÊ¾Á´±íÖ¸Õë 
-  * list±íÊ¾Á´±íÍ·²¿ 
-  * sk_node±íÊ¾ÔÚ__sk½á¹¹ÌåÖÐµÄ³ÉÔ± 
+/* __skè¡¨ç¤ºå–å‡ºçš„æ•°æ®ç»“æž„æŒ‡é’ˆ
+  * nodeè¡¨ç¤ºé“¾è¡¨æŒ‡é’ˆ 
+  * listè¡¨ç¤ºé“¾è¡¨å¤´éƒ¨ 
+  * sk_nodeè¡¨ç¤ºåœ¨__skç»“æž„ä½“ä¸­çš„æˆå‘˜ 
   */
 #define sk_for_each(__sk, node, list) \
 	hlist_for_each_entry(__sk, node, list, sk_node)
@@ -455,7 +455,7 @@ static inline int sk_stream_min_wspace(struct sock *sk)
 	return sk->sk_wmem_queued / 2;
 }
 
-/* ¼ÆËãsockµÄÐ´Ê£Óà¿Õ¼ä */
+/* è®¡ç®—sockçš„å†™å‰©ä½™ç©ºé—´ */
 static inline int sk_stream_wspace(struct sock *sk)
 {
 	return sk->sk_sndbuf - sk->sk_wmem_queued;
@@ -578,8 +578,8 @@ struct proto {
 	int			*sysctl_rmem;
 	int			max_header;
 
-	kmem_cache_t		*slab;             /* Ð­Òé¶ÔÓ¦µÄ¸ßËÙ»º´æ */
-	int			slab_obj_size;          /* ½á¹¹µÄ´óÐ¡ */
+	kmem_cache_t		*slab;             /* åè®®å¯¹åº”çš„é«˜é€Ÿç¼“å­˜ */
+	int			slab_obj_size;          /* ç»“æž„çš„å¤§å° */
 
 	struct module		*owner;
 
@@ -647,11 +647,11 @@ struct sock_iocb {
 	struct list_head	list;
 
 	int			flags;
-	int			size;                /* ·¢ËÍÊý¾ÝµÄ³¤¶È */
-	struct socket		*sock;          /* ¼ÇÂ¼·¢ËÍÏûÏ¢µÄsocket */
+	int			size;                /* å‘é€æ•°æ®çš„é•¿åº¦ */
+	struct socket		*sock;          /* è®°å½•å‘é€æ¶ˆæ¯çš„socket */
 	struct sock		*sk;
 	struct scm_cookie	*scm;
-	struct msghdr		*msg,    /* ¼ÇÂ¼·¢ËÍµÄÏûÏ¢ */
+	struct msghdr		*msg,    /* è®°å½•å‘é€çš„æ¶ˆæ¯ */
                                         async_msg;
 	struct iovec		async_iov;
 	struct kiocb		*kiocb;
@@ -667,9 +667,9 @@ static inline struct kiocb *siocb_to_kiocb(struct sock_iocb *si)
 	return si->kiocb;
 }
 
-/* ÔÚÕë¶ÔsocketµÄÊ±ºò£¬struct socketºÍstruct inode¶¼±ØÐëÊÇÍ¬Ê±´æÔÚµÄ
-  * ÎªÁË¼õÉÙ½á¹¹Ö®ÖÐµÄÖ¸ÕëÖ¸Ïò£¬ËùÒÔÁ½¸ö½á¹¹ÌåÔÚÄÚ´æÖÐÁ¬Ðø·ÖÅä£¬ 
-  * È»ºóÍ¨¹ýÄÚ´æÆ«ÒÆÀ´´¦Àí  
+/* åœ¨é’ˆå¯¹socketçš„æ—¶å€™ï¼Œstruct socketå’Œstruct inodeéƒ½å¿…é¡»æ˜¯åŒæ—¶å­˜åœ¨çš„
+  * ä¸ºäº†å‡å°‘ç»“æž„ä¹‹ä¸­çš„æŒ‡é’ˆæŒ‡å‘ï¼Œæ‰€ä»¥ä¸¤ä¸ªç»“æž„ä½“åœ¨å†…å­˜ä¸­è¿žç»­åˆ†é…ï¼Œ 
+  * ç„¶åŽé€šè¿‡å†…å­˜åç§»æ¥å¤„ç†  
   */
 struct socket_alloc {
 	struct socket socket;
@@ -1078,7 +1078,7 @@ static inline void skb_set_owner_w(struct sk_buff *skb, struct sock *sk)
 	atomic_add(skb->truesize, &sk->sk_wmem_alloc);
 }
 
-/* ÉèÖÃskbºÍsockÖ®¼äµÄ¹ØÏµ */
+/* è®¾ç½®skbå’Œsockä¹‹é—´çš„å…³ç³» */
 static inline void skb_set_owner_r(struct sk_buff *skb, struct sock *sk)
 {
 	skb->sk = sk;
@@ -1244,7 +1244,7 @@ static inline int gfp_any(void)
 	return in_softirq() ? GFP_ATOMIC : GFP_KERNEL;
 }
 
-/* Èç¹ûÊÇ·Ç×èÈûµÄ£¬Ôò²»µÈ´ý£¬Èç¹ûÊÇ×èÈû£¬ÔòµÈ´ýÒ»¸öÊ±¼ä */
+/* å¦‚æžœæ˜¯éžé˜»å¡žçš„ï¼Œåˆ™ä¸ç­‰å¾…ï¼Œå¦‚æžœæ˜¯é˜»å¡žï¼Œåˆ™ç­‰å¾…ä¸€ä¸ªæ—¶é—´ */
 static inline long sock_rcvtimeo(const struct sock *sk, int noblock)
 {
 	return noblock ? 0 : sk->sk_rcvtimeo;
@@ -1292,7 +1292,7 @@ sock_recv_timestamp(struct msghdr *msg, struct sock *sk, struct sk_buff *skb)
  * locked so that the sk_buff queue operation is ok.
 */
 
-/* ´ÓsockµÄsk_buff½ÓÊÕ¶ÓÁÐÖÐÉ¾³ýÒ»¸öskb */
+/* ä»Žsockçš„sk_buffæŽ¥æ”¶é˜Ÿåˆ—ä¸­åˆ é™¤ä¸€ä¸ªskb */
 static inline void sk_eat_skb(struct sock *sk, struct sk_buff *skb)
 {
 	__skb_unlink(skb, &sk->sk_receive_queue);

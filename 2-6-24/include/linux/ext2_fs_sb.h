@@ -31,7 +31,7 @@ typedef unsigned long ext2_fsblk_t;
 #define E2FSBLK "%lu"
 
 /**
- * ext2ÎÄ¼şÏµÍ³±£Áô¿Õ¼äÃèÊö·û
+ * ext2æ–‡ä»¶ç³»ç»Ÿä¿ç•™ç©ºé—´æè¿°ç¬¦
  */
 struct ext2_reserve_window {
 	ext2_fsblk_t		_rsv_start;	/* First byte reserved */
@@ -39,13 +39,13 @@ struct ext2_reserve_window {
 };
 
 struct ext2_reserve_window_node {
-	/* Í¨¹ı´Ë×Ö¶Î½«½ÚµãÌí¼Óµ½³¬¼¶¿éµÄºìºÚÊ÷ÖĞ */
+	/* é€šè¿‡æ­¤å­—æ®µå°†èŠ‚ç‚¹æ·»åŠ åˆ°è¶…çº§å—çš„çº¢é»‘æ ‘ä¸­ */
 	struct rb_node	 	rsv_node;
-	/* Ô¤Áô´°¿ÚµÄ³¤¶È£¬¿ÉÍ¨¹ıioctlÉèÖÃ */
+	/* é¢„ç•™çª—å£çš„é•¿åº¦ï¼Œå¯é€šè¿‡ioctlè®¾ç½® */
 	__u32			rsv_goal_size;
-	/* ÃüÖĞÊı */
+	/* å‘½ä¸­æ•° */
 	__u32			rsv_alloc_hit;
-	/* Ô¤ÁôµÄÆğÊ¼¡¢½áÊøµã */
+	/* é¢„ç•™çš„èµ·å§‹ã€ç»“æŸç‚¹ */
 	struct ext2_reserve_window	rsv_window;
 };
 
@@ -58,7 +58,7 @@ struct ext2_block_alloc_info {
 	 * most-recently-allocated block in this file.
 	 * We use this for detecting linearly ascending allocation requests.
 	 */
-	/* ÉÏÒ»´Î·ÖÅäµÄÂß¼­¿éºÅ */
+	/* ä¸Šä¸€æ¬¡åˆ†é…çš„é€»è¾‘å—å· */
 	__u32			last_alloc_logical_block;
 	/*
 	 * Was i_next_alloc_goal in ext2_inode_info
@@ -77,7 +77,7 @@ struct ext2_block_alloc_info {
  * second extended-fs super-block data in memory
  */
 /**
- * ext2ÎÄ¼şÏµÍ³³¬¼¶¿é£¬ÔÚÄÚ´æÖĞµÄÃèÊö·û
+ * ext2æ–‡ä»¶ç³»ç»Ÿè¶…çº§å—ï¼Œåœ¨å†…å­˜ä¸­çš„æè¿°ç¬¦
  */
 struct ext2_sb_info {
 	unsigned long s_frag_size;	/* Size of a fragment in bytes */
@@ -90,20 +90,20 @@ struct ext2_sb_info {
 	unsigned long s_gdb_count;	/* Number of group descriptor blocks */
 	unsigned long s_desc_per_block;	/* Number of group descriptors per block */
 	unsigned long s_groups_count;	/* Number of groups in the fs */
-	/* ÉÏÒ»´Î¼ÆËãµÄ¹ÜÀíÊı¾İµÄ¿éÊıºÍÍêÈ«¿ÉÓÃµÄ¿éÊı */
+	/* ä¸Šä¸€æ¬¡è®¡ç®—çš„ç®¡ç†æ•°æ®çš„å—æ•°å’Œå®Œå…¨å¯ç”¨çš„å—æ•° */
 	unsigned long s_overhead_last;  /* Last calculated overhead */
 	unsigned long s_blocks_last;    /* Last seen block count */
 	struct buffer_head * s_sbh;	/* Buffer containing the super block */
-	/* ´ÅÅÌ¿éÖĞµÄ³¬¼¶¿éÔ­Ê¼Êı¾İÖ¸Õë */
+	/* ç£ç›˜å—ä¸­çš„è¶…çº§å—åŸå§‹æ•°æ®æŒ‡é’ˆ */
 	struct ext2_super_block * s_es;	/* Pointer to the super block in the buffer */
 	struct buffer_head ** s_group_desc;
-	/* ×°ÔØÑ¡Ïî */
+	/* è£…è½½é€‰é¡¹ */
 	unsigned long  s_mount_opt;
-	/* ´ÓÄÄÒ»¸ö¿éÖĞ¶ÁÈ¡µÄ³¬¼¶¿é£¬ÒòÎªext2ÓĞ¶à·İ³¬¼¶¿éµÄ¿½±´ */
+	/* ä»å“ªä¸€ä¸ªå—ä¸­è¯»å–çš„è¶…çº§å—ï¼Œå› ä¸ºext2æœ‰å¤šä»½è¶…çº§å—çš„æ‹·è´ */
 	unsigned long s_sb_block;
 	uid_t s_resuid;
 	gid_t s_resgid;
-	/* µ±Ç°µÄ×°ÔØ×´Ì¬ */
+	/* å½“å‰çš„è£…è½½çŠ¶æ€ */
 	unsigned short s_mount_state;
 	unsigned short s_pad;
 	int s_addr_per_block_bits;
@@ -112,18 +112,18 @@ struct ext2_sb_info {
 	int s_first_ino;
 	spinlock_t s_next_gen_lock;
 	u32 s_next_generation;
-	/* Ä¿Â¼×ÜÊı£¬×°ÔØÊ±È·¶¨ */
+	/* ç›®å½•æ€»æ•°ï¼Œè£…è½½æ—¶ç¡®å®š */
 	unsigned long s_dir_count;
-	/* Ò»¸öÊı×é£¬Ã¿¸öÔªËØÓëÒ»¸ö¿é×é¶ÔÓ¦£¬orlov·ÖÅäÆ÷ÓÃÓÚ±£³Ö¿é×éÖĞÎÄ¼şºÍÄ¿Â¼Ö®¼ä±£³ÖÆ½ºâ */
+	/* ä¸€ä¸ªæ•°ç»„ï¼Œæ¯ä¸ªå…ƒç´ ä¸ä¸€ä¸ªå—ç»„å¯¹åº”ï¼Œorlovåˆ†é…å™¨ç”¨äºä¿æŒå—ç»„ä¸­æ–‡ä»¶å’Œç›®å½•ä¹‹é—´ä¿æŒå¹³è¡¡ */
 	u8 *s_debts;
-	/* ¿ÕÏĞ¿é¡¢inodeºÍÄ¿Â¼ÊıÄ¿µÄ½üËÆ¼ÆÊıÆ÷ */
+	/* ç©ºé—²å—ã€inodeå’Œç›®å½•æ•°ç›®çš„è¿‘ä¼¼è®¡æ•°å™¨ */
 	struct percpu_counter s_freeblocks_counter;
 	struct percpu_counter s_freeinodes_counter;
 	struct percpu_counter s_dirs_counter;
 	struct blockgroup_lock s_blockgroup_lock;
 	/* root of the per fs reservation window tree */
 	spinlock_t s_rsv_window_lock;
-	/* ºìºÚÊ÷£¬±íÊ¾ËùÓĞµÄÔ¤·ÖÅä */
+	/* çº¢é»‘æ ‘ï¼Œè¡¨ç¤ºæ‰€æœ‰çš„é¢„åˆ†é… */
 	struct rb_root s_rsv_window_root;
 	struct ext2_reserve_window_node s_rsv_window_head;
 };

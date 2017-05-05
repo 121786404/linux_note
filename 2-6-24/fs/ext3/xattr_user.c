@@ -32,32 +32,32 @@ ext3_xattr_user_list(struct inode *inode, char *list, size_t list_size,
 	return total_len;
 }
 
-/* »ñµÃext3µÄuser¿Õ¼äÀ©Õ¹ÊôĞÔ */
+/* è·å¾—ext3çš„userç©ºé—´æ‰©å±•å±æ€§ */
 static int
 ext3_xattr_user_get(struct inode *inode, const char *name,
 		    void *buffer, size_t size)
 {
-	/* bufferÎªnull±íÊ¾»ñµÃÊôĞÔ³¤¶È£¬µ«ÊÇname²»ÄÜÎª¿Õ¡£ */
+	/* bufferä¸ºnullè¡¨ç¤ºè·å¾—å±æ€§é•¿åº¦ï¼Œä½†æ˜¯nameä¸èƒ½ä¸ºç©ºã€‚ */
 	if (strcmp(name, "") == 0)
 		return -EINVAL;
-	/* È·±£×°ÔØÊ±ÔÊĞí¶ÁĞ´user¿Õ¼ä */
+	/* ç¡®ä¿è£…è½½æ—¶å…è®¸è¯»å†™userç©ºé—´ */
 	if (!test_opt(inode->i_sb, XATTR_USER))
 		return -EOPNOTSUPP;
- 	/* ´Óinode»òÕßblockÖĞ»ñµÃÊôĞÔ */
+ 	/* ä»inodeæˆ–è€…blockä¸­è·å¾—å±æ€§ */
 	return ext3_xattr_get(inode, EXT3_XATTR_INDEX_USER, name, buffer, size);
 }
 
-/* ÉèÖÃuser¿Õ¼äµÄÀ©Õ¹ÊôĞÔ */
+/* è®¾ç½®userç©ºé—´çš„æ‰©å±•å±æ€§ */
 static int
 ext3_xattr_user_set(struct inode *inode, const char *name,
 		    const void *value, size_t size, int flags)
 {
 	if (strcmp(name, "") == 0)
 		return -EINVAL;
-	/* ¼ÓÔØÊ±½ûÖ¹ÁËÀ©Õ¹ÊôĞÔ¹¦ÄÜ */
+	/* åŠ è½½æ—¶ç¦æ­¢äº†æ‰©å±•å±æ€§åŠŸèƒ½ */
 	if (!test_opt(inode->i_sb, XATTR_USER))
 		return -EOPNOTSUPP;
-	/* ÉèÖÃÊôĞÔÖµ */
+	/* è®¾ç½®å±æ€§å€¼ */
 	return ext3_xattr_set(inode, EXT3_XATTR_INDEX_USER, name,
 			      value, size, flags);
 }

@@ -131,7 +131,7 @@ void unregister_blkdev(unsigned int major, const char *name)
 EXPORT_SYMBOL(unregister_blkdev);
 
 /**
- * ËùÓĞ¿éÉè±¸µÄÈ«¾ÖÉ¢ÁĞ±í
+ * æ‰€æœ‰å—è®¾å¤‡çš„å…¨å±€æ•£åˆ—è¡¨
  */
 static struct kobj_map *bdev_map;
 
@@ -179,15 +179,15 @@ static int exact_lock(dev_t dev, void *data)
  * with the kernel.
  */
 /**
- * ×¢²á¿éÉè±¸£¬Ìí¼Ó´ÅÅÌ
+ * æ³¨å†Œå—è®¾å¤‡ï¼Œæ·»åŠ ç£ç›˜
  */
 void add_disk(struct gendisk *disk)
 {
 	disk->flags |= GENHD_FL_UP;
-	/* ×¢²áÉè±¸µÄÉè±¸ºÅ */
+	/* æ³¨å†Œè®¾å¤‡çš„è®¾å¤‡å· */
 	blk_register_region(MKDEV(disk->major, disk->first_minor),
 			    disk->minors, NULL, exact_match, exact_lock, disk);
-	/* ÒıÓÃ¿éÉè±¸£¬²¢½«ÆäÌí¼Óµ½Í¨ÓÃÎÄ¼şÏµÍ³ÖĞ */
+	/* å¼•ç”¨å—è®¾å¤‡ï¼Œå¹¶å°†å…¶æ·»åŠ åˆ°é€šç”¨æ–‡ä»¶ç³»ç»Ÿä¸­ */
 	register_disk(disk);
 	blk_register_queue(disk);
 }
@@ -702,7 +702,7 @@ void genhd_media_change_notify(struct gendisk *disk)
 }
 EXPORT_SYMBOL_GPL(genhd_media_change_notify);
 
-/* ·ÖÅäÒ»¸ö´ÅÅÌÉè±¸ */
+/* åˆ†é…ä¸€ä¸ªç£ç›˜è®¾å¤‡ */
 struct gendisk *alloc_disk(int minors)
 {
 	return alloc_disk_node(minors, -1);

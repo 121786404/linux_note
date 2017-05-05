@@ -276,23 +276,23 @@ static int page_referenced_one(struct page *page,
 	spinlock_t *ptl;
 	int referenced = 0;
 
-	/* ¼ÆËãÒ³ÃæÔÚ¸ÃµØÖ·¿Õ¼äÄÚµÄĞéÄâµØÖ· */
+	/* è®¡ç®—é¡µé¢åœ¨è¯¥åœ°å€ç©ºé—´å†…çš„è™šæ‹Ÿåœ°å€ */
 	address = vma_address(page, vma);
 	if (address == -EFAULT)
 		goto out;
 
-	/* ¼ì²é¸ÃµØÖ·ÔÚµØÖ·¿Õ¼äÖĞÊÇ·ñ½øĞĞÁËÓ³Éä */
+	/* æ£€æŸ¥è¯¥åœ°å€åœ¨åœ°å€ç©ºé—´ä¸­æ˜¯å¦è¿›è¡Œäº†æ˜ å°„ */
 	pte = page_check_address(page, mm, address, &ptl);
 	if (!pte)
 		goto out;
 
-	/* ¼ì²é²¢Çå³ı_PAGE_ACCESSED±êÖ¾£¬Èç¹ûÓĞ´Ë±êÖ¾£¬ËµÃ÷Ò³ÃæÊÇ»îÔ¾Ò³Ãæ */
+	/* æ£€æŸ¥å¹¶æ¸…é™¤_PAGE_ACCESSEDæ ‡å¿—ï¼Œå¦‚æœæœ‰æ­¤æ ‡å¿—ï¼Œè¯´æ˜é¡µé¢æ˜¯æ´»è·ƒé¡µé¢ */
 	if (ptep_clear_flush_young(vma, address, pte))
 		referenced++;
 
 	/* Pretend the page is referenced if the task has the
 	   swap token and is in the middle of a page fault. */
-	if (mm != current->mm && has_swap_token(mm) &&/* Èç¹û½ø³Ì³ÖÓĞ½»»»ÁîÅÆ£¬Ôö¼ÓÒıÓÃ´ÎÊı£¬¼õÉÙ±»»»³öµÄ»ú»á */
+	if (mm != current->mm && has_swap_token(mm) &&/* å¦‚æœè¿›ç¨‹æŒæœ‰äº¤æ¢ä»¤ç‰Œï¼Œå¢åŠ å¼•ç”¨æ¬¡æ•°ï¼Œå‡å°‘è¢«æ¢å‡ºçš„æœºä¼š */
 			rwsem_is_locked(&mm->mmap_sem))
 		referenced++;
 
@@ -309,21 +309,21 @@ static int page_referenced_anon(struct page *page)
 	struct vm_area_struct *vma;
 	int referenced = 0;
 
-	/* ÕÒµ½ÒıÓÃÄ³¸öÒ³ÃæµÄÄäÃûÒ³Á´±í */
+	/* æ‰¾åˆ°å¼•ç”¨æŸä¸ªé¡µé¢çš„åŒ¿åé¡µé“¾è¡¨ */
 	anon_vma = page_lock_anon_vma(page);
 	if (!anon_vma)
 		return referenced;
 
 	mapcount = page_mapcount(page);
-	/* ±éÀúÄäÃûÒ³Á´±í */
+	/* éå†åŒ¿åé¡µé“¾è¡¨ */
 	list_for_each_entry(vma, &anon_vma->head, anon_vma_node) {
-		/* ¼ÆËãÒ³ÃæÊ¹ÓÃ¼ÆÊı */
+		/* è®¡ç®—é¡µé¢ä½¿ç”¨è®¡æ•° */
 		referenced += page_referenced_one(page, vma, &mapcount);
-		if (!mapcount)/* ÒÑ¾­ËÑË÷ÁËmapcount´Î£¬ÍË³ö */
+		if (!mapcount)/* å·²ç»æœç´¢äº†mapcountæ¬¡ï¼Œé€€å‡º */
 			break;
 	}
 
-	/* ½â³ı¶ÔÄäÃûÒ³Á´±íµÄËø */
+	/* è§£é™¤å¯¹åŒ¿åé¡µé“¾è¡¨çš„é” */
 	page_unlock_anon_vma(anon_vma);
 	return referenced;
 }
@@ -340,7 +340,7 @@ static int page_referenced_anon(struct page *page)
  * This function is only called from page_referenced for object-based pages.
  */
 /**
- * ¼ì²éÄ³Ò»¸öÎÄ¼şÓ³ÉäÏà¹ØµÄÒ³£¬ÔÚ×î½üÒ»¶ÎÊ±¼äÄÚµÄ»îÔ¾¼ÆÊı¡£
+ * æ£€æŸ¥æŸä¸€ä¸ªæ–‡ä»¶æ˜ å°„ç›¸å…³çš„é¡µï¼Œåœ¨æœ€è¿‘ä¸€æ®µæ—¶é—´å†…çš„æ´»è·ƒè®¡æ•°ã€‚
  */
 static int page_referenced_file(struct page *page)
 {
@@ -374,16 +374,16 @@ static int page_referenced_file(struct page *page)
 	 */
 	mapcount = page_mapcount(page);
 
-	/* ÔÚÓÅÏÈÊ÷ÖĞ±éÀú°üº¬¸ÃÒ³µÄ½Úµã */
+	/* åœ¨ä¼˜å…ˆæ ‘ä¸­éå†åŒ…å«è¯¥é¡µçš„èŠ‚ç‚¹ */
 	vma_prio_tree_foreach(vma, &iter, &mapping->i_mmap, pgoff, pgoff) {
 		if ((vma->vm_flags & (VM_LOCKED|VM_MAYSHARE))
-				  == (VM_LOCKED|VM_MAYSHARE)) {/* ¶ÔÓÚËø¶¨µÄ¹²ÏíÓ³Éä£¬½±ÀøÒ»´Î¼ÆÊı */
+				  == (VM_LOCKED|VM_MAYSHARE)) {/* å¯¹äºé”å®šçš„å…±äº«æ˜ å°„ï¼Œå¥–åŠ±ä¸€æ¬¡è®¡æ•° */
 			referenced++;
 			break;
 		}
-		/* ²é¿´Ò³ÃæÔÚ¸ÃµØÖ·¿Õ¼äÄÚÊÇ·ñ±»·ÃÎÊ¹ı£¬Èç¹ûÊÇÔò¼ÓÒ»´Î¼ÆÊı */
+		/* æŸ¥çœ‹é¡µé¢åœ¨è¯¥åœ°å€ç©ºé—´å†…æ˜¯å¦è¢«è®¿é—®è¿‡ï¼Œå¦‚æœæ˜¯åˆ™åŠ ä¸€æ¬¡è®¡æ•° */
 		referenced += page_referenced_one(page, vma, &mapcount);
-		if (!mapcount)/* Í³¼ÆÍêËùÓĞÓ³Éä£¬ÍË³ö */
+		if (!mapcount)/* ç»Ÿè®¡å®Œæ‰€æœ‰æ˜ å°„ï¼Œé€€å‡º */
 			break;
 	}
 
@@ -400,8 +400,8 @@ static int page_referenced_file(struct page *page)
  * returns the number of ptes which referenced the page.
  */
 /**
- * ²âÊÔÄ³¸öÒ³ÃæÊÇ·ñ±»ÒıÓÃ
- * Í³¼Æ×î½ü»îÔ¾Ê¹ÓÃÄ³¸ö¹²ÏíÒ³µÄ½ø³ÌÊıÄ¿
+ * æµ‹è¯•æŸä¸ªé¡µé¢æ˜¯å¦è¢«å¼•ç”¨
+ * ç»Ÿè®¡æœ€è¿‘æ´»è·ƒä½¿ç”¨æŸä¸ªå…±äº«é¡µçš„è¿›ç¨‹æ•°ç›®
  */
 int page_referenced(struct page *page, int is_locked)
 {
@@ -410,22 +410,22 @@ int page_referenced(struct page *page, int is_locked)
 	if (page_test_and_clear_young(page))
 		referenced++;
 
-	/* PG_referenced±êÖ¾ËµÃ÷Ò³Ãæ±»·ÃÎÊ¹ı£¬Çå³ı´Ë±êÖ¾²¢½«ÒıÓÃ¼ÆÊı¼Ó1 */
+	/* PG_referencedæ ‡å¿—è¯´æ˜é¡µé¢è¢«è®¿é—®è¿‡ï¼Œæ¸…é™¤æ­¤æ ‡å¿—å¹¶å°†å¼•ç”¨è®¡æ•°åŠ 1 */
 	if (TestClearPageReferenced(page))
 		referenced++;
 
-	if (page_mapped(page) && page->mapping) {/* Ò³ÃæÓĞ¶à¸öÊ¹ÓÃÕß */
-		if (PageAnon(page))/* ÄäÃûÒ³ */
-			/* Èç¹ûÒ³ËùÔÚ½ø³Ì³ÖÓĞ½»»»ÁîÅÆ£¬»áÇ¿ÖÆ±ê¼ÇÆäPG_referenced±êÖ¾£¬ÒÔ·ÀÖ¹±»»ØÊÕ */
+	if (page_mapped(page) && page->mapping) {/* é¡µé¢æœ‰å¤šä¸ªä½¿ç”¨è€… */
+		if (PageAnon(page))/* åŒ¿åé¡µ */
+			/* å¦‚æœé¡µæ‰€åœ¨è¿›ç¨‹æŒæœ‰äº¤æ¢ä»¤ç‰Œï¼Œä¼šå¼ºåˆ¶æ ‡è®°å…¶PG_referencedæ ‡å¿—ï¼Œä»¥é˜²æ­¢è¢«å›æ”¶ */
 			referenced += page_referenced_anon(page);
-		else if (is_locked)/* ÆäËûµØ·½ÒÑ¾­Ëø¶¨ÁË */
+		else if (is_locked)/* å…¶ä»–åœ°æ–¹å·²ç»é”å®šäº† */
 			referenced += page_referenced_file(page);
-		else if (TestSetPageLocked(page))/* ÆäËûµØ·½Ëø¶¨ÁË¸ÃÒ³ */
-			referenced++;/* Ö±½ÓÌí¼Ó¼ÆÊı */
-		else {/* ÆäËûµØ·½Î´Ëø¶¨£¬´Ë´¦Ëø¶¨Ëü */
-			if (page->mapping)/* ÎÄ¼şÓ³ÉäÒ³ */
+		else if (TestSetPageLocked(page))/* å…¶ä»–åœ°æ–¹é”å®šäº†è¯¥é¡µ */
+			referenced++;/* ç›´æ¥æ·»åŠ è®¡æ•° */
+		else {/* å…¶ä»–åœ°æ–¹æœªé”å®šï¼Œæ­¤å¤„é”å®šå®ƒ */
+			if (page->mapping)/* æ–‡ä»¶æ˜ å°„é¡µ */
 				referenced += page_referenced_file(page);
-			unlock_page(page);/* ÊÍ·ÅÒ³ÃæËø¶¨ */
+			unlock_page(page);/* é‡Šæ”¾é¡µé¢é”å®š */
 		}
 	}
 	return referenced;
@@ -514,9 +514,9 @@ static void __page_set_anon_rmap(struct page *page,
 	struct anon_vma *anon_vma = vma->anon_vma;
 
 	BUG_ON(!anon_vma);
-	/* ¼ÓÉÏPAGE_MAPPING_ANON±íÊ¾ÄäÃûÓ³Éä */
+	/* åŠ ä¸ŠPAGE_MAPPING_ANONè¡¨ç¤ºåŒ¿åæ˜ å°„ */
 	anon_vma = (void *) anon_vma + PAGE_MAPPING_ANON;
-	/* mappingÍ¨¹ı×îºóÒ»Î»±íÊ¾ÊÇ·ñÎªÄäÃûÓ³Éä */
+	/* mappingé€šè¿‡æœ€åä¸€ä½è¡¨ç¤ºæ˜¯å¦ä¸ºåŒ¿åæ˜ å°„ */
 	page->mapping = (struct address_space *) anon_vma;
 
 	page->index = linear_page_index(vma, address);
@@ -566,7 +566,7 @@ static void __page_check_anon_rmap(struct page *page,
  * The caller needs to hold the pte lock and the page must be locked.
  */
 /**
- * Èç¹ûÒ»¸öÄäÃûÒ³ÒÑ¾­ÓĞÒıÓÃ¼ÆÊı£¬Ôòµ÷ÓÃ±¾º¯Êı½«Ò³Ìí¼Óµ½·´ÉäÓ³ÉäÊı¾İ½á¹¹ÖĞ¡£
+ * å¦‚æœä¸€ä¸ªåŒ¿åé¡µå·²ç»æœ‰å¼•ç”¨è®¡æ•°ï¼Œåˆ™è°ƒç”¨æœ¬å‡½æ•°å°†é¡µæ·»åŠ åˆ°åå°„æ˜ å°„æ•°æ®ç»“æ„ä¸­ã€‚
  */
 void page_add_anon_rmap(struct page *page,
 	struct vm_area_struct *vma, unsigned long address)
@@ -590,15 +590,15 @@ void page_add_anon_rmap(struct page *page,
  * Page does not have to be locked.
  */
 /**
- * ½«ĞÂµÄÄäÃûÒ³Ìí¼Óµ½·´ÏòÓ³ÉäÊı¾İ½á¹¹ÖĞ
+ * å°†æ–°çš„åŒ¿åé¡µæ·»åŠ åˆ°åå‘æ˜ å°„æ•°æ®ç»“æ„ä¸­
  */
 void page_add_new_anon_rmap(struct page *page,
 	struct vm_area_struct *vma, unsigned long address)
 {
 	BUG_ON(address < vma->vm_start || address >= vma->vm_end);
-	/* ³õÊ¼»¯_mapcount¼ÆÊıÎª0£¬±íÊ¾µÚÒ»¸öÓ³ÉäµÄÄäÃûÒ³ */
+	/* åˆå§‹åŒ–_mapcountè®¡æ•°ä¸º0ï¼Œè¡¨ç¤ºç¬¬ä¸€ä¸ªæ˜ å°„çš„åŒ¿åé¡µ */
 	atomic_set(&page->_mapcount, 0); /* elevate count by 1 (starts at -1) */
-	/* ½«vmaÌí¼Óµ½·´ÏòÓ³ÉäÖĞ */
+	/* å°†vmaæ·»åŠ åˆ°åå‘æ˜ å°„ä¸­ */
 	__page_set_anon_rmap(page, vma, address);
 }
 
@@ -609,7 +609,7 @@ void page_add_new_anon_rmap(struct page *page,
  * The caller needs to hold the pte lock.
  */
 /**
- * ÎªÎÄ¼şÓ³ÉäµÄÒ³½øĞĞ·´ÏòÓ³Éä
+ * ä¸ºæ–‡ä»¶æ˜ å°„çš„é¡µè¿›è¡Œåå‘æ˜ å°„
  */
 void page_add_file_rmap(struct page *page)
 {

@@ -35,13 +35,13 @@ enum bdi_stat_item {
 
 #define BDI_STAT_BATCH (8*(1+ilog2(nr_cpu_ids)))
 
-/* µØÖ·¿Õ¼ä¹ØÁªµÄÉè±¸ĞÅÏ¢ */
+/* åœ°å€ç©ºé—´å…³è”çš„è®¾å¤‡ä¿¡æ¯ */
 struct backing_dev_info {
-	/* Ô¤¶ÁÒ³µÄ×î´óÊıÄ¿ */
+	/* é¢„è¯»é¡µçš„æœ€å¤§æ•°ç›® */
 	unsigned long ra_pages;	/* max readahead in PAGE_CACHE_SIZE units */
-	/* ´æ´¢Éè±¸×´Ì¬ */
+	/* å­˜å‚¨è®¾å¤‡çŠ¶æ€ */
 	unsigned long state;	/* Always use atomic bitops on this */
-	/* Éè±¸µÄÊôĞÔ£¬ÈçÊÇ·ñÔÊĞíÖ±½ÓÖ´ĞĞ£¬ÊÇ·ñÖ§³Ö»ØĞ´ */
+	/* è®¾å¤‡çš„å±æ€§ï¼Œå¦‚æ˜¯å¦å…è®¸ç›´æ¥æ‰§è¡Œï¼Œæ˜¯å¦æ”¯æŒå›å†™ */
 	unsigned int capabilities; /* Device capabilities */
 	congested_fn *congested_fn; /* Function pointer if device is md/dm */
 	void *congested_data;	/* Pointer to aux data for congested func */

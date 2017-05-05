@@ -115,13 +115,13 @@ init_new_context(struct task_struct *tsk, struct mm_struct *mm)
  * tsk->mm will be NULL
  */
  /*
- ±êÊ¶¸Ãcpu½øÈëlazy tlb mode¡£
- Èç¹ûÒªÇĞÈëµÄ½ø³ÌÊµ¼ÊÉÏÊÇÄÚºËÏß³Ì£¬
- ÄÇÃ´ÎÒÃÇÒ²ÔİÊ±²»ĞèÒªflush TLB£¬ÒòÎªÄÚºËÏß³Ì²»»á·ÃÎÊusersapce£¬
- ËùÒÔÄÇĞ©ÎŞĞ§µÄTLB entryÒ²²»»áÓ°ÏìÄÚºËÏß³ÌµÄÖ´ĞĞ¡£
- ÔÚÕâÖÖÇé¿öÏÂ£¬ÎªÁËĞÔÄÜ£¬ÎÒÃÇ»á½øÈëlazy tlb mode¡£
- ×ölazyµÄÔ­ÒòÊÇkernel thread®”ÏÂ²»•şÓÃµ½userµÄaddress space£¬
- ËùÒÔ®”ÏÂÖ»°Ñ×Ô¼ºµÄpage table “Q³Éswapper_pg_dir
+ æ ‡è¯†è¯¥cpuè¿›å…¥lazy tlb modeã€‚
+ å¦‚æœè¦åˆ‡å…¥çš„è¿›ç¨‹å®é™…ä¸Šæ˜¯å†…æ ¸çº¿ç¨‹ï¼Œ
+ é‚£ä¹ˆæˆ‘ä»¬ä¹Ÿæš‚æ—¶ä¸éœ€è¦flush TLBï¼Œå› ä¸ºå†…æ ¸çº¿ç¨‹ä¸ä¼šè®¿é—®usersapceï¼Œ
+ æ‰€ä»¥é‚£äº›æ— æ•ˆçš„TLB entryä¹Ÿä¸ä¼šå½±å“å†…æ ¸çº¿ç¨‹çš„æ‰§è¡Œã€‚
+ åœ¨è¿™ç§æƒ…å†µä¸‹ï¼Œä¸ºäº†æ€§èƒ½ï¼Œæˆ‘ä»¬ä¼šè¿›å…¥lazy tlb modeã€‚
+ åšlazyçš„åŸå› æ˜¯kernel threadç•¶ä¸‹ä¸æœƒç”¨åˆ°userçš„address spaceï¼Œ
+ æ‰€ä»¥ç•¶ä¸‹åªæŠŠè‡ªå·±çš„page table æ›æˆswapper_pg_dir
  */
 static inline void
 enter_lazy_tlb(struct mm_struct *mm, struct task_struct *tsk)

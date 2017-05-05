@@ -46,15 +46,15 @@
 #define RADIX_TREE_TAG_LONGS	\
 	((RADIX_TREE_MAP_SIZE + BITS_PER_LONG - 1) / BITS_PER_LONG)
 
-/* »ùÊıµÄÃ¿Ò»¸ö½Úµã */
+/* åŸºæ•°çš„æ¯ä¸€ä¸ªèŠ‚ç‚¹ */
 struct radix_tree_node {
 	unsigned int	height;		/* Height from the bottom */
-	/* ¸Ã½ÚµãÖĞÒÑ¾­Ê¹ÓÃµÄÊı×éÏîµÄÊıÄ¿ */
+	/* è¯¥èŠ‚ç‚¹ä¸­å·²ç»ä½¿ç”¨çš„æ•°ç»„é¡¹çš„æ•°ç›® */
 	unsigned int	count;
 	struct rcu_head	rcu_head;
-	/* Ö¸ÏòÊ÷µÄÆäËû½Úµã»òÕßÊı¾İ */
+	/* æŒ‡å‘æ ‘çš„å…¶ä»–èŠ‚ç‚¹æˆ–è€…æ•°æ® */
 	void		*slots[RADIX_TREE_MAP_SIZE];
-	/* ±ê¼Ç£¬±íÊ¾¶ÔÓ¦µÄ½Úµã¼°Æä×Ó½ÚµãÊÇ·ñ°üº¬ÔàÒ³ºÍ»ØĞ´Ò³ */
+	/* æ ‡è®°ï¼Œè¡¨ç¤ºå¯¹åº”çš„èŠ‚ç‚¹åŠå…¶å­èŠ‚ç‚¹æ˜¯å¦åŒ…å«è„é¡µå’Œå›å†™é¡µ */
 	unsigned long	tags[RADIX_TREE_MAX_TAGS][RADIX_TREE_TAG_LONGS];
 };
 
@@ -455,7 +455,7 @@ EXPORT_SYMBOL(radix_tree_lookup);
  *	item is a bug.
  */
 /**
- * ¶ÔÌØ¶¨µÄÒ³ÉèÖÃÉèÖÃÔàºÍ»ØĞ´±ê¼Ç
+ * å¯¹ç‰¹å®šçš„é¡µè®¾ç½®è®¾ç½®è„å’Œå›å†™æ ‡è®°
  */
 void *radix_tree_tag_set(struct radix_tree_root *root,
 			unsigned long index, unsigned int tag)

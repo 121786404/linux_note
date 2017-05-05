@@ -104,9 +104,9 @@ struct ext3_inode_info {
 	struct rw_semaphore xattr_sem;
 #endif
 #ifdef CONFIG_EXT3_FS_POSIX_ACL
-	/* inode¹ØÁªµÄacl±í */
+	/* inodeå…³è”çš„aclè¡¨ */
 	struct posix_acl	*i_acl;
-	/* Ä¬ÈÏACL£¬¿ÉÄÜÊÇÉÏ¼¶Ä¿Â¼¼Ì³ĞÏÂÀ´ */
+	/* é»˜è®¤ACLï¼Œå¯èƒ½æ˜¯ä¸Šçº§ç›®å½•ç»§æ‰¿ä¸‹æ¥ */
 	struct posix_acl	*i_default_acl;
 #endif
 

@@ -38,7 +38,7 @@
 
 #define pid_hashfn(nr, ns)	\
 	hash_long((unsigned long)nr + (unsigned long)ns, pidhash_shift)
-/* È«¾Öpid¹şÏ£±í£¬Í°ÊıÄ¿½éÓÚ16-4096Ö®¼ä£¬ÓÉÏµÍ³¿ÉÓÃÄÚ´æ¾ö¶¨ */
+/* å…¨å±€pidå“ˆå¸Œè¡¨ï¼Œæ¡¶æ•°ç›®ä»‹äº16-4096ä¹‹é—´ï¼Œç”±ç³»ç»Ÿå¯ç”¨å†…å­˜å†³å®š */
 static struct hlist_head *pid_hash;
 static int pidhash_shift;
 struct pid init_struct_pid = INIT_STRUCT_PID;
@@ -114,7 +114,7 @@ EXPORT_SYMBOL(is_container_init);
 static  __cacheline_aligned_in_smp DEFINE_SPINLOCK(pidmap_lock);
 
 /**
- * ÔÚÃüÃû¿Õ¼äÖĞ£¬ÊÍ·ÅÒ»¸ö¿ÉÓÃµÄpidºÅ
+ * åœ¨å‘½åç©ºé—´ä¸­ï¼Œé‡Šæ”¾ä¸€ä¸ªå¯ç”¨çš„pidå·
  */
 static fastcall void free_pidmap(struct pid_namespace *pid_ns, int pid)
 {
@@ -126,7 +126,7 @@ static fastcall void free_pidmap(struct pid_namespace *pid_ns, int pid)
 }
 
 /**
- * ÔÚÃüÃû¿Õ¼äÖĞ£¬²éÕÒ²¢·ÖÅäÒ»¸ö¿ÉÓÃµÄpidºÅ
+ * åœ¨å‘½åç©ºé—´ä¸­ï¼ŒæŸ¥æ‰¾å¹¶åˆ†é…ä¸€ä¸ªå¯ç”¨çš„pidå·
  */
 static int alloc_pidmap(struct pid_namespace *pid_ns)
 {
@@ -295,7 +295,7 @@ out_free:
 }
 
 /**
- * ÔÚÃüÃû¿Õ¼äÖĞ£¬²éÕÒnr¶ÔÓ¦µÄpid
+ * åœ¨å‘½åç©ºé—´ä¸­ï¼ŒæŸ¥æ‰¾nrå¯¹åº”çš„pid
  */
 struct pid * fastcall find_pid_ns(int nr, struct pid_namespace *ns)
 {
@@ -328,17 +328,17 @@ EXPORT_SYMBOL_GPL(find_pid);
  * attach_pid() must be called with the tasklist_lock write-held.
  */
 /**
- * ½«½ø³ÌÓëpid¹ØÁªÆğÀ´
+ * å°†è¿›ç¨‹ä¸pidå…³è”èµ·æ¥
  */
 int fastcall attach_pid(struct task_struct *task, enum pid_type type,
 		struct pid *pid)
 {
 	struct pid_link *link;
 
-	/* ½¨Á¢task_structÓëpidµÄ¹ØÁª */
+	/* å»ºç«‹task_structä¸pidçš„å…³è” */
 	link = &task->pids[type];
 	link->pid = pid;
-	/* ½¨Á¢pidÓëtask_structµÄ¹ØÁª */
+	/* å»ºç«‹pidä¸task_structçš„å…³è” */
 	hlist_add_head_rcu(&link->node, &pid->tasks[type]);
 
 	return 0;
@@ -396,7 +396,7 @@ struct task_struct *find_task_by_pid_type_ns(int type, int nr,
 EXPORT_SYMBOL(find_task_by_pid_type_ns);
 
 /**
- * Í¨¹ıÈ«¾Öpid²éÕÒÈÎÎñ
+ * é€šè¿‡å…¨å±€pidæŸ¥æ‰¾ä»»åŠ¡
  */
 struct task_struct *find_task_by_pid(pid_t nr)
 {
@@ -405,7 +405,7 @@ struct task_struct *find_task_by_pid(pid_t nr)
 EXPORT_SYMBOL(find_task_by_pid);
 
 /**
- * ÔÚµ±Ç°½ø³ÌµÄÃüÃû¿Õ¼äÖĞ£¬²éÕÒÌØ¶¨½ø³ÌºÅµÄ½ø³Ì
+ * åœ¨å½“å‰è¿›ç¨‹çš„å‘½åç©ºé—´ä¸­ï¼ŒæŸ¥æ‰¾ç‰¹å®šè¿›ç¨‹å·çš„è¿›ç¨‹
  */
 struct task_struct *find_task_by_vpid(pid_t vnr)
 {
@@ -415,7 +415,7 @@ struct task_struct *find_task_by_vpid(pid_t vnr)
 EXPORT_SYMBOL(find_task_by_vpid);
 
 /**
- * ¸ù¾İidÔÚÃüÃû¿Õ¼äÖĞ²éÕÒ½ø³Ì
+ * æ ¹æ®idåœ¨å‘½åç©ºé—´ä¸­æŸ¥æ‰¾è¿›ç¨‹
  */
 struct task_struct *find_task_by_pid_ns(pid_t nr, struct pid_namespace *ns)
 {
@@ -455,7 +455,7 @@ struct pid *find_get_pid(pid_t nr)
 }
 
 /**
- * »ñµÃ½ø³ÌID
+ * è·å¾—è¿›ç¨‹ID
  */
 pid_t pid_nr_ns(struct pid *pid, struct pid_namespace *ns)
 {
@@ -694,7 +694,7 @@ void zap_pid_ns_processes(struct pid_namespace *pid_ns)
  * more.
  */
 /**
- * ³õÊ¼»¯È«¾Öpid¹şÏ£±íµÄÈİÁ¿
+ * åˆå§‹åŒ–å…¨å±€pidå“ˆå¸Œè¡¨çš„å®¹é‡
  */
 void __init pidhash_init(void)
 {

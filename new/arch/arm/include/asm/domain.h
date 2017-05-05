@@ -34,32 +34,32 @@
  * CPUs based on ARMv6+ or the Intel XSC3 core.
  */
 /*
-Linux ��ֻ������16�����е�������D0-D2��
-��ϵͳ����ʱ��ʼ��MMU�Ĺ�����
-���������������������Ȩ�ޡ��������ڴ�ռ����Ķ�Ӧ����
+Linux 中只是用了16个域中的三个域D0-D2。
+在系统引导时初始化MMU的过程中
+将对这三个域设置域访问权限。以下是内存空间和域的对应表：
 
-0. �豸�ռ� DOMAIN_IO
-1. �ڲ�����SRAM�ռ�/�ڲ�MINI Cache�ռ�  DOMAIN_KERNEL
-2. RAM�ڴ�ռ�/ROM�ڴ�ռ�   DOMAIN_KERNEL
-3. �ߵͶ��ж������ռ�  DOMAIN_USER
+0. 设备空间 DOMAIN_IO
+1. 内部高速SRAM空间/内部MINI Cache空间  DOMAIN_KERNEL
+2. RAM内存空间/ROM内存空间   DOMAIN_KERNEL
+3. 高低端中断向量空间  DOMAIN_USER
 
-��ARM�������У�MMU�е�ÿ����ķ���Ȩ�޷ֱ���
-CP15��C3�Ĵ����е���λ���趨��c3�Ĵ�����СΪ32bits��
-�պÿ�������16����ķ���Ȩ�ޡ�
+在ARM处理器中，MMU中的每个域的访问权限分别由
+CP15的C3寄存器中的两位来设定，c3寄存器的小为32bits，
+刚好可以设置16个域的访问权限。
 
 
-0b00 �޷���Ȩ�� ��ʱ���ʸ��򽫲�������ʧЧ
+0b00 无访问权限 此时访问该域将产生访问失效
 
-0b01 �û�(client) ����CP15��C1���ƼĴ����е�R��Sλ
-        �Լ�ҳ���е�ַ�任��Ŀ�еķ���Ȩ��
-��   ����λ AP��ȷ���Ƿ���������ϵͳ����ģʽ�Ĵ洢����
+0b01 用户(client) 根据CP15的C1控制寄存器中的R和S位
+        以及页表中地址变换条目中的访问权限
+　   控制位 AP来确定是否允许各种系统工作模式的存储访问
 
-0b10 ���� ʹ�ø�ֵ���������Ԥ֪�Ľ��
+0b10 保留 使用该值会产生不可预知的结果
 
-0b11 ������(Manager) ������CP15��C1���ƼĴ����е�R��Sλ
-        �Լ�ҳ���е�ַ�任��Ŀ�е� ����Ȩ�޿���λAP��
-        ����������²���ϵͳ��������Ȩģʽ�����û�
-��   ģʽ�������������ʧЧ
+0b11 管理者(Manager) 不考虑CP15的C1控制寄存器中的R和S位
+        以及页表中地址变换条目中的 访问权限控制位AP，
+        在这种情况下不管系统工作在特权模式还是用户
+　   模式都不会产生访问失效
 */
 #ifndef CONFIG_IO_36
 #define DOMAIN_KERNEL	0
@@ -145,16 +145,16 @@ static inline void set_domain(unsigned val)
 #endif
 
 /*
-Linux��ϵͳ��������MMUʱ��ʼ��c3�Ĵ�����ʵ�ֶ��ڴ���ķ��ʿ��ơ�
+Linux在系统引导设置MMU时初始化c3寄存器来实现对内存域的访问控制。
 
-��DOMAIN_USER��DOMAIN_KERNEL��DOMAIN_TABLE������DOMAIN_MANAGERȨ��;
-��DOMAIN_IO����DOMAIN_CLIENTȨ�ޡ�
-�����ʱ��ȡc3�Ĵ���������ֵӦ����0x1f��
+对DOMAIN_USER，DOMAIN_KERNEL和DOMAIN_TABLE均设置DOMAIN_MANAGER权限;
+对DOMAIN_IO设置DOMAIN_CLIENT权限。
+如果此时读取c3寄存器，它的值应该是0x1f。
 
-��ϵͳ�����������ж���3����ķ��ʿ���λ������һ�ɲ���ģ�
-���ṩ��һ����Ϊmodify_domain�ĺ����޸�����ʿ���λ��
-ϵͳ��setup_arch�е���early_trap_init��DOMAIN_USER��Ȩ��λ�������ó�
-DOMAIN_CLIENT����ʱ����ֵӦ����0x17��
+在系统的引导过程中对这3个域的访问控制位并不是一成不变的，
+它提供了一个名为modify_domain的宏来修改域访问控制位。
+系统在setup_arch中调用early_trap_init后，DOMAIN_USER的权限位将被设置成
+DOMAIN_CLIENT，此时它的值应该是0x17。
 */
 
 #ifdef CONFIG_CPU_USE_DOMAINS

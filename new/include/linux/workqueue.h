@@ -4,12 +4,12 @@
 
 
 /**
- * Ê¹ÓÃÁË¹¤×÷¶ÓÁĞÖ´ĞĞÑÓ³Ù²Ù×÷µÄ´úÂë·¶Àı:
+ * ä½¿ç”¨äº†å·¥ä½œé˜Ÿåˆ—æ‰§è¡Œå»¶è¿Ÿæ“ä½œçš„ä»£ç èŒƒä¾‹:
  
- //¶¨ÒåÈ«¾ÖĞÔµÄstruct workqueue_struct(¹¤×÷¶ÓÁĞ¹ÜÀí½á¹¹)Ö¸Õëdemo_dev_wq
+ //å®šä¹‰å…¨å±€æ€§çš„struct workqueue_struct(å·¥ä½œé˜Ÿåˆ—ç®¡ç†ç»“æ„)æŒ‡é’ˆdemo_dev_wq
  static struct workqueue_struct * demo_dev_wq;
  
- //Éè±¸ÌØ¶¨µÄÊı¾İ½á¹¹,Êµ¼ÊÊ¹ÓÃÖĞ´ó²¿·Östruct work_struct½á¹¹¶¼ÄÚÇ¶ÔÚÕâ¸öÊı¾İ½á¹¹ÖĞ
+ //è®¾å¤‡ç‰¹å®šçš„æ•°æ®ç»“æ„,å®é™…ä½¿ç”¨ä¸­å¤§éƒ¨åˆ†struct work_structç»“æ„éƒ½å†…åµŒåœ¨è¿™ä¸ªæ•°æ®ç»“æ„ä¸­
  struct demo_device {
  	...
 	struct work_struct work;
@@ -17,13 +17,13 @@
  }
  static struct demo_device *demo_dev;
 
- //¶¨ÒåÑÓ³Ù²Ù×÷º¯Êı
+ //å®šä¹‰å»¶è¿Ÿæ“ä½œå‡½æ•°
  void demo_work_func(struct work_struct *work)
  {
  	...
  }
 
- //Çı¶¯³ÌĞòÄ£¿é³õÊ¼»¯´úÂëµ÷ÓÃcreat_singlethread_workqueue´´½¨¹¤×÷¶ÓÁĞ
+ //é©±åŠ¨ç¨‹åºæ¨¡å—åˆå§‹åŒ–ä»£ç è°ƒç”¨creat_singlethread_workqueueåˆ›å»ºå·¥ä½œé˜Ÿåˆ—
  static int __init demo_dev_init(void)
  {
  	...
@@ -33,7 +33,7 @@
 	...
  }
 
- //Ä£¿éÍË³öº¯Êı
+ //æ¨¡å—é€€å‡ºå‡½æ•°
  static void demo_dev_exit(void)
  {
  	...
@@ -42,7 +42,7 @@
 	...
  }
 
- //ÖĞ¶Ï´¦Àíº¯Êı
+ //ä¸­æ–­å¤„ç†å‡½æ•°
  irqreturn_t demo_isr(iint irq, void *dev_id)
  {
  	...
@@ -62,7 +62,7 @@
 #include <linux/threads.h>
 #include <linux/atomic.h>
 #include <linux/cpumask.h>
-/* ¹¤×÷¶ÓÁĞ¹ÜÀí½á¹¹*/
+/* å·¥ä½œé˜Ÿåˆ—ç®¡ç†ç»“æ„*/
 struct workqueue_struct;
 
 struct work_struct;
@@ -148,11 +148,11 @@ enum {
 };
 
 struct work_struct {
-	atomic_long_t data;	/* Çı¶¯³ÌĞò¿ÉÒÔÀûÓÃdataÀ´½«Éè±¸Çı¶¯³ÌĞòÊ¹ÓÃ
-				 * µÄÄ³Ğ©Ö¸Õë´«µİ¸øÑÓ³Ùº¯Êı*/
-	struct list_head entry;	/* Ë«ÏòÁ´±í¶ÔÏó,ÓÃÀ´½«Ìá½»µÄµÈ´ı´¦ÀíµÄ¹¤×÷½Úµã
-				 * ĞÎ³ÉÁ´±í*/
-	work_func_t func;	/*¹¤×÷½ÚµãµÄÑÓ³Ùº¯Êı,ÓÃÀ´Íê³ÉÊµ¼ÊµÄÑÓ³Ù²Ù×÷*/
+	atomic_long_t data;	/* é©±åŠ¨ç¨‹åºå¯ä»¥åˆ©ç”¨dataæ¥å°†è®¾å¤‡é©±åŠ¨ç¨‹åºä½¿ç”¨
+				 * çš„æŸäº›æŒ‡é’ˆä¼ é€’ç»™å»¶è¿Ÿå‡½æ•°*/
+	struct list_head entry;	/* åŒå‘é“¾è¡¨å¯¹è±¡,ç”¨æ¥å°†æäº¤çš„ç­‰å¾…å¤„ç†çš„å·¥ä½œèŠ‚ç‚¹
+				 * å½¢æˆé“¾è¡¨*/
+	work_func_t func;	/*å·¥ä½œèŠ‚ç‚¹çš„å»¶è¿Ÿå‡½æ•°,ç”¨æ¥å®Œæˆå®é™…çš„å»¶è¿Ÿæ“ä½œ*/
 #ifdef CONFIG_LOCKDEP
 	struct lockdep_map lockdep_map;
 #endif
@@ -163,11 +163,11 @@ struct work_struct {
 	ATOMIC_LONG_INIT(WORK_STRUCT_NO_POOL | WORK_STRUCT_STATIC)
 
 /**
- * Ê¹ÓÃqueue_delayed_workÊ±ÓÃµ½´Ë½á¹¹Ìå,ÊµÏÖÑÓ³ÙÌá½»¹¦ÄÜ
+ * ä½¿ç”¨queue_delayed_workæ—¶ç”¨åˆ°æ­¤ç»“æ„ä½“,å®ç°å»¶è¿Ÿæäº¤åŠŸèƒ½
  */
 struct delayed_work {
 	struct work_struct work;
-	struct timer_list timer;	/*ÊµÏÖÊ±¼äÉÏµÄÑÓ³Ù²Ù×÷*/
+	struct timer_list timer;	/*å®ç°æ—¶é—´ä¸Šçš„å»¶è¿Ÿæ“ä½œ*/
 
 	/* target workqueue and CPU ->timer uses to queue ->work */
 	struct workqueue_struct *wq;
@@ -235,7 +235,7 @@ struct execute_work {
 				     (tflags) | TIMER_IRQSAFE),		\
 	}
 
-/*¿ÉÒÔÈÃÇı¶¯³ÌĞò¾²Ì¬¶¨ÒåÒ»¸östruct work_struct¶ÔÏóÍ¬Ê±³õÊ¼»¯*/
+/*å¯ä»¥è®©é©±åŠ¨ç¨‹åºé™æ€å®šä¹‰ä¸€ä¸ªstruct work_structå¯¹è±¡åŒæ—¶åˆå§‹åŒ–*/
 #define DECLARE_WORK(n, f)						\
 	struct work_struct n = __WORK_INITIALIZER(n, f)
 
@@ -268,7 +268,7 @@ static inline unsigned int work_static(struct work_struct *work) { return 0; }
  * to generate better code.
  */
 #ifdef CONFIG_LOCKDEP
-/* ³õÊ¼»¯Ò»¸ö¹¤×÷¶ÓÁĞ½Úµã,INIT_WORK³õÊ¼»¯struct work_structÖĞµÄÃ¿¸ö³ÉÔ±*/
+/* åˆå§‹åŒ–ä¸€ä¸ªå·¥ä½œé˜Ÿåˆ—èŠ‚ç‚¹,INIT_WORKåˆå§‹åŒ–struct work_structä¸­çš„æ¯ä¸ªæˆå‘˜*/
 #define __INIT_WORK(_work, _func, _onstack)				\
 	do {								\
 		static struct lock_class_key __key;			\
@@ -486,10 +486,10 @@ __alloc_workqueue_key(const char *fmt, unsigned int flags, int max_active,
 #define create_freezable_workqueue(name)				\
 	alloc_workqueue("%s", __WQ_LEGACY | WQ_FREEZABLE | WQ_UNBOUND |	\
 			WQ_MEM_RECLAIM, 1, (name))
-/* Éú³Éµ¥Ïß³ÌµÄ¹¤×÷¶ÓÁĞ singlethread=1,Óëcreate_workqueueº¯ÊıµÄÇø±ğÊÇ
- * create_singlethread_workqueueÖ»ÔÚÏµÍ³ÖĞµÄµÚÒ»¸öCPU(singlethread_cpu)ÉÏ´´½¨
- * ¹¤×÷¶ÓÁĞºÍ¹¤ÈËÏß³Ì,¶øcreate_workququeº¯Êı»áÔÚÏµÍ³ÖĞµÄÃ¿¸öCPUÉÏ¶¼´´½¨¹¤×÷
- * ¶ÓÁĞºÍ¹¤ÈËÏß³Ì*/
+/* ç”Ÿæˆå•çº¿ç¨‹çš„å·¥ä½œé˜Ÿåˆ— singlethread=1,ä¸create_workqueueå‡½æ•°çš„åŒºåˆ«æ˜¯
+ * create_singlethread_workqueueåªåœ¨ç³»ç»Ÿä¸­çš„ç¬¬ä¸€ä¸ªCPU(singlethread_cpu)ä¸Šåˆ›å»º
+ * å·¥ä½œé˜Ÿåˆ—å’Œå·¥äººçº¿ç¨‹,è€Œcreate_workququeå‡½æ•°ä¼šåœ¨ç³»ç»Ÿä¸­çš„æ¯ä¸ªCPUä¸Šéƒ½åˆ›å»ºå·¥ä½œ
+ * é˜Ÿåˆ—å’Œå·¥äººçº¿ç¨‹*/
 #define create_singlethread_workqueue(name)				\
 	alloc_ordered_workqueue("%s", __WQ_LEGACY | WQ_MEM_RECLAIM, name)
 
@@ -500,10 +500,10 @@ void free_workqueue_attrs(struct workqueue_attrs *attrs);
 int apply_workqueue_attrs(struct workqueue_struct *wq,
 			  const struct workqueue_attrs *attrs);
 int workqueue_set_unbound_cpumask(cpumask_var_t cpumask);
-/* ÔÚÓÃqueue_workÏò¹¤×÷¶ÓÁĞÌá½»¹¤×÷½ÚµãÊ±£¬Èç¹û¹¤×÷¶ÓÁĞÊÇsinglethreadÀàĞÍµÄ£¬
- * ÒòÎª´ËÊ±Ö»ÓĞÒ»¸öworklist£¬ËùÒÔ¹¤×÷½ÚµãÖ»ÄÜÌá½»µ½ÕâÎ¨Ò»µÄÒ»¸öworklistÉÏ£¬
- * ·´Ö®£¬Èç¹û¹¤×÷¶ÓÁĞ²»ÊÇsinglethreadÀàĞÍµÄ£¬ÄÇÃ´¹¤×÷½Úµã½«»áÌá½»µ½µ±Ç°ÔËĞĞ
- * queue_workµÄCPUËùÔÚµÄworklistÖĞ*/
+/* åœ¨ç”¨queue_workå‘å·¥ä½œé˜Ÿåˆ—æäº¤å·¥ä½œèŠ‚ç‚¹æ—¶ï¼Œå¦‚æœå·¥ä½œé˜Ÿåˆ—æ˜¯singlethreadç±»å‹çš„ï¼Œ
+ * å› ä¸ºæ­¤æ—¶åªæœ‰ä¸€ä¸ªworklistï¼Œæ‰€ä»¥å·¥ä½œèŠ‚ç‚¹åªèƒ½æäº¤åˆ°è¿™å”¯ä¸€çš„ä¸€ä¸ªworklistä¸Šï¼Œ
+ * åä¹‹ï¼Œå¦‚æœå·¥ä½œé˜Ÿåˆ—ä¸æ˜¯singlethreadç±»å‹çš„ï¼Œé‚£ä¹ˆå·¥ä½œèŠ‚ç‚¹å°†ä¼šæäº¤åˆ°å½“å‰è¿è¡Œ
+ * queue_workçš„CPUæ‰€åœ¨çš„worklistä¸­*/
 extern bool queue_work_on(int cpu, struct workqueue_struct *wq,
 			struct work_struct *work);
 extern bool queue_delayed_work_on(int cpu, struct workqueue_struct *wq,

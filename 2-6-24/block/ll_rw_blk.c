@@ -99,7 +99,7 @@ static inline int queue_congestion_off_threshold(struct request_queue *q)
 }
 
 /**
- * ¼ÆËã¶ÓÁĞµÄÓµÈû·§Öµ
+ * è®¡ç®—é˜Ÿåˆ—çš„æ‹¥å¡é˜€å€¼
  */
 static void blk_queue_congestion_threshold(struct request_queue *q)
 {
@@ -1550,7 +1550,7 @@ static int ll_merge_requests_fn(struct request_queue *q, struct request *req,
  * with the queue lock held.
  */
 /**
- * ²åÈë´ÅÅÌÇëÇó¶ÓÁĞ
+ * æ’å…¥ç£ç›˜è¯·æ±‚é˜Ÿåˆ—
  */
 void blk_plug_device(struct request_queue *q)
 {
@@ -1563,9 +1563,9 @@ void blk_plug_device(struct request_queue *q)
 	if (blk_queue_stopped(q))
 		return;
 
-	if (!test_and_set_bit(QUEUE_FLAG_PLUGGED, &q->queue_flags)) {/* »¹Ã»²åÈë */
-		mod_timer(&q->unplug_timer, jiffies + q->unplug_delay);/* ĞŞ¸Ä¶¨Ê±Æ÷£¬ÔÚ3ºÁÃëºóÇ¿ÖÆ²¦³öÇëÇó¶ÓÁĞ£¬´¦ÀíÆäÖĞµÄÇëÇó */
-		blk_add_trace_generic(q, NULL, 0, BLK_TA_PLUG);/* ÉèÖÃ²åÈë±êÖ¾ */
+	if (!test_and_set_bit(QUEUE_FLAG_PLUGGED, &q->queue_flags)) {/* è¿˜æ²¡æ’å…¥ */
+		mod_timer(&q->unplug_timer, jiffies + q->unplug_delay);/* ä¿®æ”¹å®šæ—¶å™¨ï¼Œåœ¨3æ¯«ç§’åå¼ºåˆ¶æ‹¨å‡ºè¯·æ±‚é˜Ÿåˆ—ï¼Œå¤„ç†å…¶ä¸­çš„è¯·æ±‚ */
+		blk_add_trace_generic(q, NULL, 0, BLK_TA_PLUG);/* è®¾ç½®æ’å…¥æ ‡å¿— */
 	}
 }
 
@@ -1592,17 +1592,17 @@ EXPORT_SYMBOL(blk_remove_plug);
  * remove the plug and let it rip..
  */
 /**
- * ´¥·¢ÇëÇó¶ÓÁĞµÄ²¦³ö²Ù×÷£¬Ê¹¶ÓÁĞÖĞµÄÇëÇóµÃµ½´¦Àí
+ * è§¦å‘è¯·æ±‚é˜Ÿåˆ—çš„æ‹¨å‡ºæ“ä½œï¼Œä½¿é˜Ÿåˆ—ä¸­çš„è¯·æ±‚å¾—åˆ°å¤„ç†
  */
 void __generic_unplug_device(struct request_queue *q)
 {
 	if (unlikely(blk_queue_stopped(q)))
 		return;
 
-	if (!blk_remove_plug(q))/* Çå³ı¶ÓÁĞµÄ²åÈë×´Ì¬ºÍ²¦³ö¶¨Ê±Æ÷ */
+	if (!blk_remove_plug(q))/* æ¸…é™¤é˜Ÿåˆ—çš„æ’å…¥çŠ¶æ€å’Œæ‹¨å‡ºå®šæ—¶å™¨ */
 		return;
 
-	/* ´¦ÀíµÈ´ıµÄÇëÇó */
+	/* å¤„ç†ç­‰å¾…çš„è¯·æ±‚ */
 	q->request_fn(q);
 }
 EXPORT_SYMBOL(__generic_unplug_device);
@@ -1916,7 +1916,7 @@ EXPORT_SYMBOL(blk_alloc_queue_node);
  **/
 
 /**
- * ²úÉúÒ»¸ö±ê×¼µÄ´ÅÅÌÇëÇó¶ÓÁĞ¡£
+ * äº§ç”Ÿä¸€ä¸ªæ ‡å‡†çš„ç£ç›˜è¯·æ±‚é˜Ÿåˆ—ã€‚
  */
 struct request_queue *blk_init_queue(request_fn_proc *rfn, spinlock_t *lock)
 {
@@ -2976,7 +2976,7 @@ static void init_request_from_bio(struct request *req, struct bio *bio)
 	blk_rq_bio_prep(req->q, req, bio);
 }
 
-/* make_request_fnµÄÄ¬ÈÏÊµÏÖ */
+/* make_request_fnçš„é»˜è®¤å®ç° */
 static int __make_request(struct request_queue *q, struct bio *bio)
 {
 	struct request *req;
@@ -3002,13 +3002,13 @@ static int __make_request(struct request_queue *q, struct bio *bio)
 
 	spin_lock_irq(q->queue_lock);
 
-	if (unlikely(barrier) || elv_queue_empty(q))/* bioÆÁÕÏ²»ĞèÒª´¦ÀíºÏ²¢£¬µ±Ç°ÁĞ±íÈç¹ûÎª¿Õ£¬Ò²²»±ØºÏ²¢ */
+	if (unlikely(barrier) || elv_queue_empty(q))/* bioå±éšœä¸éœ€è¦å¤„ç†åˆå¹¶ï¼Œå½“å‰åˆ—è¡¨å¦‚æœä¸ºç©ºï¼Œä¹Ÿä¸å¿…åˆå¹¶ */
 		goto get_rq;
 
-	/* ÇëÇóioµ÷¶ÈÆ÷ºÏ²¢bioÇëÇó */
+	/* è¯·æ±‚ioè°ƒåº¦å™¨åˆå¹¶bioè¯·æ±‚ */
 	el_ret = elv_merge(q, &req, bio);
 	switch (el_ret) {
-		case ELEVATOR_BACK_MERGE:/* ºÏ²¢µ½ÏÖÓĞÇëÇóÖ®ºó */
+		case ELEVATOR_BACK_MERGE:/* åˆå¹¶åˆ°ç°æœ‰è¯·æ±‚ä¹‹å */
 			BUG_ON(!rq_mergeable(req));
 
 			if (!ll_back_merge_fn(q, req, bio))
@@ -3025,7 +3025,7 @@ static int __make_request(struct request_queue *q, struct bio *bio)
 				elv_merged_request(q, req, el_ret);
 			goto out;
 
-		case ELEVATOR_FRONT_MERGE:/* ºÏ²¢µ½ÏÖÓĞÇëÇóÖ®Ç° */
+		case ELEVATOR_FRONT_MERGE:/* åˆå¹¶åˆ°ç°æœ‰è¯·æ±‚ä¹‹å‰ */
 			BUG_ON(!rq_mergeable(req));
 
 			if (!ll_front_merge_fn(q, req, bio))
@@ -3053,18 +3053,18 @@ static int __make_request(struct request_queue *q, struct bio *bio)
 			goto out;
 
 		/* ELV_NO_MERGE: elevator says don't/can't merge. */
-		default:/* ²»ÄÜºÏ²¢ */
+		default:/* ä¸èƒ½åˆå¹¶ */
 			;
 	}
 
-/* ÔËĞĞµ½ÕâÀï£¬ËµÃ÷²»ÄÜºÏ²¢ÇëÇó */
+/* è¿è¡Œåˆ°è¿™é‡Œï¼Œè¯´æ˜ä¸èƒ½åˆå¹¶è¯·æ±‚ */
 get_rq:
 	/*
 	 * This sync check and mask will be re-done in init_request_from_bio(),
 	 * but we need to set it earlier to expose the sync flag to the
 	 * rq allocator and io schedulers.
 	 */
-	rw_flags = bio_data_dir(bio);/* ²úÉú¶ÁĞ´±êÖ¾ºÍÍ¬²½±êÖ¾ */
+	rw_flags = bio_data_dir(bio);/* äº§ç”Ÿè¯»å†™æ ‡å¿—å’ŒåŒæ­¥æ ‡å¿— */
 	if (sync)
 		rw_flags |= REQ_RW_SYNC;
 
@@ -3072,7 +3072,7 @@ get_rq:
 	 * Grab a free request. This is might sleep but can not fail.
 	 * Returns with the queue unlocked.
 	 */
-	req = get_request_wait(q, rw_flags, bio);/* ·ÖÅäÒ»¸ö¿ÕÏĞÇëÇóÊµÀı */
+	req = get_request_wait(q, rw_flags, bio);/* åˆ†é…ä¸€ä¸ªç©ºé—²è¯·æ±‚å®ä¾‹ */
 
 	/*
 	 * After dropping the lock and possibly sleeping here, our request
@@ -3080,14 +3080,14 @@ get_rq:
 	 * We don't worry about that case for efficiency. It won't happen
 	 * often, and the elevators are able to handle it.
 	 */
-	init_request_from_bio(req, bio);/* ¸ù¾İbio³õÊ¼»¯ÇëÇó¶ÓÁĞ */
+	init_request_from_bio(req, bio);/* æ ¹æ®bioåˆå§‹åŒ–è¯·æ±‚é˜Ÿåˆ— */
 
 	spin_lock_irq(q->queue_lock);
-	if (elv_queue_empty(q))/* ¶ÓÁĞÄ¿Ç°Îª¿Õ */
-		blk_plug_device(q);/* ²åÈë¶ÓÁĞ£¬ÔİÊ±ÑÓ³Ù´¦ÀíºóĞøÇëÇó¡£ÕâÑù»á»ã¾ÛÇëÇó */
-	add_request(q, req);/* µ÷ÓÃioµ÷¶ÈÆ÷½«ÇëÇóÌí¼Óµ½ÇëÇóÁ´±í */
+	if (elv_queue_empty(q))/* é˜Ÿåˆ—ç›®å‰ä¸ºç©º */
+		blk_plug_device(q);/* æ’å…¥é˜Ÿåˆ—ï¼Œæš‚æ—¶å»¶è¿Ÿå¤„ç†åç»­è¯·æ±‚ã€‚è¿™æ ·ä¼šæ±‡èšè¯·æ±‚ */
+	add_request(q, req);/* è°ƒç”¨ioè°ƒåº¦å™¨å°†è¯·æ±‚æ·»åŠ åˆ°è¯·æ±‚é“¾è¡¨ */
 out:
-	if (sync)/* ĞèÒªÍ¬²½´¦Àí£¬²¦³ö¶ÓÁĞ£¬ÒÔÇ¿ÖÆ½øĞĞÍ¬²½¡£ */
+	if (sync)/* éœ€è¦åŒæ­¥å¤„ç†ï¼Œæ‹¨å‡ºé˜Ÿåˆ—ï¼Œä»¥å¼ºåˆ¶è¿›è¡ŒåŒæ­¥ã€‚ */
 		__generic_unplug_device(q);
 
 	spin_unlock_irq(q->queue_lock);
@@ -3250,7 +3250,7 @@ static inline void __generic_make_request(struct bio *bio)
 	do {
 		char b[BDEVNAME_SIZE];
 
-		/* »ñµÃbioËùÊôµÄÇëÇó¶ÓÁĞ */
+		/* è·å¾—bioæ‰€å±çš„è¯·æ±‚é˜Ÿåˆ— */
 		q = bdev_get_queue(bio->bi_bdev);
 		if (!q) {
 			printk(KERN_ERR
@@ -3281,7 +3281,7 @@ end_io:
 		 * If this device has partitions, remap block n
 		 * of partition p to block n+start(p) of the disk.
 		 */
-		blk_partition_remap(bio);/* Éè±¸ÊÇ·ÖÇøµÄ£¬½«¶ÁĞ´µÄÎ»ÖÃÓ³Éäµ½Éè±¸ */
+		blk_partition_remap(bio);/* è®¾å¤‡æ˜¯åˆ†åŒºçš„ï¼Œå°†è¯»å†™çš„ä½ç½®æ˜ å°„åˆ°è®¾å¤‡ */
 
 		if (old_sector != -1)
 			blk_add_trace_remap(q, bio, old_dev, bio->bi_sector,
@@ -3292,16 +3292,16 @@ end_io:
 		old_sector = bio->bi_sector;
 		old_dev = bio->bi_bdev->bd_dev;
 
-		if (bio_check_eod(bio, nr_sectors))/* ¼ì²éÊÇ·ñ³¬³öÁËÉè±¸·¶Î§ */
+		if (bio_check_eod(bio, nr_sectors))/* æ£€æŸ¥æ˜¯å¦è¶…å‡ºäº†è®¾å¤‡èŒƒå›´ */
 			goto end_io;
-		if (bio_empty_barrier(bio) && !q->prepare_flush_fn) {/* ¶ÔÓÚIOÆÁÕÏÀ´Ëµ£¬ĞèÒªË¢ĞÂÇëÇó£¬µ«ÊÇÉè±¸²»Ö§³Ö */
+		if (bio_empty_barrier(bio) && !q->prepare_flush_fn) {/* å¯¹äºIOå±éšœæ¥è¯´ï¼Œéœ€è¦åˆ·æ–°è¯·æ±‚ï¼Œä½†æ˜¯è®¾å¤‡ä¸æ”¯æŒ */
 			err = -EOPNOTSUPP;
 			goto end_io;
 		}
 
-		/* ½«ÇëÇóÌí¼Ó¶ÓÁĞ£¬Ä¬ÈÏÊÇ__make_request */
+		/* å°†è¯·æ±‚æ·»åŠ é˜Ÿåˆ—ï¼Œé»˜è®¤æ˜¯__make_request */
 		ret = q->make_request_fn(q, bio);
-	} while (ret);/* make_request_fn¿ÉÄÜÒªÇó½«bio²åÈëµ½ÁíÍâµÄ¶ÓÁĞ£¬ÕâÀïÖØ¸´ÔËĞĞ£¬½«bio²åÈëµ½ÆäËû¶ÓÁĞ */
+	} while (ret);/* make_request_fnå¯èƒ½è¦æ±‚å°†bioæ’å…¥åˆ°å¦å¤–çš„é˜Ÿåˆ—ï¼Œè¿™é‡Œé‡å¤è¿è¡Œï¼Œå°†bioæ’å…¥åˆ°å…¶ä»–é˜Ÿåˆ— */
 }
 
 /*
@@ -3317,9 +3317,9 @@ end_io:
  */
 void generic_make_request(struct bio *bio)
 {
-	if (current->bio_tail) {/* µ±Ç°½ø³ÌÕıÔÚ´¦ÀíbioÇëÇó */
+	if (current->bio_tail) {/* å½“å‰è¿›ç¨‹æ­£åœ¨å¤„ç†bioè¯·æ±‚ */
 		/* make_request is active */
-		/* ½«µ±Ç°ÇëÇó¹Ò½Óµ½½ø³Ìµ±Ç°bioÁ´±íµÄÎ²¶Ë */
+		/* å°†å½“å‰è¯·æ±‚æŒ‚æ¥åˆ°è¿›ç¨‹å½“å‰bioé“¾è¡¨çš„å°¾ç«¯ */
 		*(current->bio_tail) = bio;
 		bio->bi_next = NULL;
 		current->bio_tail = &bio->bi_next;
@@ -3353,7 +3353,7 @@ void generic_make_request(struct bio *bio)
 		__generic_make_request(bio);
 		bio = current->bio_list;
 	} while (bio);
-	/* ´¦ÀíÍê±Ï£¬Çå¿Õbio_tail±äÁ¿¡£ */
+	/* å¤„ç†å®Œæ¯•ï¼Œæ¸…ç©ºbio_tailå˜é‡ã€‚ */
 	current->bio_tail = NULL; /* deactivate */
 }
 
@@ -3370,28 +3370,28 @@ EXPORT_SYMBOL(generic_make_request);
  *
  */
 /**
- * Ìá½»Ò»¸öbioÇëÇó
- * ²¢½«Æä¹Ò½Óµ½ÇëÇó¶ÓÁĞÖĞ
+ * æäº¤ä¸€ä¸ªbioè¯·æ±‚
+ * å¹¶å°†å…¶æŒ‚æ¥åˆ°è¯·æ±‚é˜Ÿåˆ—ä¸­
  */
 void submit_bio(int rw, struct bio *bio)
 {
 	int count = bio_sectors(bio);
 
-	/* ÉèÖÃÊı¾İµÄ´«Êä·½Ïò */
+	/* è®¾ç½®æ•°æ®çš„ä¼ è¾“æ–¹å‘ */
 	bio->bi_rw |= rw;
 
 	/*
 	 * If it's a regular read/write or a barrier with data attached,
 	 * go through the normal accounting stuff before submission.
 	 */
-	if (!bio_empty_barrier(bio)) {/* ²»ÊÇbioÆÁÕÏ */
+	if (!bio_empty_barrier(bio)) {/* ä¸æ˜¯bioå±éšœ */
 
 		BIO_BUG_ON(!bio->bi_size);
 		BIO_BUG_ON(!bio->bi_io_vec);
 
-		if (rw & WRITE) {/* ¶ÔĞ´ÇëÇó¼ÆÊı */
+		if (rw & WRITE) {/* å¯¹å†™è¯·æ±‚è®¡æ•° */
 			count_vm_events(PGPGOUT, count);
-		} else {/* ¶Ô¶ÁÇëÇó¼ÆÊı */
+		} else {/* å¯¹è¯»è¯·æ±‚è®¡æ•° */
 			task_io_account_read(bio->bi_size);
 			count_vm_events(PGPGIN, count);
 		}
@@ -3406,7 +3406,7 @@ void submit_bio(int rw, struct bio *bio)
 		}
 	}
 
-	/* ½«ÇëÇó¹Ò½Óµ½ÇëÇó¶ÓÁĞÖĞ */
+	/* å°†è¯·æ±‚æŒ‚æ¥åˆ°è¯·æ±‚é˜Ÿåˆ—ä¸­ */
 	generic_make_request(bio);
 }
 

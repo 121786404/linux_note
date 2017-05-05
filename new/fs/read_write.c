@@ -242,16 +242,16 @@ loff_t default_llseek(struct file *file, loff_t offset, int whence)
 	inode_lock(inode);
 	switch (whence) {
 		case SEEK_END:
-		    /* ×îÖÕÆ«ÒÆµÈÓÚÎÄ¼şµÄ´óĞ¡¼ÓÉÏÖ¸¶¨µÄÆ«ÒÆÁ¿ */
+		    /* æœ€ç»ˆåç§»ç­‰äºæ–‡ä»¶çš„å¤§å°åŠ ä¸ŠæŒ‡å®šçš„åç§»é‡ */
 			offset += i_size_read(inode);
 			break;
 		case SEEK_CUR:
-		     /* offsetÎª0Ê±£¬²¢²»¸Ä±äµ±Ç°µÄÆ«ÒÆÁ¿£¬¶øÊÇÖ±½Ó·µ»Øµ±Ç°Æ«ÒÆÁ¿ */  
+		     /* offsetä¸º0æ—¶ï¼Œå¹¶ä¸æ”¹å˜å½“å‰çš„åç§»é‡ï¼Œè€Œæ˜¯ç›´æ¥è¿”å›å½“å‰åç§»é‡ */  
 			if (offset == 0) {
 				retval = file->f_pos;
 				goto out;
 			}
-			/* Èôoffset²»Îª0£¬ Ôò×îÖÕÆ«ÒÆµÈÓÚÖ¸¶¨Æ«ÒÆ¼ÓÉÏµ±Ç°Æ«ÒÆ */ 
+			/* è‹¥offsetä¸ä¸º0ï¼Œ åˆ™æœ€ç»ˆåç§»ç­‰äºæŒ‡å®šåç§»åŠ ä¸Šå½“å‰åç§» */ 
 			offset += file->f_pos;
 			break;
 		case SEEK_DATA:
@@ -260,8 +260,8 @@ loff_t default_llseek(struct file *file, loff_t offset, int whence)
 			 * long as offset isn't at the end of the file then the
 			 * offset is data.
 			 */
-			 /* ¶ÔÓÚÒ»°ãÎÄ¼ş£¬Ö»ÒªÖ¸¶¨Æ«ÒÆ²»³¬¹ıÎÄ¼ş´óĞ¡£¬ÄÇÃ´Ö¸  
-                  ¶¨Æ«ÒÆµÄÎ»ÖÃ¾ÍÊÇÊı¾İÎ»ÖÃ */ 
+			 /* å¯¹äºä¸€èˆ¬æ–‡ä»¶ï¼Œåªè¦æŒ‡å®šåç§»ä¸è¶…è¿‡æ–‡ä»¶å¤§å°ï¼Œé‚£ä¹ˆæŒ‡  
+                  å®šåç§»çš„ä½ç½®å°±æ˜¯æ•°æ®ä½ç½® */ 
 			if (offset >= inode->i_size) {
 				retval = -ENXIO;
 				goto out;
@@ -273,8 +273,8 @@ loff_t default_llseek(struct file *file, loff_t offset, int whence)
 			 * as long as offset isn't i_size or larger, return
 			 * i_size.
 			 */
-			 /* Ö»ÒªÖ¸¶¨Æ«ÒÆ²»³¬¹ıÎÄ¼ş´óĞ¡£¬
-			 ÄÇÃ´ÏÂÒ»¸ö¿Õ¶´Î»ÖÃ¾ÍÊÇÎÄ¼şµÄÄ©Î² */ 
+			 /* åªè¦æŒ‡å®šåç§»ä¸è¶…è¿‡æ–‡ä»¶å¤§å°ï¼Œ
+			 é‚£ä¹ˆä¸‹ä¸€ä¸ªç©ºæ´ä½ç½®å°±æ˜¯æ–‡ä»¶çš„æœ«å°¾ */ 
 			if (offset >= inode->i_size) {
 				retval = -ENXIO;
 				goto out;
@@ -283,11 +283,11 @@ loff_t default_llseek(struct file *file, loff_t offset, int whence)
 			break;
 	}
 	retval = -EINVAL;
-	/* ¶ÔÓÚÒ»°ãÎÄ¼şÀ´Ëµ£¬×îÖÕµÄoffset±ØĞë´óÓÚ»òµÈÓÚ0£¬
-	»òÕß¸ÃÎÄ¼şµÄÄ£Ê½ÒªÇóÖ»ÄÜ²úÉúÎŞ·ûºÅµÄÆ«ÒÆÁ¿¡£
-	·ñÔò¾Í»á±¨´í */
+	/* å¯¹äºä¸€èˆ¬æ–‡ä»¶æ¥è¯´ï¼Œæœ€ç»ˆçš„offsetå¿…é¡»å¤§äºæˆ–ç­‰äº0ï¼Œ
+	æˆ–è€…è¯¥æ–‡ä»¶çš„æ¨¡å¼è¦æ±‚åªèƒ½äº§ç”Ÿæ— ç¬¦å·çš„åç§»é‡ã€‚
+	å¦åˆ™å°±ä¼šæŠ¥é”™ */
 	if (offset >= 0 || unsigned_offsets(file)) {
-	/* µ±×îÖÕÆ«ÒÆ²»µÈÓÚµ±Ç°Î»ÖÃÊ±£¬Ôò¸üĞÂÎÄ¼şµÄµ±Ç°Î»ÖÃ */ 
+	/* å½“æœ€ç»ˆåç§»ä¸ç­‰äºå½“å‰ä½ç½®æ—¶ï¼Œåˆ™æ›´æ–°æ–‡ä»¶çš„å½“å‰ä½ç½® */ 
 		if (offset != file->f_pos) {
 			file->f_pos = offset;
 			file->f_version = 0;
@@ -300,17 +300,17 @@ out:
 }
 EXPORT_SYMBOL(default_llseek);
 
-/*¹Ø×¢º¯ÊıÖ¸ÕëfnµÄ¸³Öµ,fnÔÚº¯ÊıÖĞÓĞÈı¸ö¿ÉÄÜµÄÖµ:no_llseek,default_llseekºÍÇı¶¯³ÌĞòÌá¹©µÄllseekÀı³Ì(file->f_op->llseek)*/
+/*å…³æ³¨å‡½æ•°æŒ‡é’ˆfnçš„èµ‹å€¼,fnåœ¨å‡½æ•°ä¸­æœ‰ä¸‰ä¸ªå¯èƒ½çš„å€¼:no_llseek,default_llseekå’Œé©±åŠ¨ç¨‹åºæä¾›çš„llseekä¾‹ç¨‹(file->f_op->llseek)*/
 loff_t vfs_llseek(struct file *file, loff_t offset, int whence)
 {
 	loff_t (*fn)(struct file *, loff_t, int);
 
 	fn = no_llseek;
-	/*Èç¹ûFMODE_LSEEK±êÖ¾Ã»ÓĞÉèÖÃ,×îÖÕµ÷ÓÃµÄÊÇno_llseek,º¯ÊıÖ±½Ó·µ»ØÒ»¸ö´íÎóÂë-ESPIPE
-	 *ÒòÎªÉè±¸ÎÄ¼şÉÏµÄopen²Ù×÷Ä¬ÈÏÊÇÉèÖÃFMODE_LSEEK±êÖ¾µÄ,ËùÓĞÈç¹ûÇı¶¯³ÌĞòÌá¹©ÁË
-	 *llseekÀı³Ì,½«µ÷ÓÃËü,·ñÔòµ÷ÓÃÏµÍ³Ä¬ÈÏµÄdefault_llseek,¸Ãº¯ÊıÍ¨¹ıÖ±½ÓĞŞ¸Ä
-	 *file->f_opsÀ´´ïµ½¶¨Î»ÎÄ¼şµÄÄ¿µÄ.Èç¹ûµ÷ÓÃµ½Çı¶¯Ìá¹©µÄllseekÀı³Ì,Çı¶¯ĞèÒª¸ù¾İ
-	 *ÓÃ»§´«ÈëµÄÆ«ÒÆÖµoffºÍµ÷ÕûµÄÆğÊ¼Î»ÖÃ²ÎÊıÀ´¾ö¶¨Èç¹û¶¨Î»ÎÄ¼ş*/
+	/*å¦‚æœFMODE_LSEEKæ ‡å¿—æ²¡æœ‰è®¾ç½®,æœ€ç»ˆè°ƒç”¨çš„æ˜¯no_llseek,å‡½æ•°ç›´æ¥è¿”å›ä¸€ä¸ªé”™è¯¯ç -ESPIPE
+	 *å› ä¸ºè®¾å¤‡æ–‡ä»¶ä¸Šçš„openæ“ä½œé»˜è®¤æ˜¯è®¾ç½®FMODE_LSEEKæ ‡å¿—çš„,æ‰€æœ‰å¦‚æœé©±åŠ¨ç¨‹åºæä¾›äº†
+	 *llseekä¾‹ç¨‹,å°†è°ƒç”¨å®ƒ,å¦åˆ™è°ƒç”¨ç³»ç»Ÿé»˜è®¤çš„default_llseek,è¯¥å‡½æ•°é€šè¿‡ç›´æ¥ä¿®æ”¹
+	 *file->f_opsæ¥è¾¾åˆ°å®šä½æ–‡ä»¶çš„ç›®çš„.å¦‚æœè°ƒç”¨åˆ°é©±åŠ¨æä¾›çš„llseekä¾‹ç¨‹,é©±åŠ¨éœ€è¦æ ¹æ®
+	 *ç”¨æˆ·ä¼ å…¥çš„åç§»å€¼offå’Œè°ƒæ•´çš„èµ·å§‹ä½ç½®å‚æ•°æ¥å†³å®šå¦‚æœå®šä½æ–‡ä»¶*/
 	if (file->f_mode & FMODE_LSEEK) {
 		if (file->f_op->llseek)
 			fn = file->f_op->llseek;
@@ -328,18 +328,18 @@ SYSCALL_DEFINE3(lseek, unsigned int, fd, off_t, offset, unsigned int, whence)
 
 	retval = -EINVAL;
 	/*
-	Ó¦ÓÃ³ÌĞòµ÷ÓÃlseekÊ±,¶ÔÓÚorigin²ÎÊıÖ»ÓĞÈı¸öÑ¡ÔñSEEK_SET,SEEK_CUR,SEEK_END,
-	ÕâÀïµÄ¼ì²é¾ÍÊÇÈ·±£origin²ÎÊıµÄÓĞĞ§ĞÔ
+	åº”ç”¨ç¨‹åºè°ƒç”¨lseekæ—¶,å¯¹äºoriginå‚æ•°åªæœ‰ä¸‰ä¸ªé€‰æ‹©SEEK_SET,SEEK_CUR,SEEK_END,
+	è¿™é‡Œçš„æ£€æŸ¥å°±æ˜¯ç¡®ä¿originå‚æ•°çš„æœ‰æ•ˆæ€§
 	*/
 	if (whence <= SEEK_MAX) {
 		loff_t res = vfs_llseek(f.file, offset, whence);
-	/* ÏÈÊ¹ÓÃresÀ´¸øretval¸³Öµ£¬È»ºóÔÙ´ÎÅĞ¶Ïres  ÊÇ·ñÓëretvalÏàµÈ¡£
-	    ÎªÊ²Ã´»áÓĞÕâÑùµÄÂß¼­ÄØ£¿Ê²Ã´Ê±ºòÁ½Õß»á²»ÏàµÈÄØ£¿  
-          Ö»ÓĞÔÚretvalÓëresµÄÎ»Êı²»ÏàµÈµÄÇé¿öÏÂ¡£  
-          retvalµÄÀàĞÍÊÇoff_t->__kernel_off_t->long£»  
-          ¶øresµÄÀàĞÍÊÇloff_t->__kernel_off_t->long long;  
-          ÔÚ32Î»»úÉÏ£¬Ç°ÕßÊÇ32Î»£¬¶øºóÕßÊÇ64Î»¡£µ±resµÄÖµ³¬¹ıÁËretval  
-          µÄ·¶Î§Ê±£¬Á½Õß½«»á²»µÈ¡£¼´Êµ¼ÊÆ«ÒÆÁ¿³¬¹ıÁËlongÀàĞÍµÄ±íÊ¾·¶Î§¡£  
+	/* å…ˆä½¿ç”¨resæ¥ç»™retvalèµ‹å€¼ï¼Œç„¶åå†æ¬¡åˆ¤æ–­res  æ˜¯å¦ä¸retvalç›¸ç­‰ã€‚
+	    ä¸ºä»€ä¹ˆä¼šæœ‰è¿™æ ·çš„é€»è¾‘å‘¢ï¼Ÿä»€ä¹ˆæ—¶å€™ä¸¤è€…ä¼šä¸ç›¸ç­‰å‘¢ï¼Ÿ  
+          åªæœ‰åœ¨retvalä¸resçš„ä½æ•°ä¸ç›¸ç­‰çš„æƒ…å†µä¸‹ã€‚  
+          retvalçš„ç±»å‹æ˜¯off_t->__kernel_off_t->longï¼›  
+          è€Œresçš„ç±»å‹æ˜¯loff_t->__kernel_off_t->long long;  
+          åœ¨32ä½æœºä¸Šï¼Œå‰è€…æ˜¯32ä½ï¼Œè€Œåè€…æ˜¯64ä½ã€‚å½“resçš„å€¼è¶…è¿‡äº†retval  
+          çš„èŒƒå›´æ—¶ï¼Œä¸¤è€…å°†ä¼šä¸ç­‰ã€‚å³å®é™…åç§»é‡è¶…è¿‡äº†longç±»å‹çš„è¡¨ç¤ºèŒƒå›´ã€‚  
        */ 
 		retval = res;
 		if (res != (loff_t)retval)
@@ -478,8 +478,8 @@ ssize_t __vfs_read(struct file *file, char __user *buf, size_t count,
 		   loff_t *pos)
 {
     /*  
-            Èç¹û¶¨Òåread²Ù×÷£¬ÔòÖ´ĞĞ¶¨ÒåµÄread²Ù×÷  
-            Èç¹ûÃ»ÓĞ¶¨Òåread²Ù×÷£¬Ôòµ÷ÓÃdo_sync_read¡ªÆäÀûÓÃÒì²½aio_readÀ´Íê³ÉÍ¬²½µÄread²Ù×÷¡£  
+            å¦‚æœå®šä¹‰readæ“ä½œï¼Œåˆ™æ‰§è¡Œå®šä¹‰çš„readæ“ä½œ  
+            å¦‚æœæ²¡æœ‰å®šä¹‰readæ“ä½œï¼Œåˆ™è°ƒç”¨do_sync_readâ€”å…¶åˆ©ç”¨å¼‚æ­¥aio_readæ¥å®ŒæˆåŒæ­¥çš„readæ“ä½œã€‚  
       */  
 	if (file->f_op->read)
 		return file->f_op->read(file, buf, count, pos);
@@ -493,28 +493,28 @@ EXPORT_SYMBOL(__vfs_read);
 ssize_t vfs_read(struct file *file, char __user *buf, size_t count, loff_t *pos)
 {
 	ssize_t ret;
-    /* ¼ì²éÎÄ¼şÊÇ·ñÎª¶ÁÈ¡´ò¿ª */
+    /* æ£€æŸ¥æ–‡ä»¶æ˜¯å¦ä¸ºè¯»å–æ‰“å¼€ */
 	if (!(file->f_mode & FMODE_READ))
 		return -EBADF;
-	/* ¼ì²éÎÄ¼şÊÇ·ñÖ§³Ö¶ÁÈ¡²Ù×÷ */
+	/* æ£€æŸ¥æ–‡ä»¶æ˜¯å¦æ”¯æŒè¯»å–æ“ä½œ */
 	if (!(file->f_mode & FMODE_CAN_READ))
 		return -EINVAL;
-	/* ¼ì²éÓÃ»§´«µİµÄ²ÎÊıbufµÄµØÖ·ÊÇ·ñ¿ÉĞ´ */
+	/* æ£€æŸ¥ç”¨æˆ·ä¼ é€’çš„å‚æ•°bufçš„åœ°å€æ˜¯å¦å¯å†™ */
 	if (unlikely(!access_ok(VERIFY_WRITE, buf, count)))
 		return -EFAULT;
-    /* ¼ì²éÒª¶ÁÈ¡µÄÎÄ¼ş·¶Î§Êµ¼Ê¿É¶ÁÈ¡µÄ×Ö½ÚÊı */
+    /* æ£€æŸ¥è¦è¯»å–çš„æ–‡ä»¶èŒƒå›´å®é™…å¯è¯»å–çš„å­—èŠ‚æ•° */
 	ret = rw_verify_area(READ, file, pos, count);
 	if (!ret) {
 		if (count > MAX_RW_COUNT)
 			count =  MAX_RW_COUNT;
 		ret = __vfs_read(file, buf, count, pos);
 		if (ret > 0) {
-		    /* ¶ÁÈ¡ÁËÒ»¶¨µÄ×Ö½ÚÊı£¬ ½øĞĞÍ¨Öª²Ù×÷ */
+		    /* è¯»å–äº†ä¸€å®šçš„å­—èŠ‚æ•°ï¼Œ è¿›è¡Œé€šçŸ¥æ“ä½œ */
 			fsnotify_access(file);
-			/* Ôö¼Ó½ø³Ì¶ÁÈ¡×Ö½ÚµÄÍ³¼Æ¼ÆÊı */
+			/* å¢åŠ è¿›ç¨‹è¯»å–å­—èŠ‚çš„ç»Ÿè®¡è®¡æ•° */
 			add_rchar(current, ret);
 		}
-		 /* Ôö¼Ó½ø³ÌÏµÍ³µ÷ÓÃµÄÍ³¼Æ¼ÆÊı */
+		 /* å¢åŠ è¿›ç¨‹ç³»ç»Ÿè°ƒç”¨çš„ç»Ÿè®¡è®¡æ•° */
 		inc_syscr(current);
 	}
 
@@ -545,9 +545,9 @@ ssize_t __vfs_write(struct file *file, const char __user *p, size_t count,
 		    loff_t *pos)
 {
     /*  
-           Èç¹û¶¨Òåwrite²Ù×÷£¬ÔòÖ´ĞĞ¶¨ÒåµÄwrite²Ù×÷  
-           Èç¹ûÃ»ÓĞ¶¨Òåwrite²Ù×÷£¬Ôòµ÷ÓÃdo_sync_write¡ªÆäÀûÓÃÒì²½  
-           aio_writeÀ´Íê³ÉÍ¬²½µÄwrite²Ù×÷  
+           å¦‚æœå®šä¹‰writeæ“ä½œï¼Œåˆ™æ‰§è¡Œå®šä¹‰çš„writeæ“ä½œ  
+           å¦‚æœæ²¡æœ‰å®šä¹‰writeæ“ä½œï¼Œåˆ™è°ƒç”¨do_sync_writeâ€”å…¶åˆ©ç”¨å¼‚æ­¥  
+           aio_writeæ¥å®ŒæˆåŒæ­¥çš„writeæ“ä½œ  
            */ 
 
 	if (file->f_op->write)
@@ -588,17 +588,17 @@ EXPORT_SYMBOL(__kernel_write);
 ssize_t vfs_write(struct file *file, const char __user *buf, size_t count, loff_t *pos)
 {
 	ssize_t ret;
-    /* ¼ì²éÎÄ¼şÊÇ·ñÎªĞ´Èë´ò¿ª */ 
+    /* æ£€æŸ¥æ–‡ä»¶æ˜¯å¦ä¸ºå†™å…¥æ‰“å¼€ */ 
 	if (!(file->f_mode & FMODE_WRITE))
 		return -EBADF;
 	if (!(file->f_mode & FMODE_CAN_WRITE))
 		return -EINVAL;
-    /* ¼ì²éÓÃ»§¸ø¶¨µÄµØÖ··¶Î§ÊÇ·ñ¿É¶ÁÈ¡ */  
+    /* æ£€æŸ¥ç”¨æˆ·ç»™å®šçš„åœ°å€èŒƒå›´æ˜¯å¦å¯è¯»å– */  
 	if (unlikely(!access_ok(VERIFY_READ, buf, count)))
 		return -EFAULT;
     /*  
-        ÑéÖ¤ÎÄ¼ş´ÓposÆğÊ¼ÊÇ·ñ¿ÉÒÔĞ´Èëcount¸ö×Ö½ÚÊı  
-        ²¢·µ»Ø¿ÉÒÔĞ´ÈëµÄ×Ö½ÚÊı  
+        éªŒè¯æ–‡ä»¶ä»posèµ·å§‹æ˜¯å¦å¯ä»¥å†™å…¥countä¸ªå­—èŠ‚æ•°  
+        å¹¶è¿”å›å¯ä»¥å†™å…¥çš„å­—èŠ‚æ•°  
         */ 
 	ret = rw_verify_area(WRITE, file, pos, count);
 	if (!ret) {
@@ -607,12 +607,12 @@ ssize_t vfs_write(struct file *file, const char __user *buf, size_t count, loff_
 		file_start_write(file);
 		ret = __vfs_write(file, buf, count, pos);
 		if (ret > 0) {
-		    /* Ğ´ÈëÁËÒ»¶¨µÄ×Ö½ÚÊı£¬ ½øĞĞÍ¨Öª²Ù×÷ */ 
+		    /* å†™å…¥äº†ä¸€å®šçš„å­—èŠ‚æ•°ï¼Œ è¿›è¡Œé€šçŸ¥æ“ä½œ */ 
 			fsnotify_modify(file);
-			/* Ôö¼Ó½ø³Ì¶ÁÈ¡×Ö½ÚµÄÍ³¼Æ¼ÆÊı */ 
+			/* å¢åŠ è¿›ç¨‹è¯»å–å­—èŠ‚çš„ç»Ÿè®¡è®¡æ•° */ 
 			add_wchar(current, ret);
 		}
-		/* Ôö¼Ó½ø³ÌÏµÍ³µ÷ÓÃµÄÍ³¼Æ¼ÆÊı */ 
+		/* å¢åŠ è¿›ç¨‹ç³»ç»Ÿè°ƒç”¨çš„ç»Ÿè®¡è®¡æ•° */ 
 		inc_syscw(current);
 		file_end_write(file);
 	}
@@ -636,14 +636,14 @@ SYSCALL_DEFINE3(read, unsigned int, fd, char __user *, buf, size_t, count)
 {
 	struct fd f = fdget_pos(fd);
 	ssize_t ret = -EBADF;
-    /* Í¨¹ıÎÄ¼şÃèÊö·ûfdµÃµ½¹ÜÀí½á¹¹file */
+    /* é€šè¿‡æ–‡ä»¶æè¿°ç¬¦fdå¾—åˆ°ç®¡ç†ç»“æ„file */
 	if (f.file) {
-	/* µÃµ½ÎÄ¼şµÄµ±Ç°Æ«ÒÆÁ¿ */  
+	/* å¾—åˆ°æ–‡ä»¶çš„å½“å‰åç§»é‡ */  
 		loff_t pos = file_pos_read(f.file);
-    /* ÀûÓÃvfs½øĞĞÕæÕıµÄread */
+    /* åˆ©ç”¨vfsè¿›è¡ŒçœŸæ­£çš„read */
 		ret = vfs_read(f.file, buf, count, &pos);
 		if (ret >= 0)
-		/* ¸üĞÂÎÄ¼şÆ«ÒÆÁ¿ */  
+		/* æ›´æ–°æ–‡ä»¶åç§»é‡ */  
 			file_pos_write(f.file, pos);
 		fdput_pos(f);
 	}
@@ -657,12 +657,12 @@ SYSCALL_DEFINE3(write, unsigned int, fd, const char __user *, buf,
 	ssize_t ret = -EBADF;
 
 	if (f.file) {
-	    /* µÃµ½µ±Ç°µÄÎÄ¼şÆ«ÒÆ */  
+	    /* å¾—åˆ°å½“å‰çš„æ–‡ä»¶åç§» */  
 		loff_t pos = file_pos_read(f.file);
-		/* ÀûÓÃVFSĞ´Èë */ 
+		/* åˆ©ç”¨VFSå†™å…¥ */ 
 		ret = vfs_write(f.file, buf, count, &pos);
 		if (ret >= 0)
-		    /* ¸üĞÂÎÄ¼şÆ«ÒÆÁ¿ */ 
+		    /* æ›´æ–°æ–‡ä»¶åç§»é‡ */ 
 			file_pos_write(f.file, pos);
 		fdput_pos(f);
 	}

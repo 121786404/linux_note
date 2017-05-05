@@ -104,7 +104,7 @@ int memcpy_toiovec(struct iovec *iov, unsigned char *kdata, int len)
  *	Note: this modifies the original iovec.
  */
 
-/* ½«ÓÃ»§¿Õ¼äÐèÒª·¢ËÍµÄÊý¾Ý¿½±´µ½ÄÚºË¿Õ¼äÖÐµÄskbÖÐ */
+/* å°†ç”¨æˆ·ç©ºé—´éœ€è¦å‘é€çš„æ•°æ®æ‹·è´åˆ°å†…æ ¸ç©ºé—´ä¸­çš„skbä¸­ */
 int memcpy_fromiovec(unsigned char *kdata, struct iovec *iov, int len)
 {
 	while (len > 0) {

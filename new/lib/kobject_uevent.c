@@ -29,8 +29,8 @@
 
 u64 uevent_seqnum;
 #ifdef CONFIG_UEVENT_HELPER
-/*Í¨¹ıµ÷ÓÃcall_usermodehelperÀ´´ïµ½´ÓÄÚºË¿Õ¼äÔËĞĞÒ»¸öÓÃ»§¿Õ¼ä½ø³ÌµÄÄ¿µÄ,ÓÃ»§¿Õ¼ä½ø³ÌµÄ
- *¶ş½øÖÆÎÄ¼şÓÉuevent_helperÌá¹©,¸Ã±äÁ¿ÊÇÒ»×Ö·ûÊı×é*/
+/*é€šè¿‡è°ƒç”¨call_usermodehelperæ¥è¾¾åˆ°ä»å†…æ ¸ç©ºé—´è¿è¡Œä¸€ä¸ªç”¨æˆ·ç©ºé—´è¿›ç¨‹çš„ç›®çš„,ç”¨æˆ·ç©ºé—´è¿›ç¨‹çš„
+ *äºŒè¿›åˆ¶æ–‡ä»¶ç”±uevent_helperæä¾›,è¯¥å˜é‡æ˜¯ä¸€å­—ç¬¦æ•°ç»„*/
 char uevent_helper[UEVENT_HELPER_PATH_LEN] = CONFIG_UEVENT_HELPER_PATH;
 #endif
 #ifdef CONFIG_NET
@@ -163,7 +163,7 @@ static void cleanup_uevent_env(struct subprocess_info *info)
  * Returns 0 if kobject_uevent_env() is completed with success or the
  * corresponding error when it fails.
  */
- /*kobject_ueventµÄºËĞÄ¹¦ÄÜº¯Êı*/
+ /*kobject_ueventçš„æ ¸å¿ƒåŠŸèƒ½å‡½æ•°*/
 int kobject_uevent_env(struct kobject *kobj, enum kobject_action action,
 		       char *envp_ext[])
 {
@@ -184,12 +184,12 @@ int kobject_uevent_env(struct kobject *kobj, enum kobject_action action,
 		 kobject_name(kobj), kobj, __func__);
 
 	/* search the kset we belong to */
-	/*´Ë´¦µÄwhileÑ­»·ÓÃÀ´²éÕÒkobjËùÁ¥ÊôµÄ×î¶¥²ãkset*/
+	/*æ­¤å¤„çš„whileå¾ªç¯ç”¨æ¥æŸ¥æ‰¾kobjæ‰€éš¶å±çš„æœ€é¡¶å±‚kset*/
 	top_kobj = kobj;
 	while (!top_kobj->kset && top_kobj->parent)
 		top_kobj = top_kobj->parent;
 
-	/*Èç¹ûµ±Ç°kobjÃ»ÓĞÁ¥ÊôµÄkset,ÄÇÃ´Ëü½«²»ÄÜÊ¹ÓÃuevent»úÖÆ*/
+	/*å¦‚æœå½“å‰kobjæ²¡æœ‰éš¶å±çš„kset,é‚£ä¹ˆå®ƒå°†ä¸èƒ½ä½¿ç”¨ueventæœºåˆ¶*/
 	if (!top_kobj->kset) {
 		pr_debug("kobject: '%s' (%p): %s: attempted to send uevent "
 			 "without kset!\n", kobject_name(kobj), kobj,
@@ -197,12 +197,12 @@ int kobject_uevent_env(struct kobject *kobj, enum kobject_action action,
 		return -EINVAL;
 	}
 
-	/*µÃµ½kobjËùÊôµÄ¶¥²ãksetµÄuevent²Ù×÷¼¯¶ÔÏóuevent_ops*/
+	/*å¾—åˆ°kobjæ‰€å±çš„é¡¶å±‚ksetçš„ueventæ“ä½œé›†å¯¹è±¡uevent_ops*/
 	kset = top_kobj->kset;
 	uevent_ops = kset->uevent_ops;
 
 	/* skip the event, if uevent_suppress is set*/
-	/*Èç¹ûkobj->uevent_suppress=1±íÃ÷¸Ãkobj²»Ï£ÍûÊ¹ÓÃuevent»úÖÆ*/
+	/*å¦‚æœkobj->uevent_suppress=1è¡¨æ˜è¯¥kobjä¸å¸Œæœ›ä½¿ç”¨ueventæœºåˆ¶*/
 	if (kobj->uevent_suppress) {
 		pr_debug("kobject: '%s' (%p): %s: uevent_suppress "
 				 "caused the event to drop!\n",
@@ -210,7 +210,7 @@ int kobject_uevent_env(struct kobject *kobj, enum kobject_action action,
 		return 0;
 	}
 	/* skip the event, if the filter returns zero. */
-	/*Ê×ÏÈµ÷ÓÃfilterº¯Êı,Èç¹ûº¯Êı·µ»Ø0,±íÃ÷kobjÏ£Íû·¢ËÍµÄeventÏûÏ¢±»¶¥²ãkset¹ıÂËµôÁË*/
+	/*é¦–å…ˆè°ƒç”¨filterå‡½æ•°,å¦‚æœå‡½æ•°è¿”å›0,è¡¨æ˜kobjå¸Œæœ›å‘é€çš„eventæ¶ˆæ¯è¢«é¡¶å±‚ksetè¿‡æ»¤æ‰äº†*/
 	if (uevent_ops && uevent_ops->filter)
 		if (!uevent_ops->filter(kset, kobj)) {
 			pr_debug("kobject: '%s' (%p): %s: filter function "
@@ -231,7 +231,7 @@ int kobject_uevent_env(struct kobject *kobj, enum kobject_action action,
 		return 0;
 	}
 
-	/*×¼±¸Ê¹ÓÃuevent»úÖÆÏòÓÃ»§¿Õ¼ä·¢ËÍeventÏûÏ¢,Í¨¹ıadd_uevent_varÌí¼Ó»·¾³±äÁ¿ĞÅÏ¢*/
+	/*å‡†å¤‡ä½¿ç”¨ueventæœºåˆ¶å‘ç”¨æˆ·ç©ºé—´å‘é€eventæ¶ˆæ¯,é€šè¿‡add_uevent_varæ·»åŠ ç¯å¢ƒå˜é‡ä¿¡æ¯*/
 	/* environment buffer */
 	env = kzalloc(sizeof(struct kobj_uevent_env), GFP_KERNEL);
 	if (!env)
@@ -264,11 +264,11 @@ int kobject_uevent_env(struct kobject *kobj, enum kobject_action action,
 		}
 	}
 
-	/*´Ë´¦ÔÚÏòÓÃ»§¿Õ¼ä·¢ËÍeventÏûÏ¢Ö®Ç°,¸økset×îºóÒ»´Î»ú»áÒÔÍê³ÉÒ»Ğ©Ë½ÈËÊÂÇé*/
+	/*æ­¤å¤„åœ¨å‘ç”¨æˆ·ç©ºé—´å‘é€eventæ¶ˆæ¯ä¹‹å‰,ç»™ksetæœ€åä¸€æ¬¡æœºä¼šä»¥å®Œæˆä¸€äº›ç§äººäº‹æƒ…*/
 	/* let the kset specific function add its stuff */
 	if (uevent_ops && uevent_ops->uevent) {
-		/*´¦ÀíÍê»·¾³±äÁ¿Ö®ºó,µ÷ÓÃkset¶ÔÏóµÄuevent_ops²Ù×÷¼¯ÖĞµÄueventº¯Êı,ÕâÊÇ
-		 *ÄÚºË¸³ÓèksetÍ¨¹ı¸Ãº¯ÊıÍê³É×Ô¼ºÌØ¶¨¹¦ÄÜµÄ×îºóÒ»´Î»ú»á*/
+		/*å¤„ç†å®Œç¯å¢ƒå˜é‡ä¹‹å,è°ƒç”¨ksetå¯¹è±¡çš„uevent_opsæ“ä½œé›†ä¸­çš„ueventå‡½æ•°,è¿™æ˜¯
+		 *å†…æ ¸èµ‹äºˆkseté€šè¿‡è¯¥å‡½æ•°å®Œæˆè‡ªå·±ç‰¹å®šåŠŸèƒ½çš„æœ€åä¸€æ¬¡æœºä¼š*/
 		retval = uevent_ops->uevent(kset, kobj, env);
 		if (retval) {
 			pr_debug("kobject: '%s' (%p): %s: uevent() returned "
@@ -296,8 +296,8 @@ int kobject_uevent_env(struct kobject *kobj, enum kobject_action action,
 		mutex_unlock(&uevent_sock_mutex);
 		goto exit;
 	}
-/*Èç¹ûÅäÖÃÁËCONFIG_NETºê,±íÃ÷ÄÚºË´òËãÊ¹ÓÃnetlink»úÖÆÊµÏÖueventÏûÏ¢µÄ·¢ËÍ,Õâ²¿·Ö´úÂëÍ¨¹ı
- *netlinkµÄ·½Ê½ÏòÓÃ»§¿Õ¼ä¹ã²¥µ±Ç°kset¶ÔÏóÖĞµÄueventÏûÏ¢*/
+/*å¦‚æœé…ç½®äº†CONFIG_NETå®,è¡¨æ˜å†…æ ¸æ‰“ç®—ä½¿ç”¨netlinkæœºåˆ¶å®ç°ueventæ¶ˆæ¯çš„å‘é€,è¿™éƒ¨åˆ†ä»£ç é€šè¿‡
+ *netlinkçš„æ–¹å¼å‘ç”¨æˆ·ç©ºé—´å¹¿æ’­å½“å‰ksetå¯¹è±¡ä¸­çš„ueventæ¶ˆæ¯*/
 #if defined(CONFIG_NET)
 	/* send netlink message */
 	list_for_each_entry(ue_sk, &uevent_sock_list, list) {
@@ -340,7 +340,7 @@ int kobject_uevent_env(struct kobject *kobj, enum kobject_action action,
 	mutex_unlock(&uevent_sock_mutex);
 
 #ifdef CONFIG_UEVENT_HELPER
-/*Ê¹ÓÃuevent_helper»úÖÆÊµÏÖuevent*/
+/*ä½¿ç”¨uevent_helperæœºåˆ¶å®ç°uevent*/
 	/* call uevent_helper, usually only enabled during early boot */
 	if (uevent_helper[0] && !kobj_usermode_filter(kobj)) {
 		struct subprocess_info *info;
@@ -357,8 +357,8 @@ int kobject_uevent_env(struct kobject *kobj, enum kobject_action action,
 			goto exit;
 
 		retval = -ENOMEM;
-				/*Í¨¹ıµ÷ÓÃcall_usermodehelperÀ´´ïµ½´ÓÄÚºË¿Õ¼äÔËĞĞÒ»¸öÓÃ»§¿Õ¼ä½ø³ÌµÄÄ¿µÄ,
-		 *ÓÃ»§¿Õ¼ä½ø³ÌµÄ¶ş½øÖÆÎÄ¼şÓÉuevent_helperÌá¹©,¸Ã±äÁ¿ÊÇÒ»×Ö·ûÊı×é*/
+				/*é€šè¿‡è°ƒç”¨call_usermodehelperæ¥è¾¾åˆ°ä»å†…æ ¸ç©ºé—´è¿è¡Œä¸€ä¸ªç”¨æˆ·ç©ºé—´è¿›ç¨‹çš„ç›®çš„,
+		 *ç”¨æˆ·ç©ºé—´è¿›ç¨‹çš„äºŒè¿›åˆ¶æ–‡ä»¶ç”±uevent_helperæä¾›,è¯¥å˜é‡æ˜¯ä¸€å­—ç¬¦æ•°ç»„*/
 		info = call_usermodehelper_setup(env->argv[0], env->argv,
 						 env->envp, GFP_KERNEL,
 						 NULL, cleanup_uevent_env, env);
@@ -385,12 +385,12 @@ EXPORT_SYMBOL_GPL(kobject_uevent_env);
  * Returns 0 if kobject_uevent() is completed with success or the
  * corresponding error when it fails.
  */
-/*ÈÈ²å°ÎÔÚÄÚºËÖĞÍ¨¹ıkobject_ueventº¯ÊıÀ´ÊµÏÖ,ËüÍ¨¹ı·¢ËÍÒ»¸öueventÏûÏ¢ºÍµ÷ÓÃ
- *call_usermodulehelperÀ´ÓëÓÃ»§Ãû³Æ¿Õ¼ä½øĞĞ¹µÍ¨.kobject_ueventËùÊµÏÖµÄ¹¦ÄÜºÍlinuxÏµÍ³ÖĞ
- *ÓÃÒÔÊµÏÖÈÈ²å°ÎµÄÌØĞÔÏ¢Ï¢Ïà¹Ø,ËüÊÇudevºÍ/sbin/hotplugµÈ¹¤¾ßÀµÒÔ¹¤×÷µÄ»ùÊ¯*/
+/*çƒ­æ’æ‹”åœ¨å†…æ ¸ä¸­é€šè¿‡kobject_ueventå‡½æ•°æ¥å®ç°,å®ƒé€šè¿‡å‘é€ä¸€ä¸ªueventæ¶ˆæ¯å’Œè°ƒç”¨
+ *call_usermodulehelperæ¥ä¸ç”¨æˆ·åç§°ç©ºé—´è¿›è¡Œæ²Ÿé€š.kobject_ueventæ‰€å®ç°çš„åŠŸèƒ½å’Œlinuxç³»ç»Ÿä¸­
+ *ç”¨ä»¥å®ç°çƒ­æ’æ‹”çš„ç‰¹æ€§æ¯æ¯ç›¸å…³,å®ƒæ˜¯udevå’Œ/sbin/hotplugç­‰å·¥å…·èµ–ä»¥å·¥ä½œçš„åŸºçŸ³*/
 int kobject_uevent(struct kobject *kobj, enum kobject_action action)
 {
-	/*Ã¶¾ÙĞÍ±äÁ¿,¶¨ÒåÁËkset¶ÔÏóµÄÒ»Ğ©×´Ì¬±ä»¯,´Ë´¦Ê¹ÓÃµÄÊÇKOBJ_ADD*/
+	/*æšä¸¾å‹å˜é‡,å®šä¹‰äº†ksetå¯¹è±¡çš„ä¸€äº›çŠ¶æ€å˜åŒ–,æ­¤å¤„ä½¿ç”¨çš„æ˜¯KOBJ_ADD*/
 	return kobject_uevent_env(kobj, action, NULL);
 }
 EXPORT_SYMBOL_GPL(kobject_uevent);

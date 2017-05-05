@@ -72,7 +72,7 @@ static inline struct page *__page_cache_alloc(gfp_t gfp)
 #endif
 
 /**
- * ·ÖÅäÒ»¸öÒ³Ãæ£¬×÷ÎªÒ³»º´æ
+ * åˆ†é…ä¸€ä¸ªé¡µé¢ï¼Œä½œä¸ºé¡µç¼“å­˜
  */
 static inline struct page *page_cache_alloc(struct address_space *x)
 {
@@ -198,7 +198,7 @@ extern void FASTCALL(wait_on_page_bit(struct page *page, int bit_nr));
  * go away during the wait..
  */
 /**
- * µÈ´ıÒ³Ãæ±»³É¹¦Ëø¶¨
+ * ç­‰å¾…é¡µé¢è¢«æˆåŠŸé”å®š
  */
 static inline void wait_on_page_locked(struct page *page)
 {
@@ -210,7 +210,7 @@ static inline void wait_on_page_locked(struct page *page)
  * Wait for a page to complete writeback
  */
 /**
- * µÈ´ıÒ³Ãæ±»³É¹¦»ØĞ´
+ * ç­‰å¾…é¡µé¢è¢«æˆåŠŸå›å†™
  */
 static inline void wait_on_page_writeback(struct page *page)
 {

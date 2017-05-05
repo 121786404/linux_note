@@ -30,7 +30,7 @@ pick_next_task_idle(struct rq *rq, struct task_struct *prev, struct rq_flags *rf
 	update_idle_core(rq);
 	schedstat_inc(rq->sched_goidle);
 /*
-    ¿ÉÒÔ¿´µ½¾ÍÊÇ·µ»ØrqÖĞidle½ø³Ì
+    å¯ä»¥çœ‹åˆ°å°±æ˜¯è¿”å›rqä¸­idleè¿›ç¨‹
 */
 	return rq->idle; 
 }
@@ -83,10 +83,10 @@ static void update_curr_idle(struct rq *rq)
 
 /*
  * Simple, special scheduling class for the per-CPU idle tasks:
- ²ÉÓÃCFSËã·¨µ÷¶Èidle½ø³Ì, Ã¿¸öcupµÄµÚÒ»¸öpid=0Ïß³Ì£º
- swapper£¬ÊÇÒ»¸ö¾²Ì¬Ïß³Ì¡£
- µ÷¶ÈÀàÊôÓÚ£ºidel_sched_class£¬ËùÒÔÔÚpsÀïÃæÊÇ¿´²»µ½µÄ¡£
- Ò»°ãÔËĞĞÔÚ¿ª»ú¹ı³ÌºÍcpuÒì³£µÄÊ±ºò×ödump
+ é‡‡ç”¨CFSç®—æ³•è°ƒåº¦idleè¿›ç¨‹, æ¯ä¸ªcupçš„ç¬¬ä¸€ä¸ªpid=0çº¿ç¨‹ï¼š
+ swapperï¼Œæ˜¯ä¸€ä¸ªé™æ€çº¿ç¨‹ã€‚
+ è°ƒåº¦ç±»å±äºï¼šidel_sched_classï¼Œæ‰€ä»¥åœ¨psé‡Œé¢æ˜¯çœ‹ä¸åˆ°çš„ã€‚
+ ä¸€èˆ¬è¿è¡Œåœ¨å¼€æœºè¿‡ç¨‹å’Œcpuå¼‚å¸¸çš„æ—¶å€™åšdump
  */
 const struct sched_class idle_sched_class = {
 	/* .next is NULL */

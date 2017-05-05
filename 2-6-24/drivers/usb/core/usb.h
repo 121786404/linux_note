@@ -96,7 +96,7 @@ extern struct device_type usb_if_device_type;
 extern struct usb_device_driver usb_generic_driver;
 
 /**
- * ÅĞ¶ÏÒ»¸öUSB¶ÔÏóÊÇUSBÉè±¸»¹ÊÇUSB½Ó¿Ú¡£
+ * åˆ¤æ–­ä¸€ä¸ªUSBå¯¹è±¡æ˜¯USBè®¾å¤‡è¿˜æ˜¯USBæ¥å£ã€‚
  */
 static inline int is_usb_device(const struct device *dev)
 {

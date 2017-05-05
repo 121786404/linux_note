@@ -20,7 +20,7 @@ static inline const char *plural(int n)
 }
 
 /**
- * ²éÕÒÏÂÒ»¸öÃèÊö·û¡£
+ * æŸ¥æ‰¾ä¸‹ä¸€ä¸ªæè¿°ç¬¦ã€‚
  */
 static int find_next_descriptor(unsigned char *buffer, int size,
     int dt1, int dt2, int *num_skipped)
@@ -47,7 +47,7 @@ static int find_next_descriptor(unsigned char *buffer, int size,
 }
 
 /**
- * ½âÎö¶ËµãÃèÊö·û¡£
+ * è§£æç«¯ç‚¹æè¿°ç¬¦ã€‚
  */
 static int usb_parse_endpoint(struct device *ddev, int cfgno, int inum,
     int asnum, struct usb_host_interface *ifp, int num_ep,
@@ -63,7 +63,7 @@ static int usb_parse_endpoint(struct device *ddev, int cfgno, int inum,
 	size -= d->bLength;
 
 	/**
-	 * Á½ÖÖ²»Í¬ÀàĞÍµÄ¶Ëµã£¬Æä³¤¶È²»Ì«Ò»Ñù¡£
+	 * ä¸¤ç§ä¸åŒç±»å‹çš„ç«¯ç‚¹ï¼Œå…¶é•¿åº¦ä¸å¤ªä¸€æ ·ã€‚
 	 */
 	if (d->bLength >= USB_DT_ENDPOINT_AUDIO_SIZE)
 		n = USB_DT_ENDPOINT_AUDIO_SIZE;
@@ -78,8 +78,8 @@ static int usb_parse_endpoint(struct device *ddev, int cfgno, int inum,
 
 	i = d->bEndpointAddress & ~USB_ENDPOINT_DIR_MASK;
 	/**
-	 * ¶ËµãºÅ²»ÄÜÎª0£¬ÒòÎª¶Ëµã0±È½ÏÌØÊâ£¬Ã»ÓĞÃèÊö·û¡£
-	 * Ò²²»ÄÜ´óÓÚµÈÓÚ16£¬ÒòÎª×î¶àÖ»ÄÜÓĞ16¸ö¶Ëµã¡£
+	 * ç«¯ç‚¹å·ä¸èƒ½ä¸º0ï¼Œå› ä¸ºç«¯ç‚¹0æ¯”è¾ƒç‰¹æ®Šï¼Œæ²¡æœ‰æè¿°ç¬¦ã€‚
+	 * ä¹Ÿä¸èƒ½å¤§äºç­‰äº16ï¼Œå› ä¸ºæœ€å¤šåªèƒ½æœ‰16ä¸ªç«¯ç‚¹ã€‚
 	 */
 	if (i >= 16 || i == 0) {
 		dev_warn(ddev, "config %d interface %d altsetting %d has an "
@@ -90,34 +90,34 @@ static int usb_parse_endpoint(struct device *ddev, int cfgno, int inum,
 
 	/* Only store as many endpoints as we have room for */
 	/**
-	 * ×î³õbNumEndpointsÎª0£¬ÕâÀïÊÇËùÓĞÒÑ¾­½âÎöµÄ¶Ëµã¡£
+	 * æœ€åˆbNumEndpointsä¸º0ï¼Œè¿™é‡Œæ˜¯æ‰€æœ‰å·²ç»è§£æçš„ç«¯ç‚¹ã€‚
 	 */
 	if (ifp->desc.bNumEndpoints >= num_ep)
 		goto skip_to_next_endpoint_or_interface_descriptor;
 
 	/**
-	 * ¶ËµãÊÇÔç¾ÍÉêÇëºÃµÄ£¬ÕâÀïÖ±½ÓÊ¹ÓÃ¡£
+	 * ç«¯ç‚¹æ˜¯æ—©å°±ç”³è¯·å¥½çš„ï¼Œè¿™é‡Œç›´æ¥ä½¿ç”¨ã€‚
 	 */
 	endpoint = &ifp->endpoint[ifp->desc.bNumEndpoints];
 	++ifp->desc.bNumEndpoints;
 
 	memcpy(&endpoint->desc, d, n);
 	/**
-	 * ³õÊ¼»¯¶ÓÁĞµÄurb_listÁ´±í¡£
+	 * åˆå§‹åŒ–é˜Ÿåˆ—çš„urb_listé“¾è¡¨ã€‚
 	 */
 	INIT_LIST_HEAD(&endpoint->urb_list);
 
 	/* Fix up bInterval values outside the legal range. Use 32 ms if no
 	 * proper value can be guessed. */
 	/**
-	 * i,j´ú±íºÏÀíµÄ·¶Î§¡£
+	 * i,jä»£è¡¨åˆç†çš„èŒƒå›´ã€‚
 	 */
 	i = 0;		/* i = min, j = max, n = default */
 	j = 255;
 	/**
-	 * ´¦Àí¶ËµãµÄ¼ä¸ôÊ±¼ä¡£
+	 * å¤„ç†ç«¯ç‚¹çš„é—´éš”æ—¶é—´ã€‚
 	 */
-	if (usb_endpoint_xfer_int(d)) {/* ÖĞ¶Ï¶Ëµã¡£ */
+	if (usb_endpoint_xfer_int(d)) {/* ä¸­æ–­ç«¯ç‚¹ã€‚ */
 		i = 1;
 		switch (to_usb_device(ddev)->speed) {
 		case USB_SPEED_HIGH:
@@ -127,7 +127,7 @@ static int usb_parse_endpoint(struct device *ddev, int cfgno, int inum,
 			 * 32 ms default value otherwise. */
 			n = fls(d->bInterval*8);
 			/**
-			 * nÊÇÄ¬ÈÏÖµ¡£
+			 * næ˜¯é»˜è®¤å€¼ã€‚
 			 */
 			if (n == 0)
 				n = 9;	/* 32 ms = 2^(9-1) uframes */
@@ -140,7 +140,7 @@ static int usb_parse_endpoint(struct device *ddev, int cfgno, int inum,
 			n = 32;
 			break;
 		}
-	} else if (usb_endpoint_xfer_isoc(d)) {/* µÈÊ±¶Ëµã */
+	} else if (usb_endpoint_xfer_isoc(d)) {/* ç­‰æ—¶ç«¯ç‚¹ */
 		i = 1;
 		j = 16;
 		switch (to_usb_device(ddev)->speed) {
@@ -153,7 +153,7 @@ static int usb_parse_endpoint(struct device *ddev, int cfgno, int inum,
 		}
 	}
 	/**
-	 * ÃèÊö·ûÖĞµÄÖµ²»Õı³££¬ĞŞ¸´Ëü¡£
+	 * æè¿°ç¬¦ä¸­çš„å€¼ä¸æ­£å¸¸ï¼Œä¿®å¤å®ƒã€‚
 	 */
 	if (d->bInterval < i || d->bInterval > j) {
 		dev_warn(ddev, "config %d interface %d altsetting %d "
@@ -182,7 +182,7 @@ static int usb_parse_endpoint(struct device *ddev, int cfgno, int inum,
 	/* Skip over any Class Specific or Vendor Specific descriptors;
 	 * find the next endpoint or interface descriptor */
 	/**
-	 * ÕÒÏÂÒ»¸ö¶ËµãÃèÊö·û£¬Ë³±ã¼ÆËãÀ©Õ¹ÃèÊö·ûµÄ´óĞ¡¡£
+	 * æ‰¾ä¸‹ä¸€ä¸ªç«¯ç‚¹æè¿°ç¬¦ï¼Œé¡ºä¾¿è®¡ç®—æ‰©å±•æè¿°ç¬¦çš„å¤§å°ã€‚
 	 */
 	endpoint->extra = buffer;
 	i = find_next_descriptor(buffer, size, USB_DT_ENDPOINT,
@@ -214,7 +214,7 @@ void usb_release_interface_cache(struct kref *ref)
 }
 
 /**
- * ½âÎöÅäÖÃÃèÊö·ûÖĞµÄÄ³¸ö½Ó¿Ú¡£
+ * è§£æé…ç½®æè¿°ç¬¦ä¸­çš„æŸä¸ªæ¥å£ã€‚
  */
 static int usb_parse_interface(struct device *ddev, int cfgno,
     struct usb_host_config *config, unsigned char *buffer, int size,
@@ -230,17 +230,17 @@ static int usb_parse_interface(struct device *ddev, int cfgno,
 	int num_ep, num_ep_orig;
 
 	/**
-	 * ´«µİµÄ»º³åÇøÊÇÒ»¸ö½Ó¿ÚÃèÊö·ûÖ¸Õë¡£
+	 * ä¼ é€’çš„ç¼“å†²åŒºæ˜¯ä¸€ä¸ªæ¥å£æè¿°ç¬¦æŒ‡é’ˆã€‚
 	 */
 	d = (struct usb_interface_descriptor *) buffer;
 	/**
-	 * µ÷Õû»º³åÇøÎ»ÖÃºÍ³¤¶È¡£
+	 * è°ƒæ•´ç¼“å†²åŒºä½ç½®å’Œé•¿åº¦ã€‚
 	 */
 	buffer += d->bLength;
 	size -= d->bLength;
 
 	/**
-	 * ½¡¿µ¼ì²é¡£
+	 * å¥åº·æ£€æŸ¥ã€‚
 	 */
 	if (d->bLength < USB_DT_INTERFACE_SIZE)
 		goto skip_to_next_interface_descriptor;
@@ -249,7 +249,7 @@ static int usb_parse_interface(struct device *ddev, int cfgno,
 	intfc = NULL;
 	inum = d->bInterfaceNumber;
 	/**
-	 * ÔÚÊı×éÖĞ²éÕÒµ±Ç°½Ó¿ÚµÄĞòºÅ¡£
+	 * åœ¨æ•°ç»„ä¸­æŸ¥æ‰¾å½“å‰æ¥å£çš„åºå·ã€‚
 	 */
 	for (i = 0; i < config->desc.bNumInterfaces; ++i) {
 		if (inums[i] == inum) {
@@ -263,13 +263,13 @@ static int usb_parse_interface(struct device *ddev, int cfgno,
 	/* Check for duplicate altsetting entries */
 	asnum = d->bAlternateSetting;
 	/**
-	 * »ñµÃÕâ¸ö½Ó¿ÚÃèÊö·û¶ÔÓ¦µÄÉèÖÃ±àºÅ¡£
+	 * è·å¾—è¿™ä¸ªæ¥å£æè¿°ç¬¦å¯¹åº”çš„è®¾ç½®ç¼–å·ã€‚
 	 */
 	for ((i = 0, alt = &intfc->altsetting[0]);
 	      i < intfc->num_altsetting;
 	     (++i, ++alt)) {
 		/**
-		 * Èç¹ûÕâ¸öÉèÖÃÒÑ¾­Óöµ½¹ıÁË£¬¾ÍÃ»ÓĞ±ØÒªÔÙ¶ÔÕâ¸ö½Ó¿ÚÃèÊö·û½øĞĞ´¦Àí¡£
+		 * å¦‚æœè¿™ä¸ªè®¾ç½®å·²ç»é‡åˆ°è¿‡äº†ï¼Œå°±æ²¡æœ‰å¿…è¦å†å¯¹è¿™ä¸ªæ¥å£æè¿°ç¬¦è¿›è¡Œå¤„ç†ã€‚
 		 */
 		if (alt->desc.bAlternateSetting == asnum) {
 			dev_warn(ddev, "Duplicate descriptor for config %d "
@@ -280,7 +280,7 @@ static int usb_parse_interface(struct device *ddev, int cfgno,
 	}
 
 	/**
-	 * ·¢ÏÖÁËĞÂµÄÉèÖÃ£¬½«Ëü¼Óµ½cacheÀï¡£
+	 * å‘ç°äº†æ–°çš„è®¾ç½®ï¼Œå°†å®ƒåŠ åˆ°cacheé‡Œã€‚
 	 */
 	++intfc->num_altsetting;
 	memcpy(&alt->desc, d, USB_DT_INTERFACE_SIZE);
@@ -289,7 +289,7 @@ static int usb_parse_interface(struct device *ddev, int cfgno,
 	 * find the first endpoint or interface descriptor */
 	alt->extra = buffer;
 	/**
-	 * ¼ÌĞøÕÒÏÂÒ»¸ö½Ó¿Ú¡£Èç¹ûfind_next_descriptor>0£¬ËµÃ÷ÔÚ±¾½Ó¿ÚÓëÏÂÒ»¸ö½Ó¿ÚÖ®¼ä´æÔÚclass»òvendor-specificÃèÊö·û¡£
+	 * ç»§ç»­æ‰¾ä¸‹ä¸€ä¸ªæ¥å£ã€‚å¦‚æœfind_next_descriptor>0ï¼Œè¯´æ˜åœ¨æœ¬æ¥å£ä¸ä¸‹ä¸€ä¸ªæ¥å£ä¹‹é—´å­˜åœ¨classæˆ–vendor-specificæè¿°ç¬¦ã€‚
 	 */
 	i = find_next_descriptor(buffer, size, USB_DT_ENDPOINT,
 	    USB_DT_INTERFACE, &n);
@@ -298,19 +298,19 @@ static int usb_parse_interface(struct device *ddev, int cfgno,
 		dev_dbg(ddev, "skipped %d descriptor%s after %s\n",
 		    n, plural(n), "interface");
 	/**
-	 * µ÷Õû»º³åÇøÎ»ÖÃ¡£
+	 * è°ƒæ•´ç¼“å†²åŒºä½ç½®ã€‚
 	 */
 	buffer += i;
 	size -= i;
 
 	/* Allocate space for the right(?) number of endpoints */
 	/**
-	 * »ñµÃ¶ËµãÊı¡£
+	 * è·å¾—ç«¯ç‚¹æ•°ã€‚
 	 */
 	num_ep = num_ep_orig = alt->desc.bNumEndpoints;
 	alt->desc.bNumEndpoints = 0;		// Use as a counter
 	/**
-	 * ¶ËµãÊıÁ¿³¬¹ıĞ­Òé¹æ¶¨µÄÊıÁ¿¡£
+	 * ç«¯ç‚¹æ•°é‡è¶…è¿‡åè®®è§„å®šçš„æ•°é‡ã€‚
 	 */
 	if (num_ep > USB_MAXENDPOINTS) {
 		dev_warn(ddev, "too many endpoints for config %d interface %d "
@@ -320,7 +320,7 @@ static int usb_parse_interface(struct device *ddev, int cfgno,
 	}
 
 	/**
-	 * Îª¶Ëµã·ÖÅäÄÚ´æ¡£
+	 * ä¸ºç«¯ç‚¹åˆ†é…å†…å­˜ã€‚
 	 */
 	if (num_ep > 0) {	/* Can't allocate 0 bytes */
 		len = sizeof(struct usb_host_endpoint) * num_ep;
@@ -332,14 +332,14 @@ static int usb_parse_interface(struct device *ddev, int cfgno,
 	/* Parse all the endpoint descriptors */
 	n = 0;
 	/**
-	 * ±éÀú±¾½Ó¿ÚµÄËùÓĞ¶ËµãÃèÊö·û
+	 * éå†æœ¬æ¥å£çš„æ‰€æœ‰ç«¯ç‚¹æè¿°ç¬¦
 	 */
 	while (size > 0) {
 		if (((struct usb_descriptor_header *) buffer)->bDescriptorType
-		     == USB_DT_INTERFACE)/* µ±Ç°ÃèÊö·ûÀàĞÍÊÇ½Ó¿ÚÃèÊö·û£¬ÍË³öÑ­»·¡£ */
+		     == USB_DT_INTERFACE)/* å½“å‰æè¿°ç¬¦ç±»å‹æ˜¯æ¥å£æè¿°ç¬¦ï¼Œé€€å‡ºå¾ªç¯ã€‚ */
 			break;
 		/**
-		 * ÊÇ¶ËµãÃèÊö·û£¬½âÎöËü£¬½«µÃµ½Õâ¸ö¶ËµãÃèÊö·ûµÄ³¤¶È¡£
+		 * æ˜¯ç«¯ç‚¹æè¿°ç¬¦ï¼Œè§£æå®ƒï¼Œå°†å¾—åˆ°è¿™ä¸ªç«¯ç‚¹æè¿°ç¬¦çš„é•¿åº¦ã€‚
 		 */
 		retval = usb_parse_endpoint(ddev, cfgno, inum, asnum, alt,
 		    num_ep, buffer, size);
@@ -348,7 +348,7 @@ static int usb_parse_interface(struct device *ddev, int cfgno,
 		++n;
 
 		/**
-		 * µ÷Õû»º³åÇø£¬½âÎöÏÂÒ»¸öÃèÊö·û¡£
+		 * è°ƒæ•´ç¼“å†²åŒºï¼Œè§£æä¸‹ä¸€ä¸ªæè¿°ç¬¦ã€‚
 		 */
 		buffer += retval;
 		size -= retval;
@@ -368,13 +368,13 @@ skip_to_next_interface_descriptor:
 }
 
 /**
- * ½âÎöÔ­Ê¼ÅäÖÃĞÅÏ¢¡£
+ * è§£æåŸå§‹é…ç½®ä¿¡æ¯ã€‚
  */
 static int usb_parse_configuration(struct device *ddev, int cfgidx,
     struct usb_host_config *config, unsigned char *buffer, int size)
 {
 	/**
-	 * ĞèÒª¶Ô»º³åÇø½øĞĞ½âÎö£¬Ê×ÏÈ±¸·İ»º³åÇøÖ¸Õë¡£
+	 * éœ€è¦å¯¹ç¼“å†²åŒºè¿›è¡Œè§£æï¼Œé¦–å…ˆå¤‡ä»½ç¼“å†²åŒºæŒ‡é’ˆã€‚
 	 */
 	unsigned char *buffer0 = buffer;
 	int cfgno;
@@ -390,7 +390,7 @@ static int usb_parse_configuration(struct device *ddev, int cfgidx,
 
 	memcpy(&config->desc, buffer, USB_DT_CONFIG_SIZE);
 	/**
-	 * »º³åÇøµÄÃèÊö·ûÀàĞÍ²»ÊÇÅäÖÃÃèÊö·û£¬Æä³¤¶ÈÊÇ·ñĞ¡ÓÚ×îĞ¡µÄÅäÖÃ³¤¶È¡£
+	 * ç¼“å†²åŒºçš„æè¿°ç¬¦ç±»å‹ä¸æ˜¯é…ç½®æè¿°ç¬¦ï¼Œå…¶é•¿åº¦æ˜¯å¦å°äºæœ€å°çš„é…ç½®é•¿åº¦ã€‚
 	 */
 	if (config->desc.bDescriptorType != USB_DT_CONFIG ||
 	    config->desc.bLength < USB_DT_CONFIG_SIZE) {
@@ -402,17 +402,17 @@ static int usb_parse_configuration(struct device *ddev, int cfgidx,
 	cfgno = config->desc.bConfigurationValue;
 
 	/**
-	 * ĞŞÕıbufferºÍsize¡£
+	 * ä¿®æ­£bufferå’Œsizeã€‚
 	 */
 	buffer += config->desc.bLength;
 	size -= config->desc.bLength;
 
 	/**
-	 * »ñÈ¡ÅäÖÃµÄ½Ó¿ÚÊı¡£
+	 * è·å–é…ç½®çš„æ¥å£æ•°ã€‚
 	 */
 	nintf = nintf_orig = config->desc.bNumInterfaces;
 	/**
-	 * ÅĞ¶Ï½Ó¿ÚÊıÊÇ·ñ³¬¹ıÏŞÖÆ¡£
+	 * åˆ¤æ–­æ¥å£æ•°æ˜¯å¦è¶…è¿‡é™åˆ¶ã€‚
 	 */
 	if (nintf > USB_MAXINTERFACES) {
 		dev_warn(ddev, "config %d has too many interfaces: %d, "
@@ -425,14 +425,14 @@ static int usb_parse_configuration(struct device *ddev, int cfgidx,
 	 * number of altsettings for each interface */
 	n = 0;
 	/**
-	 * ¼ÇÂ¼ÅäÖÃÀïÃæÃ¿¸ö½Ó¿ÚËùÓµÓĞµÄÉèÖÃÊıÄ¿¡£
+	 * è®°å½•é…ç½®é‡Œé¢æ¯ä¸ªæ¥å£æ‰€æ‹¥æœ‰çš„è®¾ç½®æ•°ç›®ã€‚
 	 */
 	for ((buffer2 = buffer, size2 = size);
 	      size2 > 0;
 	     (buffer2 += header->bLength, size2 -= header->bLength)) {
 
 		/**
-		 * Ã÷ÏÔ²»ºÏ·¨¡£
+		 * æ˜æ˜¾ä¸åˆæ³•ã€‚
 		 */
 		if (size2 < sizeof(struct usb_descriptor_header)) {
 			dev_warn(ddev, "config %d descriptor has %d excess "
@@ -443,7 +443,7 @@ static int usb_parse_configuration(struct device *ddev, int cfgidx,
 
 		header = (struct usb_descriptor_header *) buffer2;
 		/**
-		 * Ã÷ÏÔÒ²²»ºÏ·¨¡£
+		 * æ˜æ˜¾ä¹Ÿä¸åˆæ³•ã€‚
 		 */
 		if ((header->bLength > size2) || (header->bLength < 2)) {
 			dev_warn(ddev, "config %d has an invalid descriptor "
@@ -453,7 +453,7 @@ static int usb_parse_configuration(struct device *ddev, int cfgidx,
 		}
 
 		/**
-		 * ½Ó¿ÚÃèÊö·û¡£
+		 * æ¥å£æè¿°ç¬¦ã€‚
 		 */
 		if (header->bDescriptorType == USB_DT_INTERFACE) {
 			struct usb_interface_descriptor *d;
@@ -461,7 +461,7 @@ static int usb_parse_configuration(struct device *ddev, int cfgidx,
 
 			d = (struct usb_interface_descriptor *) header;
 			/**
-			 * ¸ÃÃèÊö·û³¤¶È²»ºÏ·¨¡£
+			 * è¯¥æè¿°ç¬¦é•¿åº¦ä¸åˆæ³•ã€‚
 			 */
 			if (d->bLength < USB_DT_INTERFACE_SIZE) {
 				dev_warn(ddev, "config %d has an invalid "
@@ -471,11 +471,11 @@ static int usb_parse_configuration(struct device *ddev, int cfgidx,
 			}
 
 			/**
-			 * ½Ó¿ÚĞòºÅ¡£
+			 * æ¥å£åºå·ã€‚
 			 */
 			inum = d->bInterfaceNumber;
 			/**
-			 * ½Ó¿ÚĞòºÅ´óÓÚÉè±¸½Ó¿ÚÊıÄ¿£¬Ò²²»ºÏ·¨¡£
+			 * æ¥å£åºå·å¤§äºè®¾å¤‡æ¥å£æ•°ç›®ï¼Œä¹Ÿä¸åˆæ³•ã€‚
 			 */
 			if (inum >= nintf_orig)
 				dev_warn(ddev, "config %d has an invalid "
@@ -485,16 +485,16 @@ static int usb_parse_configuration(struct device *ddev, int cfgidx,
 			/* Have we already encountered this interface?
 			 * Count its altsettings */
 			/**
-			 * nÊÇ½Ó¿ÚÊıÄ¿£¬inumsÀïÃæÃ¿Ò»Ïî¶¼±íÊ¾Ò»¸ö½Ó¿ÚºÅ£¬naltsµÄÃ¿Ò»Ïî¼ÇÂ¼µÄÊÇÃ¿¸ö½Ó¿ÚÓµÓĞµÄÉèÖÃÊıÄ¿¡£
+			 * næ˜¯æ¥å£æ•°ç›®ï¼Œinumsé‡Œé¢æ¯ä¸€é¡¹éƒ½è¡¨ç¤ºä¸€ä¸ªæ¥å£å·ï¼Œnaltsçš„æ¯ä¸€é¡¹è®°å½•çš„æ˜¯æ¯ä¸ªæ¥å£æ‹¥æœ‰çš„è®¾ç½®æ•°ç›®ã€‚
 			 */
 			for (i = 0; i < n; ++i) {
-				if (inums[i] == inum)/* ½Ó¿ÚÒÑ¾­±»½âÎö¹ı */
+				if (inums[i] == inum)/* æ¥å£å·²ç»è¢«è§£æè¿‡ */
 					break;
 			}
 			if (i < n) {
-				if (nalts[i] < 255)/* Ôö¼ÓÒÑ¾­´æÔÚµÄ½Ó¿ÚµÄÉèÖÃÊıÄ¿¡£ */
+				if (nalts[i] < 255)/* å¢åŠ å·²ç»å­˜åœ¨çš„æ¥å£çš„è®¾ç½®æ•°ç›®ã€‚ */
 					++nalts[i];
-			} else if (n < USB_MAXINTERFACES) {/* ĞÂ½Ó¿Ú */
+			} else if (n < USB_MAXINTERFACES) {/* æ–°æ¥å£ */
 				inums[n] = inum;
 				nalts[n] = 1;
 				++n;
@@ -515,7 +515,7 @@ static int usb_parse_configuration(struct device *ddev, int cfgidx,
 			}
 
 		} else if (header->bDescriptorType == USB_DT_DEVICE ||
-			    header->bDescriptorType == USB_DT_CONFIG)/* ÅäÖÃÃèÊö·ûÀïÃæ²»Ó¦¸ÃÓĞÅäÖÃÃèÊö·ûºÍÉè±¸ÃèÊö·û */
+			    header->bDescriptorType == USB_DT_CONFIG)/* é…ç½®æè¿°ç¬¦é‡Œé¢ä¸åº”è¯¥æœ‰é…ç½®æè¿°ç¬¦å’Œè®¾å¤‡æè¿°ç¬¦ */
 			dev_warn(ddev, "config %d contains an unexpected "
 			    "descriptor of type 0x%X, skipping\n",
 			    cfgno, header->bDescriptorType);
@@ -523,12 +523,12 @@ static int usb_parse_configuration(struct device *ddev, int cfgidx,
 	}	/* for ((buffer2 = buffer, size2 = size); ...) */
 	size = buffer2 - buffer;
 	/**
-	 * ÃèÊö·ûµÄÓĞĞ§³¤¶È¡£
+	 * æè¿°ç¬¦çš„æœ‰æ•ˆé•¿åº¦ã€‚
 	 */
 	config->desc.wTotalLength = cpu_to_le16(buffer2 - buffer0);
 
 	/**
-	 * ¼ÆËã³öµÄ½Ó¿ÚÊıÄ¿ÓëÅäÖÃÃèÊö·ûÖĞµÄ½Ó¿ÚÊıÄ¿²»·û£¬»òÕßÃ»ÓĞ·¢ÏÖÈÎºÎ½Ó¿Ú£¬¾Í¾¯¸æ¡£
+	 * è®¡ç®—å‡ºçš„æ¥å£æ•°ç›®ä¸é…ç½®æè¿°ç¬¦ä¸­çš„æ¥å£æ•°ç›®ä¸ç¬¦ï¼Œæˆ–è€…æ²¡æœ‰å‘ç°ä»»ä½•æ¥å£ï¼Œå°±è­¦å‘Šã€‚
 	 */
 	if (n != nintf)
 		dev_warn(ddev, "config %d has %d interface%s, different from "
@@ -540,7 +540,7 @@ static int usb_parse_configuration(struct device *ddev, int cfgidx,
 
 	/* Check for missing interface numbers */
 	/**
-	 * ±éÀúinumsÊı×é£¬È·¶¨0-n¶¼ÔÚÕâ¸öÊı×éÀïÃæ¡£
+	 * éå†inumsæ•°ç»„ï¼Œç¡®å®š0-néƒ½åœ¨è¿™ä¸ªæ•°ç»„é‡Œé¢ã€‚
 	 */
 	for (i = 0; i < nintf; ++i) {
 		for (j = 0; j < nintf; ++j) {
@@ -548,7 +548,7 @@ static int usb_parse_configuration(struct device *ddev, int cfgidx,
 				break;
 		}
 		/**
-		 * Ä³¸ö½Ó¿ÚĞòºÅ²»ÔÚÊı×éÀïÃæ£¬¾¯¸æ¡£
+		 * æŸä¸ªæ¥å£åºå·ä¸åœ¨æ•°ç»„é‡Œé¢ï¼Œè­¦å‘Šã€‚
 		 */
 		if (j >= nintf)
 			dev_warn(ddev, "config %d has no interface number "
@@ -557,7 +557,7 @@ static int usb_parse_configuration(struct device *ddev, int cfgidx,
 
 	/* Allocate the usb_interface_caches and altsetting arrays */
 	/**
-	 * ±éÀúÃ¿Ò»¸ö½Ó¿Ú£¬Îª½Ó¿ÚµÄÉèÖÃ·ÖÅäÄÚ´æ¡£
+	 * éå†æ¯ä¸€ä¸ªæ¥å£ï¼Œä¸ºæ¥å£çš„è®¾ç½®åˆ†é…å†…å­˜ã€‚
 	 */
 	for (i = 0; i < nintf; ++i) {
 		j = nalts[i];
@@ -580,7 +580,7 @@ static int usb_parse_configuration(struct device *ddev, int cfgidx,
 	 * find the first interface descriptor */
 	config->extra = buffer;
 	/**
-	 * ÕÒµÚÒ»¸ö½Ó¿ÚÃèÊö·û£¬Èç¹ûºóÃæ»¹ÓĞclassºÍvendorÃèÊö·û£¬ÊÇiÊÇÆä³¤¶È¡£
+	 * æ‰¾ç¬¬ä¸€ä¸ªæ¥å£æè¿°ç¬¦ï¼Œå¦‚æœåé¢è¿˜æœ‰classå’Œvendoræè¿°ç¬¦ï¼Œæ˜¯iæ˜¯å…¶é•¿åº¦ã€‚
 	 */
 	i = find_next_descriptor(buffer, size, USB_DT_INTERFACE,
 	    USB_DT_INTERFACE, &n);
@@ -589,18 +589,18 @@ static int usb_parse_configuration(struct device *ddev, int cfgidx,
 		dev_dbg(ddev, "skipped %d descriptor%s after %s\n",
 		    n, plural(n), "configuration");
 	/**
-	 * ¸ù¾İ²éÕÒ½á¹ûĞŞÕıbufferºÍsize¡£
+	 * æ ¹æ®æŸ¥æ‰¾ç»“æœä¿®æ­£bufferå’Œsizeã€‚
 	 */
 	buffer += i;
 	size -= i;
 
 	/* Parse all the interface/altsetting descriptors */
 	/**
-	 * sizeÊÇ±¾ÅäÖÃÃèÊö·ûµÄ³¤¶È£¬ÕâÀï½âÎöÍêËùÓĞµÄ½Ó¿Ú²ÅÍË³öÑ­»·¡£
+	 * sizeæ˜¯æœ¬é…ç½®æè¿°ç¬¦çš„é•¿åº¦ï¼Œè¿™é‡Œè§£æå®Œæ‰€æœ‰çš„æ¥å£æ‰é€€å‡ºå¾ªç¯ã€‚
 	 */
 	while (size > 0) {
 		/**
-		 * ½âÎö½Ó¿Ú¡¢ÉèÖÃÃèÊö·û¡£
+		 * è§£ææ¥å£ã€è®¾ç½®æè¿°ç¬¦ã€‚
 		 */
 		retval = usb_parse_interface(ddev, cfgno, config,
 		    buffer, size, inums, nalts);
@@ -613,7 +613,7 @@ static int usb_parse_configuration(struct device *ddev, int cfgidx,
 
 	/* Check for missing altsettings */
 	/**
-	 * ±éÀúµ±Ç°ÅäÖÃµÄÃ¿¸ö½Ó¿Ú£¬¿´ÊÇ·ñÄ³¸ö½Ó¿ÚµÄÉèÖÃ±àºÅ²»Õı³£¡£
+	 * éå†å½“å‰é…ç½®çš„æ¯ä¸ªæ¥å£ï¼Œçœ‹æ˜¯å¦æŸä¸ªæ¥å£çš„è®¾ç½®ç¼–å·ä¸æ­£å¸¸ã€‚
 	 */
 	for (i = 0; i < nintf; ++i) {
 		intfc = config->intf_cache[i];
@@ -675,13 +675,13 @@ void usb_destroy_configuration(struct usb_device *dev)
  *       configurations.
  */
 /**
- * »ñµÃÉè±¸µÄÅäÖÃ¡£
+ * è·å¾—è®¾å¤‡çš„é…ç½®ã€‚
  */
 int usb_get_configuration(struct usb_device *dev)
 {
 	struct device *ddev = &dev->dev;
 	/**
-	 * »ñµÃÉè±¸ÃèÊö·ûÖĞÖ¸Ê¾µÄÅäÖÃÃèÊö·ûÊıÄ¿¡£
+	 * è·å¾—è®¾å¤‡æè¿°ç¬¦ä¸­æŒ‡ç¤ºçš„é…ç½®æè¿°ç¬¦æ•°ç›®ã€‚
 	 */
 	int ncfg = dev->descriptor.bNumConfigurations;
 	int result = 0;
@@ -695,7 +695,7 @@ int usb_get_configuration(struct usb_device *dev)
 		goto out_not_authorized;
 	result = -ENOMEM;
 	/**
-	 * Ò»¸öÉè±¸×î¶àÖ§³Ö8ÖÖÅäÖÃ£¬Èç¹ûÅäÖÃÊı³¬¹ı8¸ö£¬Ç¿ÖÆ½«ÆäÉèÖÃÎª8¡£
+	 * ä¸€ä¸ªè®¾å¤‡æœ€å¤šæ”¯æŒ8ç§é…ç½®ï¼Œå¦‚æœé…ç½®æ•°è¶…è¿‡8ä¸ªï¼Œå¼ºåˆ¶å°†å…¶è®¾ç½®ä¸º8ã€‚
 	 */
 	if (ncfg > USB_MAXCONFIG) {
 		dev_warn(ddev, "too many configurations: %d, "
@@ -704,7 +704,7 @@ int usb_get_configuration(struct usb_device *dev)
 	}
 
 	/**
-	 * ÎŞÅäÖÃ??
+	 * æ— é…ç½®??
 	 */
 	if (ncfg < 1) {
 		dev_err(ddev, "no configurations\n");
@@ -712,7 +712,7 @@ int usb_get_configuration(struct usb_device *dev)
 	}
 
 	/**
-	 * ÎªËùÓĞÅäÖÃ·ÖÅä¿Õ¼ä¡£
+	 * ä¸ºæ‰€æœ‰é…ç½®åˆ†é…ç©ºé—´ã€‚
 	 */
 	length = ncfg * sizeof(struct usb_host_config);
 	dev->config = kzalloc(length, GFP_KERNEL);
@@ -721,14 +721,14 @@ int usb_get_configuration(struct usb_device *dev)
 
 	length = ncfg * sizeof(char *);
 	/**
-	 * ÎªÅäÖÃÃèÊö·û·ÖÅä¿Õ¼ä¡£
+	 * ä¸ºé…ç½®æè¿°ç¬¦åˆ†é…ç©ºé—´ã€‚
 	 */
 	dev->rawdescriptors = kzalloc(length, GFP_KERNEL);
 	if (!dev->rawdescriptors)
 		goto err2;
 
 	/**
-	 * ×¼±¸Ò»¸ö´óĞ¡ÎªUSB_DT_CONFIG_SIZEµÄ»º³åÇø£¬µÚÒ»´Î·¢ËÍGET_DESCRIPTOR ÇëÇóËùÓÃ¡£
+	 * å‡†å¤‡ä¸€ä¸ªå¤§å°ä¸ºUSB_DT_CONFIG_SIZEçš„ç¼“å†²åŒºï¼Œç¬¬ä¸€æ¬¡å‘é€GET_DESCRIPTOR è¯·æ±‚æ‰€ç”¨ã€‚
 	 */
 	buffer = kmalloc(USB_DT_CONFIG_SIZE, GFP_KERNEL);
 	if (!buffer)
@@ -736,26 +736,26 @@ int usb_get_configuration(struct usb_device *dev)
 	desc = (struct usb_config_descriptor *)buffer;
 
 	/**
-	 * Ñ­»·´¦ÀíÃ¿Ò»¸öÅäÖÃ¡£
+	 * å¾ªç¯å¤„ç†æ¯ä¸€ä¸ªé…ç½®ã€‚
 	 */
 	for (cfgno = 0; cfgno < ncfg; cfgno++) {
 		/* We grab just the first descriptor so we know how long
 		 * the whole configuration is */
 		/**
-		 * Ê×ÏÈ·¢ËÍUSB_DT_CONFIG_SIZE ¸ö×Ö½ÚÇëÇó£¬»ñµÃÅäÖÃÃèÊö·ûµÄÄÚÈİ¡£
+		 * é¦–å…ˆå‘é€USB_DT_CONFIG_SIZE ä¸ªå­—èŠ‚è¯·æ±‚ï¼Œè·å¾—é…ç½®æè¿°ç¬¦çš„å†…å®¹ã€‚
 		 */
 		result = usb_get_descriptor(dev, USB_DT_CONFIG, cfgno,
 		    buffer, USB_DT_CONFIG_SIZE);
-		if (result < 0) {/* »ñÈ¡´íÎó */
+		if (result < 0) {/* è·å–é”™è¯¯ */
 			dev_err(ddev, "unable to read config index %d "
 			    "descriptor/%s: %d\n", cfgno, "start", result);
 			dev_err(ddev, "chopping to %d config(s)\n", cfgno);
 			/**
-			 * ÖØĞÂÉèÖÃÅäÖÃÊıÄ¿¡£
+			 * é‡æ–°è®¾ç½®é…ç½®æ•°ç›®ã€‚
 			 */
 			dev->descriptor.bNumConfigurations = cfgno;
 			break;
-		} else if (result < 4) {/* ³¤¶È»ñÈ¡²»ÍêÕû¡£ */
+		} else if (result < 4) {/* é•¿åº¦è·å–ä¸å®Œæ•´ã€‚ */
 			dev_err(ddev, "config index %d descriptor too short "
 			    "(expected %i, got %i)\n", cfgno,
 			    USB_DT_CONFIG_SIZE, result);
@@ -763,14 +763,14 @@ int usb_get_configuration(struct usb_device *dev)
 			goto err;
 		}
 		/**
-		 * µÚ3£¬4×Ö½Ú¼´ÎªwTotalLength£¬Òò´ËÖ»Òª³¤¶È´óÓÚ3¾Í¿ÉÒÔµÃµ½³¤¶ÈÁË¡£
+		 * ç¬¬3ï¼Œ4å­—èŠ‚å³ä¸ºwTotalLengthï¼Œå› æ­¤åªè¦é•¿åº¦å¤§äº3å°±å¯ä»¥å¾—åˆ°é•¿åº¦äº†ã€‚
 		 */
 		length = max((int) le16_to_cpu(desc->wTotalLength),
 		    USB_DT_CONFIG_SIZE);
 
 		/* Now that we know the length, get the whole thing */
 		/**
-		 * ÖªµÀÁËÅäÖÃ³¤¶È£¬¼´¿ÉÒÔÎªËü·ÖÅäÒ»¸ö»º³åÇø£¬±£´æ´ËÅäÖÃÁË¡£
+		 * çŸ¥é“äº†é…ç½®é•¿åº¦ï¼Œå³å¯ä»¥ä¸ºå®ƒåˆ†é…ä¸€ä¸ªç¼“å†²åŒºï¼Œä¿å­˜æ­¤é…ç½®äº†ã€‚
 		 */
 		bigbuffer = kmalloc(length, GFP_KERNEL);
 		if (!bigbuffer) {
@@ -778,7 +778,7 @@ int usb_get_configuration(struct usb_device *dev)
 			goto err;
 		}
 		/**
-		 * ÖØĞÂ»ñÈ¡ÍêÕûµÄÅäÖÃÃèÊö·û¡£
+		 * é‡æ–°è·å–å®Œæ•´çš„é…ç½®æè¿°ç¬¦ã€‚
 		 */
 		result = usb_get_descriptor(dev, USB_DT_CONFIG, cfgno,
 		    bigbuffer, length);
@@ -795,7 +795,7 @@ int usb_get_configuration(struct usb_device *dev)
 		}
 
 		/**
-		 * Õı³£µÄµÃµ½ÅäÖÃÃèÊö·û£¬µ÷ÓÃusb_parse_configuration½âÎö´ËÅäÖÃ¡£
+		 * æ­£å¸¸çš„å¾—åˆ°é…ç½®æè¿°ç¬¦ï¼Œè°ƒç”¨usb_parse_configurationè§£ææ­¤é…ç½®ã€‚
 		 */
 		dev->rawdescriptors[cfgno] = bigbuffer;
 

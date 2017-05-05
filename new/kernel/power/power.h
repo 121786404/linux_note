@@ -252,7 +252,7 @@ static inline int suspend_freeze_processes(void)
 {
 	int error;
 /*
-    freeze 用户进程
+    freeze 鐢ㄦ埛杩涚▼
 */
 	error = freeze_processes();
 	/*
@@ -262,7 +262,7 @@ static inline int suspend_freeze_processes(void)
 	if (error)
 		return error;
     /*
-        freeze 内核进程
+        freeze 鍐呮牳杩涚▼
     */
 	error = freeze_kernel_threads();
 	/*

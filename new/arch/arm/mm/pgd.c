@@ -31,9 +31,9 @@
  * need to get a 16k page for level 1
  */
  /*
-����һ���µ�ҳȫ��Ŀ¼����� PAE �����
-��������������Ӧ�û�̬���Ե�ַ����ҳ�м�Ŀ¼��
-���� mm( �ڴ��������ĵ�ַ )�� 80x86 �����ϱ�����
+分配一个新的页全局目录。如果 PAE 被激活，
+它还分配三个对应用户态线性地址的子页中间目录。
+参数 mm( 内存描述符的地址 )在 80x86 构架上被忽略
 */
 pgd_t *pgd_alloc(struct mm_struct *mm)
 {

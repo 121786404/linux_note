@@ -383,16 +383,16 @@ extern void kernel_thread_helper(void);
  * Create a kernel thread
  */
 /**
- * ´´½¨ÄÚºËÏß³Ì
- *		fn:		ÄÚºËÏß³ÌÈë¿Úº¯Êý
- *		arg:	Ïß³Ì²ÎÊý
- *		flags:	CLONE±êÖ¾
+ * åˆ›å»ºå†…æ ¸çº¿ç¨‹
+ *		fn:		å†…æ ¸çº¿ç¨‹å…¥å£å‡½æ•°
+ *		arg:	çº¿ç¨‹å‚æ•°
+ *		flags:	CLONEæ ‡å¿—
  */
 int kernel_thread(int (*fn)(void *), void * arg, unsigned long flags)
 {
 	struct pt_regs regs;
 
-	/* ¹¹½¨Ò»¸öÄ£ÄâµÄpt_regs²ÎÊý */
+	/* æž„å»ºä¸€ä¸ªæ¨¡æ‹Ÿçš„pt_regså‚æ•° */
 	memset(&regs, 0, sizeof(regs));
 
 	regs.ebx = (unsigned long) fn;
@@ -407,7 +407,7 @@ int kernel_thread(int (*fn)(void *), void * arg, unsigned long flags)
 	regs.eflags = X86_EFLAGS_IF | X86_EFLAGS_SF | X86_EFLAGS_PF | 0x2;
 
 	/* Ok, create the new process.. */
-	/* ´´½¨Ïß³Ì */
+	/* åˆ›å»ºçº¿ç¨‹ */
 	return do_fork(flags | CLONE_VM | CLONE_UNTRACED, 0, &regs, 0, NULL, NULL);
 }
 EXPORT_SYMBOL(kernel_thread);
@@ -781,7 +781,7 @@ struct task_struct fastcall * __switch_to(struct task_struct *prev_p, struct tas
 }
 
 /**
- * forkÏµÍ³µ÷ÓÃ
+ * forkç³»ç»Ÿè°ƒç”¨
  */
 asmlinkage int sys_fork(struct pt_regs regs)
 {
@@ -822,26 +822,26 @@ asmlinkage int sys_vfork(struct pt_regs regs)
  * sys_execve() executes a new program.
  */
 /**
- * ÏµÍ³µ÷ÓÃ£¬Ö´ÐÐÒ»¸öÐÂÓ¦ÓÃ³ÌÐò¡£
+ * ç³»ç»Ÿè°ƒç”¨ï¼Œæ‰§è¡Œä¸€ä¸ªæ–°åº”ç”¨ç¨‹åºã€‚
  */
 asmlinkage int sys_execve(struct pt_regs regs)
 {
 	int error;
 	char * filename;
 
-	/* ´ÓÓÃ»§Ì¬»ñÈ¡Òª´´½¨µÄ½ø³ÌÎÄ¼þÃû³Æ */
+	/* ä»Žç”¨æˆ·æ€èŽ·å–è¦åˆ›å»ºçš„è¿›ç¨‹æ–‡ä»¶åç§° */
 	filename = getname((char __user *) regs.ebx);
 	error = PTR_ERR(filename);
 	if (IS_ERR(filename))
 		goto out;
-	/* ×°ÔØ½ø³ÌÎÄ¼þ */
+	/* è£…è½½è¿›ç¨‹æ–‡ä»¶ */
 	error = do_execve(filename,
 			(char __user * __user *) regs.ecx,
 			(char __user * __user *) regs.edx,
 			&regs);
-	if (error == 0) {/* ÐÂ½ø³Ì¼ÓÔØ³É¹¦ */
+	if (error == 0) {/* æ–°è¿›ç¨‹åŠ è½½æˆåŠŸ */
 		task_lock(current);
-		/* È¥³ýTRACE±êÖ¾ */
+		/* åŽ»é™¤TRACEæ ‡å¿— */
 		current->ptrace &= ~PT_DTRACE;
 		task_unlock(current);
 		/* Make sure we don't return using sysenter.. */

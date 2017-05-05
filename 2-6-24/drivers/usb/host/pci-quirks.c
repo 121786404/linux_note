@@ -62,7 +62,7 @@ void uhci_reset_hc(struct pci_dev *pdev, unsigned long base)
 	 * BIOS's USB Legacy Support.)  Turn off all the R/WC bits too.
 	 */
 	/**
-	 * ½«UHCI_USBLEGSUP¼Ä´æÆ÷RWCÎ»Çå0.
+	 * å°†UHCI_USBLEGSUPå¯„å­˜å™¨RWCä½æ¸…0.
 	 */
 	pci_write_config_word(pdev, UHCI_USBLEGSUP, UHCI_USBLEGSUP_RWC);
 
@@ -72,13 +72,13 @@ void uhci_reset_hc(struct pci_dev *pdev, unsigned long base)
 	 * implies.
 	 */
 	/**
-	 * ÏòÃüÁî¼Ä´æÆ÷Ğ´ÈëRESETÃüÁî¡£
+	 * å‘å‘½ä»¤å¯„å­˜å™¨å†™å…¥RESETå‘½ä»¤ã€‚
 	 */
 	outw(UHCI_USBCMD_HCRESET, base + UHCI_USBCMD);
 	mb();
 	udelay(5);
 	/**
-	 * RESETÓ¦µ±±»Ó²¼şÇå0£¬Èç¹û²»Îª0£¬ËµÃ÷·¢ÉúÁËÒ»Ğ©Ô¤ÁÏÍâµÄÊÂÇé¡£
+	 * RESETåº”å½“è¢«ç¡¬ä»¶æ¸…0ï¼Œå¦‚æœä¸ä¸º0ï¼Œè¯´æ˜å‘ç”Ÿäº†ä¸€äº›é¢„æ–™å¤–çš„äº‹æƒ…ã€‚
 	 */
 	if (inw(base + UHCI_USBCMD) & UHCI_USBCMD_HCRESET)
 		dev_warn(&pdev->dev, "HCRESET not completed yet!\n");
@@ -87,7 +87,7 @@ void uhci_reset_hc(struct pci_dev *pdev, unsigned long base)
 	 * make sure the controller is stopped.
 	 */
 	/**
-	 * ÏòÖĞ¶ÏÊ¹ÄÜ¼Ä´æÆ÷ºÍÃüÁî¼Ä´æÆ÷ÖĞĞ´Èë0£¬¹ØµôÖĞ¶ÏÇëÇó£¬²¢ÇÒÍ£Ö¹HC¡£
+	 * å‘ä¸­æ–­ä½¿èƒ½å¯„å­˜å™¨å’Œå‘½ä»¤å¯„å­˜å™¨ä¸­å†™å…¥0ï¼Œå…³æ‰ä¸­æ–­è¯·æ±‚ï¼Œå¹¶ä¸”åœæ­¢HCã€‚
 	 */
 	outw(0, base + UHCI_USBINTR);
 	outw(0, base + UHCI_USBCMD);
@@ -117,7 +117,7 @@ int uhci_check_and_reset_hc(struct pci_dev *pdev, unsigned long base)
 	 */
 	pci_read_config_word(pdev, UHCI_USBLEGSUP, &legsup);
 	/**
-	 * ÕâĞ©Î»ÊÇÒ»Ğ©´ò¿ª¡¢½ûÖ¹¿ª¹Ø¡£Èç¹ûÕâĞ©Î»Îª1£¬±íÊ¾ĞèÒª¸´Î»¡£ÒòÎªÉè±¸Æô¶¯ºó£¬ÕâĞ©Î»Ó¦¸ÃÊÇ0.
+	 * è¿™äº›ä½æ˜¯ä¸€äº›æ‰“å¼€ã€ç¦æ­¢å¼€å…³ã€‚å¦‚æœè¿™äº›ä½ä¸º1ï¼Œè¡¨ç¤ºéœ€è¦å¤ä½ã€‚å› ä¸ºè®¾å¤‡å¯åŠ¨åï¼Œè¿™äº›ä½åº”è¯¥æ˜¯0.
 	 */
 	if (legsup & ~(UHCI_USBLEGSUP_RO | UHCI_USBLEGSUP_RWC)) {
 		dev_dbg(&pdev->dev, "%s: legsup = 0x%04x\n",
@@ -126,13 +126,13 @@ int uhci_check_and_reset_hc(struct pci_dev *pdev, unsigned long base)
 	}
 
 	/**
-	 * ¶ÁÈ¡ÃüÁî¼Ä´æÆ÷¡£
+	 * è¯»å–å‘½ä»¤å¯„å­˜å™¨ã€‚
 	 */
 	cmd = inw(base + UHCI_USBCMD);
 	/**
-	 * RUN/STOPÎ»Èç¹ûÎª1£¬±íÊ¾HC¿ªÊ¼´¦ÀíÖ´ĞĞµ÷¶È¡£²»¹ıÄ¿Ç°»¹²»ÄÜµ÷¶È£¬Òò´ËĞèÒª¸´Î»¡£
-	 * EGSM¼´Enter Global Suspend Mode£¬Èç¹û´ËÎ»²»Îª0£¬Ò²ĞèÒª¸´Î»¡£
-	 * CF±íÊ¾µ±Ç°Ö÷»ú´¦ÓÚ±»ÅäÖÃ×´Ì¬£¬Ò²ĞèÒª¸´Î»¡£
+	 * RUN/STOPä½å¦‚æœä¸º1ï¼Œè¡¨ç¤ºHCå¼€å§‹å¤„ç†æ‰§è¡Œè°ƒåº¦ã€‚ä¸è¿‡ç›®å‰è¿˜ä¸èƒ½è°ƒåº¦ï¼Œå› æ­¤éœ€è¦å¤ä½ã€‚
+	 * EGSMå³Enter Global Suspend Modeï¼Œå¦‚æœæ­¤ä½ä¸ä¸º0ï¼Œä¹Ÿéœ€è¦å¤ä½ã€‚
+	 * CFè¡¨ç¤ºå½“å‰ä¸»æœºå¤„äºè¢«é…ç½®çŠ¶æ€ï¼Œä¹Ÿéœ€è¦å¤ä½ã€‚
 	 */
 	if ((cmd & UHCI_USBCMD_RUN) || !(cmd & UHCI_USBCMD_CONFIGURE) ||
 			!(cmd & UHCI_USBCMD_EGSM)) {
@@ -142,11 +142,11 @@ int uhci_check_and_reset_hc(struct pci_dev *pdev, unsigned long base)
 	}
 
 	/**
-	 * ¶ÁÈ¡ÖĞ¶ÏÊ¹ÄÜ¼Ä´æÆ÷¡£
+	 * è¯»å–ä¸­æ–­ä½¿èƒ½å¯„å­˜å™¨ã€‚
 	 */
 	intr = inw(base + UHCI_USBINTR);
 	/**
-	 * Èç¹ûÖĞ¶ÏÊ¹ÄÜÁË£¬ÔòÒ²ĞèÒª¸´Î»¡£
+	 * å¦‚æœä¸­æ–­ä½¿èƒ½äº†ï¼Œåˆ™ä¹Ÿéœ€è¦å¤ä½ã€‚
 	 */
 	if (intr & (~UHCI_USBINTR_RESUME)) {
 		dev_dbg(&pdev->dev, "%s: intr = 0x%04x\n",

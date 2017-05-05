@@ -83,13 +83,13 @@ enum hrtimer_cb_mode {
  *
  * All state transitions are protected by cpu_base->lock.
  */
-/* ²»»î¶¯µÄ¶¨Ê±Æ÷ */
+/* ä¸æ´»åŠ¨çš„å®šæ—¶å™¨ */
 #define HRTIMER_STATE_INACTIVE	0x00
-/* ÔÚºìºÚÊ÷ÖĞÅÅ¶Ó£¬µÈ´ıµ½ÆÚµÄ¶¨Ê±Æ÷ */
+/* åœ¨çº¢é»‘æ ‘ä¸­æ’é˜Ÿï¼Œç­‰å¾…åˆ°æœŸçš„å®šæ—¶å™¨ */
 #define HRTIMER_STATE_ENQUEUED	0x01
-/* ÕıÔÚÖ´ĞĞµÄ¶¨Ê±Æ÷ */
+/* æ­£åœ¨æ‰§è¡Œçš„å®šæ—¶å™¨ */
 #define HRTIMER_STATE_CALLBACK	0x02
-/* ÕıÔÚ»Øµ÷Á´±íÉÏµÈ´ıÖ´ĞĞµÄ¶¨Ê±Æ÷ */
+/* æ­£åœ¨å›è°ƒé“¾è¡¨ä¸Šç­‰å¾…æ‰§è¡Œçš„å®šæ—¶å™¨ */
 #define HRTIMER_STATE_PENDING	0x04
 
 /**
@@ -114,23 +114,23 @@ enum hrtimer_cb_mode {
  * The hrtimer structure must be initialized by hrtimer_init()
  */
 /**
- * ¸ß¾«¶È¶¨Ê±Æ÷
+ * é«˜ç²¾åº¦å®šæ—¶å™¨
  */
 struct hrtimer {
-	/* Í¨¹ı´Ë×Ö¶ÎÌí¼Óµ½Ã¿CPUºìºÚÊ÷ÖĞ */
+	/* é€šè¿‡æ­¤å­—æ®µæ·»åŠ åˆ°æ¯CPUçº¢é»‘æ ‘ä¸­ */
 	struct rb_node			node;
-	/* µ½ÆÚÊ±¼ä */
+	/* åˆ°æœŸæ—¶é—´ */
 	ktime_t				expires;
-	/* »Øµ÷º¯Êı */
+	/* å›è°ƒå‡½æ•° */
 	enum hrtimer_restart		(*function)(struct hrtimer *);
-	/* ËùÊô¶¨Ê±Æ÷×é */
+	/* æ‰€å±å®šæ—¶å™¨ç»„ */
 	struct hrtimer_clock_base	*base;
-	/* ¶¨Ê±Æ÷×´Ì¬£¬ÈçHRTIMER_STATE_INACTIVE±íÊ¾²»»î¶¯µÄ¶¨Ê±Æ÷ */
+	/* å®šæ—¶å™¨çŠ¶æ€ï¼Œå¦‚HRTIMER_STATE_INACTIVEè¡¨ç¤ºä¸æ´»åŠ¨çš„å®šæ—¶å™¨ */
 	unsigned long			state;
 #ifdef CONFIG_HIGH_RES_TIMERS
-	/* ¶¨Ê±Æ÷Ö´ĞĞÄ£Ê½£¬ÈçHRTIMER_CB_SOFTIRQ±íÊ¾ÔÚÈíÖĞ¶ÏÉÏÏÂÎÄÔËĞĞ */
+	/* å®šæ—¶å™¨æ‰§è¡Œæ¨¡å¼ï¼Œå¦‚HRTIMER_CB_SOFTIRQè¡¨ç¤ºåœ¨è½¯ä¸­æ–­ä¸Šä¸‹æ–‡è¿è¡Œ */
 	enum hrtimer_cb_mode		cb_mode;
-	/* Í¨¹ı´Ë×Ö¶ÎÌí¼Óµ½Á´±íÖĞ */
+	/* é€šè¿‡æ­¤å­—æ®µæ·»åŠ åˆ°é“¾è¡¨ä¸­ */
 	struct list_head		cb_entry;
 #endif
 #ifdef CONFIG_TIMER_STATS
@@ -168,29 +168,29 @@ struct hrtimer_sleeper {
  * @reprogram:		function to reprogram the timer event
  */
 /**
- * µ¥µ÷Ê±ÖÓºÍ¾ø¶ÔÊ±¼ä¶¨Ê±Æ÷ËùÓÃµÄºìºÚÊ÷
+ * å•è°ƒæ—¶é’Ÿå’Œç»å¯¹æ—¶é—´å®šæ—¶å™¨æ‰€ç”¨çš„çº¢é»‘æ ‘
  */
 struct hrtimer_clock_base {
-	/* ¸ÃÊ±ÖÓËùÊôµÄ¸÷CPUÊ±ÖÓ */
+	/* è¯¥æ—¶é’Ÿæ‰€å±çš„å„CPUæ—¶é’Ÿ */
 	struct hrtimer_cpu_base	*cpu_base;
-	/* ¸ÃÊ±ÖÓÊÇµ¥µ÷Ê±ÖÓ»¹ÊÇ¾ø¶ÔÊ±ÖÓ */
+	/* è¯¥æ—¶é’Ÿæ˜¯å•è°ƒæ—¶é’Ÿè¿˜æ˜¯ç»å¯¹æ—¶é’Ÿ */
 	clockid_t		index;
-	/* ËùÓĞ»î¶¯µÄ¶¨Ê±Æ÷£¬ÔÚ¸ÃºìºÚÊ÷ÖĞ */
+	/* æ‰€æœ‰æ´»åŠ¨çš„å®šæ—¶å™¨ï¼Œåœ¨è¯¥çº¢é»‘æ ‘ä¸­ */
 	struct rb_root		active;
-	/* Ã¿¸öµ½ÆÚµÄ¶¨Ê±Æ÷ */
+	/* æ¯ä¸ªåˆ°æœŸçš„å®šæ—¶å™¨ */
 	struct rb_node		*first;
-	/* ·Ö±æÂÊ¾«¶È£¬µ¥Î»ÊÇÄÉÃë */
+	/* åˆ†è¾¨ç‡ç²¾åº¦ï¼Œå•ä½æ˜¯çº³ç§’ */
 	ktime_t			resolution;
-	/* ¶ÁÈ¡¸ß¾«¶ÈÊ±¼ä */
+	/* è¯»å–é«˜ç²¾åº¦æ—¶é—´ */
 	ktime_t			(*get_time)(void);
-	/* ´¥·¢HRTIMER_SOFTIRQÈíÖĞ¶ÏµÄÊ±¼ä */
+	/* è§¦å‘HRTIMER_SOFTIRQè½¯ä¸­æ–­çš„æ—¶é—´ */
 	ktime_t			(*get_softirq_time)(void);
-	/* ÈíÖĞ¶Ï´¥·¢Ê±¼ä */
+	/* è½¯ä¸­æ–­è§¦å‘æ—¶é—´ */
 	ktime_t			softirq_time;
 #ifdef CONFIG_HIGH_RES_TIMERS
-	/* ÓÉÓÚĞŞ¸ÄÊ±¼ä¶øÔì³Éµ±Ç°¶¨Ê±Æ÷ÓëÊµ¼ÊÊ±¼äÖ®¼äµÄÆ«²î */
+	/* ç”±äºä¿®æ”¹æ—¶é—´è€Œé€ æˆå½“å‰å®šæ—¶å™¨ä¸å®é™…æ—¶é—´ä¹‹é—´çš„åå·® */
 	ktime_t			offset;
-	/* ¶Ô¸ø¶¨¶¨Ê±Æ÷ÖØĞÂ±à³Ì£¬ĞŞ¸ÄÆä¹ıÆÚÊ±¼ä */
+	/* å¯¹ç»™å®šå®šæ—¶å™¨é‡æ–°ç¼–ç¨‹ï¼Œä¿®æ”¹å…¶è¿‡æœŸæ—¶é—´ */
 	int			(*reprogram)(struct hrtimer *t,
 					     struct hrtimer_clock_base *b,
 					     ktime_t n);
@@ -218,22 +218,22 @@ struct hrtimer_clock_base {
  * @nr_events:		Total number of timer interrupt events
  */
 /**
- * Ã¿CPUÉÏµÄ¸ß¾«¶ÈÊ±ÖÓ
+ * æ¯CPUä¸Šçš„é«˜ç²¾åº¦æ—¶é’Ÿ
  */
 struct hrtimer_cpu_base {
-	/* ±£»¤±¾½á¹¹µÄ×ÔĞıËø */
+	/* ä¿æŠ¤æœ¬ç»“æ„çš„è‡ªæ—‹é” */
 	spinlock_t			lock;
 	struct lock_class_key		lock_key;
-	/* µ¥µ÷Ê±ÖÓºÍ¾ø¶ÔÊ±ÖÓ */
+	/* å•è°ƒæ—¶é’Ÿå’Œç»å¯¹æ—¶é’Ÿ */
 	struct hrtimer_clock_base	clock_base[HRTIMER_MAX_CLOCK_BASES];
 #ifdef CONFIG_HIGH_RES_TIMERS
-	/* ÏÂÒ»´Î½«Òªµ½ÆÚµÄÊÂ¼şÊ±¼ä */
+	/* ä¸‹ä¸€æ¬¡å°†è¦åˆ°æœŸçš„äº‹ä»¶æ—¶é—´ */
 	ktime_t				expires_next;
-	/* ÊÇ·ñÆôÓÃÁË¸ß¾«¶ÈÊ±ÖÓ */
+	/* æ˜¯å¦å¯ç”¨äº†é«˜ç²¾åº¦æ—¶é’Ÿ */
 	int				hres_active;
-	/* µ½ÆÚµÄ¶¨Ê±Æ÷½«´ÓºìºÚÊ÷×ªÒÆµ½±¾Á´±íÖĞ */
+	/* åˆ°æœŸçš„å®šæ—¶å™¨å°†ä»çº¢é»‘æ ‘è½¬ç§»åˆ°æœ¬é“¾è¡¨ä¸­ */
 	struct list_head		cb_pending;
-	/* ¸ú×Ù¼ÇÂ¼µÄÊ±ÖÓÖĞ¶Ï×ÜÊı */
+	/* è·Ÿè¸ªè®°å½•çš„æ—¶é’Ÿä¸­æ–­æ€»æ•° */
 	unsigned long			nr_events;
 #endif
 };

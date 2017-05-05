@@ -79,7 +79,7 @@ int request_module(const char *fmt, ...)
 	static int kmod_loop_msg;
 
 	va_start(args, fmt);
-	/* ×îÖÕ½«moduleµÄÃû³Æ´æ·ÅÔÚmodule_name±äÁ¿ÖÐ */
+	/* æœ€ç»ˆå°†moduleçš„åç§°å­˜æ”¾åœ¨module_nameå˜é‡ä¸­ */
 	ret = vsnprintf(module_name, MODULE_NAME_LEN, fmt, args);
 	va_end(args);
 	if (ret >= MODULE_NAME_LEN)

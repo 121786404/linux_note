@@ -10,14 +10,14 @@
 #define VM_MAP		0x00000004	/* vmap()ed pages */
 /* bits [20..32] reserved for arch specific ioremap internals */
 
-/* 虚拟内存结构 */
+/* 铏氭嫙鍐呭瓨缁撴瀯 */
 struct vm_struct {
-	void			*addr;        /* 对应的线性地址 */
-	unsigned long		size;      /* 大小 */
+	void			*addr;        /* 瀵瑰簲鐨勭嚎鎬у湴鍧� */
+	unsigned long		size;      /* 澶у皬 */
 	unsigned long		flags;
 	struct page		**pages;
 	unsigned int		nr_pages;
-	unsigned long		phys_addr;        /* 对应的物理地址 */
+	unsigned long		phys_addr;        /* 瀵瑰簲鐨勭墿鐞嗗湴鍧� */
 	struct vm_struct	*next;
 };
 

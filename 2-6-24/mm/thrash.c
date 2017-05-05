@@ -24,16 +24,16 @@
 
 static DEFINE_SPINLOCK(swap_token_lock);
 /**
- * µ±Ç°³ÖÓĞ½»»»ÁîÅÆµÄ½ø³Ì
+ * å½“å‰æŒæœ‰äº¤æ¢ä»¤ç‰Œçš„è¿›ç¨‹
  */
 struct mm_struct *swap_token_mm;
 /**
- * Ã¿´Î»»Ò³¹ı³ÌÖĞ£¬¶¼»áµ÷ÓÃdo_swap_page£¬Ëü»á¶Ô±¾±äÁ¿¼Ó1.ÓÃÓÚÅĞ¶Ï½»»»ÁîÅÆµÄÆµ·±³Ì¶È¡£
+ * æ¯æ¬¡æ¢é¡µè¿‡ç¨‹ä¸­ï¼Œéƒ½ä¼šè°ƒç”¨do_swap_pageï¼Œå®ƒä¼šå¯¹æœ¬å˜é‡åŠ 1.ç”¨äºåˆ¤æ–­äº¤æ¢ä»¤ç‰Œçš„é¢‘ç¹ç¨‹åº¦ã€‚
  */
 static unsigned int global_faults;
 
 /**
- * »ñÈ¡½»»»ÁîÅÆ
+ * è·å–äº¤æ¢ä»¤ç‰Œ
  */
 void grab_swap_token(void)
 {
@@ -47,14 +47,14 @@ void grab_swap_token(void)
 		return;
 
 	/* First come first served */
-	if (swap_token_mm == NULL) {/* ½»»»ÁîÅÆÎ´·ÖÅä¸øÈÎºÎ½ø³Ì */
-		/* ĞŞ¸ÄÁîÅÆÓÅÏÈ¼¶ */
+	if (swap_token_mm == NULL) {/* äº¤æ¢ä»¤ç‰Œæœªåˆ†é…ç»™ä»»ä½•è¿›ç¨‹ */
+		/* ä¿®æ”¹ä»¤ç‰Œä¼˜å…ˆçº§ */
 		current->mm->token_priority = current->mm->token_priority + 2;
 		swap_token_mm = current->mm;
 		goto out;
 	}
 
-	if (current->mm != swap_token_mm) {/* ÆäËû½ø³Ì»ñÈ¡ÁËÁîÅÆ */
+	if (current->mm != swap_token_mm) {/* å…¶ä»–è¿›ç¨‹è·å–äº†ä»¤ç‰Œ */
 		if (current_interval < current->mm->last_interval)
 			current->mm->token_priority++;
 		else {

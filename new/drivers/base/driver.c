@@ -99,7 +99,7 @@ EXPORT_SYMBOL_GPL(driver_find_device);
  * @drv: driver.
  * @attr: driver attribute descriptor.
  */
-/*ÔÚÐÂ½¨µÄÇý¶¯Ä¿Â¼ÖÐÉú³ÉÊôÐÔÎÄ¼þ*/
+/*åœ¨æ–°å»ºçš„é©±åŠ¨ç›®å½•ä¸­ç”Ÿæˆå±žæ€§æ–‡ä»¶*/
 int driver_create_file(struct device_driver *drv,
 		       const struct driver_attribute *attr)
 {
@@ -146,7 +146,7 @@ void driver_remove_groups(struct device_driver *drv,
  * since most of the things we have to do deal with the bus
  * structures.
  */
- /*º¯ÊýÓÃÀ´ÏòÏµÍ³×¢²áÒ»¸öÇý¶¯*/
+ /*å‡½æ•°ç”¨æ¥å‘ç³»ç»Ÿæ³¨å†Œä¸€ä¸ªé©±åŠ¨*/
 int driver_register(struct device_driver *drv)
 {
 	int ret;
@@ -160,7 +160,7 @@ int driver_register(struct device_driver *drv)
 		printk(KERN_WARNING "Driver '%s' needs updating - please use "
 			"bus_type methods\n", drv->name);
 
-	/*ÔÚdrv->busÉÏ²éÕÒµ±Ç°Òª×¢²áµÄdrv,ÕâÖ÷ÒªÊÇ·ÀÖ¹ÏòÏµÍ³ÖØ¸´×¢²áÍ¬Ò»¸öÇý¶¯*/
+	/*åœ¨drv->busä¸ŠæŸ¥æ‰¾å½“å‰è¦æ³¨å†Œçš„drv,è¿™ä¸»è¦æ˜¯é˜²æ­¢å‘ç³»ç»Ÿé‡å¤æ³¨å†ŒåŒä¸€ä¸ªé©±åŠ¨*/
 	other = driver_find(drv->name, drv->bus);
 	if (other) {
 		printk(KERN_ERR "Error: Driver '%s' is already registered, "
@@ -168,7 +168,7 @@ int driver_register(struct device_driver *drv)
 		return -EBUSY;
 	}
 
-	/*½øÐÐÊµ¼ÊµÄ×¢²á*/
+	/*è¿›è¡Œå®žé™…çš„æ³¨å†Œ*/
 	ret = bus_add_driver(drv);
 	if (ret)
 		return ret;
@@ -189,15 +189,15 @@ EXPORT_SYMBOL_GPL(driver_register);
  *
  * Again, we pass off most of the work to the bus-level call.
  */
- /*½«Ä³Ò»Ö¸¶¨µÄÇý¶¯´ÓÏµÍ³ÖÐ×¢Ïúµô,ÔÚ×¢ÏúÒ»¸öÇý¶¯¶ÔÏóµÄ¹ý³ÌÖÐ,Èç¹ûÆäËùÔÚ×ÜÏß¶¨ÒåÁËremove·½·¨,ÄÚºË»áµ÷ÓÃËü,·ñÔòÒª¿´Çý¶¯ÓÐÃ»ÓÐÊµÏÖ¸Ã·½·¨
-  *@drv:½«Òª×¢ÏúµÄÇý¶¯¶ÔÏó*/
+ /*å°†æŸä¸€æŒ‡å®šçš„é©±åŠ¨ä»Žç³»ç»Ÿä¸­æ³¨é”€æŽ‰,åœ¨æ³¨é”€ä¸€ä¸ªé©±åŠ¨å¯¹è±¡çš„è¿‡ç¨‹ä¸­,å¦‚æžœå…¶æ‰€åœ¨æ€»çº¿å®šä¹‰äº†removeæ–¹æ³•,å†…æ ¸ä¼šè°ƒç”¨å®ƒ,å¦åˆ™è¦çœ‹é©±åŠ¨æœ‰æ²¡æœ‰å®žçŽ°è¯¥æ–¹æ³•
+  *@drv:å°†è¦æ³¨é”€çš„é©±åŠ¨å¯¹è±¡*/
 void driver_unregister(struct device_driver *drv)
 {
 	if (!drv || !drv->p) {
 		WARN(1, "Unexpected driver unregister!\n");
 		return;
 	}
-	/*Ö÷ÒªµÄ¹¤×÷ÔÚ´Ëº¯ÊýÖÐÍê³É*/
+	/*ä¸»è¦çš„å·¥ä½œåœ¨æ­¤å‡½æ•°ä¸­å®Œæˆ*/
 	driver_remove_groups(drv, drv->groups);
 	bus_remove_driver(drv);
 }
@@ -215,9 +215,9 @@ EXPORT_SYMBOL_GPL(driver_unregister);
  * from being unregistered or unloaded while the caller is using it.
  * The caller is responsible for preventing this.
  */
-/*ÔÚÒ»¸öbusµÄdrivers_kset¼¯ºÏÖÐ²éÕÒÖ¸¶¨µÄÇý¶¯
- *@name:Òª²éÕÒµÄÇý¶¯µÄÃû³Æ
- *@bus:ÔÚÄÄ¸ö×ÜÏßÉÏ½øÐÐµ±Ç°µÄ²éÕÒ*/
+/*åœ¨ä¸€ä¸ªbusçš„drivers_kseté›†åˆä¸­æŸ¥æ‰¾æŒ‡å®šçš„é©±åŠ¨
+ *@name:è¦æŸ¥æ‰¾çš„é©±åŠ¨çš„åç§°
+ *@bus:åœ¨å“ªä¸ªæ€»çº¿ä¸Šè¿›è¡Œå½“å‰çš„æŸ¥æ‰¾*/
 struct device_driver *driver_find(const char *name, struct bus_type *bus)
 {
 	struct kobject *k = kset_find_obj(bus->p->drivers_kset, name);

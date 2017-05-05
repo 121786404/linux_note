@@ -80,14 +80,14 @@ struct dcookie_struct;
 #define DNAME_INLINE_LEN_MIN 36
 
 /**
- * Ä¿Â¼Ïî»º´æ
+ * ç›®å½•é¡¹ç¼“å­˜
  */
 struct dentry {
 	atomic_t d_count;
-	/* ±êÖ¾£¬ÈçDCACHE_DISCONNECTED */
+	/* æ ‡å¿—ï¼Œå¦‚DCACHE_DISCONNECTED */
 	unsigned int d_flags;		/* protected by d_lock */
 	spinlock_t d_lock;		/* per dentry lock */
-	/* ¸ÃÄ¿Â¼Ïî»º´æÖ¸ÏòµÄinode£¬Èç¹ûÄ¿Â¼Ïî»º´æÖ¸ÏòµÄÎÄ¼ş²»´æÔÚ£¬Ôò´Ë×Ö¶ÎÎªNULL */
+	/* è¯¥ç›®å½•é¡¹ç¼“å­˜æŒ‡å‘çš„inodeï¼Œå¦‚æœç›®å½•é¡¹ç¼“å­˜æŒ‡å‘çš„æ–‡ä»¶ä¸å­˜åœ¨ï¼Œåˆ™æ­¤å­—æ®µä¸ºNULL */
 	struct inode *d_inode;		/* Where the name belongs to - NULL is
 					 * negative */
 	/*
@@ -95,9 +95,9 @@ struct dentry {
 	 * so they all fit in a cache line.
 	 */
 	struct hlist_node d_hash;	/* lookup hash list */
-	/* Ö¸Ïò¸¸Ä¿Â¼µÄ»º´æÏî£¬¶Ô¸ùÄ¿Â¼À´Ëµ£¬´Ë×Ö¶ÎÖ¸Ïò×ÔÉí */
+	/* æŒ‡å‘çˆ¶ç›®å½•çš„ç¼“å­˜é¡¹ï¼Œå¯¹æ ¹ç›®å½•æ¥è¯´ï¼Œæ­¤å­—æ®µæŒ‡å‘è‡ªèº« */
 	struct dentry *d_parent;	/* parent directory */
-	/* ÎÄ¼şÃû³Æ£¬²»°üº¬ÎÄ¼şÂ·¾¶ */
+	/* æ–‡ä»¶åç§°ï¼Œä¸åŒ…å«æ–‡ä»¶è·¯å¾„ */
 	struct qstr d_name;
 
 	struct list_head d_lru;		/* LRU list */
@@ -105,27 +105,27 @@ struct dentry {
 	 * d_child and d_rcu can share memory
 	 */
 	union {
-		/* Í¨¹ı´Ë×Ö¶ÎÁ´½Óµ½¸¸Ä¿Â¼ÏîµÄd_subdirsÁ´±íÖĞ */
+		/* é€šè¿‡æ­¤å­—æ®µé“¾æ¥åˆ°çˆ¶ç›®å½•é¡¹çš„d_subdirsé“¾è¡¨ä¸­ */
 		struct list_head d_child;	/* child of parent list */
-		/* Í¨¹ı´Ë×Ö¶Î£¬½«¶ÔÏóÌí¼Óµ½rcuÁ´±íÖĞ */
+		/* é€šè¿‡æ­¤å­—æ®µï¼Œå°†å¯¹è±¡æ·»åŠ åˆ°rcué“¾è¡¨ä¸­ */
 	 	struct rcu_head d_rcu;
 	} d_u;
-	/* ¸ÃÄ¿Â¼ÏÂµÄËùÓĞÄ¿Â¼ºÍÎÄ¼ş»º´æÏî */
+	/* è¯¥ç›®å½•ä¸‹çš„æ‰€æœ‰ç›®å½•å’Œæ–‡ä»¶ç¼“å­˜é¡¹ */
 	struct list_head d_subdirs;	/* our children */
-	/* Èç¹ûÖ¸ÏòÒ»¸öÓ²Á¬½Ó£¬ÄÇÃ´Í¨¹ı´Ë×Ö¶Î½«Ö¸ÏòÍ¬Ò»¸öinodeµÄ²»Í¬dentryÁ¬½Óµ½Ò»¸öÁ´±íÖĞ£¬Á´±íÍ·ÊÇinode->i_dentry */
+	/* å¦‚æœæŒ‡å‘ä¸€ä¸ªç¡¬è¿æ¥ï¼Œé‚£ä¹ˆé€šè¿‡æ­¤å­—æ®µå°†æŒ‡å‘åŒä¸€ä¸ªinodeçš„ä¸åŒdentryè¿æ¥åˆ°ä¸€ä¸ªé“¾è¡¨ä¸­ï¼Œé“¾è¡¨å¤´æ˜¯inode->i_dentry */
 	struct list_head d_alias;	/* inode alias list */
 	unsigned long d_time;		/* used by d_revalidate */
-	/* Ä¿Â¼Ïî»Øµ÷º¯Êı£¬ÓÉµ×²ãÎÄ¼şÏµÍ³ÊµÏÖ¡£ */
+	/* ç›®å½•é¡¹å›è°ƒå‡½æ•°ï¼Œç”±åº•å±‚æ–‡ä»¶ç³»ç»Ÿå®ç°ã€‚ */
 	struct dentry_operations *d_op;
-	/* ¸Ã»º´æÏîËùÊôµÄ³¬¼¶¿é */
+	/* è¯¥ç¼“å­˜é¡¹æ‰€å±çš„è¶…çº§å— */
 	struct super_block *d_sb;	/* The root of the dentry tree */
 	void *d_fsdata;			/* fs-specific data */
 #ifdef CONFIG_PROFILING
 	struct dcookie_struct *d_cookie; /* cookie, if any */
 #endif
-	/* ´Ë»º´æÏîÊÇ·ñ±íÊ¾Ò»¸ö×°ÔØµã£¬¼°Æä×°ÔØ´ÎÊı */
+	/* æ­¤ç¼“å­˜é¡¹æ˜¯å¦è¡¨ç¤ºä¸€ä¸ªè£…è½½ç‚¹ï¼ŒåŠå…¶è£…è½½æ¬¡æ•° */
 	int d_mounted;
-	/* Èç¹ûÎÄ¼şÃû±È½Ï¶Ì£¬ÔòÎÄ¼şÃû±£´æÔÚ´Ë×Ö¶ÎÖĞ£¬ÒÔ¼ÓËÙ·ÃÎÊ¡£ */
+	/* å¦‚æœæ–‡ä»¶åæ¯”è¾ƒçŸ­ï¼Œåˆ™æ–‡ä»¶åä¿å­˜åœ¨æ­¤å­—æ®µä¸­ï¼Œä»¥åŠ é€Ÿè®¿é—®ã€‚ */
 	unsigned char d_iname[DNAME_INLINE_LEN_MIN];	/* small names */
 };
 
@@ -142,20 +142,20 @@ enum dentry_d_lock_class
 };
 
 /**
- * Ä¿Â¼Ïî»º´æ»Øµ÷º¯Êı
+ * ç›®å½•é¡¹ç¼“å­˜å›è°ƒå‡½æ•°
  */
 struct dentry_operations {
-	/* ¼ì²éÄÚ´æÖĞµÄdentry¶ÔÏóÊÇ·ñÈÔÈ»ÄÜ¹»·´Ó³µ±Ç°ÎÄ¼şµÄÇé¿ö¡£¶ÔNFSÀ´Ëµ£¬´Ë»Øµ÷ºÜÖØÒª */
+	/* æ£€æŸ¥å†…å­˜ä¸­çš„dentryå¯¹è±¡æ˜¯å¦ä»ç„¶èƒ½å¤Ÿåæ˜ å½“å‰æ–‡ä»¶çš„æƒ…å†µã€‚å¯¹NFSæ¥è¯´ï¼Œæ­¤å›è°ƒå¾ˆé‡è¦ */
 	int (*d_revalidate)(struct dentry *, struct nameidata *);
-	/* ¼ÆËãinodeµÄ¹şÏ£Öµ */
+	/* è®¡ç®—inodeçš„å“ˆå¸Œå€¼ */
 	int (*d_hash) (struct dentry *, struct qstr *);
-	/* ±È½ÏÁ½¸ö¶ÔÏóµÄÎÄ¼şÃû£¬Ä¬ÈÏÊÇÇø·Ö´óĞ¡Ğ´µÄ×Ö·û´®±È½Ï */
+	/* æ¯”è¾ƒä¸¤ä¸ªå¯¹è±¡çš„æ–‡ä»¶åï¼Œé»˜è®¤æ˜¯åŒºåˆ†å¤§å°å†™çš„å­—ç¬¦ä¸²æ¯”è¾ƒ */
 	int (*d_compare) (struct dentry *, struct qstr *, struct qstr *);
-	/* µ±dentryÒıÓÃ¼ÆÊı±äÎª0Ö®ºó£¬µ÷ÓÃ´Ëº¯ÊıÊÍ·Å×ÊÔ´ */
+	/* å½“dentryå¼•ç”¨è®¡æ•°å˜ä¸º0ä¹‹åï¼Œè°ƒç”¨æ­¤å‡½æ•°é‡Šæ”¾èµ„æº */
 	int (*d_delete)(struct dentry *);
-	/* µ±dentryÒıÓÃ¼ÆÊı±äÎª0Ö®Ç°£¬µ÷ÓÃ´Ëº¯ÊıÊÍ·Å×ÊÔ´ */
+	/* å½“dentryå¼•ç”¨è®¡æ•°å˜ä¸º0ä¹‹å‰ï¼Œè°ƒç”¨æ­¤å‡½æ•°é‡Šæ”¾èµ„æº */
 	void (*d_release)(struct dentry *);
-	/* µ±dentry²»ÔÙÊ¹ÓÃÊ±£¬ÊÍ·ÅÏàÓ¦µÄinode */
+	/* å½“dentryä¸å†ä½¿ç”¨æ—¶ï¼Œé‡Šæ”¾ç›¸åº”çš„inode */
 	void (*d_iput)(struct dentry *, struct inode *);
 	char *(*d_dname)(struct dentry *, char *, int);
 };
@@ -184,7 +184,7 @@ d_iput:		no		no		no       yes
 					 * renamed" and has to be
 					 * deleted on the last dput()
 					 */
-/* Ã»ÓĞÁ¬½Óµ½³¬¼¶¿éµÄdentryÊ÷ */					
+/* æ²¡æœ‰è¿æ¥åˆ°è¶…çº§å—çš„dentryæ ‘ */					
 #define	DCACHE_DISCONNECTED 0x0004
      /* This dentry is possibly not currently connected to the dcache tree,
       * in which case its parent will either be itself, or will have this
@@ -198,7 +198,7 @@ d_iput:		no		no		no       yes
       */
 
 #define DCACHE_REFERENCED	0x0008  /* Recently used, don't discard. */
-/* dentryÃ»ÓĞÌí¼Óµ½¹şÏ£±íÖĞ */
+/* dentryæ²¡æœ‰æ·»åŠ åˆ°å“ˆå¸Œè¡¨ä¸­ */
 #define DCACHE_UNHASHED		0x0010	
 
 #define DCACHE_INOTIFY_PARENT_WATCHED	0x0020 /* Parent inode is watched */
@@ -230,7 +230,7 @@ static inline void __d_drop(struct dentry *dentry)
 	}
 }
 
-/* ½«Ä¿Â¼Ïî»º´æ´Ó¹şÏ£±íÖĞÒÆ³ı */
+/* å°†ç›®å½•é¡¹ç¼“å­˜ä»å“ˆå¸Œè¡¨ä¸­ç§»é™¤ */
 static inline void d_drop(struct dentry *dentry)
 {
 	spin_lock(&dcache_lock);
@@ -288,7 +288,7 @@ extern void d_rehash(struct dentry *);
  * The entry was actually filled in earlier during d_alloc().
  */
 
-/* ½«»º´æÏîÓëinode¹ØÁªÆğÀ´£¬Í¬Ê±½«ËüÌí¼Óµ½È«¾ÖÉ¢ÁĞ±íÖĞ */
+/* å°†ç¼“å­˜é¡¹ä¸inodeå…³è”èµ·æ¥ï¼ŒåŒæ—¶å°†å®ƒæ·»åŠ åˆ°å…¨å±€æ•£åˆ—è¡¨ä¸­ */
 static inline void d_add(struct dentry *entry, struct inode *inode)
 {
 	d_instantiate(entry, inode);
@@ -346,7 +346,7 @@ extern char * d_path(struct dentry *, struct vfsmount *, char *, int);
  */
 
 /**
- * Ìí¼ÓÄ¿Â¼Ïî»º´æ½á¹¹µÄÒıÓÃ¼ÆÊı
+ * æ·»åŠ ç›®å½•é¡¹ç¼“å­˜ç»“æ„çš„å¼•ç”¨è®¡æ•°
  */
 static inline struct dentry *dget(struct dentry *dentry)
 {

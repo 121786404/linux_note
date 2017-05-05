@@ -18,10 +18,10 @@
  * <A reworked contiguous memory allocator>:
  * http://lwn.net/Articles/447405/
  * http://lwn.net/Articles/486301/
- * CMA��ȫ����contiguous memory allocator�� �乤��ԭ���ǣ�Ԥ��һ�ε��ڴ��
- * ����ʹ�ã������������õ�ʱ��memory allocator��buddy system�����Է���
- * ���û��������������ڴ����ҳ���档����������Ҫʹ��ʱ���ͽ�����ռ�õ�
- * �ڴ�ͨ�����ջ���Ǩ�Ƶķ�ʽ��֮ǰռ�õ�Ԥ���ڴ��ڳ�����������ʹ��.
+ * CMA的全称是contiguous memory allocator， 其工作原理是：预留一段的内存给
+ * 驱动使用，但当驱动不用的时候，memory allocator（buddy system）可以分配
+ * 给用户进程用作匿名内存或者页缓存。而当驱动需要使用时，就将进程占用的
+ * 内存通过回收或者迁移的方式将之前占用的预留内存腾出来，供驱动使用.
  */
 
 #define pr_fmt(fmt) "cma: " fmt

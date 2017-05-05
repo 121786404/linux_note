@@ -20,29 +20,29 @@
  * below from now on.
  */
 
-/* Ϊ����ioctl��cmd����,�ں�ʹ����һ��32λ�޷�������������ֳ��ĸ�����
+/* 为构造ioctl的cmd参数,内核使用了一个32位无符号整数并将其分成四个部分
 
    31   29            16 15            8 7              0
    |DIR |     SIZE      |     TYPE      |      NR       |
 
- * NR:Ϊ���ܺ�,����Ϊ8λ(_IOC_NRBITS)
- * TYPE:ΪһASCII�ַ�,�ٶ���ÿ������������Զ���Ψһ��,������8λ(_IOC_TYPEBITS)
- *      ʵ�ʵĺ궨���г�������MAGIC����,������ʱҲ��Ϊħ��
- * SIZE:��ʾioctl������arg�����Ĵ�С,���ֶεĳ�������ϵ�ܹ����,ͨ����14λ
-        (_IOC_SIZEBITS),��ʵ�ں���ioctl�ĵ����в�û���õ����ֶ�
- * DIR:��ʾcmd������:read,write��read-write,������2λ,����ֶ����ڱ�ʾ��ioctl
-       ���ù������û��ռ���ں˿ռ����ݴ���ķ���,�˴�����Ķ����Ǵ��û��ռ��
-       �ӽǴ���,�ں�Ϊ���ֶζ���ĺ���:_IOC_NONE,��ʾ��ioctl���ù�����,�û��ռ�
-       ���ں˿ռ�û����Ҫ���ݵĲ���:_IOC_WRITE,��ʾ��ioctl���ù�����,�û��ռ�
-       ��Ҫ���ں˿ռ�д������;_IOC_READ,��ʾ��ioctl���ù�����,�û��ռ���Ҫ���ں�
-       �ռ��ȡ����;_IOC_WRITE|_IOC_READ,��ʾ��ioctl���ù�����,�����������û�
-       �ռ���ں˿ռ����˫�򴫵�
+ * NR:为功能号,长度为8位(_IOC_NRBITS)
+ * TYPE:为一ASCII字符,假定对每个驱动程序而言都是唯一的,长度是8位(_IOC_TYPEBITS)
+ *      实际的宏定义中常常含有MAGIC字样,所以有时也称为魔数
+ * SIZE:表示ioctl调用中arg参数的大小,该字段的长度与体系架构相关,通常是14位
+        (_IOC_SIZEBITS),其实内核在ioctl的调用中并没有用到该字段
+ * DIR:表示cmd的类型:read,write和read-write,长度是2位,这个字段用于表示在ioctl
+       调用过程中用户空间和内核空间数据传输的方向,此处方向的定义是从用户空间的
+       视角触发,内核为该字段定义的宏有:_IOC_NONE,表示在ioctl调用过程中,用户空间
+       和内核空间没有需要传递的参数:_IOC_WRITE,表示在ioctl调用过程中,用户空间
+       需要向内核空间写入数据;_IOC_READ,表示在ioctl调用过程中,用户空间需要从内核
+       空间读取数据;_IOC_WRITE|_IOC_READ,表示在ioctl调用过程中,参数数据在用户
+       空间和内核空间进行双向传递
  */
 
- /* NR:Ϊ���ܺ�,����Ϊ8λ(_IOC_NRBITS)*/
+ /* NR:为功能号,长度为8位(_IOC_NRBITS)*/
 #define _IOC_NRBITS	8
- /* TYPE:ΪһASCII�ַ�,�ٶ���ÿ������������Զ���Ψһ��,������8λ(_IOC_TYPEBITS)
- *  ʵ�ʵĺ궨���г�������MAGIC����,������ʱҲ��Ϊħ��*/
+ /* TYPE:为一ASCII字符,假定对每个驱动程序而言都是唯一的,长度是8位(_IOC_TYPEBITS)
+ *  实际的宏定义中常常含有MAGIC字样,所以有时也称为魔数*/
 #define _IOC_TYPEBITS	8
 
 /*
@@ -50,28 +50,28 @@
  * including this file.
  */
 
- /* SIZE:��ʾioctl������arg�����Ĵ�С,���ֶεĳ�������ϵ�ܹ����,ͨ����14λ
-  * (_IOC_SIZEBITS),��ʵ�ں���ioctl�ĵ����в�û���õ����ֶ�*/
+ /* SIZE:表示ioctl调用中arg参数的大小,该字段的长度与体系架构相关,通常是14位
+  * (_IOC_SIZEBITS),其实内核在ioctl的调用中并没有用到该字段*/
 #ifndef _IOC_SIZEBITS
 # define _IOC_SIZEBITS	14
 #endif
 
- /* DIR:��ʾcmd������:read,write��read-write,������2λ,����ֶ����ڱ�ʾ��ioctl
-  * ���ù������û��ռ���ں˿ռ����ݴ���ķ���,�˴�����Ķ����Ǵ��û��ռ��
-  * �ӽǴ���*/
+ /* DIR:表示cmd的类型:read,write和read-write,长度是2位,这个字段用于表示在ioctl
+  * 调用过程中用户空间和内核空间数据传输的方向,此处方向的定义是从用户空间的
+  * 视角触发*/
 #ifndef _IOC_DIRBITS
 # define _IOC_DIRBITS	2
 #endif
 
-#define _IOC_NRMASK	((1 << _IOC_NRBITS)-1)	/*NR�ֶε�����*/
-#define _IOC_TYPEMASK	((1 << _IOC_TYPEBITS)-1)/*TYPE�ֶε�����*/
-#define _IOC_SIZEMASK	((1 << _IOC_SIZEBITS)-1)/*SIZE�ֶε�����*/
-#define _IOC_DIRMASK	((1 << _IOC_DIRBITS)-1)	/*CMD�ֶε�����*/
+#define _IOC_NRMASK	((1 << _IOC_NRBITS)-1)	/*NR字段的掩码*/
+#define _IOC_TYPEMASK	((1 << _IOC_TYPEBITS)-1)/*TYPE字段的掩码*/
+#define _IOC_SIZEMASK	((1 << _IOC_SIZEBITS)-1)/*SIZE字段的掩码*/
+#define _IOC_DIRMASK	((1 << _IOC_DIRBITS)-1)	/*CMD字段的掩码*/
 
-#define _IOC_NRSHIFT	0				/*NR�ֶε�λ��*/
-#define _IOC_TYPESHIFT	(_IOC_NRSHIFT+_IOC_NRBITS)	/*TYPE�ֶε�λ��*/
-#define _IOC_SIZESHIFT	(_IOC_TYPESHIFT+_IOC_TYPEBITS)	/*SIZE�ֶε�λ��*/
-#define _IOC_DIRSHIFT	(_IOC_SIZESHIFT+_IOC_SIZEBITS)	/*CMD�ֶε�λ��*/
+#define _IOC_NRSHIFT	0				/*NR字段的位移*/
+#define _IOC_TYPESHIFT	(_IOC_NRSHIFT+_IOC_NRBITS)	/*TYPE字段的位移*/
+#define _IOC_SIZESHIFT	(_IOC_TYPESHIFT+_IOC_TYPEBITS)	/*SIZE字段的位移*/
+#define _IOC_DIRSHIFT	(_IOC_SIZESHIFT+_IOC_SIZEBITS)	/*CMD字段的位移*/
 
 /*
  * Direction bits, which any architecture can choose to override
@@ -80,22 +80,22 @@
 
        
        
-/*��ʾ��ioctl���ù�����,�û��ռ���ں˿ռ�û����Ҫ���ݵĲ���.*/
+/*表示在ioctl调用过程中,用户空间和内核空间没有需要传递的参数.*/
 #ifndef _IOC_NONE
 # define _IOC_NONE	0U
 #endif
 
-/*��ʾ��ioctl���ù�����,�û��ռ���Ҫ���ں˿ռ�д������*/
+/*表示在ioctl调用过程中,用户空间需要向内核空间写入数据*/
 #ifndef _IOC_WRITE
 # define _IOC_WRITE	1U
 #endif
 
-/*��ʾ��ioctl���ù�����,�û��ռ���Ҫ���ں˿ռ��ȡ����*/
+/*表示在ioctl调用过程中,用户空间需要从内核空间读取数据*/
 #ifndef _IOC_READ
 # define _IOC_READ	2U
 #endif
 
-/*��_IOC��NR,TYPE,SIZE��DIR��ϳ�һ��cmd����*/
+/*宏_IOC将NR,TYPE,SIZE和DIR组合成一个cmd参数*/
 #define _IOC(dir,type,nr,size) \
 	(((dir)  << _IOC_DIRSHIFT) | \
 	 ((type) << _IOC_TYPESHIFT) | \
@@ -107,30 +107,30 @@
 #endif
 
 /**
- * EXAMPLE:DEMODEV_IOCINT,��������û��ռ����ں˿ռ䴫��һ��int�Ͳ���
+ * EXAMPLE:DEMODEV_IOCINT,该命令从用户空间向内核空间传递一个int型参数
  *  
  */
 /* used to create numbers */
-/*�����޲�����������*/
+/*构造无参数的命令编号*/
 #define _IO(type,nr)		_IOC(_IOC_NONE,(type),(nr),0)
-/*��������������ж�ȡ���ݵ�������*/
+/*构造从驱动程序中读取数据的命令编号*/
 #define _IOR(type,nr,size)	_IOC(_IOC_READ,(type),(nr),(_IOC_TYPECHECK(size)))
-/*����������������д�����ݵ�������*/
+/*构造向驱动程序中写入数据的命令编号*/
 #define _IOW(type,nr,size)	_IOC(_IOC_WRITE,(type),(nr),(_IOC_TYPECHECK(size)))
-/*����˫����*/
+/*用于双向传输*/
 #define _IOWR(type,nr,size)	_IOC(_IOC_READ|_IOC_WRITE,(type),(nr),(_IOC_TYPECHECK(size)))
 #define _IOR_BAD(type,nr,size)	_IOC(_IOC_READ,(type),(nr),sizeof(size))
 #define _IOW_BAD(type,nr,size)	_IOC(_IOC_WRITE,(type),(nr),sizeof(size))
 #define _IOWR_BAD(type,nr,size)	_IOC(_IOC_READ|_IOC_WRITE,(type),(nr),sizeof(size))
 
 /* used to decode ioctl numbers.. */
-/*����������н��������ݷ��򣬼�д�����Ƕ���*/
+/*从命令参数中解析出数据方向，即写进还是读出*/
 #define _IOC_DIR(nr)		(((nr) >> _IOC_DIRSHIFT) & _IOC_DIRMASK)
-/*����������н���������type*/
+/*从命令参数中解析出幻数type*/
 #define _IOC_TYPE(nr)		(((nr) >> _IOC_TYPESHIFT) & _IOC_TYPEMASK)
-/*����������н���������number*/
+/*从命令参数中解析出序数number*/
 #define _IOC_NR(nr)		(((nr) >> _IOC_NRSHIFT) & _IOC_NRMASK)
-/*����������н������û����ݴ�С*/
+/*从命令参数中解析出用户数据大小*/
 #define _IOC_SIZE(nr)		(((nr) >> _IOC_SIZESHIFT) & _IOC_SIZEMASK)
 
 /* ...and for the drivers/sound files... */

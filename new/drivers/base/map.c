@@ -16,16 +16,16 @@
 #include <linux/kobject.h>
 #include <linux/kobj_map.h>
 
-/*¼ÇÂ¼ÁËµ±Ç°ÕıÔÚ¼ÓÈëÏµÍ³µÄ×Ö·ûÉè±¸¶ÔÏóµÄÓĞ¹ØĞÅÏ¢*/
+/*è®°å½•äº†å½“å‰æ­£åœ¨åŠ å…¥ç³»ç»Ÿçš„å­—ç¬¦è®¾å¤‡å¯¹è±¡çš„æœ‰å…³ä¿¡æ¯*/
 struct kobj_map {
 	struct probe {
 		struct probe *next;
-		dev_t dev;	/*Éè±¸ºÅ*/
-		unsigned long range;	/*´Ó´ÎÉè±¸ºÅ¿ªÊ¼Á¬ĞøµÄÉè±¸ÊıÁ¿*/
+		dev_t dev;	/*è®¾å¤‡å·*/
+		unsigned long range;	/*ä»æ¬¡è®¾å¤‡å·å¼€å§‹è¿ç»­çš„è®¾å¤‡æ•°é‡*/
 		struct module *owner;
 		kobj_probe_t *get;
 		int (*lock)(dev_t, void *);
-		void *data;	/*Ö¸Ïòµ±Ç°ÕıÒª¼ÓÈëÏµÍ³µÄÉè±¸¶ÔÏóÖ¸Õëp*/
+		void *data;	/*æŒ‡å‘å½“å‰æ­£è¦åŠ å…¥ç³»ç»Ÿçš„è®¾å¤‡å¯¹è±¡æŒ‡é’ˆp*/
 	} *probes[255];
 	struct mutex *lock;
 };
@@ -34,7 +34,7 @@ int kobj_map(struct kobj_map *domain, dev_t dev, unsigned long range,
 	     struct module *module, kobj_probe_t *probe,
 	     int (*lock)(dev_t, void *), void *data)
 {
-	/*¼ÆËãÊäÈëµÄrange¿ÉÄÜÕ¼ÓÃ¼¸¸öÖ÷Éè±¸ºÅ£¬¶Ô256Õâ¸örangeÀ´Ëµ£¬Ö»Õ¼ÓÃÒ»¸öÖ÷Éè±¸ºÅ*/
+	/*è®¡ç®—è¾“å…¥çš„rangeå¯èƒ½å ç”¨å‡ ä¸ªä¸»è®¾å¤‡å·ï¼Œå¯¹256è¿™ä¸ªrangeæ¥è¯´ï¼Œåªå ç”¨ä¸€ä¸ªä¸»è®¾å¤‡å·*/
 	unsigned n = MAJOR(dev + range - 1) - MAJOR(dev) + 1;
 	unsigned index = MAJOR(dev);
 	unsigned i;

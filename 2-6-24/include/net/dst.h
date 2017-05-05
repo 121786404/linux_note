@@ -236,7 +236,7 @@ static inline void dst_set_expires(struct dst_entry *dst, int timeout)
 /* Output packet to network from transport.  */
 static inline int dst_output(struct sk_buff *skb)
 {
-	/* 对ip协议来说，回调函数是ip_output */
+	/* 瀵筰p鍗忚鏉ヨ锛屽洖璋冨嚱鏁版槸ip_output */
 	return skb->dst->output(skb);
 }
 
@@ -246,7 +246,7 @@ static inline int dst_input(struct sk_buff *skb)
 	int err;
 
 	for (;;) {
-		/* 根据路由结果，调用下一步的处理函数，可能是ip_local_deliver或者ip_forward */
+		/* 鏍规嵁璺敱缁撴灉锛岃皟鐢ㄤ笅涓�姝ョ殑澶勭悊鍑芥暟锛屽彲鑳芥槸ip_local_deliver鎴栬�卛p_forward */
 		err = skb->dst->input(skb);
 
 		if (likely(err == 0))

@@ -5,7 +5,7 @@
 
 struct sockaddr_un {
 	sa_family_t sun_family;	/* AF_UNIX */
-        /* Ì×½Ó×Ö°ó¶¨µÄÎÄ¼şÂ·¾¶Ãû */
+        /* å¥—æ¥å­—ç»‘å®šçš„æ–‡ä»¶è·¯å¾„å */
 	char sun_path[UNIX_PATH_MAX];	/* pathname */
 };
 

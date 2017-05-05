@@ -178,9 +178,9 @@ static void __init free_bootmem_core(bootmem_data_t *bdata, unsigned long addr,
  * NOTE:  This function is _not_ reentrant.
  */
 /**
- * ÔÚNUMAÏµÍ³ÖĞ£¬ÔÚÖ¸¶¨½Úµã·ÖÅä³õÊ¼»¯ÄÚ´æ
- * Ò²ÓÃÓÚUMAÏµÍ³
- * ²ÉÓÃ×îÏÈÊÊÅäËã·¨
+ * åœ¨NUMAç³»ç»Ÿä¸­ï¼Œåœ¨æŒ‡å®šèŠ‚ç‚¹åˆ†é…åˆå§‹åŒ–å†…å­˜
+ * ä¹Ÿç”¨äºUMAç³»ç»Ÿ
+ * é‡‡ç”¨æœ€å…ˆé€‚é…ç®—æ³•
  */
 void * __init
 __alloc_bootmem_core(struct bootmem_data *bdata, unsigned long size,
@@ -218,7 +218,7 @@ __alloc_bootmem_core(struct bootmem_data *bdata, unsigned long size,
 	 * We try to allocate bootmem pages above 'goal'
 	 * first, then we try to allocate lower pages.
 	 */
-	/* ´ÓgoalÖ¸¶¨µÄÎ»ÖÃ¿ªÊ¼£¬Ê×ÏÈÈ·¶¨´Ó»î¶¯ÇøµÄÄÄ¸öµØ·½¿ªÊ¼²éÕÒ */
+	/* ä»goalæŒ‡å®šçš„ä½ç½®å¼€å§‹ï¼Œé¦–å…ˆç¡®å®šä»æ´»åŠ¨åŒºçš„å“ªä¸ªåœ°æ–¹å¼€å§‹æŸ¥æ‰¾ */
 	if (goal && goal >= bdata->node_boot_start && PFN_DOWN(goal) < end_pfn) {
 		preferred = goal - bdata->node_boot_start;
 
@@ -410,13 +410,13 @@ void __init reserve_bootmem(unsigned long addr, unsigned long size)
 }
 #endif /* !CONFIG_HAVE_ARCH_BOOTMEM_NODE */
 
-/* ÊÍ·ÅbootÄÚ´æ£¬Ö»ÄÜÊÍ·ÅÕûÒ³ */
+/* é‡Šæ”¾bootå†…å­˜ï¼Œåªèƒ½é‡Šæ”¾æ•´é¡µ */
 void __init free_bootmem(unsigned long addr, unsigned long size)
 {
 	free_bootmem_core(NODE_DATA(0)->bdata, addr, size);
 }
 
-/* ½«ËùÓĞboomÖĞÎ´Ê¹ÓÃµÄÒ³ÊÍ·Å¸ø»ï°éÏµÍ³ */
+/* å°†æ‰€æœ‰boomä¸­æœªä½¿ç”¨çš„é¡µé‡Šæ”¾ç»™ä¼™ä¼´ç³»ç»Ÿ */
 unsigned long __init free_all_bootmem(void)
 {
 	return free_all_bootmem_core(NODE_DATA(0));
@@ -437,10 +437,10 @@ void * __init __alloc_bootmem_nopanic(unsigned long size, unsigned long align,
 }
 
 /**
- * ÔÚËùÓĞ½ÚµãÖĞ·ÖÅäbootÄÚ´æ
- *     size:   ËùĞè·ÖÅäµÄÄÚ´æ³¤¶È
- *     align:  ¶ÔÆë·½Ê½
- *     goal:   ´ÓºÎ´¦¿ªÊ¼·ÖÅä,DMAÄÚ´æ´Ó0¿ªÊ¼£¬ÆÕÍ¨ÄÚ´æ´ÓMAX_DAM_ADDRESS¿ªÊ¼
+ * åœ¨æ‰€æœ‰èŠ‚ç‚¹ä¸­åˆ†é…bootå†…å­˜
+ *     size:   æ‰€éœ€åˆ†é…çš„å†…å­˜é•¿åº¦
+ *     align:  å¯¹é½æ–¹å¼
+ *     goal:   ä»ä½•å¤„å¼€å§‹åˆ†é…,DMAå†…å­˜ä»0å¼€å§‹ï¼Œæ™®é€šå†…å­˜ä»MAX_DAM_ADDRESSå¼€å§‹
  */
 void * __init __alloc_bootmem(unsigned long size, unsigned long align,
 			      unsigned long goal)
@@ -458,19 +458,19 @@ void * __init __alloc_bootmem(unsigned long size, unsigned long align,
 }
 
 /**
- * ÔÚNUMAÏµÍ³ÖĞ£¬ÔÚÖ¸¶¨½Úµã·ÖÅä³õÊ¼»¯ÄÚ´æ
+ * åœ¨NUMAç³»ç»Ÿä¸­ï¼Œåœ¨æŒ‡å®šèŠ‚ç‚¹åˆ†é…åˆå§‹åŒ–å†…å­˜
  */
 void * __init __alloc_bootmem_node(pg_data_t *pgdat, unsigned long size,
 				   unsigned long align, unsigned long goal)
 {
 	void *ptr;
 
-	/* ÔÚÖ¸¶¨½ÚµãÖĞ·ÖÅäbootÄÚ´æ */
+	/* åœ¨æŒ‡å®šèŠ‚ç‚¹ä¸­åˆ†é…bootå†…å­˜ */
 	ptr = __alloc_bootmem_core(pgdat->bdata, size, align, goal, 0);
 	if (ptr)
 		return ptr;
 
-	/* ÔÚËùÓĞ½ÚµãÖĞ·ÖÅä */
+	/* åœ¨æ‰€æœ‰èŠ‚ç‚¹ä¸­åˆ†é… */
 	return __alloc_bootmem(size, align, goal);
 }
 

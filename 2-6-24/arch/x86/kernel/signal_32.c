@@ -172,7 +172,7 @@ badframe:
 }
 
 /**
- * µ±ÓÃ»§Ì¬ĞÅºÅ´¦Àíº¯Êı´¦ÀíÍêĞÅºÅºó£¬µ÷ÓÃ´ËÏµÍ³µ÷ÓÃ»Øµ½ÄÚºËÌ¬
+ * å½“ç”¨æˆ·æ€ä¿¡å·å¤„ç†å‡½æ•°å¤„ç†å®Œä¿¡å·åï¼Œè°ƒç”¨æ­¤ç³»ç»Ÿè°ƒç”¨å›åˆ°å†…æ ¸æ€
  */
 asmlinkage int sys_sigreturn(unsigned long __unused)
 {
@@ -573,7 +573,7 @@ handle_signal(unsigned long sig, siginfo_t *info, struct k_sigaction *ka,
  * mistake.
  */
 /**
- * ´ÓÄÚºËÌ¬ÇĞ»»µ½ÓÃ»§Ì¬Ê±£¬µ÷ÓÃ´Ëº¯Êı´¦ÀíĞÅºÅ¡£
+ * ä»å†…æ ¸æ€åˆ‡æ¢åˆ°ç”¨æˆ·æ€æ—¶ï¼Œè°ƒç”¨æ­¤å‡½æ•°å¤„ç†ä¿¡å·ã€‚
  */
 static void fastcall do_signal(struct pt_regs *regs)
 {
@@ -598,9 +598,9 @@ static void fastcall do_signal(struct pt_regs *regs)
 	else
 		oldset = &current->blocked;
 
-	/* µÃµ½ĞÅºÅĞÅÏ¢£¬¸ÃĞÅºÅĞèÒªÓÉÓÃ»§Ì¬´¦Àí */
+	/* å¾—åˆ°ä¿¡å·ä¿¡æ¯ï¼Œè¯¥ä¿¡å·éœ€è¦ç”±ç”¨æˆ·æ€å¤„ç† */
 	signr = get_signal_to_deliver(&info, &ka, regs, NULL);
-	if (signr > 0) {/* ĞèÒª´¦ÀíÓÃ»§Ì¬ĞÅºÅ */
+	if (signr > 0) {/* éœ€è¦å¤„ç†ç”¨æˆ·æ€ä¿¡å· */
 		/* Re-enable any watchpoints before delivering the
 		 * signal to user space. The processor register will
 		 * have been cleared if the watchpoint triggered
@@ -610,7 +610,7 @@ static void fastcall do_signal(struct pt_regs *regs)
 			set_debugreg(current->thread.debugreg[7], 7);
 
 		/* Whee!  Actually deliver the signal.  */
-		/* ²Ù×÷½ø³ÌÔÚÓÃ»§Ì¬ÏÂµÄÕ»£¬ÕâÑùÓÃ»§Ì¬×´Ì¬ÏÂ»áÔËĞĞĞÅºÅ´¦Àí³ÌĞò */
+		/* æ“ä½œè¿›ç¨‹åœ¨ç”¨æˆ·æ€ä¸‹çš„æ ˆï¼Œè¿™æ ·ç”¨æˆ·æ€çŠ¶æ€ä¸‹ä¼šè¿è¡Œä¿¡å·å¤„ç†ç¨‹åº */
 		if (handle_signal(signr, &info, &ka, oldset, regs) == 0) {
 			/* a signal was successfully delivered; the saved
 			 * sigmask will have been stored in the signal frame,

@@ -1125,15 +1125,15 @@ static int gic_init_bases(struct gic_chip_data *gic, int irq_start,
 		 */
 		if (gic == &gic_data[0] && (irq_start & 31) > 0) {
     		/*
-        		    ±äÁ¿hwirq_base±íÊ¾¸ÃGICÉÏÒª½øĞĞmapµÄbase ID£¬
-        		    hwirq_base = 16Ò²¾ÍÒâÎ¶×ÅºöÂÔµô16¸öSGI
+        		    å˜é‡hwirq_baseè¡¨ç¤ºè¯¥GICä¸Šè¦è¿›è¡Œmapçš„base IDï¼Œ
+        		    hwirq_base = 16ä¹Ÿå°±æ„å‘³ç€å¿½ç•¥æ‰16ä¸ªSGI
     		      */
 			hwirq_base = 16;
 			if (irq_start != -1)
 				irq_start = (irq_start & ~31) + 16;
 		} else {
 		/*
-        ¶ÔÓÚÏµÍ³ÖĞÆäËûµÄGIC£¬ÆäPPIÒ²Ã»ÓĞ±ØÒªmapping£¬Òò´Ëhwirq_base = 32
+        å¯¹äºç³»ç»Ÿä¸­å…¶ä»–çš„GICï¼Œå…¶PPIä¹Ÿæ²¡æœ‰å¿…è¦mappingï¼Œå› æ­¤hwirq_base = 32
 		*/
 			hwirq_base = 32;
 		}
@@ -1299,25 +1299,25 @@ static int gic_of_setup(struct gic_chip_data *gic, struct device_node *node)
 	if (!gic || !node)
 		return -EINVAL;
 
-    /* Ó³ÉäGIC DistributorµÄ¼Ä´æÆ÷µØÖ·¿Õ¼ä*/
+    /* æ˜ å°„GIC Distributorçš„å¯„å­˜å™¨åœ°å€ç©ºé—´*/
 	gic->raw_dist_base = of_iomap(node, 0);
 	if (WARN(!gic->raw_dist_base, "unable to map gic dist registers\n"))
 		goto error;
 
-    /* Ó³ÉäGIC CPU interfaceµÄ¼Ä´æÆ÷µØÖ·¿Õ¼ä */
+    /* æ˜ å°„GIC CPU interfaceçš„å¯„å­˜å™¨åœ°å€ç©ºé—´ */
 	gic->raw_cpu_base = of_iomap(node, 1);
 	if (WARN(!gic->raw_cpu_base, "unable to map gic cpu registers\n"))
 		goto error;
 
     /* 
-          ´¦Àícpu-offsetÊôĞÔ
-          ÒªÁË½âcpu-offsetÊôĞÔ£¬Ê×ÏÈÒªÁË½âÊ²Ã´ÊÇbanked register¡£
-          ËùÎ½banked register¾ÍÊÇÔÚÒ»¸öµØÖ·ÉÏÌá¹©¶à¸ö¼Ä´æÆ÷¸±±¾¡£
-          ±ÈÈçËµÏµÍ³ÖĞÓĞËÄ¸öCPU£¬ÕâĞ©CPU·ÃÎÊÄ³¸ö¼Ä´æÆ÷µÄÊ±ºòµØÖ·ÊÇÒ»ÑùµÄ£¬
-          µ«ÊÇ¶ÔÓÚbanked register£¬Êµ¼ÊÉÏ£¬²»Í¬µÄCPU·ÃÎÊµÄÊÇ²»Í¬µÄ¼Ä´æÆ÷£¬
-          ËäÈ»ËüÃÇµÄµØÖ·ÊÇÒ»ÑùµÄ¡£
-          Èç¹ûGICÃ»ÓĞbanked register£¬ÄÇÃ´ĞèÒªÌá¹©¸ù¾İCPU index¸ø³öÒ»ÏµÁĞµØÖ·Æ«ÒÆ£¬
-          ¶øµØÖ·Æ«ÒÆ=cpu-offset * cpu-nr
+          å¤„ç†cpu-offsetå±æ€§
+          è¦äº†è§£cpu-offsetå±æ€§ï¼Œé¦–å…ˆè¦äº†è§£ä»€ä¹ˆæ˜¯banked registerã€‚
+          æ‰€è°“banked registerå°±æ˜¯åœ¨ä¸€ä¸ªåœ°å€ä¸Šæä¾›å¤šä¸ªå¯„å­˜å™¨å‰¯æœ¬ã€‚
+          æ¯”å¦‚è¯´ç³»ç»Ÿä¸­æœ‰å››ä¸ªCPUï¼Œè¿™äº›CPUè®¿é—®æŸä¸ªå¯„å­˜å™¨çš„æ—¶å€™åœ°å€æ˜¯ä¸€æ ·çš„ï¼Œ
+          ä½†æ˜¯å¯¹äºbanked registerï¼Œå®é™…ä¸Šï¼Œä¸åŒçš„CPUè®¿é—®çš„æ˜¯ä¸åŒçš„å¯„å­˜å™¨ï¼Œ
+          è™½ç„¶å®ƒä»¬çš„åœ°å€æ˜¯ä¸€æ ·çš„ã€‚
+          å¦‚æœGICæ²¡æœ‰banked registerï¼Œé‚£ä¹ˆéœ€è¦æä¾›æ ¹æ®CPU indexç»™å‡ºä¸€ç³»åˆ—åœ°å€åç§»ï¼Œ
+          è€Œåœ°å€åç§»=cpu-offset * cpu-nr
     */
 	if (of_property_read_u32(node, "cpu-offset", &gic->percpu_offset))
 		gic->percpu_offset = 0;
@@ -1382,8 +1382,8 @@ static void __init gic_of_setup_kvm_info(struct device_node *node)
 }
 
 /*
-node²ÎÊı´ú±íĞèÒª³õÊ¼»¯µÄÄÇ¸öinterrupt controllerµÄdevice node
-parent²ÎÊıÖ¸ÏòÆäparent
+nodeå‚æ•°ä»£è¡¨éœ€è¦åˆå§‹åŒ–çš„é‚£ä¸ªinterrupt controllerçš„device node
+parentå‚æ•°æŒ‡å‘å…¶parent
 */
 int __init
 gic_of_init(struct device_node *node, struct device_node *parent)
@@ -1411,7 +1411,7 @@ gic_of_init(struct device_node *node, struct device_node *parent)
 	if (gic_cnt == 0 && !gic_check_eoimode(node, &gic->raw_cpu_base))
 		static_key_slow_dec(&supports_deactivate);
 
-    /* Ö÷´¦Àí¹ı³Ì */
+    /* ä¸»å¤„ç†è¿‡ç¨‹ */
 	ret = __gic_init_bases(gic, -1, &node->fwnode);
 	if (ret) {
 		gic_teardown(gic);
@@ -1423,9 +1423,9 @@ gic_of_init(struct device_node *node, struct device_node *parent)
 		gic_of_setup_kvm_info(node);
 	}
 
-    /* ´¦Àíinterrupt¼¶Áª*/
+    /* å¤„ç†interruptçº§è”*/
 	if (parent) {
-	/* ½âÎösecond GICµÄinterruptsÊôĞÔ£¬²¢½øĞĞmapping£¬·µ»ØIRQ number */
+	/* è§£æsecond GICçš„interruptså±æ€§ï¼Œå¹¶è¿›è¡Œmappingï¼Œè¿”å›IRQ number */
 		irq = irq_of_parse_and_map(node, 0);
 		gic_cascade_irq(gic_cnt, irq);
 	}

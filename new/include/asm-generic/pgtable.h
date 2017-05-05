@@ -49,7 +49,7 @@ static inline int pmdp_set_access_flags(struct vm_area_struct *vma,
 
 #ifndef __HAVE_ARCH_PTEP_TEST_AND_CLEAR_YOUNG
 /*
-Óë pte_mkold( ) ÀàËÆ£¬µ«×÷ÓÃÓÚÖ¸ÏòÒ³±íÏîµÄÖ¸Õë²¢·µ»Ø Accessed±êÖ¾µÄ¾ÉÖµ
+ä¸ pte_mkold( ) ç±»ä¼¼ï¼Œä½†ä½œç”¨äºæŒ‡å‘é¡µè¡¨é¡¹çš„æŒ‡é’ˆå¹¶è¿”å› Accessedæ ‡å¿—çš„æ—§å€¼
 */
 static inline int ptep_test_and_clear_young(struct vm_area_struct *vma,
 					    unsigned long address,
@@ -188,7 +188,7 @@ extern pmd_t pmdp_huge_clear_flush(struct vm_area_struct *vma,
 
 #ifndef __HAVE_ARCH_PTEP_SET_WRPROTECT
 struct mm_struct;
-// Óë pte_wrprotect( ) ÀàËÆ£¬µ«×÷ÓÃÓÚÖ¸ÏòÒ³±íÏîµÄÖ¸Õë
+// ä¸ pte_wrprotect( ) ç±»ä¼¼ï¼Œä½†ä½œç”¨äºæŒ‡å‘é¡µè¡¨é¡¹çš„æŒ‡é’ˆ
 static inline void ptep_set_wrprotect(struct mm_struct *mm, unsigned long address, pte_t *ptep)
 {
 	pte_t old_pte = *ptep;
@@ -800,10 +800,10 @@ int phys_mem_access_prot_allowed(struct file *file, unsigned long pfn,
 #endif /* !__ASSEMBLY__ */
 
 #ifndef io_remap_pfn_range
-/*ËüÓëremap_pfn_rangeµÄÇø±ğÊÇio_remap_pfn_rangeÓÃÀ´½«ÓÃ»§µØÖ·Ó³Éäµ½Éè±¸µÄI/O
- *¿Õ¼ä,¶øremap_pfn_rangeÔòÊÇ½«ÓÃ»§µØÖ·Ó³Éäµ½Ö÷´æRAMÖĞ,¶ÔÓÚ¾ø´ó¶àÉÙÌåÏµ¼Ü¹¹Õâ
- *Á½¸öº¯ÊıÊÇÍêÈ«µÈ¼ÛµÄ.½¨ÒéÈç¹ûÓ³ÉäµÄÄ¿±êµØÖ·ÊÇÔÚRAM»òÕßÊÇ,±ÈÈçPCIÉè±¸µÄMM¿Õ¼ä
- *ÖĞ,Ê¹ÓÃremap_pfn_rangeº¯Êı,Èç¹ûÓ³ÉäµÄÄ¿±êµØÖ·ÊÇÔÚÉè±¸I/O¿Õ¼ä,ÔòÓ¦¸ÃÊ¹ÓÃio_rema *p_pfn_range*/
+/*å®ƒä¸remap_pfn_rangeçš„åŒºåˆ«æ˜¯io_remap_pfn_rangeç”¨æ¥å°†ç”¨æˆ·åœ°å€æ˜ å°„åˆ°è®¾å¤‡çš„I/O
+ *ç©ºé—´,è€Œremap_pfn_rangeåˆ™æ˜¯å°†ç”¨æˆ·åœ°å€æ˜ å°„åˆ°ä¸»å­˜RAMä¸­,å¯¹äºç»å¤§å¤šå°‘ä½“ç³»æ¶æ„è¿™
+ *ä¸¤ä¸ªå‡½æ•°æ˜¯å®Œå…¨ç­‰ä»·çš„.å»ºè®®å¦‚æœæ˜ å°„çš„ç›®æ ‡åœ°å€æ˜¯åœ¨RAMæˆ–è€…æ˜¯,æ¯”å¦‚PCIè®¾å¤‡çš„MMç©ºé—´
+ *ä¸­,ä½¿ç”¨remap_pfn_rangeå‡½æ•°,å¦‚æœæ˜ å°„çš„ç›®æ ‡åœ°å€æ˜¯åœ¨è®¾å¤‡I/Oç©ºé—´,åˆ™åº”è¯¥ä½¿ç”¨io_rema *p_pfn_range*/
 #define io_remap_pfn_range remap_pfn_range
 #endif
 

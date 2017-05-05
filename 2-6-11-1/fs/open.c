@@ -515,7 +515,7 @@ asmlinkage long sys_access(const char __user * filename, int mode)
 	return res;
 }
 
-/* ¸ü¸Ä½ø³Ì¹¤×÷Ä¿Â¼ */
+/* æ›´æ”¹è¿›ç¨‹å·¥ä½œç›®å½• */
 asmlinkage long sys_chdir(const char __user * filename)
 {
 	struct nameidata nd;
@@ -537,7 +537,7 @@ out:
 	return error;
 }
 
-/* ¸ü¸Ä½ø³ÌµÄ¹¤×÷Ä¿Â¼ */
+/* æ›´æ”¹è¿›ç¨‹çš„å·¥ä½œç›®å½• */
 asmlinkage long sys_fchdir(unsigned int fd)
 {
 	struct file *file;
@@ -568,7 +568,7 @@ out:
 	return error;
 }
 
-/* ¸ü¸Äµ±Ç°½ø³ÌµÄ¸ùÄ¿Â¼ */
+/* æ›´æ”¹å½“å‰è¿›ç¨‹çš„æ ¹ç›®å½• */
 asmlinkage long sys_chroot(const char __user * filename)
 {
 	struct nameidata nd;
@@ -753,7 +753,7 @@ asmlinkage long sys_fchown(unsigned int fd, uid_t user, gid_t group)
  * for the internal routines (ie open_namei()/follow_link() etc). 00 is
  * used by symlinks.
  */
-/* À´ÊµÏÖÕæÕıµÄ´ò¿ªÎÄ¼ş²Ù×÷ */
+/* æ¥å®ç°çœŸæ­£çš„æ‰“å¼€æ–‡ä»¶æ“ä½œ */
 struct file *filp_open(const char * filename, int flags, int mode)
 {
 	int namei_flags, error;
@@ -774,8 +774,8 @@ struct file *filp_open(const char * filename, int flags, int mode)
 
 EXPORT_SYMBOL(filp_open);
 
-/* Í¨¹ıÄ¿Â¼À´´ÓĞÂ´ò¿ªÎÄ¼ş£¬dentry½ö½öÊÇ±íÊ¾ÁËÎÄ¼şÏµÍ³ÖĞÎÄ¼şµÄĞÅÏ¢£¬
-  * ¶øÕæÕıµÄÎÄ¼ş²Ù×÷ĞÅÏ¢¶¼´æ·ÅÔÚfileÖ¸Õëµ±ÖĞ
+/* é€šè¿‡ç›®å½•æ¥ä»æ–°æ‰“å¼€æ–‡ä»¶ï¼Œdentryä»…ä»…æ˜¯è¡¨ç¤ºäº†æ–‡ä»¶ç³»ç»Ÿä¸­æ–‡ä»¶çš„ä¿¡æ¯ï¼Œ
+  * è€ŒçœŸæ­£çš„æ–‡ä»¶æ“ä½œä¿¡æ¯éƒ½å­˜æ”¾åœ¨fileæŒ‡é’ˆå½“ä¸­
   */
 struct file *dentry_open(struct dentry *dentry, struct vfsmount *mnt, int flags)
 {
@@ -842,7 +842,7 @@ EXPORT_SYMBOL(dentry_open);
 /*
  * Find an empty file descriptor entry, and mark it busy.
  */
-/* ·ÖÅäÒ»¸ö¿ÕµÄÎÄ¼şÃèÊö·û
+/* åˆ†é…ä¸€ä¸ªç©ºçš„æ–‡ä»¶æè¿°ç¬¦
  */
 int get_unused_fd(void)
 {
@@ -927,7 +927,7 @@ EXPORT_SYMBOL(put_unused_fd);
  * will follow.
  */
 
-/* Íê³ÉfileÖ¸ÕëºÍÎÄ¼şÃèÊö·ûÖ®¼äµÄ¹ØÏµ */
+/* å®ŒæˆfileæŒ‡é’ˆå’Œæ–‡ä»¶æè¿°ç¬¦ä¹‹é—´çš„å…³ç³» */
 void fastcall fd_install(unsigned int fd, struct file * file)
 {
 	struct files_struct *files = current->files;
@@ -940,7 +940,7 @@ void fastcall fd_install(unsigned int fd, struct file * file)
 
 EXPORT_SYMBOL(fd_install);
 
-/* ´ò¿ªÎÄ¼şÏµÍ³µ÷ÓÃ */
+/* æ‰“å¼€æ–‡ä»¶ç³»ç»Ÿè°ƒç”¨ */
 asmlinkage long sys_open(const char __user * filename, int flags, int mode)
 {
 	char * tmp;
@@ -998,7 +998,7 @@ int filp_close(struct file *filp, fl_owner_t id)
 	if (retval)
 		filp->f_error = 0;
 
-        /* ²é¿´ÎÄ¼şÒıÓÃ¼ÆÊı */
+        /* æŸ¥çœ‹æ–‡ä»¶å¼•ç”¨è®¡æ•° */
 	if (!file_count(filp)) {
 		printk(KERN_ERR "VFS: Close: file count is 0\n");
 		return retval;

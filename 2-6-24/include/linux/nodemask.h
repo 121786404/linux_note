@@ -340,13 +340,13 @@ static inline void __nodes_remap(nodemask_t *dstp, const nodemask_t *srcp,
 /*
  * Bitmasks that are kept for all the nodes.
  */
-/* ÄÚ´æ½Úµã×´Ì¬Î»Í¼ */
+/* å†…å­˜èŠ‚ç‚¹çŠ¶æ€ä½å›¾ */
 enum node_states {
 	N_POSSIBLE,		/* The node could become online at some point */
 	N_ONLINE,		/* The node is online */
-	/* Ã»ÓĞ¸ß¶ËÄÚ´æ£¬Ö»ÓĞÆÕÍ¨ÄÚ´æ */
+	/* æ²¡æœ‰é«˜ç«¯å†…å­˜ï¼Œåªæœ‰æ™®é€šå†…å­˜ */
 	N_NORMAL_MEMORY,	/* The node has regular memory */
-	/* ´æÔÚ¸ß¶ËÄÚ´æ */
+	/* å­˜åœ¨é«˜ç«¯å†…å­˜ */
 #ifdef CONFIG_HIGHMEM
 	N_HIGH_MEMORY,		/* The node has regular or high memory */
 #else
@@ -369,7 +369,7 @@ static inline int node_state(int node, enum node_states state)
 	return node_isset(node, node_states[state]);
 }
 
-/* ÉèÖÃºÍÇå³ıÄÚ´æ½ÚµãµÄ×´Ì¬ */
+/* è®¾ç½®å’Œæ¸…é™¤å†…å­˜èŠ‚ç‚¹çš„çŠ¶æ€ */
 static inline void node_set_state(int node, enum node_states state)
 {
 	__node_set(node, &node_states[state]);
@@ -385,11 +385,11 @@ static inline int num_node_state(enum node_states state)
 	return nodes_weight(node_states[state]);
 }
 
-/* ±éÀúËùÓĞ´¦ÓÚÌØ¶¨×´Ì¬µÄ½Úµã */
+/* éå†æ‰€æœ‰å¤„äºç‰¹å®šçŠ¶æ€çš„èŠ‚ç‚¹ */
 #define for_each_node_state(__node, __state) \
 	for_each_node_mask((__node), node_states[__state])
 
-/* ±éÀúËùÓĞ»î¶¯½Úµã */
+/* éå†æ‰€æœ‰æ´»åŠ¨èŠ‚ç‚¹ */
 #define first_online_node	first_node(node_states[N_ONLINE])
 #define next_online_node(nid)	next_node((nid), node_states[N_ONLINE])
 

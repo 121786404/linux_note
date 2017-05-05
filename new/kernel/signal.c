@@ -1198,9 +1198,9 @@ int zap_other_threads(struct task_struct *p)
 
 	p->signal->group_stop_count = 0;
 /*
-É¨ÃèÓëcurrent->tgid¶ÔÓ¦µÄPIDTYPE£ßTGIDÀàÐÍµÄÉ¢ÁÐ±íÖÐµÄÃ¿PIDÁ´±í£¬
-Ïò±íÖÐËùÓÐ²»Í¬ÓÚcurrentµÄ½ø³Ì·¢ËÍSIGKILLÐÅºÅ£¬
-½á¹û£¬ËùÓÐÕâÑùµÄ½ø³Ì¶¼½«Ö´ÐÐdo_exit()º¯Êý£¬´Ó¶ø±»É±ËÀ
+æ‰«æä¸Žcurrent->tgidå¯¹åº”çš„PIDTYPEï¼¿TGIDç±»åž‹çš„æ•£åˆ—è¡¨ä¸­çš„æ¯PIDé“¾è¡¨ï¼Œ
+å‘è¡¨ä¸­æ‰€æœ‰ä¸åŒäºŽcurrentçš„è¿›ç¨‹å‘é€SIGKILLä¿¡å·ï¼Œ
+ç»“æžœï¼Œæ‰€æœ‰è¿™æ ·çš„è¿›ç¨‹éƒ½å°†æ‰§è¡Œdo_exit()å‡½æ•°ï¼Œä»Žè€Œè¢«æ€æ­»
 */
 	while_each_thread(p, t) {
 		task_clear_jobctl_pending(t, JOBCTL_PENDING_MASK);
@@ -2413,7 +2413,7 @@ void exit_signals(struct task_struct *tsk)
 	 * see wants_signal(), do_signal_stop().
 	 */
 /*
-	 ÉèÖÃÎªPF_EXITING
+	 è®¾ç½®ä¸ºPF_EXITING
 */
 	tsk->flags |= PF_EXITING;
 

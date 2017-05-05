@@ -78,7 +78,7 @@ static int elf_fdpic_map_file_by_direct_mmap(struct elf_fdpic_params *,
 static int elf_fdpic_core_dump(long, struct pt_regs *, struct file *, unsigned long limit);
 #endif
 
-/* ELF格式的变体，可用于NOMMU */
+/* ELF鏍煎紡鐨勫彉浣擄紝鍙敤浜嶯OMMU */
 static struct linux_binfmt elf_fdpic_format = {
 	.module		= THIS_MODULE,
 	.load_binary	= load_elf_fdpic_binary,

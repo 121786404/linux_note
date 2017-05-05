@@ -43,14 +43,14 @@ u32 __initdata __visible main_extable_sort_needed = 1;
 
 /* Sort the kernel's built-in exception table */
 /**
- * ¶ÔÄÚºËÖĞµÄÒì³£ĞŞ¸´±í½øĞĞÅÅĞò
+ * å¯¹å†…æ ¸ä¸­çš„å¼‚å¸¸ä¿®å¤è¡¨è¿›è¡Œæ’åº
  */
 void __init sort_main_extable(void)
 {
-	//Õâ¸öÌõ¼şÒ»°ãÊÇÂú×ãµÄ
+	//è¿™ä¸ªæ¡ä»¶ä¸€èˆ¬æ˜¯æ»¡è¶³çš„
 	if (main_extable_sort_needed && __stop___ex_table > __start___ex_table) {
 		pr_notice("Sorting __ex_table...\n");
-		//¶ÔĞŞ¸´±í½øĞĞÅÅĞò
+		//å¯¹ä¿®å¤è¡¨è¿›è¡Œæ’åº
 		sort_extable(__start___ex_table, __stop___ex_table);
 	}
 }

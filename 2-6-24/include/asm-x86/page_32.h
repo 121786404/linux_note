@@ -2,7 +2,7 @@
 #define _I386_PAGE_H
 
 /* PAGE_SHIFT determines the page size */
-/* Ò³ÄÚÆ«ÒÆÔÚÒ³±íÖĞÕ¼ÓÃµÄÎ»Êı */
+/* é¡µå†…åç§»åœ¨é¡µè¡¨ä¸­å ç”¨çš„ä½æ•° */
 #define PAGE_SHIFT	12
 #define PAGE_SIZE	(1UL << PAGE_SHIFT)
 #define PAGE_MASK	(~(PAGE_SIZE-1))
@@ -17,7 +17,7 @@
 
 #include <asm/mmx.h>
 
-/* Ã¿¸öÌåÏµ½á¹¹¶¼±ØĞë¶¨Òå´Ëº¯Êı£¬ÓÃÓÚÇå0Ò³Ãæ */
+/* æ¯ä¸ªä½“ç³»ç»“æ„éƒ½å¿…é¡»å®šä¹‰æ­¤å‡½æ•°ï¼Œç”¨äºæ¸…0é¡µé¢ */
 #define clear_page(page)	mmx_clear_page((void *)(page))
 #define copy_page(to,from)	mmx_copy_page(to,from)
 

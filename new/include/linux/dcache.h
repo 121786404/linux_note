@@ -82,16 +82,16 @@ extern struct dentry_stat_t dentry_stat;
 
 struct dentry {
 	/* RCU lookup touched fields */
-	unsigned int d_flags;		/*Ä¿Â¼Ïî±êÖ¾ protected by d_lock */
+	unsigned int d_flags;		/*ç›®å½•é¡¹æ ‡å¿— protected by d_lock */
 	seqcount_t d_seq;		/* per dentry seqlock */
-    /* ÊÇÁ´½Óµ½dentry cacheµÄhashÁ´±í*/
+    /* æ˜¯é“¾æ¥åˆ°dentry cacheçš„hashé“¾è¡¨*/
 	struct hlist_bl_node d_hash;	/* lookup hash list */
-	/* Ö¸Ïò¸¸dentry½á¹¹ parent directory */
+	/* æŒ‡å‘çˆ¶dentryç»“æ„ parent directory */
 	struct dentry *d_parent;	/* parent directory */
-	/*±£´æµÄÊÇÎÄ¼ş»òÄ¿Â¼µÄÃû×Ö*/
+	/*ä¿å­˜çš„æ˜¯æ–‡ä»¶æˆ–ç›®å½•çš„åå­—*/
 	struct qstr d_name;
 	/*
-	Ö¸ÏòÒ»¸öinode½á¹¹£¬Õâ¸öinode½á¹¹ºÍdentry¹²Í¬ÃèÊöÁËÒ»¸öÆÕÍ¨ÎÄ¼ş»òÕßÄ¿Â¼ÎÄ¼ş
+	æŒ‡å‘ä¸€ä¸ªinodeç»“æ„ï¼Œè¿™ä¸ªinodeç»“æ„å’Œdentryå…±åŒæè¿°äº†ä¸€ä¸ªæ™®é€šæ–‡ä»¶æˆ–è€…ç›®å½•æ–‡ä»¶
 	*/
 	struct inode *d_inode;		/* Where the name belongs to - NULL is
 					 * negative */

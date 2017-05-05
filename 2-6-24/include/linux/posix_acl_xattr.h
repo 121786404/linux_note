@@ -22,7 +22,7 @@
 /* An undefined entry e_id value */
 #define ACL_UNDEFINED_ID	(-1)
 
-/* 用于与用户交互的数据结构 */
+/* 鐢ㄤ簬涓庣敤鎴蜂氦浜掔殑鏁版嵁缁撴瀯 */
 typedef struct {
 	__le16			e_tag;
 	__le16			e_perm;

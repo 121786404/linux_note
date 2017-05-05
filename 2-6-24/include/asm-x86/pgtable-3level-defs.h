@@ -17,7 +17,7 @@
  * PMD_SHIFT determines the size of the area a middle-level
  * page table can map
  */
-/* 页内偏移和最后一级页表占用的位数 */
+/* 椤靛唴鍋忕Щ鍜屾渶鍚庝竴绾ч〉琛ㄥ崰鐢ㄧ殑浣嶆暟 */
 #define PMD_SHIFT	21
 #define PTRS_PER_PMD	512
 

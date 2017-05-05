@@ -408,7 +408,7 @@ void flush_tlb_current_task(void)
 }
 
 /**
- * 将某个进程的TLB从缓存中刷出
+ * 灏嗘煇涓繘绋嬬殑TLB浠庣紦瀛樹腑鍒峰嚭
  */
 void flush_tlb_mm (struct mm_struct * mm)
 {
@@ -463,7 +463,7 @@ static void do_flush_tlb_all(void* info)
 }
 
 /**
- * 将所有TLB从缓存中刷出
+ * 灏嗘墍鏈塗LB浠庣紦瀛樹腑鍒峰嚭
  */
 void flush_tlb_all(void)
 {

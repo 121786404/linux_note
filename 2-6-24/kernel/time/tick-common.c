@@ -57,25 +57,25 @@ int tick_is_oneshot_available(void)
  */
 static void tick_periodic(int cpu)
 {
-	if (tick_do_timer_cpu == cpu) {/* µ±Ç°CPU¸ºÔğÈ«¾ÖÊ±ÖÓ */
-		/* »ñµÃÈ«¾ÖÊ±ÖÓË³ĞòËø */
+	if (tick_do_timer_cpu == cpu) {/* å½“å‰CPUè´Ÿè´£å…¨å±€æ—¶é’Ÿ */
+		/* è·å¾—å…¨å±€æ—¶é’Ÿé¡ºåºé” */
 		write_seqlock(&xtime_lock);
 
 		/* Keep track of the next tick event */
-		/* ¼ÇÂ¼ÏÂ´ÎÊ±ÖÓÖÜÆÚµÄÊ±¼ä */
+		/* è®°å½•ä¸‹æ¬¡æ—¶é’Ÿå‘¨æœŸçš„æ—¶é—´ */
 		tick_next_period = ktime_add(tick_next_period, tick_period);
 
 		/**
-		 * ¸üĞÂÈ«¾ÖjiffiesºÍ½ø³ÌÍ³¼Æ£¬Ç½ÉÏÊ±¼ä
+		 * æ›´æ–°å…¨å±€jiffieså’Œè¿›ç¨‹ç»Ÿè®¡ï¼Œå¢™ä¸Šæ—¶é—´
 		 */
 		do_timer(1);
-		/* ÊÍ·ÅË³ĞòËø */
+		/* é‡Šæ”¾é¡ºåºé” */
 		write_sequnlock(&xtime_lock);
 	}
 
-	/* ¸üĞÂµ±Ç°CPUÖĞ½ø³ÌµÄÍ³¼Æ */
+	/* æ›´æ–°å½“å‰CPUä¸­è¿›ç¨‹çš„ç»Ÿè®¡ */
 	update_process_times(user_mode(get_irq_regs()));
-	/* profileÏà¹Ø´¦Àí£¬ÓÃÓÚĞÔÄÜÆÊÎö */
+	/* profileç›¸å…³å¤„ç†ï¼Œç”¨äºæ€§èƒ½å‰–æ */
 	profile_tick(CPU_PROFILING);
 }
 
@@ -83,32 +83,32 @@ static void tick_periodic(int cpu)
  * Event handler for periodic ticks
  */
 /**
- * ´¦ÀíÖÜÆÚĞÔtickµÄÖ÷º¯Êı
+ * å¤„ç†å‘¨æœŸæ€§tickçš„ä¸»å‡½æ•°
  */
 void tick_handle_periodic(struct clock_event_device *dev)
 {
 	int cpu = smp_processor_id();
 	ktime_t next;
 
-	/* ´¦ÀíÖÜÆÚÊÂ¼ş */
+	/* å¤„ç†å‘¨æœŸäº‹ä»¶ */
 	tick_periodic(cpu);
 
-	/* ²»ÊÇoneshotÄ£Ê½£¬ÄÇÃ´Ö±½ÓÍË³ö */
+	/* ä¸æ˜¯oneshotæ¨¡å¼ï¼Œé‚£ä¹ˆç›´æ¥é€€å‡º */
 	if (dev->mode != CLOCK_EVT_MODE_ONESHOT)
 		return;
 	/*
 	 * Setup the next period for devices, which do not have
 	 * periodic mode:
 	 */
-	/* ±à³ÌÉèÖÃÏÂ´ÎÖÜÆÚĞÔÊ±ÖÓ */
+	/* ç¼–ç¨‹è®¾ç½®ä¸‹æ¬¡å‘¨æœŸæ€§æ—¶é’Ÿ */
 	next = ktime_add(dev->next_event, tick_period);
 	for (;;) {
-		/* Èç¹ûÊ§°Ü£¬ËµÃ÷ÏÂÒ»´ÎÊ±¼äÒÑ¾­¹ıÆÚ */
+		/* å¦‚æœå¤±è´¥ï¼Œè¯´æ˜ä¸‹ä¸€æ¬¡æ—¶é—´å·²ç»è¿‡æœŸ */
 		if (!clockevents_program_event(dev, next, ktime_get()))
 			return;
-		/* ²¹Ò»´ÎÖÜÆÚĞÔÊÂ¼ş */
+		/* è¡¥ä¸€æ¬¡å‘¨æœŸæ€§äº‹ä»¶ */
 		tick_periodic(cpu);
-		/* ÉèÖÃÏÂÒ»´ÎÊ±ÖÓ */
+		/* è®¾ç½®ä¸‹ä¸€æ¬¡æ—¶é’Ÿ */
 		next = ktime_add(next, tick_period);
 	}
 }

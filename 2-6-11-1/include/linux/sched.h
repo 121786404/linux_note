@@ -38,25 +38,25 @@ struct exec_domain;
 /*
  * cloning flags:
  */
-/* CLONE_VM±íÊ¾¸¸½ø³ÌºÍ×Ó½ø³Ì¹²ÏíÄÚ´æ¿Õ¼ä£»Ò²¾ÍÊÇËµ£¬ÈÎºÎÒ»¸ö½ø³ÌÔÚÄÚ´æÖĞĞŞ¸Ä£¬ 
-  * Ò²»áÓ°ÏìÆäËû½ø³Ì£¬°üÀ¨½ø³ÌÖĞÖ´ĞĞmmap»òmunmap²Ù×÷£¬Ò²»áÓ°ÏìÆäËû½ø³Ì¡£
-  * ÖµµÃÒ»ÌáµÄÊÇ£¬forkÒ²ÊÇµ÷ÓÃcloneÀ´´´½¨×Ó½ø³ÌµÄ£¬ËüÒ²²»»áÉèÖÃCLONE_VM±ê¼Ç¡£
+/* CLONE_VMè¡¨ç¤ºçˆ¶è¿›ç¨‹å’Œå­è¿›ç¨‹å…±äº«å†…å­˜ç©ºé—´ï¼›ä¹Ÿå°±æ˜¯è¯´ï¼Œä»»ä½•ä¸€ä¸ªè¿›ç¨‹åœ¨å†…å­˜ä¸­ä¿®æ”¹ï¼Œ 
+  * ä¹Ÿä¼šå½±å“å…¶ä»–è¿›ç¨‹ï¼ŒåŒ…æ‹¬è¿›ç¨‹ä¸­æ‰§è¡Œmmapæˆ–munmapæ“ä½œï¼Œä¹Ÿä¼šå½±å“å…¶ä»–è¿›ç¨‹ã€‚
+  * å€¼å¾—ä¸€æçš„æ˜¯ï¼Œforkä¹Ÿæ˜¯è°ƒç”¨cloneæ¥åˆ›å»ºå­è¿›ç¨‹çš„ï¼Œå®ƒä¹Ÿä¸ä¼šè®¾ç½®CLONE_VMæ ‡è®°ã€‚
   * 
-  * CLONE_FS±íÊ¾¸¸½ø³ÌºÍ×Ó½ø³Ì¹²ÏíÎÄ¼şÏµÍ³ĞÅÏ¢£¬°üÀ¨ÎÄ¼şÏµÍ³¸ùÄ¿Â¼¡¢
-  * µ±Ç°¹¤×÷Ä¿Â¼ºÍumask¡£ÔÚ¸¸½ø³Ì»ò×Ó½ø³ÌÖĞµ÷ÓÃchroot£¬chdirºÍumaskÒ²»áÓ°ÏìÆäËû½ø³Ì¡£
+  * CLONE_FSè¡¨ç¤ºçˆ¶è¿›ç¨‹å’Œå­è¿›ç¨‹å…±äº«æ–‡ä»¶ç³»ç»Ÿä¿¡æ¯ï¼ŒåŒ…æ‹¬æ–‡ä»¶ç³»ç»Ÿæ ¹ç›®å½•ã€
+  * å½“å‰å·¥ä½œç›®å½•å’Œumaskã€‚åœ¨çˆ¶è¿›ç¨‹æˆ–å­è¿›ç¨‹ä¸­è°ƒç”¨chrootï¼Œchdirå’Œumaskä¹Ÿä¼šå½±å“å…¶ä»–è¿›ç¨‹ã€‚
   * 
-  * CLONE_FILES±íÊ¾¸¸½ø³ÌºÍ×Ó½ø³Ì¹²ÏíÏàÍ¬µÄÎÄ¼şÃèÊö·û±í¡£ÔÚ¸¸½ø³Ì»ò×Ó½ø³ÌÖĞ´ò¿ª
-  * Ò»¸öĞÂµÄÎÄ¼ş£¬»òÕß¹Ø±ÕÒ»¸öÎÄ¼ş£¬»òÕßÓÃfcntlĞŞ¸ÄÏà¹ØµÄÎÄ¼şflag£¬Ò²»áÓ°ÏìÆäËû½ø³Ì¡£
+  * CLONE_FILESè¡¨ç¤ºçˆ¶è¿›ç¨‹å’Œå­è¿›ç¨‹å…±äº«ç›¸åŒçš„æ–‡ä»¶æè¿°ç¬¦è¡¨ã€‚åœ¨çˆ¶è¿›ç¨‹æˆ–å­è¿›ç¨‹ä¸­æ‰“å¼€
+  * ä¸€ä¸ªæ–°çš„æ–‡ä»¶ï¼Œæˆ–è€…å…³é—­ä¸€ä¸ªæ–‡ä»¶ï¼Œæˆ–è€…ç”¨fcntlä¿®æ”¹ç›¸å…³çš„æ–‡ä»¶flagï¼Œä¹Ÿä¼šå½±å“å…¶ä»–è¿›ç¨‹ã€‚
   * 
-  *  CLONE_SIGHAND±íÊ¾¸¸½ø³ÌºÍ×Ó½ø³Ì¹²ÏíÏàÍ¬µÄĞÅºÅ´¦Àí³ÌĞò±í£¬¼´¸¸½ø³Ì»ò×Ó½ø³Ì
-  * Í¨¹ısigactionĞŞ¸ÄĞÅºÅµÄ´¦Àí·½Ê½£¬Ò²»áÓ°ÏìÆäËû½ø³Ì¡£µ«ÊÇ¸¸½ø³ÌºÍ×Ó½ø³Ì¸÷ÖÖÓĞ¶ÀÁ¢ÑÚÂë£¬
-  * Òò´ËÒ»¸ö½ø³ÌÍ¨¹ısigprocmaskÀ´×èÈû»ò²»×èÈûÄ³¸öĞÅºÅ£¬ÊÇ²»»áÓ°ÏìÆäËû½ø³ÌµÄ¡£
+  *  CLONE_SIGHANDè¡¨ç¤ºçˆ¶è¿›ç¨‹å’Œå­è¿›ç¨‹å…±äº«ç›¸åŒçš„ä¿¡å·å¤„ç†ç¨‹åºè¡¨ï¼Œå³çˆ¶è¿›ç¨‹æˆ–å­è¿›ç¨‹
+  * é€šè¿‡sigactionä¿®æ”¹ä¿¡å·çš„å¤„ç†æ–¹å¼ï¼Œä¹Ÿä¼šå½±å“å…¶ä»–è¿›ç¨‹ã€‚ä½†æ˜¯çˆ¶è¿›ç¨‹å’Œå­è¿›ç¨‹å„ç§æœ‰ç‹¬ç«‹æ©ç ï¼Œ
+  * å› æ­¤ä¸€ä¸ªè¿›ç¨‹é€šè¿‡sigprocmaskæ¥é˜»å¡æˆ–ä¸é˜»å¡æŸä¸ªä¿¡å·ï¼Œæ˜¯ä¸ä¼šå½±å“å…¶ä»–è¿›ç¨‹çš„ã€‚
   * 
-  * CLONE_THREADÓÃÀ´±íÊ¾×Ó½ø³ÌÓë¸¸½ø³ÌÔÚÍ¬Ò»¸öÏß³Ì×é£¨thread group£©ÖĞ¡£¼òµ¥µÄËµ£¬
-  * ´´½¨µÄ×Ó½ø³Ì¶ÔÓÚÓÃ»§¿Õ¼äÀ´Ëµ¾ÍÊÇ´´½¨Ò»¸öÏß³Ì¡£
+  * CLONE_THREADç”¨æ¥è¡¨ç¤ºå­è¿›ç¨‹ä¸çˆ¶è¿›ç¨‹åœ¨åŒä¸€ä¸ªçº¿ç¨‹ç»„ï¼ˆthread groupï¼‰ä¸­ã€‚ç®€å•çš„è¯´ï¼Œ
+  * åˆ›å»ºçš„å­è¿›ç¨‹å¯¹äºç”¨æˆ·ç©ºé—´æ¥è¯´å°±æ˜¯åˆ›å»ºä¸€ä¸ªçº¿ç¨‹ã€‚
   * 
-  * CLONE_SYSVSEMÓÃÀ´±íÊ¾×Ó½ø³ÌÓë¸¸½ø³Ì¹²ÏíÏàÍ¬µÄĞÅºÅÁ¿ÁĞ±í¡£
-  * ÉÏÃæËµµÄ¡°×Ó½ø³Ì¡±ÊµÖÊ¾ÍÊÇÎÒÃÇ´´½¨µÄÏß³Ì£¬´ÓÕâĞ©±êÊ¶Ò²ÄÜ¿´³ö£¬½ø³ÌÖĞ¸÷¸öÏß³ÌÖ®¼ä¹²ÏíÁËÄÇĞ©×ÊÔ´¡£
+  * CLONE_SYSVSEMç”¨æ¥è¡¨ç¤ºå­è¿›ç¨‹ä¸çˆ¶è¿›ç¨‹å…±äº«ç›¸åŒçš„ä¿¡å·é‡åˆ—è¡¨ã€‚
+  * ä¸Šé¢è¯´çš„â€œå­è¿›ç¨‹â€å®è´¨å°±æ˜¯æˆ‘ä»¬åˆ›å»ºçš„çº¿ç¨‹ï¼Œä»è¿™äº›æ ‡è¯†ä¹Ÿèƒ½çœ‹å‡ºï¼Œè¿›ç¨‹ä¸­å„ä¸ªçº¿ç¨‹ä¹‹é—´å…±äº«äº†é‚£äº›èµ„æºã€‚
 */
 
 #define CSIGNAL		0x000000ff	/* signal mask to be sent at exit */
@@ -166,12 +166,12 @@ struct sched_param {
  * _adding_ to the beginning of the run-queue has
  * a separate lock).
  */
-/* ½ø³ÌÈÎÎñÁ´±íËø*/
+/* è¿›ç¨‹ä»»åŠ¡é“¾è¡¨é”*/
 extern rwlock_t tasklist_lock;
-/* ÄÚ´æÁ´±íËø */
+/* å†…å­˜é“¾è¡¨é” */
 extern spinlock_t mmlist_lock;
 
-/* task_structµÄÒ»¸öÖØĞÂ¶¨Òå */
+/* task_structçš„ä¸€ä¸ªé‡æ–°å®šä¹‰ */
 typedef struct task_struct task_t;
 
 extern void sched_init(void);
@@ -227,12 +227,12 @@ arch_get_unmapped_area_topdown(struct file *filp, unsigned long addr,
 extern void arch_unmap_area(struct vm_area_struct *area);
 extern void arch_unmap_area_topdown(struct vm_area_struct *area);
 
-/* ½ø³ÌÄÚ´æ½á¹¹Ìå */
+/* è¿›ç¨‹å†…å­˜ç»“æ„ä½“ */
 struct mm_struct {
 	struct vm_area_struct * mmap;		/* list of VMAs */
 	struct rb_root mm_rb;
-        /* Ö¸ÏòÉÏ´ÎÊ¹ÓÃÕÒµ½µÄÄÇ¸övma£¬×î½üÊ¹ÓÃµÄÇø¼ä
-          * ºÜ¿ÉÄÜ¾ÍÊÇÏÂÒ»´ÎÒªÊ¹ÓÃµÄ¿Õ¼ä 
+        /* æŒ‡å‘ä¸Šæ¬¡ä½¿ç”¨æ‰¾åˆ°çš„é‚£ä¸ªvmaï¼Œæœ€è¿‘ä½¿ç”¨çš„åŒºé—´
+          * å¾ˆå¯èƒ½å°±æ˜¯ä¸‹ä¸€æ¬¡è¦ä½¿ç”¨çš„ç©ºé—´ 
           */
 	struct vm_area_struct * mmap_cache;	/* last find_vma result */
 	unsigned long (*get_unmapped_area) (struct file *filp,
@@ -241,14 +241,14 @@ struct mm_struct {
 	void (*unmap_area) (struct vm_area_struct *area);
 	unsigned long mmap_base;		/* base of mmap area */
 	unsigned long free_area_cache;		/* first hole */
-        /*  pgdÖ¸Ïò½ø³ÌµÄÒ³Ä¿Â¼±í£¬µ±ÄÚºËµ÷¶ÈÒ»¸ö
-          * ½ø³Ì½øÈëÔËĞĞÊ±£¬½«Õâ¸öÖ¸Õë×ª»»³ÉÎïÀíµØÖ·£¬
-          * ²¢Ğ´Èë¿ØÖÆ¼Ä´æÆ÷CR3 
+        /*  pgdæŒ‡å‘è¿›ç¨‹çš„é¡µç›®å½•è¡¨ï¼Œå½“å†…æ ¸è°ƒåº¦ä¸€ä¸ª
+          * è¿›ç¨‹è¿›å…¥è¿è¡Œæ—¶ï¼Œå°†è¿™ä¸ªæŒ‡é’ˆè½¬æ¢æˆç‰©ç†åœ°å€ï¼Œ
+          * å¹¶å†™å…¥æ§åˆ¶å¯„å­˜å™¨CR3 
           */ 
 	pgd_t * pgd;
 	atomic_t mm_users;			/* How many users with user space? */
 	atomic_t mm_count;			/* How many references to "struct mm_struct" (users count as 1) */
-	int map_count;				/* number of VMAs */ /* vmaµÄÊıÁ¿ */
+	int map_count;				/* number of VMAs */ /* vmaçš„æ•°é‡ */
 	struct rw_semaphore mmap_sem;
 	spinlock_t page_table_lock;		/* Protects page tables, mm->rss, mm->anon_rss */
 
@@ -394,12 +394,12 @@ struct signal_struct {
 /*
  * Some day this will be a full-fledged user tracking system..
  */
-/* ¹ØÓÚÃ¿¸öÓÃ»§ĞÅÏ¢µÄÊı¾İ½á¹¹ */
+/* å…³äºæ¯ä¸ªç”¨æˆ·ä¿¡æ¯çš„æ•°æ®ç»“æ„ */
 struct user_struct {
 	atomic_t __count;	/* reference count */
-        /* ¸ÃÓÃ»§ÓµÓĞµÄ½ø³ÌÊıÁ¿ */
+        /* è¯¥ç”¨æˆ·æ‹¥æœ‰çš„è¿›ç¨‹æ•°é‡ */
 	atomic_t processes;	/* How many processes does this user have? */
-        /* ¸ÃÓÃ»§ÒÑ¾­´ò¿ªÁË¶àÉÙÎÄ¼ş */
+        /* è¯¥ç”¨æˆ·å·²ç»æ‰“å¼€äº†å¤šå°‘æ–‡ä»¶ */
 	atomic_t files;		/* How many open files does this user have? */
 	atomic_t sigpending;	/* How many pending signals does this user have? */
 	/* protected by mq_lock	*/
@@ -413,7 +413,7 @@ struct user_struct {
 
 	/* Hash table maintenance information */
 	struct list_head uidhash_list;
-	uid_t uid;          /* ÓÃ»§id */
+	uid_t uid;          /* ç”¨æˆ·id */
 };
 
 extern struct user_struct *find_user(uid_t);
@@ -527,7 +527,7 @@ void exit_io_context(void);
 #define NGROUPS_PER_BLOCK	((int)(PAGE_SIZE / sizeof(gid_t)))
 struct group_info {
 	int ngroups;
-	atomic_t usage; /* ÒıÓÃ¼ÆÊı */
+	atomic_t usage; /* å¼•ç”¨è®¡æ•° */
 	gid_t small_block[NGROUPS_SMALL];
 	int nblocks;
 	gid_t *blocks[0];
@@ -560,13 +560,13 @@ struct audit_context;		/* See audit.c */
 struct mempolicy;
 
 struct task_struct {
-	/* ½ø³Ì×´Ì¬ */
+	/* è¿›ç¨‹çŠ¶æ€ */
 	volatile long state;	/* -1 unrunnable, 0 runnable, >0 stopped */
 	struct thread_info *thread_info;
 	atomic_t usage;
-        /* Ã¿¸ö½ø³ÌµÄ´´½¨±ê¼Ç */
+        /* æ¯ä¸ªè¿›ç¨‹çš„åˆ›å»ºæ ‡è®° */
 	unsigned long flags;	/* per process flags, defined below */
-        /* ±íÊ¾½ø³ÌÊÇ·ñ±»¸ú×Ù */
+        /* è¡¨ç¤ºè¿›ç¨‹æ˜¯å¦è¢«è·Ÿè¸ª */
 	unsigned long ptrace;
 
 	int lock_depth;		/* Lock depth */
@@ -587,7 +587,7 @@ struct task_struct {
 	struct sched_info sched_info;
 #endif
 
-        /* Á´½ÓÈ«¾ÖµÄËùÓĞPCB */
+        /* é“¾æ¥å…¨å±€çš„æ‰€æœ‰PCB */
 	struct list_head tasks;
 	/*
 	 * ptrace_list/ptrace_children forms the list of my children
@@ -605,20 +605,20 @@ struct task_struct {
 	int pdeath_signal;  /*  The signal sent when the parent dies  */
 	/* ??? */
 	unsigned long personality;
-        /* ÊÇ·ñÍ¨¹ıexecº¯Êı×åÀ´¸ü»»µÄ½ø³Ì */
+        /* æ˜¯å¦é€šè¿‡execå‡½æ•°æ—æ¥æ›´æ¢çš„è¿›ç¨‹ */
 	unsigned did_exec:1;
-        /* Ïß³Ì×éÖĞËùÓĞµÄÏß³ÌÊ¹ÓÃºÍ¸ÃÏß³Ì×éµÄÁìÍ·Ïß³Ì£¬
-          * Ò²¾ÍÊÇ×éÖĞµÄµÚÒ»¸öÇáÁ¿¼¶½ø³Ì£¬ÏàÍ¬µÄpid
+        /* çº¿ç¨‹ç»„ä¸­æ‰€æœ‰çš„çº¿ç¨‹ä½¿ç”¨å’Œè¯¥çº¿ç¨‹ç»„çš„é¢†å¤´çº¿ç¨‹ï¼Œ
+          * ä¹Ÿå°±æ˜¯ç»„ä¸­çš„ç¬¬ä¸€ä¸ªè½»é‡çº§è¿›ç¨‹ï¼Œç›¸åŒçš„pid
           */
 	pid_t pid;
-        /* Ïß³Ì×éid £¬Ö»ÓĞÏß³Ì×éµÄÁìÍ·Ïß³ÌµÄpid³ÉÔ±²Å»áÉèÖÃÎªºÍtgidÏàÍ¬µÄÖµ */
+        /* çº¿ç¨‹ç»„id ï¼Œåªæœ‰çº¿ç¨‹ç»„çš„é¢†å¤´çº¿ç¨‹çš„pidæˆå‘˜æ‰ä¼šè®¾ç½®ä¸ºå’Œtgidç›¸åŒçš„å€¼ */
 	pid_t tgid;
 	/* 
 	 * pointers to (original) parent process, youngest child, younger sibling,
 	 * older sibling, respectively.  (p->father can be replaced with 
 	 * p->parent->pid)
 	 */
-        /* ½ø³ÌµÄÕæÕı¸¸½ø³Ì */
+        /* è¿›ç¨‹çš„çœŸæ­£çˆ¶è¿›ç¨‹ */
 	struct task_struct *real_parent; /* real parent process (when being debugged) */
 	struct task_struct *parent;	/* parent process */
 	/*
@@ -627,7 +627,7 @@ struct task_struct {
 	 */
 	struct list_head children;	/* list of my children */
 	struct list_head sibling;	/* linkage in my parent's children list */
-        /* Ö¸ÏòÏß³Ì×éµÄ×é³¤ */
+        /* æŒ‡å‘çº¿ç¨‹ç»„çš„ç»„é•¿ */
 	struct task_struct *group_leader;	/* threadgroup leader */
 
 	/* PID/PID hash table linkage. */
@@ -653,12 +653,12 @@ struct task_struct {
 	struct group_info *group_info;
 	kernel_cap_t   cap_effective, cap_inheritable, cap_permitted;
 	unsigned keep_capabilities:1;
-        /* ½ø³Ì¶ÔÓ¦µÄÓÃ»§ĞÅÏ¢ */
+        /* è¿›ç¨‹å¯¹åº”çš„ç”¨æˆ·ä¿¡æ¯ */
 	struct user_struct *user;
 #ifdef CONFIG_KEYS
 	struct key *session_keyring;	/* keyring inherited over fork */
 	struct key *process_keyring;	/* keyring private to this process (CLONE_THREAD) */
-        /* Ïß³ÌË½ÓĞÊı¾İµÄÊµÏÖ»ù´¡ */
+        /* çº¿ç¨‹ç§æœ‰æ•°æ®çš„å®ç°åŸºç¡€ */
 	struct key *thread_keyring;	/* keyring private to this thread */
 #endif
 	int oomkilladj; /* OOM kill score adjustment (bit shift). */
@@ -666,20 +666,20 @@ struct task_struct {
 /* file system info */
 	int link_count, total_link_count;
 /* ipc stuff */
-        /* ½ø³ÌµÄĞÅºÅÁ¿Êı¾İ */
+        /* è¿›ç¨‹çš„ä¿¡å·é‡æ•°æ® */
 	struct sysv_sem sysvsem;
 /* CPU-specific state of this task */
 	struct thread_struct thread;
 /* filesystem information */
-        /* ½ø³ÌµÄÎÄ¼şÏµÍ³ĞÅÏ¢ */
+        /* è¿›ç¨‹çš„æ–‡ä»¶ç³»ç»Ÿä¿¡æ¯ */
 	struct fs_struct *fs;
 /* open file information */
-        /* ½ø³Ì´ò¿ªµÄÎÄ¼ş½á¹¹£¬ÔÚ1.0°æ±¾µ±ÖĞ£¬ÀïÃæ½ö½öÊÇÒ»¸öÊı×é£¬
-          * Í¨¹ıfdË÷ÒıÀ´Ö±½Ó»ñÈ¡£¬¶øÕâÀïÍ¨¹ıfiles_struct½øĞĞÁËÒ»¶¨µÄ°ü×°
+        /* è¿›ç¨‹æ‰“å¼€çš„æ–‡ä»¶ç»“æ„ï¼Œåœ¨1.0ç‰ˆæœ¬å½“ä¸­ï¼Œé‡Œé¢ä»…ä»…æ˜¯ä¸€ä¸ªæ•°ç»„ï¼Œ
+          * é€šè¿‡fdç´¢å¼•æ¥ç›´æ¥è·å–ï¼Œè€Œè¿™é‡Œé€šè¿‡files_structè¿›è¡Œäº†ä¸€å®šçš„åŒ…è£…
           */
 	struct files_struct *files;
 /* namespace */
-        /* LinuxÄÚºËÖĞ×ÊÔ´¸ôÀëµÄÃû³Æ¿Õ¼ä
+        /* Linuxå†…æ ¸ä¸­èµ„æºéš”ç¦»çš„åç§°ç©ºé—´
           *
           */
 	struct namespace *namespace;
@@ -715,7 +715,7 @@ struct task_struct {
 /* VM state */
 	struct reclaim_state *reclaim_state;
 
-        /* ½ø³ÌprocÎÄ¼şÏµÍ³µÄÄ¿Â¼ */
+        /* è¿›ç¨‹procæ–‡ä»¶ç³»ç»Ÿçš„ç›®å½• */
 	struct dentry *proc_dentry;
 	struct backing_dev_info *backing_dev_info;
 
@@ -879,7 +879,7 @@ extern struct task_struct init_task;
 
 extern struct   mm_struct init_mm;
 
-/* ¸ù¾İ³£¹æµÄ½ø³ÌidÀ´²éÕÒ½ø³ÌµÄtask_struct */
+/* æ ¹æ®å¸¸è§„çš„è¿›ç¨‹idæ¥æŸ¥æ‰¾è¿›ç¨‹çš„task_struct */
 #define find_task_by_pid(nr)	find_task_by_pid_type(PIDTYPE_PID, nr)
 extern struct task_struct *find_task_by_pid_type(int type, int pid);
 extern void set_special_pids(pid_t session, pid_t pgrp);

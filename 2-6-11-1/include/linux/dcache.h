@@ -80,50 +80,50 @@ struct dcookie_struct;
 
 #define DNAME_INLINE_LEN_MIN 36
 
-/* Ä¿Â¼½á¹¹£¬¼È¿ÉÒÔ±íÊ¾Ò»¸öÎÄ¼şÒ²¿ÉÒÔ±íÊ¾Ò»¸öÄ¿Â¼£¬
-  * Ò»¸öÄ¿Â¼±¾ÉíÒ²ÊÇÒ»¸öÎÄ¼ş£¬¸Ã½á¹¹Ö÷ÒªÊÇÖ¸ÎÄ¼şµÄÂß¼­½á¹¹ 
-  * inodeÔò¶ÔÓ¦ÎÄ¼şµÄÎïÀí½á¹¹£¬ÈçºÍÏàÓ¦µÄÎÄ¼şÏµÍ³µÄinode½á¹¹¶ÔÓ¦  
+/* ç›®å½•ç»“æ„ï¼Œæ—¢å¯ä»¥è¡¨ç¤ºä¸€ä¸ªæ–‡ä»¶ä¹Ÿå¯ä»¥è¡¨ç¤ºä¸€ä¸ªç›®å½•ï¼Œ
+  * ä¸€ä¸ªç›®å½•æœ¬èº«ä¹Ÿæ˜¯ä¸€ä¸ªæ–‡ä»¶ï¼Œè¯¥ç»“æ„ä¸»è¦æ˜¯æŒ‡æ–‡ä»¶çš„é€»è¾‘ç»“æ„ 
+  * inodeåˆ™å¯¹åº”æ–‡ä»¶çš„ç‰©ç†ç»“æ„ï¼Œå¦‚å’Œç›¸åº”çš„æ–‡ä»¶ç³»ç»Ÿçš„inodeç»“æ„å¯¹åº”  
   */
 struct dentry {
 	atomic_t d_count;
 	unsigned int d_flags;		/* protected by d_lock */
 	spinlock_t d_lock;		/* per dentry lock */
-        /* ¶ÔÓ¦ÎÄ¼şµÄÎïÀí½á¹¹Ö¸Õë */
+        /* å¯¹åº”æ–‡ä»¶çš„ç‰©ç†ç»“æ„æŒ‡é’ˆ */
 	struct inode *d_inode;		/* Where the name belongs to - NULL is
 					 * negative */
 	/*
 	 * The next three fields are touched by __d_lookup.  Place them here
 	 * so they all fit in a 16-byte range, with 16-byte alignment.
 	 */
-        /* Ö¸ÏòÄ¿Â¼µÄ¸¸Ä¿Â¼ */
+        /* æŒ‡å‘ç›®å½•çš„çˆ¶ç›®å½• */
 	struct dentry *d_parent;	/* parent directory */
-        /* Ä¿Â¼µÄÃû³Æ */
+        /* ç›®å½•çš„åç§° */
 	struct qstr d_name;               
 
-        /* ·şÎñÓÚLRUËã·¨(½üÆÚ×îÉÙÊ¹ÓÃËã·¨) */
+        /* æœåŠ¡äºLRUç®—æ³•(è¿‘æœŸæœ€å°‘ä½¿ç”¨ç®—æ³•) */
 	struct list_head d_lru;		/* LRU list */
-        /* Ä¿Â¼µÄº¢×ÓÁ´±í */
+        /* ç›®å½•çš„å­©å­é“¾è¡¨ */
 	struct list_head d_child;	/* child of parent list */
 	struct list_head d_subdirs;	/* our children */
-        /* Ò»¸öinode¶ÔÓ¦Ò»¸öÎïÀíÎÄ¼ş£¬µ«ÊÇÔÚLinuxÏµÍ³ÖĞ´æÔÚÁ¬½Ó£¬
-          * Ò²¾ÍÊÇ¿ÉÒÔ´Ó²»Í¬Î»ÖÃ·ÃÎÊµ½Í¬Ò»¸öÎÄ¼ş£¬¶ø²»Í¬µÄÎÄ¼şÂ·¾¶ 
-          * Ôò¶ÔÓ¦¸Ãdentry½á¹¹£¬È»ºóÍ¨¹ı¸Ã½á¹¹µÄd_aliasÁ´±íÁ¬½ÓÔÚinodeµÄi_dentry 
-          * ±äÁ¿µ±ÖĞ  
+        /* ä¸€ä¸ªinodeå¯¹åº”ä¸€ä¸ªç‰©ç†æ–‡ä»¶ï¼Œä½†æ˜¯åœ¨Linuxç³»ç»Ÿä¸­å­˜åœ¨è¿æ¥ï¼Œ
+          * ä¹Ÿå°±æ˜¯å¯ä»¥ä»ä¸åŒä½ç½®è®¿é—®åˆ°åŒä¸€ä¸ªæ–‡ä»¶ï¼Œè€Œä¸åŒçš„æ–‡ä»¶è·¯å¾„ 
+          * åˆ™å¯¹åº”è¯¥dentryç»“æ„ï¼Œç„¶åé€šè¿‡è¯¥ç»“æ„çš„d_aliasé“¾è¡¨è¿æ¥åœ¨inodeçš„i_dentry 
+          * å˜é‡å½“ä¸­  
           */
 	struct list_head d_alias;	/* inode alias list */
 	unsigned long d_time;		/* used by d_revalidate */
-	struct dentry_operations *d_op;/* Ä¿Â¼²Ù×÷º¯Êı */
-	/* dentry¶ÔÓ¦µÄ³¬¼¶¿é */
+	struct dentry_operations *d_op;/* ç›®å½•æ“ä½œå‡½æ•° */
+	/* dentryå¯¹åº”çš„è¶…çº§å— */
 	struct super_block *d_sb;	/* The root of the dentry tree */
-        /* ÀıÈçÕë¶ÔÒ»Ğ©ÄÚ´æÎÄ¼şÏµÍ³£¬Èçsysfs¾ßÓĞÌØ¶¨µÄÄ¿Â¼½á¹¹struct sysfs_dirent£¬
-          * ÄÇÃ´¶ÔÓÚÍ¨ÓÃµÄdentryÄ¿Â¼»áÓĞÒ»¸öÖ¸ÕëÖ¸Ïò¸Ã½á¹¹£¬ÆäÊµÁ½¸öÄ¿Â¼ÊÇ¶ÔÓ¦µÄ 
+        /* ä¾‹å¦‚é’ˆå¯¹ä¸€äº›å†…å­˜æ–‡ä»¶ç³»ç»Ÿï¼Œå¦‚sysfså…·æœ‰ç‰¹å®šçš„ç›®å½•ç»“æ„struct sysfs_direntï¼Œ
+          * é‚£ä¹ˆå¯¹äºé€šç”¨çš„dentryç›®å½•ä¼šæœ‰ä¸€ä¸ªæŒ‡é’ˆæŒ‡å‘è¯¥ç»“æ„ï¼Œå…¶å®ä¸¤ä¸ªç›®å½•æ˜¯å¯¹åº”çš„ 
           */
 	void *d_fsdata;			/* fs-specific data */
- 	struct rcu_head d_rcu;           /* Ä¿Â¼ºÍÎÄ¼şµÄrcu½á¹¹ */
+ 	struct rcu_head d_rcu;           /* ç›®å½•å’Œæ–‡ä»¶çš„rcuç»“æ„ */
 	struct dcookie_struct *d_cookie; /* cookie, if any */
-        /* Â·¾¶²éÕÒµÄhash½á¹¹ */
+        /* è·¯å¾„æŸ¥æ‰¾çš„hashç»“æ„ */
 	struct hlist_node d_hash;	/* lookup hash list */	
-	/* ±íÊ¾¸ÃÄ¿Â¼ÊÇ·ñÒÑ¾­¹ÒÔØÁËÆäËûÎÄ¼şÏµÍ³ */
+	/* è¡¨ç¤ºè¯¥ç›®å½•æ˜¯å¦å·²ç»æŒ‚è½½äº†å…¶ä»–æ–‡ä»¶ç³»ç»Ÿ */
 	int d_mounted;
 	unsigned char d_iname[DNAME_INLINE_LEN_MIN];	/* small names */
 };
@@ -307,7 +307,7 @@ extern char * d_path(struct dentry *, struct vfsmount *, char *, int);
  *	and call dget_locked() instead of dget().
  */
  
-/* Ôö¼ÓÒıÓÃ¼ÆÊı */ 
+/* å¢åŠ å¼•ç”¨è®¡æ•° */ 
 static inline struct dentry *dget(struct dentry *dentry)
 {
 	if (dentry) {

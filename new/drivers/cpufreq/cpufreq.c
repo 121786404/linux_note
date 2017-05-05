@@ -2062,10 +2062,10 @@ static void cpufreq_governor_limits(struct cpufreq_policy *policy)
 }
 
 /*
-ÏµÍ³ÖĞ¿ÉÒÔÍ¬Ê±´æÔÚ¶à¸ögovernor²ßÂÔ£¬
-Ò»¸öpolicyÍ¨¹ıcpufreq_policy½á¹¹ÖĞµÄgovernorÖ¸ÕëºÍÄ³¸ögovernorÏà¹ØÁª¡£
+ç³»ç»Ÿä¸­å¯ä»¥åŒæ—¶å­˜åœ¨å¤šä¸ªgovernorç­–ç•¥ï¼Œ
+ä¸€ä¸ªpolicyé€šè¿‡cpufreq_policyç»“æ„ä¸­çš„governoræŒ‡é’ˆå’ŒæŸä¸ªgovernorç›¸å…³è”ã€‚
 
-ÒªÏëÒ»¸ögovernor±»policyÊ¹ÓÃ£¬Ê×ÏÈÒª°Ñ¸Ãgovernor×¢²áµ½cpufreqµÄºËĞÄÖĞ
+è¦æƒ³ä¸€ä¸ªgovernorè¢«policyä½¿ç”¨ï¼Œé¦–å…ˆè¦æŠŠè¯¥governoræ³¨å†Œåˆ°cpufreqçš„æ ¸å¿ƒä¸­
 */
 int cpufreq_register_governor(struct cpufreq_governor *governor)
 {
@@ -2406,33 +2406,33 @@ static enum cpuhp_state hp_online;
  *
  */
 /*
-Óëgovernor²»Í¬£¬ÏµÍ³ÖĞÖ»»á´æÔÚÒ»¸öcpufreq_driverÇı¶¯£¬
-cpufreq_driverÊÇÆ½Ì¨Ïà¹ØµÄ£¬¸ºÔğ×îÖÕÊµÊ©ÆµÂÊµÄµ÷Õû¶¯×÷£¬
-¶øÑ¡Ôñ¹¤×÷ÆµÂÊµÄ²ßÂÔÊÇÓÉgovernorÍê³ÉµÄ¡£
+ä¸governorä¸åŒï¼Œç³»ç»Ÿä¸­åªä¼šå­˜åœ¨ä¸€ä¸ªcpufreq_driveré©±åŠ¨ï¼Œ
+cpufreq_driveræ˜¯å¹³å°ç›¸å…³çš„ï¼Œè´Ÿè´£æœ€ç»ˆå®æ–½é¢‘ç‡çš„è°ƒæ•´åŠ¨ä½œï¼Œ
+è€Œé€‰æ‹©å·¥ä½œé¢‘ç‡çš„ç­–ç•¥æ˜¯ç”±governorå®Œæˆçš„ã€‚
 
-ËùÒÔ£¬ÏµÍ³ÖĞÖ»ĞèÒª×¢²áÒ»¸öcpufreq_driver¼´¿É£¬
-ËüÖ»¸ºÔğÖªµÀÈçºÎ¿ØÖÆ¸ÃÆ½Ì¨µÄÊ±ÖÓÏµÍ³£¬
-´Ó¶øÉè¶¨ÓÉgovernorÈ·¶¨µÄ¹¤×÷ÆµÂÊ¡£
+æ‰€ä»¥ï¼Œç³»ç»Ÿä¸­åªéœ€è¦æ³¨å†Œä¸€ä¸ªcpufreq_driverå³å¯ï¼Œ
+å®ƒåªè´Ÿè´£çŸ¥é“å¦‚ä½•æ§åˆ¶è¯¥å¹³å°çš„æ—¶é’Ÿç³»ç»Ÿï¼Œ
+ä»è€Œè®¾å®šç”±governorç¡®å®šçš„å·¥ä½œé¢‘ç‡ã€‚
 
-×¢²ácpufreq_driverÇı¶¯»á´¥·¢cpufreqºËĞÄµÄÒ»ÏµÁĞ¶îÍâµÄ³õÊ¼»¯¶¯×÷£¬
+æ³¨å†Œcpufreq_driveré©±åŠ¨ä¼šè§¦å‘cpufreqæ ¸å¿ƒçš„ä¸€ç³»åˆ—é¢å¤–çš„åˆå§‹åŒ–åŠ¨ä½œï¼Œ
 
-driver×¢²áÍê³Éºó£¬Çı¶¯±»±£´æÔÚÈ«¾Ö±äÁ¿cpufreq_driverÖĞ£¬
-¹©kernel Ê¹ÓÃ£¬Í¬Ê±£¬Ã¿¸öcpuÒ²»á½¨Á¢×Ô¼ºµÄpolicy²ßÂÔ£¬
-governorÒ²¿ªÊ¼¹¤×÷£¬ÊµÊ±µØ¼à¿Ø×ÅcpuµÄ¸ºÔØ²¢¼ÆËãºÏÊÊµÄ¹¤×÷ÆµÂÊ£¬
-È»ºóÍ¨¹ıdriverµ÷ÕûÕæÕıµÄ¹¤×÷ÆµÂÊ
+driveræ³¨å†Œå®Œæˆåï¼Œé©±åŠ¨è¢«ä¿å­˜åœ¨å…¨å±€å˜é‡cpufreq_driverä¸­ï¼Œ
+ä¾›kernel ä½¿ç”¨ï¼ŒåŒæ—¶ï¼Œæ¯ä¸ªcpuä¹Ÿä¼šå»ºç«‹è‡ªå·±çš„policyç­–ç•¥ï¼Œ
+governorä¹Ÿå¼€å§‹å·¥ä½œï¼Œå®æ—¶åœ°ç›‘æ§ç€cpuçš„è´Ÿè½½å¹¶è®¡ç®—åˆé€‚çš„å·¥ä½œé¢‘ç‡ï¼Œ
+ç„¶åé€šè¿‡driverè°ƒæ•´çœŸæ­£çš„å·¥ä½œé¢‘ç‡
 */
 int cpufreq_register_driver(struct cpufreq_driver *driver_data)
 {
 	unsigned long flags;
 	int ret;
 
-    /* ÅĞ¶ÏÏµÍ³Ä¿Ç°ÊÇ·ñ½ûÖ¹ÁËµ÷Æµ¹¦ÄÜ */
+    /* åˆ¤æ–­ç³»ç»Ÿç›®å‰æ˜¯å¦ç¦æ­¢äº†è°ƒé¢‘åŠŸèƒ½ */
 	if (cpufreq_disabled())
 		return -ENODEV;
 
-    /* ¼ì²écpufreq_driverµÄ¼¸¸ö»Øµ÷º¯ÊıÊÇ·ñ±»ÊµÏÖ */
-	if (!driver_data || !driver_data->verify || !driver_data->init || // verifyºÍinit»Øµ÷º¯Êı±ØĞëÒªÊµÏÖ
-	    !(driver_data->setpolicy || driver_data->target_index || // setpolicyºÍtarget»Øµ÷ÔòÖÁÉÙÒª±»ÊµÏÖÆäÖĞµÄÒ»¸ö
+    /* æ£€æŸ¥cpufreq_driverçš„å‡ ä¸ªå›è°ƒå‡½æ•°æ˜¯å¦è¢«å®ç° */
+	if (!driver_data || !driver_data->verify || !driver_data->init || // verifyå’Œinitå›è°ƒå‡½æ•°å¿…é¡»è¦å®ç°
+	    !(driver_data->setpolicy || driver_data->target_index || // setpolicyå’Œtargetå›è°ƒåˆ™è‡³å°‘è¦è¢«å®ç°å…¶ä¸­çš„ä¸€ä¸ª
 		    driver_data->target) ||
 	     (driver_data->setpolicy && (driver_data->target_index ||
 		    driver_data->target)) ||
@@ -2446,9 +2446,9 @@ int cpufreq_register_driver(struct cpufreq_driver *driver_data)
 
 	write_lock_irqsave(&cpufreq_driver_lock, flags);
     /*
-    ¼ì²éÈ«¾Ö±äÁ¿cpufreq_driverÊÇ·ñÒÑ¾­±»¸³Öµ£¬Èç¹ûÃ»ÓĞ£¬
-    Ôò´«ÈëµÄ²ÎÊı±»¸³Öµ¸øÈ«¾Ö±äÁ¿cpufreq_driver£¬
-    ´Ó¶ø±£Ö¤ÁËÏµÍ³ÖĞÖ»»á×¢²áÒ»¸öcpufreq_driverÇı¶¯
+    æ£€æŸ¥å…¨å±€å˜é‡cpufreq_driveræ˜¯å¦å·²ç»è¢«èµ‹å€¼ï¼Œå¦‚æœæ²¡æœ‰ï¼Œ
+    åˆ™ä¼ å…¥çš„å‚æ•°è¢«èµ‹å€¼ç»™å…¨å±€å˜é‡cpufreq_driverï¼Œ
+    ä»è€Œä¿è¯äº†ç³»ç»Ÿä¸­åªä¼šæ³¨å†Œä¸€ä¸ªcpufreq_driveré©±åŠ¨
     */
 	if (cpufreq_driver) {
 		write_unlock_irqrestore(&cpufreq_driver_lock, flags);

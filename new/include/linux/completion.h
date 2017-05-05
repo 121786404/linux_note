@@ -11,8 +11,8 @@
 #include <linux/wait.h>
 
 /*
- * Íê³É½Ó¿Ú£¬ÊÇÒ»¸öÍ¬²½»úÖÆ£¬ÓÃÀ´ÔÚ¶à¸öÖ´ĞĞÂ·¾¶¼ä×÷Í¬²½Ê¹ÓÃ£¬
- * ¼´Ğ­µ÷¶à¸öÖ´ĞĞÂ·¾¶µÄÖ´ĞĞË³Ğò
+ * å®Œæˆæ¥å£ï¼Œæ˜¯ä¸€ä¸ªåŒæ­¥æœºåˆ¶ï¼Œç”¨æ¥åœ¨å¤šä¸ªæ‰§è¡Œè·¯å¾„é—´ä½œåŒæ­¥ä½¿ç”¨ï¼Œ
+ * å³åè°ƒå¤šä¸ªæ‰§è¡Œè·¯å¾„çš„æ‰§è¡Œé¡ºåº
  */
 
 /**
@@ -27,14 +27,14 @@
  * reinit_completion(), and macros DECLARE_COMPLETION(),
  * DECLARE_COMPLETION_ONSTACK().
  */
- /*Íê³É½è¿Ú*/
+ /*å®Œæˆå€Ÿå£*/
 struct completion {
-	unsigned int done;	/*±íÊ¾µ±Ç°completionµÄ×´Ì¬*/
-	wait_queue_head_t wait;	/* waitÊÇÒ»µÈ´ı¶ÓÁĞ,ÓÃÀ´¹ÜÀíµ±Ç°µÈ´ıÔÚ
-				 * ¸ÃcompletionÉÏµÄËùÓĞ½ø³Ì*/
+	unsigned int done;	/*è¡¨ç¤ºå½“å‰completionçš„çŠ¶æ€*/
+	wait_queue_head_t wait;	/* waitæ˜¯ä¸€ç­‰å¾…é˜Ÿåˆ—,ç”¨æ¥ç®¡ç†å½“å‰ç­‰å¾…åœ¨
+				 * è¯¥completionä¸Šçš„æ‰€æœ‰è¿›ç¨‹*/
 };
 
-/*µÈ´ı¶ÓÁĞ*/
+/*ç­‰å¾…é˜Ÿåˆ—*/
 #define COMPLETION_INITIALIZER(work) \
 	{ 0, __WAIT_QUEUE_HEAD_INITIALIZER((work).wait) }
 
@@ -49,7 +49,7 @@ struct completion {
  * for static declarations. You should use the _ONSTACK variant for automatic
  * variables.
  */
- /*¾²Ì¬¶¨ÒåÒ»¸östruct completion±äÁ¿²¢³õÊ¼»¯*/
+ /*é™æ€å®šä¹‰ä¸€ä¸ªstruct completionå˜é‡å¹¶åˆå§‹åŒ–*/
 #define DECLARE_COMPLETION(work) \
 	struct completion work = COMPLETION_INITIALIZER(work)
 
@@ -79,7 +79,7 @@ struct completion {
  * This inline function will initialize a dynamically created completion
  * structure.
  */
- /*¶¯Ì¬³õÊ¼»¯Ò»¸öcompletion±äÁ¿*/
+ /*åŠ¨æ€åˆå§‹åŒ–ä¸€ä¸ªcompletionå˜é‡*/
 static inline void init_completion(struct completion *x)
 {
 	x->done = 0;
@@ -97,8 +97,8 @@ static inline void reinit_completion(struct completion *x)
 {
 	x->done = 0;
 }
-/* Íê³É½Ó¿Úcompletion¶ÔÖ´ĞĞÂ·¾¶¼äµÄÍ¬²½¿ÉÒÔÍ¨¹ıµÈ´ıÕßÓëÍê³ÉÕßÄ£ĞÍÀ´±íÊö£¬
- * ¶ÔÓÚµÈ´ıÕßµÄĞĞÎª,ÄÚºË¶¨ÒåÁËwait_for_completionº¯Êı*/
+/* å®Œæˆæ¥å£completionå¯¹æ‰§è¡Œè·¯å¾„é—´çš„åŒæ­¥å¯ä»¥é€šè¿‡ç­‰å¾…è€…ä¸å®Œæˆè€…æ¨¡å‹æ¥è¡¨è¿°ï¼Œ
+ * å¯¹äºç­‰å¾…è€…çš„è¡Œä¸º,å†…æ ¸å®šä¹‰äº†wait_for_completionå‡½æ•°*/
 extern void wait_for_completion(struct completion *);
 extern void wait_for_completion_io(struct completion *);
 extern int wait_for_completion_interruptible(struct completion *x);

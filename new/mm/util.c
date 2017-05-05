@@ -328,7 +328,7 @@ void kvfree(const void *addr)
 {
 	if (is_vmalloc_addr(addr))
 /*
-	ÊÇÓÉvmalloc·ÖÅäµÄ
+	æ˜¯ç”±vmallocåˆ†é…çš„
 */
 		vfree(addr);
 	else

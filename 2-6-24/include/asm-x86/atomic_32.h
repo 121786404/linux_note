@@ -25,7 +25,7 @@ typedef struct { int counter; } atomic_t;
  * 
  * Atomically reads the value of @v.
  */ 
-/* ¶ÁÈ¡Ô­×Ó±äÁ¿µÄÖµ */
+/* è¯»å–åŸå­å˜é‡çš„å€¼ */
 #define atomic_read(v)		((v)->counter)
 
 /**
@@ -35,7 +35,7 @@ typedef struct { int counter; } atomic_t;
  * 
  * Atomically sets the value of @v to @i.
  */ 
-/* ÉèÖÃÔ­×Ó±äÁ¿µÄÖµ */
+/* è®¾ç½®åŸå­å˜é‡çš„å€¼ */
 #define atomic_set(v,i)		(((v)->counter) = (i))
 
 /**
@@ -45,7 +45,7 @@ typedef struct { int counter; } atomic_t;
  * 
  * Atomically adds @i to @v.
  */
-/* ½«i¼Óµ½Ô­×Ó±äÁ¿v£¬²¢·µ»ØÌí¼ÓµÄ½á¹û */
+/* å°†iåŠ åˆ°åŸå­å˜é‡vï¼Œå¹¶è¿”å›æ·»åŠ çš„ç»“æœ */
 static __inline__ void atomic_add(int i, atomic_t *v)
 {
 	__asm__ __volatile__(
@@ -61,7 +61,7 @@ static __inline__ void atomic_add(int i, atomic_t *v)
  * 
  * Atomically subtracts @i from @v.
  */
-/* ½«Ô­×Ó±äÁ¿¼õÈ¥i£¬²¢·µ»Ø½á¹û */
+/* å°†åŸå­å˜é‡å‡å»iï¼Œå¹¶è¿”å›ç»“æœ */
 static __inline__ void atomic_sub(int i, atomic_t *v)
 {
 	__asm__ __volatile__(
@@ -79,7 +79,7 @@ static __inline__ void atomic_sub(int i, atomic_t *v)
  * true if the result is zero, or false for all
  * other cases.
  */
-/* Ô­×ÓµÄµİ¼õ±äÁ¿£¬Èç¹û½á¹ûÎª0Ôò·µ»Øtrue */
+/* åŸå­çš„é€’å‡å˜é‡ï¼Œå¦‚æœç»“æœä¸º0åˆ™è¿”å›true */
 static __inline__ int atomic_sub_and_test(int i, atomic_t *v)
 {
 	unsigned char c;
@@ -97,7 +97,7 @@ static __inline__ int atomic_sub_and_test(int i, atomic_t *v)
  * 
  * Atomically increments @v by 1.
  */ 
-/* ½«Ô­×Ó±äÁ¿Ô­×ÓµÄµİ¼Ó1 */
+/* å°†åŸå­å˜é‡åŸå­çš„é€’åŠ 1 */
 static __inline__ void atomic_inc(atomic_t *v)
 {
 	__asm__ __volatile__(
@@ -111,7 +111,7 @@ static __inline__ void atomic_inc(atomic_t *v)
  * 
  * Atomically decrements @v by 1.
  */ 
-/* ½«Ô­×Ó±äÁ¿Ô­×ÓµÄµİ¼õ1 */
+/* å°†åŸå­å˜é‡åŸå­çš„é€’å‡1 */
 static __inline__ void atomic_dec(atomic_t *v)
 {
 	__asm__ __volatile__(
@@ -127,7 +127,7 @@ static __inline__ void atomic_dec(atomic_t *v)
  * returns true if the result is 0, or false for all other
  * cases.
  */ 
-/* ½«Ô­×Ó±äÁ¿¼õ1£¬Èç¹û½á¹ûÎª0£¬Ôò·µ»Øtrue */
+/* å°†åŸå­å˜é‡å‡1ï¼Œå¦‚æœç»“æœä¸º0ï¼Œåˆ™è¿”å›true */
 static __inline__ int atomic_dec_and_test(atomic_t *v)
 {
 	unsigned char c;
@@ -147,7 +147,7 @@ static __inline__ int atomic_dec_and_test(atomic_t *v)
  * and returns true if the result is zero, or false for all
  * other cases.
  */ 
-/* ½«Ô­×Ó±äÁ¿Ôö¼Ó1£¬Èç¹û½á¹ûÎª0£¬Ôò·µ»Øtrue */
+/* å°†åŸå­å˜é‡å¢åŠ 1ï¼Œå¦‚æœç»“æœä¸º0ï¼Œåˆ™è¿”å›true */
 static __inline__ int atomic_inc_and_test(atomic_t *v)
 {
 	unsigned char c;
@@ -168,7 +168,7 @@ static __inline__ int atomic_inc_and_test(atomic_t *v)
  * if the result is negative, or false when
  * result is greater than or equal to zero.
  */ 
-/* µİÔöÔ­×Ó±äÁ¿£¬Èç¹û½á¹ûÎª¸º£¬Ôò·µ»Øtrue */
+/* é€’å¢åŸå­å˜é‡ï¼Œå¦‚æœç»“æœä¸ºè´Ÿï¼Œåˆ™è¿”å›true */
 static __inline__ int atomic_add_negative(int i, atomic_t *v)
 {
 	unsigned char c;

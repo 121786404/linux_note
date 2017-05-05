@@ -177,7 +177,7 @@ static int map_area_pud(pud_t *pud, unsigned long address,
 	return 0;
 }
 
-/* ·´Ó³ÉäÒ»¶ÎÐéÄâÏßÐÔµØÖ·¿Õ¼ä */
+/* åæ˜ å°„ä¸€æ®µè™šæ‹Ÿçº¿æ€§åœ°å€ç©ºé—´ */
 void unmap_vm_area(struct vm_struct *area)
 {
 	unsigned long address = (unsigned long) area->addr;
@@ -199,10 +199,10 @@ void unmap_vm_area(struct vm_struct *area)
 	flush_tlb_kernel_range((unsigned long) area->addr, end);
 }
 
-/* Ó³ÉäÐéÄâµØÖ·ºÍÎïÀíÄÚ´æÒ³Ö®¼äµÄ¹ØÏµ */
+/* æ˜ å°„è™šæ‹Ÿåœ°å€å’Œç‰©ç†å†…å­˜é¡µä¹‹é—´çš„å…³ç³» */
 int map_vm_area(struct vm_struct *area, pgprot_t prot, struct page ***pages)
 {
-	/* È¡µÃÏßÐÔµØÖ·µÄÊ×µØÖ·ºÍÄ©Î²µØÖ· */
+	/* å–å¾—çº¿æ€§åœ°å€çš„é¦–åœ°å€å’Œæœ«å°¾åœ°å€ */
 	unsigned long address = (unsigned long) area->addr;
 	unsigned long end = address + (area->size-PAGE_SIZE);
 	unsigned long next;

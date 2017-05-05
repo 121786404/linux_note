@@ -11,10 +11,10 @@
  **/
 
 /**
- * 全局时钟处理
+ * 鍏ㄥ眬鏃堕挓澶勭悊
  */
 static inline void do_timer_interrupt_hook(void)
 {
-	/* 调用do_timer和update_process_times处理全局事务 */
+	/* 璋冪敤do_timer鍜寀pdate_process_times澶勭悊鍏ㄥ眬浜嬪姟 */
 	global_clock_event->event_handler(global_clock_event);
 }

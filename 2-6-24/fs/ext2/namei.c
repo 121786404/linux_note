@@ -206,10 +206,10 @@ static int ext2_link (struct dentry * old_dentry, struct inode * dir,
 }
 
 /**
- * ´´½¨Ä¿Â¼
- *		dir:¸¸Ä¿Â¼
- *		dentry:ÐÂÄ¿Â¼µÄÃû³Æ
- *		mode:ÐÂÄ¿Â¼µÄ·ÃÎÊÄ£Ê½
+ * åˆ›å»ºç›®å½•
+ *		dir:çˆ¶ç›®å½•
+ *		dentry:æ–°ç›®å½•çš„åç§°
+ *		mode:æ–°ç›®å½•çš„è®¿é—®æ¨¡å¼
  */
 static int ext2_mkdir(struct inode * dir, struct dentry * dentry, int mode)
 {
@@ -219,16 +219,16 @@ static int ext2_mkdir(struct inode * dir, struct dentry * dentry, int mode)
 	if (dir->i_nlink >= EXT2_LINK_MAX)
 		goto out;
 
-	/* µÝÔöÁ¬½Ó¼ÆÊý */
+	/* é€’å¢žè¿žæŽ¥è®¡æ•° */
 	inode_inc_link_count(dir);
 
-	/* Í¨¹ýorlov·ÖÅäÆ÷·ÖÅäÒ»¸öÐÂµÄinode */
+	/* é€šè¿‡orlovåˆ†é…å™¨åˆ†é…ä¸€ä¸ªæ–°çš„inode */
 	inode = ext2_new_inode (dir, S_IFDIR | mode);
 	err = PTR_ERR(inode);
 	if (IS_ERR(inode))
 		goto out_dir;
 
-	/* ÉèÖÃinodeµÄ»Øµ÷º¯ÊýÖ¸Õë */
+	/* è®¾ç½®inodeçš„å›žè°ƒå‡½æ•°æŒ‡é’ˆ */
 	inode->i_op = &ext2_dir_inode_operations;
 	inode->i_fop = &ext2_dir_operations;
 	if (test_opt(inode->i_sb, NOBH))
@@ -238,12 +238,12 @@ static int ext2_mkdir(struct inode * dir, struct dentry * dentry, int mode)
 
 	inode_inc_link_count(inode);
 
-	/* ÔÚÄ¿Â¼ÏîÖÐÌí¼Ó'.''ºÍ'..' */
+	/* åœ¨ç›®å½•é¡¹ä¸­æ·»åŠ '.''å’Œ'..' */
 	err = ext2_make_empty(inode, dir);
 	if (err)
 		goto out_fail;
 
-	/* ½«ÐÂÄ¿Â¼µÄinodeÌí¼Óµ½¸¸Ä¿Â¼µÄinodeÊý¾ÝÖÐ */
+	/* å°†æ–°ç›®å½•çš„inodeæ·»åŠ åˆ°çˆ¶ç›®å½•çš„inodeæ•°æ®ä¸­ */
 	err = ext2_add_link(dentry, inode);
 	if (err)
 		goto out_fail;
@@ -262,9 +262,9 @@ out_dir:
 }
 
 /**
- * É¾³ýÎÄ¼þ»òÄ¿Â¼
- * É¾³ýÎÄ¼þ»áÖ±½Óµ÷ÓÃ´Ë¹ý³Ì 
- * É¾³ýÄ¿Â¼»á¼ä½Óµ÷ÓÃ´Ë¹ý³Ì
+ * åˆ é™¤æ–‡ä»¶æˆ–ç›®å½•
+ * åˆ é™¤æ–‡ä»¶ä¼šç›´æŽ¥è°ƒç”¨æ­¤è¿‡ç¨‹ 
+ * åˆ é™¤ç›®å½•ä¼šé—´æŽ¥è°ƒç”¨æ­¤è¿‡ç¨‹
  */
 static int ext2_unlink(struct inode * dir, struct dentry *dentry)
 {
@@ -273,18 +273,18 @@ static int ext2_unlink(struct inode * dir, struct dentry *dentry)
 	struct page * page;
 	int err = -ENOENT;
 
-	/* ÔÚÄ¿Â¼±íÖÐ²éÕÒÄ¿Â¼Ïî */
+	/* åœ¨ç›®å½•è¡¨ä¸­æŸ¥æ‰¾ç›®å½•é¡¹ */
 	de = ext2_find_entry (dir, dentry, &page);
 	if (!de)
 		goto out;
 
-	/* ´ÓÄ¿Â¼±íÖÐÉ¾³ýÄ¿Â¼£¬ËüÊÇÍ¨¹ýÐÞ¸ÄÄ¿Â¼½á¹¹µÄrec_len×Ö¶ÎÀ´ÊµÏÖµÄ */
+	/* ä»Žç›®å½•è¡¨ä¸­åˆ é™¤ç›®å½•ï¼Œå®ƒæ˜¯é€šè¿‡ä¿®æ”¹ç›®å½•ç»“æž„çš„rec_lenå­—æ®µæ¥å®žçŽ°çš„ */
 	err = ext2_delete_entry (de, page);
 	if (err)
 		goto out;
 
 	inode->i_ctime = dir->i_ctime;
-	/* Ä¿Â¼ÏîÒÑ¾­±»É¾³ý£¬Ö¸Ïò¸ÃÄ¿Â¼ÏîµÄÓ²Á¬½Ó×ÔÈ»¼õÐ¡ÁË1 */
+	/* ç›®å½•é¡¹å·²ç»è¢«åˆ é™¤ï¼ŒæŒ‡å‘è¯¥ç›®å½•é¡¹çš„ç¡¬è¿žæŽ¥è‡ªç„¶å‡å°äº†1 */
 	inode_dec_link_count(inode);
 	err = 0;
 out:
@@ -292,16 +292,16 @@ out:
 }
 
 /**
- * É¾³ýÄ¿Â¼
+ * åˆ é™¤ç›®å½•
  */
 static int ext2_rmdir (struct inode * dir, struct dentry *dentry)
 {
 	struct inode * inode = dentry->d_inode;
 	int err = -ENOTEMPTY;
 
-	/* ±»É¾³ýÄ¿Â¼²»ÄÜÎª¿Õ */
+	/* è¢«åˆ é™¤ç›®å½•ä¸èƒ½ä¸ºç©º */
 	if (ext2_empty_dir(inode)) {
-		/* ´Ó¸¸Ä¿Â¼µÄinodeÊý¾ÝÇøÖÐ£¬É¾³ýµ±Ç°Ä¿Â¼¶ÔÓ¦µÄÏî */
+		/* ä»Žçˆ¶ç›®å½•çš„inodeæ•°æ®åŒºä¸­ï¼Œåˆ é™¤å½“å‰ç›®å½•å¯¹åº”çš„é¡¹ */
 		err = ext2_unlink(dir, dentry);
 		if (!err) {
 			inode->i_size = 0;

@@ -20,7 +20,7 @@
 #include <asm/io.h>
 
 
-/* IO×ÊÔ´Ê÷¸ù½Úµã */
+/* IOèµ„æºæ ‘æ ¹èŠ‚ç‚¹ */
 struct resource ioport_resource = {
 	.name	= "PCI IO",
 	.start	= 0,
@@ -29,7 +29,7 @@ struct resource ioport_resource = {
 };
 EXPORT_SYMBOL(ioport_resource);
 
-/* IOÄÚ´æ×ÊÔ´Ê÷µÄ¸ù½Úµã */
+/* IOå†…å­˜èµ„æºæ ‘çš„æ ¹èŠ‚ç‚¹ */
 struct resource iomem_resource = {
 	.name	= "PCI mem",
 	.start	= 0,
@@ -149,9 +149,9 @@ __initcall(ioresources_init);
 
 /* Return the conflict entry if you can't request it */
 /**
- * ÇëÇó·ÖÅäÒ»¸ö×ÊÔ´ÇøÓò
- * root:¸¸½ÚµãÖ¸Õë
- * new:Òª·ÖÅä×ÊÔ´µÄÏêÏ¸ĞÅÏ¢
+ * è¯·æ±‚åˆ†é…ä¸€ä¸ªèµ„æºåŒºåŸŸ
+ * root:çˆ¶èŠ‚ç‚¹æŒ‡é’ˆ
+ * new:è¦åˆ†é…èµ„æºçš„è¯¦ç»†ä¿¡æ¯
  */
 static struct resource * __request_resource(struct resource *root, struct resource *new)
 {
@@ -159,30 +159,30 @@ static struct resource * __request_resource(struct resource *root, struct resour
 	resource_size_t end = new->end;
 	struct resource *tmp, **p;
 
-	if (end < start)/* ²ÎÊı²»ºÏ·¨ */
+	if (end < start)/* å‚æ•°ä¸åˆæ³• */
 		return root;
 	if (start < root->start)
 		return root;
 	if (end > root->end)
 		return root;
-	/* ´Ó¸¸½ÚµãµÄµÚÒ»¸ö×Ó½Úµã¿ªÊ¼É¨Ãè */
+	/* ä»çˆ¶èŠ‚ç‚¹çš„ç¬¬ä¸€ä¸ªå­èŠ‚ç‚¹å¼€å§‹æ‰«æ */
 	p = &root->child;
-	for (;;) {/* É¨ÃèËùÓĞ×Ó½Úµã */
+	for (;;) {/* æ‰«ææ‰€æœ‰å­èŠ‚ç‚¹ */
 		tmp = *p;
 		/**
-		 * Èç¹ûÃ»ÓĞºóĞø½Úµã£¬ËµÃ÷¿Õ¼ä¿ÉÓÃ
-		 * Èç¹ûÏÂÒ»¸ö½ÚµãÆğÊ¼µØÖ·´óÓÚ½áÊøµØÖ·£¬ËµÃ÷¿Õ¼äÒ²¿ÉÓÃ
+		 * å¦‚æœæ²¡æœ‰åç»­èŠ‚ç‚¹ï¼Œè¯´æ˜ç©ºé—´å¯ç”¨
+		 * å¦‚æœä¸‹ä¸€ä¸ªèŠ‚ç‚¹èµ·å§‹åœ°å€å¤§äºç»“æŸåœ°å€ï¼Œè¯´æ˜ç©ºé—´ä¹Ÿå¯ç”¨
 		 */
 		if (!tmp || tmp->start > end) {
-			/* ½«ĞÂ½ÚµãÁ´½Óµ½Á´±íÖĞ */
+			/* å°†æ–°èŠ‚ç‚¹é“¾æ¥åˆ°é“¾è¡¨ä¸­ */
 			new->sibling = tmp;
 			*p = new;
-			/* ÉèÖÃĞÂ½ÚµãµÄ¸¸½Úµã */
+			/* è®¾ç½®æ–°èŠ‚ç‚¹çš„çˆ¶èŠ‚ç‚¹ */
 			new->parent = root;
 			return NULL;
 		}
-		p = &tmp->sibling;/* ÒÆµ½ÏÂÒ»¸ö½Úµã */
-		if (tmp->end < start)/* ½»²æÁË£¬²»ÄÜ·ÖÅä×ÊÔ´ */
+		p = &tmp->sibling;/* ç§»åˆ°ä¸‹ä¸€ä¸ªèŠ‚ç‚¹ */
+		if (tmp->end < start)/* äº¤å‰äº†ï¼Œä¸èƒ½åˆ†é…èµ„æº */
 			continue;
 		return tmp;
 	}
@@ -231,7 +231,7 @@ EXPORT_SYMBOL(request_resource);
  * @old: resource pointer
  */
 /**
- * ÊÍ·ÅIO×ÊÔ´
+ * é‡Šæ”¾IOèµ„æº
  */
 int release_resource(struct resource *old)
 {

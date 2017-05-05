@@ -230,7 +230,7 @@ static int __init check_writebuffer(unsigned long *p1, unsigned long *p2)
 }
 
 /**
- * ¼ì²éÄÚ´æĞ´»º³åµÄbug
+ * æ£€æŸ¥å†…å­˜å†™ç¼“å†²çš„bug
  */
 void __init check_writebuffer_bugs(void)
 {
@@ -240,26 +240,26 @@ void __init check_writebuffer_bugs(void)
 
 	pr_info("CPU: Testing write buffer coherency: ");
 
-	//·ÖÅäÒ»¸ö´ı²âÊÔÒ³Ãæ
+	//åˆ†é…ä¸€ä¸ªå¾…æµ‹è¯•é¡µé¢
 	page = alloc_page(GFP_KERNEL);
 	if (page) {
 		unsigned long *p1, *p2;
 		pgprot_t prot = __pgprot_modify(PAGE_KERNEL,
 					L_PTE_MT_MASK, L_PTE_MT_BUFFERABLE);
 
-		//½«¸ÃÒ³ÃæÓ³Éäµ½Á½¸öĞéÄâµØÖ·
+		//å°†è¯¥é¡µé¢æ˜ å°„åˆ°ä¸¤ä¸ªè™šæ‹Ÿåœ°å€
 		p1 = vmap(&page, 1, VM_IOREMAP, prot);
 		p2 = vmap(&page, 1, VM_IOREMAP, prot);
 
 		if (p1 && p2) {
-			//ÏòÁ½¸öĞéÄâµØÖ·Ğ´Èë²»Í¬µÄÖµ£¬¿´ÊÇ·ñÓĞbug
+			//å‘ä¸¤ä¸ªè™šæ‹Ÿåœ°å€å†™å…¥ä¸åŒçš„å€¼ï¼Œçœ‹æ˜¯å¦æœ‰bug
 			v = check_writebuffer(p1, p2);
 			reason = "enabling work-around";
 		} else {
 			reason = "unable to map memory\n";
 		}
 
-		//½â³ıÓ³Éä²¢ÊÍ·ÅÄÚ´æÒ³Ãæ
+		//è§£é™¤æ˜ å°„å¹¶é‡Šæ”¾å†…å­˜é¡µé¢
 		vunmap(p1);
 		vunmap(p2);
 		put_page(page);
@@ -267,7 +267,7 @@ void __init check_writebuffer_bugs(void)
 		reason = "unable to grab page\n";
 	}
 
-	if (v) {//´æÔÚÎÊÌâ£¬ÖÃ±êÖ¾·ÀÖ¹±ğÃû
+	if (v) {//å­˜åœ¨é—®é¢˜ï¼Œç½®æ ‡å¿—é˜²æ­¢åˆ«å
 		pr_cont("failed, %s\n", reason);
 		shared_pte_mask = L_PTE_MT_UNCACHED;
 	} else {

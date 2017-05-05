@@ -823,8 +823,8 @@ void *idr_replace(struct idr *idp, void *ptr, int id)
 EXPORT_SYMBOL(idr_replace);
 
 /**
- * idr½«ÕûÊıÓëÖ¸Õë¹ØÁªÆğÀ´
- * ÕâÀï¹¹ÔìËüµÄslab¹ÜÀíÆ÷¡£
+ * idrå°†æ•´æ•°ä¸æŒ‡é’ˆå…³è”èµ·æ¥
+ * è¿™é‡Œæ„é€ å®ƒçš„slabç®¡ç†å™¨ã€‚
  */
 void __init idr_init_cache(void)
 {

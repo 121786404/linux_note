@@ -507,7 +507,7 @@ static inline void *netdev_priv(struct net_device *dev)
  */
 #define SET_NETDEV_DEV(net, pdev)	((net)->class_dev.dev = (pdev))
 
-/* 链路层向网络层传递的结构 */
+/* 閾捐矾灞傚悜缃戠粶灞備紶閫掔殑缁撴瀯 */
 struct packet_type {
 	unsigned short		type;	/* This is really htons(ether_type).	*/
 	struct net_device		*dev;	/* NULL is wildcarded here		*/

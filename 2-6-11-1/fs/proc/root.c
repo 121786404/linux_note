@@ -38,7 +38,7 @@ static struct file_system_type proc_fs_type = {
 
 extern int __init proc_init_inodecache(void);
 
-/* ³õÊ¼»¯procÎÄ¼şÏµÍ³ */
+/* åˆå§‹åŒ–procæ–‡ä»¶ç³»ç»Ÿ */
 void __init proc_root_init(void)
 {
 	int err = proc_init_inodecache();
@@ -47,13 +47,13 @@ void __init proc_root_init(void)
 	err = register_filesystem(&proc_fs_type);
 	if (err)
 		return;
-        /* ¹ÒÔÚÍê³ÉÖ®ºó£¬²¢²»ÄÜÍ¨¹ıÂ·¾¶Ãû'/proc'ÕÒµ½
-          * procÎÄ¼şÏµÍ³µÄ¸ù½Úµã£¬¹âÊÇkern_mount»¹²»¹» 
-          * »¹ĞèÒªÏµÍ³µÄ³õÊ¼»¯½ø³Ì´ÓÄÚºËÍâ²¿Í¨¹ıÏµÍ³µ÷ÓÃmount 
-          * À´ÔÚ°²×°Ò»´Î 
+        /* æŒ‚åœ¨å®Œæˆä¹‹åï¼Œå¹¶ä¸èƒ½é€šè¿‡è·¯å¾„å'/proc'æ‰¾åˆ°
+          * procæ–‡ä»¶ç³»ç»Ÿçš„æ ¹èŠ‚ç‚¹ï¼Œå…‰æ˜¯kern_mountè¿˜ä¸å¤Ÿ 
+          * è¿˜éœ€è¦ç³»ç»Ÿçš„åˆå§‹åŒ–è¿›ç¨‹ä»å†…æ ¸å¤–éƒ¨é€šè¿‡ç³»ç»Ÿè°ƒç”¨mount 
+          * æ¥åœ¨å®‰è£…ä¸€æ¬¡ 
           * mount -nvt proc /dev/null /proc 
-          * ¾ÍÊÇËµ½¨Á¢ÔÚ¿ÕÉè±¸ÉÏ '/dev/null'µÄprocÎÄ¼şÏµÍ³°²×°ÔÚ½ÚµãÉÏ 
-          * ´ÓÀíÂÛÉÏ½²¿ÉÒÔ½«Æä°²×°µ½ÆäËû½ÚµãÉÏ£¬µ«Êµ¼Ê×ÜÊÇ°²×°µ½/procÉÏ 
+          * å°±æ˜¯è¯´å»ºç«‹åœ¨ç©ºè®¾å¤‡ä¸Š '/dev/null'çš„procæ–‡ä»¶ç³»ç»Ÿå®‰è£…åœ¨èŠ‚ç‚¹ä¸Š 
+          * ä»ç†è®ºä¸Šè®²å¯ä»¥å°†å…¶å®‰è£…åˆ°å…¶ä»–èŠ‚ç‚¹ä¸Šï¼Œä½†å®é™…æ€»æ˜¯å®‰è£…åˆ°/procä¸Š 
           */
 	proc_mnt = kern_mount(&proc_fs_type);
 	err = PTR_ERR(proc_mnt);
@@ -148,11 +148,11 @@ static struct inode_operations proc_root_inode_operations = {
 /*
  * This is the root "inode" in the /proc tree..
  */
-/* procÎÄ¼şÏµÍ³µÄ¸ùÄ¿Â¼ */
+/* procæ–‡ä»¶ç³»ç»Ÿçš„æ ¹ç›®å½• */
 struct proc_dir_entry proc_root = {
 	.low_ino	= PROC_ROOT_INO, 
 	.namelen	= 5, 
-	.name		= "/proc",                /* ¸ùÄ¿Â¼µÄÃû³Æ */
+	.name		= "/proc",                /* æ ¹ç›®å½•çš„åç§° */
 	.mode		= S_IFDIR | S_IRUGO | S_IXUGO, 
 	.nlink		= 2, 
 	.proc_iops	= &proc_root_inode_operations, 

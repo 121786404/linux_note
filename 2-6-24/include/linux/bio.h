@@ -72,15 +72,15 @@ typedef void (bio_destructor_t) (struct bio *);
  * stacking drivers)
  */
 /**
- * ¿ÉÒÔÓÉÓ²¼şÒ»´ÎĞÔ´¦ÀíµÄ´ÅÅÌÇëÇó¡£
+ * å¯ä»¥ç”±ç¡¬ä»¶ä¸€æ¬¡æ€§å¤„ç†çš„ç£ç›˜è¯·æ±‚ã€‚
  */
 struct bio {
-	/* ´«Êä¿ªÊ¼µÄÉÈÇøºÅ */
+	/* ä¼ è¾“å¼€å§‹çš„æ‰‡åŒºå· */
 	sector_t		bi_sector;	/* device address in 512 byte
 						   sectors */
-	/* Í¬Ò»¸öÇëÇóÖĞ£¬ÏÂÒ»¸öbioÇëÇó */
+	/* åŒä¸€ä¸ªè¯·æ±‚ä¸­ï¼Œä¸‹ä¸€ä¸ªbioè¯·æ±‚ */
 	struct bio		*bi_next;	/* request queue link */
-	/* ÇëÇóËùÊôµÄ¿éÉè±¸ */
+	/* è¯·æ±‚æ‰€å±çš„å—è®¾å¤‡ */
 	struct block_device	*bi_bdev;
 	unsigned long		bi_flags;	/* status, command, etc */
 	unsigned long		bi_rw;		/* bottom bits READ/WRITE,
@@ -93,16 +93,16 @@ struct bio {
 	/* Number of segments in this BIO after
 	 * physical address coalescing is performed.
 	 */
-	/* ´«ÊäÖĞ¶ÎµÄÊıÄ¿ */
+	/* ä¼ è¾“ä¸­æ®µçš„æ•°ç›® */
 	unsigned short		bi_phys_segments;
 
 	/* Number of segments after physical and DMA remapping
 	 * hardware coalescing is performed.
 	 */
-	/* ´«ÊäÖĞ¶ÎµÄÊıÄ¿ */
+	/* ä¼ è¾“ä¸­æ®µçš„æ•°ç›® */
 	unsigned short		bi_hw_segments;
 
-	/* ÇëÇóËùÉæ¼°µÄÊı¾İ³¤¶È£¬ÒÔ×Ö½ÚÎªµ¥Î» */
+	/* è¯·æ±‚æ‰€æ¶‰åŠçš„æ•°æ®é•¿åº¦ï¼Œä»¥å­—èŠ‚ä¸ºå•ä½ */
 	unsigned int		bi_size;	/* residual I/O count */
 
 	/*
@@ -115,17 +115,17 @@ struct bio {
 
 	unsigned int		bi_max_vecs;	/* max bvl_vecs we can hold */
 
-	/* bioÇëÇóÖĞµÄioÏòÁ¿ */
+	/* bioè¯·æ±‚ä¸­çš„ioå‘é‡ */
 	struct bio_vec		*bi_io_vec;	/* the actual vec list */
 
-	/* ÇëÇóÍê³ÉÊ±£¬ÓÉÇı¶¯µ÷ÓÃ´Ë»Øµ÷ */
+	/* è¯·æ±‚å®Œæˆæ—¶ï¼Œç”±é©±åŠ¨è°ƒç”¨æ­¤å›è°ƒ */
 	bio_end_io_t		*bi_end_io;
 	atomic_t		bi_cnt;		/* pin count */
 
-	/* ÓÃÓÚÇı¶¯µÄË½ÓĞĞÅÏ¢ */
+	/* ç”¨äºé©±åŠ¨çš„ç§æœ‰ä¿¡æ¯ */
 	void			*bi_private;
 
-	/* ½âÎöÆ÷£¬É¾³ıbioÊ±Ê¹ÓÃ */
+	/* è§£æå™¨ï¼Œåˆ é™¤bioæ—¶ä½¿ç”¨ */
 	bio_destructor_t	*bi_destructor;	/* destructor */
 };
 

@@ -38,20 +38,20 @@ enum stat_item {
 	NR_SLUB_STAT_ITEMS };
 
 /*
-Slub·ÖÅäÆ÷µÄ·ÖÅä»úÖÆÊÇ£º
-´¦ÀíÄÚ´æÉêÇëÇëÇóÊ±£¬»ñÈ¡µ±Ç°cpuÉÏµÄslab_cpu±äÁ¿£¬
-ÅĞ¶Ïµ±Ç°Ê¹ÓÃµÄpageÉÏÊÇ·ñÓÉ×ã¹»¿ÉÓÃµÄ¿ÕÏĞ¶ÔÏó£¬
-ÈôÓĞÔòÖ±½Ó·µ»Ø¿ÕÏĞ¶ÔÏóµÄÖ¸Õë¡£
-·ñÔò»á´Ópartial listÉÏ»òÕßnode½ÚµãÖĞ»ñÈ¡¿ÉÓÃµÄÄÚ´æ
+Slubåˆ†é…å™¨çš„åˆ†é…æœºåˆ¶æ˜¯ï¼š
+å¤„ç†å†…å­˜ç”³è¯·è¯·æ±‚æ—¶ï¼Œè·å–å½“å‰cpuä¸Šçš„slab_cpuå˜é‡ï¼Œ
+åˆ¤æ–­å½“å‰ä½¿ç”¨çš„pageä¸Šæ˜¯å¦ç”±è¶³å¤Ÿå¯ç”¨çš„ç©ºé—²å¯¹è±¡ï¼Œ
+è‹¥æœ‰åˆ™ç›´æ¥è¿”å›ç©ºé—²å¯¹è±¡çš„æŒ‡é’ˆã€‚
+å¦åˆ™ä¼šä»partial listä¸Šæˆ–è€…nodeèŠ‚ç‚¹ä¸­è·å–å¯ç”¨çš„å†…å­˜
 */
 struct kmem_cache_cpu {
-    // ÏÂÒ»¿ÕÏĞ¶ÔÏó
+    // ä¸‹ä¸€ç©ºé—²å¯¹è±¡
 	void **freelist;	/* Pointer to next available object */
-	// transaction ID£¬±£Ö¤²Ù×÷µÄÒ»ÖÂĞÔ
+	// transaction IDï¼Œä¿è¯æ“ä½œçš„ä¸€è‡´æ€§
 	unsigned long tid;	/* Globally unique transaction id */
-	// µ±Ç°cpu·ÖÅä¶ÔÏóËùÓÃµÄpage
+	// å½“å‰cpuåˆ†é…å¯¹è±¡æ‰€ç”¨çš„page
 	struct page *page;	/* The slab from which we are allocating */
-	// µ±Ç°cpuÉÏ±»¶³½áµÄ²¿·Ö¿ÕpageÁ´±í
+	// å½“å‰cpuä¸Šè¢«å†»ç»“çš„éƒ¨åˆ†ç©ºpageé“¾è¡¨
 	struct page *partial;	/* Partially allocated frozen slabs */
 #ifdef CONFIG_SLUB_STATS
 	unsigned stat[NR_SLUB_STAT_ITEMS];
@@ -72,65 +72,65 @@ struct kmem_cache_order_objects {
  */
 struct kmem_cache {
     /*
-       Ã¿¸öcpu¶ÀÏíÒ»¸ö¸±±¾£¬Òò´Ë·ÖÅäÊ±²¢²»ĞèÒª¼ÓËø´¦Àí
-       Ã¿¸öcpuÉÏ¶¼ÓĞ¶ÀÁ¢µÄ¿ÉÅä·Ö×ÊÔ´£¬
-       Ïß³ÌÔÚÉêÇëmemoryµÄÊ±ºò»áÖ±½Ó´Óµ±Ç°cpuµÄcpu_slabÖĞ·ÖÅä£¬
-       ÕâÑù¾ÍÃâÈ¥ÁË¼ÓËø´¦Àí£¬Ìá¸ßÁËÄÚ´æ·ÖÅäµÄËÙ¶È¡£
-       µ±cpu_slabÖĞµÄ¿É·ÖÅäÄÚ´æµÍÓÚãĞÖµÊ±£¬
-       slub½«´Ónode½ÚµãÖĞ»ñÈ¡¸ü¶àµÄPage
+       æ¯ä¸ªcpuç‹¬äº«ä¸€ä¸ªå‰¯æœ¬ï¼Œå› æ­¤åˆ†é…æ—¶å¹¶ä¸éœ€è¦åŠ é”å¤„ç†
+       æ¯ä¸ªcpuä¸Šéƒ½æœ‰ç‹¬ç«‹çš„å¯é…åˆ†èµ„æºï¼Œ
+       çº¿ç¨‹åœ¨ç”³è¯·memoryçš„æ—¶å€™ä¼šç›´æ¥ä»å½“å‰cpuçš„cpu_slabä¸­åˆ†é…ï¼Œ
+       è¿™æ ·å°±å…å»äº†åŠ é”å¤„ç†ï¼Œæé«˜äº†å†…å­˜åˆ†é…çš„é€Ÿåº¦ã€‚
+       å½“cpu_slabä¸­çš„å¯åˆ†é…å†…å­˜ä½äºé˜ˆå€¼æ—¶ï¼Œ
+       slubå°†ä»nodeèŠ‚ç‚¹ä¸­è·å–æ›´å¤šçš„Page
     */
     struct kmem_cache_cpu __percpu *cpu_slab;
 	/* Used for retriving partial slabs etc */
-	/* ¸ßËÙ»º´æÓÀ¾ÃÊôĞÔµÄ±êÊ¶£¬Èç¹ûSLABÃèÊö·û·ÅÔÚÍâ²¿(²»·ÅÔÚSLABÖĞ)£¬
-	ÔòCFLAGS_OFF_SLABÖÃ1 */
+	/* é«˜é€Ÿç¼“å­˜æ°¸ä¹…å±æ€§çš„æ ‡è¯†ï¼Œå¦‚æœSLABæè¿°ç¬¦æ”¾åœ¨å¤–éƒ¨(ä¸æ”¾åœ¨SLABä¸­)ï¼Œ
+	åˆ™CFLAGS_OFF_SLABç½®1 */
 	unsigned long flags;
 	/*  
-	    node½ÚµãÖĞ²¿·Ö¿Õ»º´æÇøÊıÁ¿×îĞ¡Öµ£»
-          Èç¹û»º³åÇøÊıÁ¿´óÓÚ´ËÖµÊ±£¬
-          ¶àÓàµÄ»º³åÇø½«»á±»freeµ½»ï°éÏµÍ³ÖĞ
+	    nodeèŠ‚ç‚¹ä¸­éƒ¨åˆ†ç©ºç¼“å­˜åŒºæ•°é‡æœ€å°å€¼ï¼›
+          å¦‚æœç¼“å†²åŒºæ•°é‡å¤§äºæ­¤å€¼æ—¶ï¼Œ
+          å¤šä½™çš„ç¼“å†²åŒºå°†ä¼šè¢«freeåˆ°ä¼™ä¼´ç³»ç»Ÿä¸­
 	*/
 	unsigned long min_partial;
-	/* »º³åÇøÖĞµ¥¸ö¶ÔÏóµÄËùÕ¼ÄÚ´æ¿Õ¼ä´óĞ¡£¬°üÀ¨meta data¡£
+	/* ç¼“å†²åŒºä¸­å•ä¸ªå¯¹è±¡çš„æ‰€å å†…å­˜ç©ºé—´å¤§å°ï¼ŒåŒ…æ‹¬meta dataã€‚
 	    size = object size + meta data size */
 	int size;		/* The size of an object including meta data */
-    /* ¶ÔÏóµÄÊµ¼Ê´óĞ¡ */
+    /* å¯¹è±¡çš„å®é™…å¤§å° */
 	int object_size;	/* The size of an object without meta data */
-    /* free pointerµÄoffset¡£Page±»·ÖÎªÒ»¸ö¸öÄÚ´æ¿é£¬
-          ¸÷¸öÄÚ´æ¿éÍ¨¹ıÖ¸Õë´®½Ó³ÉÁ´±í£¬
-          offset¼´Ö¸ÕëÔÚµ¥¸öÄÚ´æ¿éÖĞµÄÆ«ÒÆÁ¿ */
+    /* free pointerçš„offsetã€‚Pageè¢«åˆ†ä¸ºä¸€ä¸ªä¸ªå†…å­˜å—ï¼Œ
+          å„ä¸ªå†…å­˜å—é€šè¿‡æŒ‡é’ˆä¸²æ¥æˆé“¾è¡¨ï¼Œ
+          offsetå³æŒ‡é’ˆåœ¨å•ä¸ªå†…å­˜å—ä¸­çš„åç§»é‡ */
 	int offset;		/* Free pointer offset. */
-    /* cpu_slabÖĞ²¿·Ö¿Õ¶ÔÏóµÄ×î´ó¸öÊı¡£
-          µ±cpu_slabÖĞ²¿·Ö¿Õ¶ÔÏó´óÓÚ´ËÖµÊ±£¬
-          ¶à³öµÄ¶ÔÏó½«±»·Åµ½node½Úµã»òÕßfreeµ½»ï°éÏµÍ³ÖĞ */
+    /* cpu_slabä¸­éƒ¨åˆ†ç©ºå¯¹è±¡çš„æœ€å¤§ä¸ªæ•°ã€‚
+          å½“cpu_slabä¸­éƒ¨åˆ†ç©ºå¯¹è±¡å¤§äºæ­¤å€¼æ—¶ï¼Œ
+          å¤šå‡ºçš„å¯¹è±¡å°†è¢«æ”¾åˆ°nodeèŠ‚ç‚¹æˆ–è€…freeåˆ°ä¼™ä¼´ç³»ç»Ÿä¸­ */
 	int cpu_partial;	/* Number of per cpu partial objects to keep around */
-    /* ±£´æslab»º³åÇøĞèÒªµÄÒ³¿òÊıÁ¿µÄorderÖµºÍobjectsÊıÁ¿µÄÖµ£¬
-        Í¨¹ıÕâ¸öÖµ¿ÉÒÔ¼ÆËã³öĞèÒª¶àÉÙÒ³¿ò£¬Õâ¸öÊÇÄ¬ÈÏÖµ£¬
-        ³õÊ¼»¯Ê±»á¸ù¾İ¾­Ñé¼ÆËãÕâ¸öÖµ */
+    /* ä¿å­˜slabç¼“å†²åŒºéœ€è¦çš„é¡µæ¡†æ•°é‡çš„orderå€¼å’Œobjectsæ•°é‡çš„å€¼ï¼Œ
+        é€šè¿‡è¿™ä¸ªå€¼å¯ä»¥è®¡ç®—å‡ºéœ€è¦å¤šå°‘é¡µæ¡†ï¼Œè¿™ä¸ªæ˜¯é»˜è®¤å€¼ï¼Œ
+        åˆå§‹åŒ–æ—¶ä¼šæ ¹æ®ç»éªŒè®¡ç®—è¿™ä¸ªå€¼ */
 	struct kmem_cache_order_objects oo;
 
 	/* Allocation and freeing of slabs */
-	/* ±£´æslab»º³åÇøĞèÒªµÄÒ³¿òÊıÁ¿µÄorderÖµºÍobjectsÊıÁ¿µÄÖµ£¬
-	Õâ¸öÊÇ×î´óÖµ */
+	/* ä¿å­˜slabç¼“å†²åŒºéœ€è¦çš„é¡µæ¡†æ•°é‡çš„orderå€¼å’Œobjectsæ•°é‡çš„å€¼ï¼Œ
+	è¿™ä¸ªæ˜¯æœ€å¤§å€¼ */
 	struct kmem_cache_order_objects max;
-	/* ±£´æslab»º³åÇøĞèÒªµÄÒ³¿òÊıÁ¿µÄorderÖµºÍobjectsÊıÁ¿µÄÖµ£¬
-	Õâ¸öÊÇ×îĞ¡Öµ£¬µ±Ä¬ÈÏÖµoo·ÖÅäÊ§°ÜÊ±£¬
-	»á³¢ÊÔÓÃ×îĞ¡ÖµÈ¥·ÖÅäÁ¬ĞøÒ³¿ò */
+	/* ä¿å­˜slabç¼“å†²åŒºéœ€è¦çš„é¡µæ¡†æ•°é‡çš„orderå€¼å’Œobjectsæ•°é‡çš„å€¼ï¼Œ
+	è¿™ä¸ªæ˜¯æœ€å°å€¼ï¼Œå½“é»˜è®¤å€¼ooåˆ†é…å¤±è´¥æ—¶ï¼Œ
+	ä¼šå°è¯•ç”¨æœ€å°å€¼å»åˆ†é…è¿ç»­é¡µæ¡† */
 	struct kmem_cache_order_objects min;
-	/* Ã¿Ò»´Î·ÖÅäÊ±ËùÊ¹ÓÃµÄ±êÖ¾ */
+	/* æ¯ä¸€æ¬¡åˆ†é…æ—¶æ‰€ä½¿ç”¨çš„æ ‡å¿— */
 	gfp_t allocflags;	/* gfp flags to use on each alloc */
-	/* ÖØÓÃ¼ÆÊıÆ÷£¬µ±ÓÃ»§ÇëÇó´´½¨ĞÂµÄSLUBÖÖÀàÊ±£¬
-	SLUB ·ÖÅäÆ÷ÖØÓÃÒÑ´´½¨µÄÏàËÆ´óĞ¡µÄSLUB£¬´Ó¶ø¼õÉÙSLUBÖÖÀàµÄ¸öÊı¡£ */
+	/* é‡ç”¨è®¡æ•°å™¨ï¼Œå½“ç”¨æˆ·è¯·æ±‚åˆ›å»ºæ–°çš„SLUBç§ç±»æ—¶ï¼Œ
+	SLUB åˆ†é…å™¨é‡ç”¨å·²åˆ›å»ºçš„ç›¸ä¼¼å¤§å°çš„SLUBï¼Œä»è€Œå‡å°‘SLUBç§ç±»çš„ä¸ªæ•°ã€‚ */
 	int refcount;		/* Refcount for slab cache destroy */
-	/* ´´½¨slabÊ±µÄ¹¹Ôìº¯Êı */
+	/* åˆ›å»ºslabæ—¶çš„æ„é€ å‡½æ•° */
 	void (*ctor)(void *);
-	/* ÔªÊı¾İµÄÆ«ÒÆÁ¿ */
+	/* å…ƒæ•°æ®çš„åç§»é‡ */
 	int inuse;		/* Offset to metadata */
-	/* ¶ÔÆë */
+	/* å¯¹é½ */
 	int align;		/* Alignment */
 	int reserved;		/* Reserved bytes at the end of slabs */
-	/* ¸ßËÙ»º´æÃû×Ö */
+	/* é«˜é€Ÿç¼“å­˜åå­— */
 	const char *name;	/* Name (only for display!) */
-	/* ËùÓĞµÄ kmem_cache ½á¹¹¶¼»áÁ´ÈëÕâ¸öÁ´±í£¬Á´±íÍ·ÊÇ slab_caches */
+	/* æ‰€æœ‰çš„ kmem_cache ç»“æ„éƒ½ä¼šé“¾å…¥è¿™ä¸ªé“¾è¡¨ï¼Œé“¾è¡¨å¤´æ˜¯ slab_caches */
 	struct list_head list;	/* List of slab caches */
 	int red_left_pad;	/* Left redzone padding size */
 #ifdef CONFIG_SYSFS
@@ -158,7 +158,7 @@ struct kmem_cache {
 #ifdef CONFIG_KASAN
 	struct kasan_cache kasan_info;
 #endif
-    /* ´´½¨»º³åÇøµÄ½ÚµãµÄ slab ĞÅÏ¢ */
+    /* åˆ›å»ºç¼“å†²åŒºçš„èŠ‚ç‚¹çš„ slab ä¿¡æ¯ */
 	struct kmem_cache_node *node[MAX_NUMNODES];
 };
 

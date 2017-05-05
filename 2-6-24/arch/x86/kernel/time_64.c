@@ -146,7 +146,7 @@ int update_persistent_clock(struct timespec now)
 }
 
 /**
- * 时钟中断处理函数
+ * 鏃堕挓涓柇澶勭悊鍑芥暟
  */
 static irqreturn_t timer_event_interrupt(int irq, void *dev_id)
 {

@@ -369,7 +369,7 @@ struct dentry *proc_lookup(struct inode * dir, struct dentry *dentry, struct nam
 	lock_kernel();
 	de = PDE(dir);
 	if (de) {
-                /* ´ÓdirµÄËùÓĞ×ÓÄ¿Â¼ÖĞ²éÕÒ */
+                /* ä»dirçš„æ‰€æœ‰å­ç›®å½•ä¸­æŸ¥æ‰¾ */
 		for (de = de->subdir; de ; de = de->next) {
 			if (de->namelen != dentry->d_name.len)
 				continue;
@@ -479,16 +479,16 @@ static struct inode_operations proc_dir_inode_operations = {
 	.setattr	= proc_notify_change,
 };
 
-/* ×¢²á¸¸Ä¿Â¼ºÍ×ÓÄ¿Â¼Ö®¼äµÄ¹ØÏµ */
+/* æ³¨å†Œçˆ¶ç›®å½•å’Œå­ç›®å½•ä¹‹é—´çš„å…³ç³» */
 static int proc_register(struct proc_dir_entry * dir, struct proc_dir_entry * dp)
 {
 	unsigned int i;
-	/* »ñÈ¡×ÓÄ¿Â¼µÄino */
+	/* è·å–å­ç›®å½•çš„ino */
 	i = get_inode_number();
 	if (i == 0)
 		return -EAGAIN;
 	dp->low_ino = i;
-        /* ÉèÖÃÄ¿Â¼Ö®¼äµÄÁ¬½Ó¹ØÏµ */
+        /* è®¾ç½®ç›®å½•ä¹‹é—´çš„è¿æ¥å…³ç³» */
 	dp->next = dir->subdir;
 	dp->parent = dir;
 	dir->subdir = dp;
@@ -540,7 +540,7 @@ static void proc_kill_inodes(struct proc_dir_entry *de)
 	file_list_unlock();
 }
 
-/* ·ÖÅäÒ»¸öprocµÄÄ¿Â¼½á¹¹ */
+/* åˆ†é…ä¸€ä¸ªprocçš„ç›®å½•ç»“æ„ */
 static struct proc_dir_entry *proc_create(struct proc_dir_entry **parent,
 					  const char *name,
 					  mode_t mode,
@@ -562,7 +562,7 @@ static struct proc_dir_entry *proc_create(struct proc_dir_entry **parent,
 
 	len = strlen(fn);
 
-        /* ·ÖÅäÒ»¸öprocÄ¿Â¼ */
+        /* åˆ†é…ä¸€ä¸ªprocç›®å½• */
 	ent = kmalloc(sizeof(struct proc_dir_entry) + len + 1, GFP_KERNEL);
 	if (!ent) goto out;
 
@@ -611,7 +611,7 @@ struct proc_dir_entry *proc_mkdir_mode(const char *name, mode_t mode,
 		ent->proc_fops = &proc_dir_operations;
 		ent->proc_iops = &proc_dir_inode_operations;
                 
-                /* ÉèÖÃ¸¸×ÓÄ¿Â¼¹ØÏµ */
+                /* è®¾ç½®çˆ¶å­ç›®å½•å…³ç³» */
 		if (proc_register(parent, ent) < 0) {
 			kfree(ent);
 			ent = NULL;
@@ -620,7 +620,7 @@ struct proc_dir_entry *proc_mkdir_mode(const char *name, mode_t mode,
 	return ent;
 }
 
-/* procÎÄ¼şÏµÍ³ÖĞ´´½¨Ãû³ÆÎªnameµÄÄ¿Â¼ */
+/* procæ–‡ä»¶ç³»ç»Ÿä¸­åˆ›å»ºåç§°ä¸ºnameçš„ç›®å½• */
 struct proc_dir_entry *proc_mkdir(const char *name,
 		struct proc_dir_entry *parent)
 {

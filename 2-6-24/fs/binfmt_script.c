@@ -1,7 +1,7 @@
 /*
  *  linux/fs/binfmt_script.c
  *
- *  Copyright (C) 1996  Martin von LÃ¶wis
+ *  Copyright (C) 1996  Martin von Læžšwis
  *  original #!-checking implemented by tytso.
  */
 
@@ -97,7 +97,7 @@ static int load_script(struct linux_binprm *bprm,struct pt_regs *regs)
 	return search_binary_handler(bprm,regs);
 }
 
-/* ½âÊÍÖ´ÐÐ#!»úÖÆµÄ½Å±¾ */
+/* è§£é‡Šæ‰§è¡Œ#!æœºåˆ¶çš„è„šæœ¬ */
 static struct linux_binfmt script_format = {
 	.module		= THIS_MODULE,
 	.load_binary	= load_script,

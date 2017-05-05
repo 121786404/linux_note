@@ -8,48 +8,48 @@
 */
 #ifdef __CHECKER__
 /*
-Ö¸ÕëµØÖ·±ØĞëÔÚÓÃ»§µØÖ·¿Õ¼ä
+æŒ‡é’ˆåœ°å€å¿…é¡»åœ¨ç”¨æˆ·åœ°å€ç©ºé—´
 */
 # define __user		__attribute__((noderef, address_space(1)))
 /*
-Ö¸ÕëµØÖ·±ØĞëÔÚÄÚºËµØÖ·¿Õ¼ä
+æŒ‡é’ˆåœ°å€å¿…é¡»åœ¨å†…æ ¸åœ°å€ç©ºé—´
 */
 # define __kernel	__attribute__((address_space(0)))
 /*
-±äÁ¿¿ÉÒÔÎª¿Õ
+å˜é‡å¯ä»¥ä¸ºç©º
 */
 # define __safe		__attribute__((safe))
 /*
-±äÁ¿¿ÉÒÔ½øĞĞÇ¿ÖÆ×ª»»
+å˜é‡å¯ä»¥è¿›è¡Œå¼ºåˆ¶è½¬æ¢
 */
 # define __force	__attribute__((force))
 /*
-²ÎÊıÀàĞÍÓëÊµ¼Ê²ÎÊıÀàĞÍ±ØĞëÒ»ÖÂ
+å‚æ•°ç±»å‹ä¸å®é™…å‚æ•°ç±»å‹å¿…é¡»ä¸€è‡´
 */
 # define __nocast	__attribute__((nocast))
 /*
-Ö¸ÕëµØÖ·±ØĞëÔÚÉè±¸µØÖ·¿Õ¼ä
+æŒ‡é’ˆåœ°å€å¿…é¡»åœ¨è®¾å¤‡åœ°å€ç©ºé—´
 */
 # define __iomem	__attribute__((noderef, address_space(2)))
 # define __must_hold(x)	__attribute__((context(x,1,1)))
 /*
-²ÎÊıx ÔÚÖ´ĞĞÇ°ÒıÓÃ¼ÆÊı±ØĞëÊÇ0,Ö´ĞĞºó,ÒıÓÃ¼ÆÊı±ØĞëÎª1
+å‚æ•°x åœ¨æ‰§è¡Œå‰å¼•ç”¨è®¡æ•°å¿…é¡»æ˜¯0,æ‰§è¡Œå,å¼•ç”¨è®¡æ•°å¿…é¡»ä¸º1
 */
 # define __acquires(x)	__attribute__((context(x,0,1)))
 /*
-Óë __acquires(x) Ïà·´
+ä¸ __acquires(x) ç›¸å
 */
 # define __releases(x)	__attribute__((context(x,1,0)))
 /*
-²ÎÊıx µÄÒıÓÃ¼ÆÊı + 1
+å‚æ•°x çš„å¼•ç”¨è®¡æ•° + 1
 */
 # define __acquire(x)	__context__(x,1)
 /*
-Óë __acquire(x) Ïà·´
+ä¸ __acquire(x) ç›¸å
 */
 # define __release(x)	__context__(x,-1)
 /*
-²ÎÊıc ²»Îª0Ê±,ÒıÓÃ¼ÆÊı + 1, ²¢·µ»Ø1
+å‚æ•°c ä¸ä¸º0æ—¶,å¼•ç”¨è®¡æ•° + 1, å¹¶è¿”å›1
 */
 # define __cond_lock(x,c)	((c) ? ({ __acquire(x); 1; }) : 0)
 # define __percpu	__attribute__((noderef, address_space(3)))
@@ -149,8 +149,8 @@ struct ftrace_branch_data {
     && !defined(DISABLE_BRANCH_PROFILING) && !defined(__CHECKER__)
 void ftrace_likely_update(struct ftrace_branch_data *f, int val, int expect);
 /*
-__builtin_expect ÓÃÓÚÎª±àÒëÆ÷Ìá¹©·ÖÖ§Ô¤²âĞÅÏ¢£¬
-Æä·µ»ØÖµÊÇÕûÊı±í´ïÊ½EXP µÄÖµ£¬C µÄÖµ±ØĞëÊÇ±àÒëÊ±³£Êı
+__builtin_expect ç”¨äºä¸ºç¼–è¯‘å™¨æä¾›åˆ†æ”¯é¢„æµ‹ä¿¡æ¯ï¼Œ
+å…¶è¿”å›å€¼æ˜¯æ•´æ•°è¡¨è¾¾å¼EXP çš„å€¼ï¼ŒC çš„å€¼å¿…é¡»æ˜¯ç¼–è¯‘æ—¶å¸¸æ•°
 */
 #define likely_notrace(x)	__builtin_expect(!!(x), 1)
 #define unlikely_notrace(x)	__builtin_expect(!!(x), 0)
@@ -585,13 +585,13 @@ static __always_inline void __write_once_size(volatile void *p, void *res, int s
  * If possible use READ_ONCE()/WRITE_ONCE() instead.
  */
 /*
- ACCESS_ONCE¾ÍÊÇÓÃÀ´ÈÃc code¸æËß±àÒëÆ÷£¬
- ÕâÀïµÄÄÚ´æ·ÃÎÊ²»ÒªÓÅ»¯,
- ²»Òª½«¶à´ÎÄÚ´æ·ÃÎÊºÏ²¢,
- Ò²²»Òª½«Ò»´ÎÄÚ´æ·ÃÎÊ·Ö²ğ³É¶à´Î
+ ACCESS_ONCEå°±æ˜¯ç”¨æ¥è®©c codeå‘Šè¯‰ç¼–è¯‘å™¨ï¼Œ
+ è¿™é‡Œçš„å†…å­˜è®¿é—®ä¸è¦ä¼˜åŒ–,
+ ä¸è¦å°†å¤šæ¬¡å†…å­˜è®¿é—®åˆå¹¶,
+ ä¹Ÿä¸è¦å°†ä¸€æ¬¡å†…å­˜è®¿é—®åˆ†æ‹†æˆå¤šæ¬¡
  
- ±¾ÉíµÄÊµÏÖ¾ÍÊÇÔö¼ÓÁËvolatileÕâ¸ö¹Ø¼ü×Ö£¬
- ËüÈ·±£±àÒëÆ÷Ã¿´Î·ÃÎÊ±äÁ¿x¶¼ÊÇ´ÓÄÚ´æÖĞ»ñÈ¡
+ æœ¬èº«çš„å®ç°å°±æ˜¯å¢åŠ äº†volatileè¿™ä¸ªå…³é”®å­—ï¼Œ
+ å®ƒç¡®ä¿ç¼–è¯‘å™¨æ¯æ¬¡è®¿é—®å˜é‡xéƒ½æ˜¯ä»å†…å­˜ä¸­è·å–
 */
 #define __ACCESS_ONCE(x) ({ \
 	 __maybe_unused typeof(x) __var = (__force typeof(x)) 0; \

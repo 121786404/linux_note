@@ -202,14 +202,14 @@ static void move_expired_inodes(struct list_head *delaying_queue,
  * Queue all expired dirty inodes for io, eldest first.
  */
 /**
- * Ïò»ØĞ´Á´±íÖĞÌí¼ÓÔà½Úµã
+ * å‘å›å†™é“¾è¡¨ä¸­æ·»åŠ è„èŠ‚ç‚¹
  */
 static void queue_io(struct super_block *sb,
 				unsigned long *older_than_this)
 {
-	/* ½«s_ioÖĞÊ£ÓàµÄ½Úµã£¬·Åµ½s_more_io£¬È»ºó½«ËüÌí¼Óµ½s_ioµÄºóÃæ£¬·ÀÖ¹Ê£ÓàµÄ½ÚµãÔì³É¼¢¶öÏÖÏó */
+	/* å°†s_ioä¸­å‰©ä½™çš„èŠ‚ç‚¹ï¼Œæ”¾åˆ°s_more_ioï¼Œç„¶åå°†å®ƒæ·»åŠ åˆ°s_ioçš„åé¢ï¼Œé˜²æ­¢å‰©ä½™çš„èŠ‚ç‚¹é€ æˆé¥¥é¥¿ç°è±¡ */
 	list_splice_init(&sb->s_more_io, sb->s_io.prev);
-	/* ½«³¬¹ıÖ¸¶¨Ê±¼äµÄÔà½Úµã£¬Ìí¼Óµ½Á´¸ô¿ª */
+	/* å°†è¶…è¿‡æŒ‡å®šæ—¶é—´çš„è„èŠ‚ç‚¹ï¼Œæ·»åŠ åˆ°é“¾éš”å¼€ */
 	move_expired_inodes(&sb->s_dirty, &sb->s_io, older_than_this);
 }
 
@@ -232,7 +232,7 @@ EXPORT_SYMBOL(sb_has_dirty_inodes);
  * Called under inode_lock.
  */
 /**
- * »ØĞ´½ÚµãÖĞµÄÊı¾İµ½Éè±¸ÖĞ
+ * å›å†™èŠ‚ç‚¹ä¸­çš„æ•°æ®åˆ°è®¾å¤‡ä¸­
  */
 static int
 __sync_single_inode(struct inode *inode, struct writeback_control *wbc)
@@ -245,39 +245,39 @@ __sync_single_inode(struct inode *inode, struct writeback_control *wbc)
 	BUG_ON(inode->i_state & I_SYNC);
 
 	/* Set I_SYNC, reset I_DIRTY */
-	/* ÔÚ»ñµÃËøµÄÇé¿öÏÂ£¬ĞŞ¸Ä½ÚµãµÄSYNC±êÖ¾ */
+	/* åœ¨è·å¾—é”çš„æƒ…å†µä¸‹ï¼Œä¿®æ”¹èŠ‚ç‚¹çš„SYNCæ ‡å¿— */
 	dirty = inode->i_state & I_DIRTY;
 	inode->i_state |= I_SYNC;
 	inode->i_state &= ~I_DIRTY;
 
 	spin_unlock(&inode_lock);
 
-	/* µ÷ÓÃµØÖ·¿Õ¼äµÄĞ´·½·¨£¬»ØĞ´Êı¾İ£¬Í¨ÓÃº¯ÊıÊÇgeneric_writepagesºÍmpage_writepage */
+	/* è°ƒç”¨åœ°å€ç©ºé—´çš„å†™æ–¹æ³•ï¼Œå›å†™æ•°æ®ï¼Œé€šç”¨å‡½æ•°æ˜¯generic_writepageså’Œmpage_writepage */
 	ret = do_writepages(mapping, wbc);
 
 	/* Don't write the inode if only I_DIRTY_PAGES was set */
-	if (dirty & (I_DIRTY_SYNC | I_DIRTY_DATASYNC)) {/* ²»½ö½öÊÇ»ØĞ´Ò³Ãæ */
-		/* »ØĞ´ÔàÒ³ */
+	if (dirty & (I_DIRTY_SYNC | I_DIRTY_DATASYNC)) {/* ä¸ä»…ä»…æ˜¯å›å†™é¡µé¢ */
+		/* å›å†™è„é¡µ */
 		int err = write_inode(inode, wait);
 		if (ret == 0)
 			ret = err;
 	}
 
-	if (wait) {/* ÍêÕûĞÔÍ¬²½ */
-		/* µÈ´ıËùÓĞÎ´¾öµÄĞ´²Ù×÷Íê³É */
+	if (wait) {/* å®Œæ•´æ€§åŒæ­¥ */
+		/* ç­‰å¾…æ‰€æœ‰æœªå†³çš„å†™æ“ä½œå®Œæˆ */
 		int err = filemap_fdatawait(mapping);
 		if (ret == 0)
 			ret = err;
 	}
 
-	/* ÔÙ´Î»ñµÃ½ÚµãµÄËø */
+	/* å†æ¬¡è·å¾—èŠ‚ç‚¹çš„é” */
 	spin_lock(&inode_lock);
-	/* Çå³ıSYNC±êÖ¾£¬±íÊ¾Í¬²½¹ı³ÌÍê³É */
+	/* æ¸…é™¤SYNCæ ‡å¿—ï¼Œè¡¨ç¤ºåŒæ­¥è¿‡ç¨‹å®Œæˆ */
 	inode->i_state &= ~I_SYNC;
 	if (!(inode->i_state & I_FREEING)) {
-		/* ¸ù¾İ½ÚµãµÄ×îĞÂ×´Ì¬£¬½«Ëü·Åµ½²»Í¬µÄÁ´±íÖĞ */
-		if (!(inode->i_state & I_DIRTY) &&/* Êı¾İ²»Ôà */
-		    mapping_tagged(mapping, PAGECACHE_TAG_DIRTY)) {/* Ò³ÃæÔà£¬ËµÃ÷»ØĞ´¹ı³Ì»¹Ã»ÓĞÍê³É */
+		/* æ ¹æ®èŠ‚ç‚¹çš„æœ€æ–°çŠ¶æ€ï¼Œå°†å®ƒæ”¾åˆ°ä¸åŒçš„é“¾è¡¨ä¸­ */
+		if (!(inode->i_state & I_DIRTY) &&/* æ•°æ®ä¸è„ */
+		    mapping_tagged(mapping, PAGECACHE_TAG_DIRTY)) {/* é¡µé¢è„ï¼Œè¯´æ˜å›å†™è¿‡ç¨‹è¿˜æ²¡æœ‰å®Œæˆ */
 			/*
 			 * We didn't write back all the pages.  nfs_writepages()
 			 * sometimes bales out without doing anything. Redirty
@@ -292,14 +292,14 @@ __sync_single_inode(struct inode *inode, struct writeback_control *wbc)
 			 * reasons for doing it this way, and I'd rather not
 			 * muck with it at present.
 			 */
-			if (wbc->for_kupdate) {/* µ±Ç°ÊÇÖÜÆÚĞÔ»ØĞ´ */
+			if (wbc->for_kupdate) {/* å½“å‰æ˜¯å‘¨æœŸæ€§å›å†™ */
 				/*
 				 * For the kupdate function we move the inode
 				 * to s_more_io so it will get more writeout as
 				 * soon as the queue becomes uncongested.
 				 */
-				inode->i_state |= I_DIRTY_PAGES;/* ¸üĞÂ±êÖ¾£¬±íÊ¾»ØĞ´ÉĞÎ´Íê³É */
-				requeue_io(inode);/* ½«inodeÌí¼Óµ½s_more_ioÁ´±íÖĞ£¬µÈ´ıÏÂ´ÎÍ¬²½ */
+				inode->i_state |= I_DIRTY_PAGES;/* æ›´æ–°æ ‡å¿—ï¼Œè¡¨ç¤ºå›å†™å°šæœªå®Œæˆ */
+				requeue_io(inode);/* å°†inodeæ·»åŠ åˆ°s_more_ioé“¾è¡¨ä¸­ï¼Œç­‰å¾…ä¸‹æ¬¡åŒæ­¥ */
 			} else {
 				/*
 				 * Otherwise fully redirty the inode so that
@@ -308,29 +308,29 @@ __sync_single_inode(struct inode *inode, struct writeback_control *wbc)
 				 * file would indefinitely suspend writeout of
 				 * all the other files.
 				 */
-				inode->i_state |= I_DIRTY_PAGES;/* ·ÇÖÜÆÚĞÔ»ØĞ´£¬ÖØĞÂ½«½Úµã·Å»ØÔàÁ´±í£¬×¢ÒâÅÅĞò */
+				inode->i_state |= I_DIRTY_PAGES;/* éå‘¨æœŸæ€§å›å†™ï¼Œé‡æ–°å°†èŠ‚ç‚¹æ”¾å›è„é“¾è¡¨ï¼Œæ³¨æ„æ’åº */
 				redirty_tail(inode);
 			}
-		} else if (inode->i_state & I_DIRTY) {/* Ò³ÃæÔÙ´Î±äÔà */
+		} else if (inode->i_state & I_DIRTY) {/* é¡µé¢å†æ¬¡å˜è„ */
 			/*
 			 * Someone redirtied the inode while were writing back
 			 * the pages.
 			 */
-			/* ½«½Úµã·Å»Øµ½ÔàÁ´±íÖĞ£¬°´Ê±¼äÅÅĞò */
+			/* å°†èŠ‚ç‚¹æ”¾å›åˆ°è„é“¾è¡¨ä¸­ï¼ŒæŒ‰æ—¶é—´æ’åº */
 			redirty_tail(inode);
-		} else if (atomic_read(&inode->i_count)) {/* »ØĞ´Íê±Ï£¬Ò³ÃæÈÔÈ»±»Ê¹ÓÃ£¬½«Ëü·Å»ØÊ¹ÓÃÁ´±í */
+		} else if (atomic_read(&inode->i_count)) {/* å›å†™å®Œæ¯•ï¼Œé¡µé¢ä»ç„¶è¢«ä½¿ç”¨ï¼Œå°†å®ƒæ”¾å›ä½¿ç”¨é“¾è¡¨ */
 			/*
 			 * The inode is clean, inuse
 			 */
 			list_move(&inode->i_list, &inode_in_use);
-		} else {/* ·ñÔò·Å»ØÎ´ÓÃÁ´±í */
+		} else {/* å¦åˆ™æ”¾å›æœªç”¨é“¾è¡¨ */
 			/*
 			 * The inode is clean, unused
 			 */
 			list_move(&inode->i_list, &inode_unused);
 		}
 	}
-	/* »ØĞ´Íê±Ï£¬»½ĞÑÆäËûµÈ´ıµÄ¹ı³Ì */
+	/* å›å†™å®Œæ¯•ï¼Œå”¤é†’å…¶ä»–ç­‰å¾…çš„è¿‡ç¨‹ */
 	inode_sync_complete(inode);
 	return ret;
 }
@@ -351,8 +351,8 @@ __writeback_single_inode(struct inode *inode, struct writeback_control *wbc)
 		WARN_ON(inode->i_state & I_WILL_FREE);
 
 	/**
-	 * µ÷ÓÃÕß²¢²»ÒªÇóÍêÈ«Í¬²½
-	 * ²¢ÇÒµ±Ç°½ÚµãÕıÔÚÓÉÆäËû½ÚµãÍ¬²½¡£
+	 * è°ƒç”¨è€…å¹¶ä¸è¦æ±‚å®Œå…¨åŒæ­¥
+	 * å¹¶ä¸”å½“å‰èŠ‚ç‚¹æ­£åœ¨ç”±å…¶ä»–èŠ‚ç‚¹åŒæ­¥ã€‚
 	 */
 	if ((wbc->sync_mode != WB_SYNC_ALL) && (inode->i_state & I_SYNC)) {
 		struct address_space *mapping = inode->i_mapping;
@@ -365,14 +365,14 @@ __writeback_single_inode(struct inode *inode, struct writeback_control *wbc)
 		 * We'll have another go at writing back this inode when we
 		 * completed a full scan of s_io.
 		 */
-		requeue_io(inode);/* ½«¸Ã½Úµã·Åµ½i_more_ioÖĞÈ¥ */
+		requeue_io(inode);/* å°†è¯¥èŠ‚ç‚¹æ”¾åˆ°i_more_ioä¸­å» */
 
 		/*
 		 * Even if we don't actually write the inode itself here,
 		 * we can at least start some of the data writeout..
 		 */
 		spin_unlock(&inode_lock);
-		/* ¶àÓàµÄ²Ù×÷ */
+		/* å¤šä½™çš„æ“ä½œ */
 		ret = do_writepages(mapping, wbc);
 		spin_lock(&inode_lock);
 		return ret;
@@ -381,20 +381,20 @@ __writeback_single_inode(struct inode *inode, struct writeback_control *wbc)
 	/*
 	 * It's a data-integrity sync.  We must wait.
 	 */
-	if (inode->i_state & I_SYNC) {/* ÕıÔÚÍ¬²½Ğ´£¬µ«ÊÇµ÷ÓÃÕßÒªÇóÍêÈ«Ğ´Íê£¬±ØĞëµÈ´ı */
+	if (inode->i_state & I_SYNC) {/* æ­£åœ¨åŒæ­¥å†™ï¼Œä½†æ˜¯è°ƒç”¨è€…è¦æ±‚å®Œå…¨å†™å®Œï¼Œå¿…é¡»ç­‰å¾… */
 		DEFINE_WAIT_BIT(wq, &inode->i_state, __I_SYNC);
 
-		/* ½¨Á¢Î»µÈ´ı¶ÓÁĞ£¬µÈ´ıSYNCÎ»Íê³É */
+		/* å»ºç«‹ä½ç­‰å¾…é˜Ÿåˆ—ï¼Œç­‰å¾…SYNCä½å®Œæˆ */
 		wqh = bit_waitqueue(&inode->i_state, __I_SYNC);
 		do {
 			spin_unlock(&inode_lock);
-			/* ÊÍ·ÅËøÒÔºó£¬µÈ´ıSYNC»½ĞÑ¡£»½ĞÑ±¾Ïß³Ìºó£¬½Úµã¿ÉÄÜ²¢Ã»ÓĞÈ«²¿Ğ´Íê£¬±¾Ïß³Ìµ÷ÓÃ__sync_single_inode¼ÌĞø»ØĞ´ */
+			/* é‡Šæ”¾é”ä»¥åï¼Œç­‰å¾…SYNCå”¤é†’ã€‚å”¤é†’æœ¬çº¿ç¨‹åï¼ŒèŠ‚ç‚¹å¯èƒ½å¹¶æ²¡æœ‰å…¨éƒ¨å†™å®Œï¼Œæœ¬çº¿ç¨‹è°ƒç”¨__sync_single_inodeç»§ç»­å›å†™ */
 			__wait_on_bit(wqh, &wq, inode_wait,
 							TASK_UNINTERRUPTIBLE);
 			spin_lock(&inode_lock);
 		} while (inode->i_state & I_SYNC);
 	}
-	/* Í¬²½Ğ´»Øµ±Ç°½Úµã */
+	/* åŒæ­¥å†™å›å½“å‰èŠ‚ç‚¹ */
 	return __sync_single_inode(inode, wbc);
 }
 
@@ -429,7 +429,7 @@ __writeback_single_inode(struct inode *inode, struct writeback_control *wbc)
  * throttled threads: we don't want them all piling up on inode_sync_wait.
  */
 /**
- * Í¬²½ÎÄ¼şÏµÍ³ÖĞµÄÔàÎÄ¼ş
+ * åŒæ­¥æ–‡ä»¶ç³»ç»Ÿä¸­çš„è„æ–‡ä»¶
  */
 static void
 sync_sb_inodes(struct super_block *sb, struct writeback_control *wbc)
@@ -437,15 +437,15 @@ sync_sb_inodes(struct super_block *sb, struct writeback_control *wbc)
 	const unsigned long start = jiffies;	/* livelock avoidance */
 
 	/**
-	 * Èç¹û²»ÊÇ¶¨ÆÚ»ØĞ´
-	 * »òÕßs_ioÁ´±íÎª¿Õ
+	 * å¦‚æœä¸æ˜¯å®šæœŸå›å†™
+	 * æˆ–è€…s_ioé“¾è¡¨ä¸ºç©º
 	 */
 	if (!wbc->for_kupdate || list_empty(&sb->s_io))
-		queue_io(sb, wbc->older_than_this);/* ²¹³ä¶îÍâµÄÔà½Úµãµ½s_ioÁ´±íÖĞ */
+		queue_io(sb, wbc->older_than_this);/* è¡¥å……é¢å¤–çš„è„èŠ‚ç‚¹åˆ°s_ioé“¾è¡¨ä¸­ */
 
-	/* ±éÀú´ı´¦ÀíµÄinode½Úµã */
+	/* éå†å¾…å¤„ç†çš„inodeèŠ‚ç‚¹ */
 	while (!list_empty(&sb->s_io)) {
-		/* µÃµ½inode½Úµã */
+		/* å¾—åˆ°inodeèŠ‚ç‚¹ */
 		struct inode *inode = list_entry(sb->s_io.prev,
 						struct inode, i_list);
 		struct address_space *mapping = inode->i_mapping;
@@ -453,12 +453,12 @@ sync_sb_inodes(struct super_block *sb, struct writeback_control *wbc)
 		long pages_skipped;
 
 		/**
-		 * Èç¹ûÊÇRAM´ÅÅÌ£¬»òÕßÎ±ÎÄ¼şÏµÍ³£¬¶¼²»ĞèÒªÍ¬²½Éè±¸ 
-		 * µ«ÊÇ¶ÔÓÚ¿éÉè±¸Î±ÎÄ¼şÀ´Ëµ£¬ÊÇĞèÒªÍ¬²½µÄ
+		 * å¦‚æœæ˜¯RAMç£ç›˜ï¼Œæˆ–è€…ä¼ªæ–‡ä»¶ç³»ç»Ÿï¼Œéƒ½ä¸éœ€è¦åŒæ­¥è®¾å¤‡ 
+		 * ä½†æ˜¯å¯¹äºå—è®¾å¤‡ä¼ªæ–‡ä»¶æ¥è¯´ï¼Œæ˜¯éœ€è¦åŒæ­¥çš„
 		 */
 		if (!bdi_cap_writeback_dirty(bdi)) {
 			redirty_tail(inode);
-			if (sb_is_blkdev_sb(sb)) {/* ÂãµÄ¿éÉè±¸£¬²»ÄÜÂÔ¹ı */
+			if (sb_is_blkdev_sb(sb)) {/* è£¸çš„å—è®¾å¤‡ï¼Œä¸èƒ½ç•¥è¿‡ */
 				/*
 				 * Dirty memory-backed blockdev: the ramdisk
 				 * driver does this.  Skip just this inode
@@ -470,43 +470,43 @@ sync_sb_inodes(struct super_block *sb, struct writeback_control *wbc)
 			 * than the kernel-internal bdev filesystem.  Skip the
 			 * entire superblock.
 			 */
-			break;/* Î±ÎÄ¼şÏµÍ³£¬²»ĞèÒªÍ¬²½ */
+			break;/* ä¼ªæ–‡ä»¶ç³»ç»Ÿï¼Œä¸éœ€è¦åŒæ­¥ */
 		}
 
-		/* ÉÏ²ã²»Ï£ÍûÓµÈûĞ´£¬µ«ÊÇ¿éÉè±¸´ËÊ±È·ÊµÓµÈûÁË */
+		/* ä¸Šå±‚ä¸å¸Œæœ›æ‹¥å¡å†™ï¼Œä½†æ˜¯å—è®¾å¤‡æ­¤æ—¶ç¡®å®æ‹¥å¡äº† */
 		if (wbc->nonblocking && bdi_write_congested(bdi)) {
-			/* ÏòÉÏ²ã·´À¡ÓµÈûÏûÏ¢ */
+			/* å‘ä¸Šå±‚åé¦ˆæ‹¥å¡æ¶ˆæ¯ */
 			wbc->encountered_congestion = 1;
-			if (!sb_is_blkdev_sb(sb))/* ²»ÊÇ¿éÉè±¸£¬ÊÇÍ¬Ò»ÎÄ¼şÏµÍ³¡£ÄÇÃ´ÆäËûinodeÒ²ÊÇÒ²²»ÓÃ´¦Àí¡£ */
+			if (!sb_is_blkdev_sb(sb))/* ä¸æ˜¯å—è®¾å¤‡ï¼Œæ˜¯åŒä¸€æ–‡ä»¶ç³»ç»Ÿã€‚é‚£ä¹ˆå…¶ä»–inodeä¹Ÿæ˜¯ä¹Ÿä¸ç”¨å¤„ç†ã€‚ */
 				break;		/* Skip a congested fs */
-			/* ¸ÃinodeÊôÓÚ¿éÉè±¸£¬½«ËüÒÆ¶¯µ½s_more_io£¬·ÀÖ¹¶à¸öÎïÀíÉè±¸ÊôÓÚÍ¬Ò»¸öÂß¼­Éè±¸Ê±£¬ĞÎ³É¼¢¶ö */
+			/* è¯¥inodeå±äºå—è®¾å¤‡ï¼Œå°†å®ƒç§»åŠ¨åˆ°s_more_ioï¼Œé˜²æ­¢å¤šä¸ªç‰©ç†è®¾å¤‡å±äºåŒä¸€ä¸ªé€»è¾‘è®¾å¤‡æ—¶ï¼Œå½¢æˆé¥¥é¥¿ */
 			requeue_io(inode);
 			continue;		/* Skip a congested blockdev */
 		}
 
-		/* Ö»»ØĞ´¸ÃÉè±¸ÉÏµÄÔà½Úµã£¬¶øµ±Ç°½Úµã²¢²»ÊÇ¸ÃÉè±¸ */
+		/* åªå›å†™è¯¥è®¾å¤‡ä¸Šçš„è„èŠ‚ç‚¹ï¼Œè€Œå½“å‰èŠ‚ç‚¹å¹¶ä¸æ˜¯è¯¥è®¾å¤‡ */
 		if (wbc->bdi && bdi != wbc->bdi) {
-			if (!sb_is_blkdev_sb(sb))/* ²»ÊÇ¿éÉè±¸£¬ÊÇÆÕÍ¨ÎÄ¼ş£¬ÔòÌø¹ıÆäËûËùÓĞÎÄ¼ş */
+			if (!sb_is_blkdev_sb(sb))/* ä¸æ˜¯å—è®¾å¤‡ï¼Œæ˜¯æ™®é€šæ–‡ä»¶ï¼Œåˆ™è·³è¿‡å…¶ä»–æ‰€æœ‰æ–‡ä»¶ */
 				break;		/* fs has the wrong queue */
-			/* ·ñÔò½«¸Ã½ÚµãÒÆ¶¯µ½s_more_ioÁ´±í£¬²¢´¦ÀíÏÂÒ»¸ö½Úµã */
+			/* å¦åˆ™å°†è¯¥èŠ‚ç‚¹ç§»åŠ¨åˆ°s_more_ioé“¾è¡¨ï¼Œå¹¶å¤„ç†ä¸‹ä¸€ä¸ªèŠ‚ç‚¹ */
 			requeue_io(inode);
 			continue;		/* blockdev has wrong queue */
 		}
 
 		/* Was this inode dirtied after sync_sb_inodes was called? */
-		/* Èç¹ûÊÇÔÚÆô¶¯»ØĞ´¹ı³ÌÒÔºóÔÙ±äÔàµÄ£¬ÄÇÃ´²»´¦Àí´Ë½Úµã£¬µ«ÊÇÈÔÈ»ÁôÔÚs_ioÖĞ */
+		/* å¦‚æœæ˜¯åœ¨å¯åŠ¨å›å†™è¿‡ç¨‹ä»¥åå†å˜è„çš„ï¼Œé‚£ä¹ˆä¸å¤„ç†æ­¤èŠ‚ç‚¹ï¼Œä½†æ˜¯ä»ç„¶ç•™åœ¨s_ioä¸­ */
 		if (time_after(inode->dirtied_when, start))
 			break;
 
 		/* Is another pdflush already flushing this queue? */
-		/* µ±Ç°½ø³ÌÊÇpdflush½ø³Ì£¬µ«ÊÇ¸ÃÉè±¸¶ÓÁĞÒÑ¾­ÓÉÆäËûÉè±¸ÔÚ´¦Àí£¬ÄÇÃ´¾ÍÍË³ö */
+		/* å½“å‰è¿›ç¨‹æ˜¯pdflushè¿›ç¨‹ï¼Œä½†æ˜¯è¯¥è®¾å¤‡é˜Ÿåˆ—å·²ç»ç”±å…¶ä»–è®¾å¤‡åœ¨å¤„ç†ï¼Œé‚£ä¹ˆå°±é€€å‡º */
 		if (current_is_pdflush() && !writeback_acquire(bdi))
 			break;
 
 		BUG_ON(inode->i_state & I_FREEING);
-		__iget(inode);/* Ìí¼Ó½ÚµãµÄÒıÓÃ¼ÆÊı */
+		__iget(inode);/* æ·»åŠ èŠ‚ç‚¹çš„å¼•ç”¨è®¡æ•° */
 		pages_skipped = wbc->pages_skipped;
-		/* »ØĞ´µ¥¸öÎÄ¼ş½Úµã */
+		/* å›å†™å•ä¸ªæ–‡ä»¶èŠ‚ç‚¹ */
 		__writeback_single_inode(inode, wbc);
 		if (wbc->sync_mode == WB_SYNC_HOLD) {
 			inode->dirtied_when = jiffies;
@@ -525,7 +525,7 @@ sync_sb_inodes(struct super_block *sb, struct writeback_control *wbc)
 		iput(inode);
 		cond_resched();
 		spin_lock(&inode_lock);
-		/* »ØĞ´´ïµ½ÁËÖ¸¶¨µÄÒ³ÃæÊıÁ¿£¬ÍË³ö */
+		/* å›å†™è¾¾åˆ°äº†æŒ‡å®šçš„é¡µé¢æ•°é‡ï¼Œé€€å‡º */
 		if (wbc->nr_to_write <= 0)
 			break;
 	}
@@ -552,7 +552,7 @@ sync_sb_inodes(struct super_block *sb, struct writeback_control *wbc)
  * super-efficient but we're about to do a ton of I/O...
  */
 /**
- * »ØĞ´´ÅÅÌÎÄ¼ş
+ * å›å†™ç£ç›˜æ–‡ä»¶
  */
 void
 writeback_inodes(struct writeback_control *wbc)
@@ -560,35 +560,35 @@ writeback_inodes(struct writeback_control *wbc)
 	struct super_block *sb;
 
 	might_sleep();
-	spin_lock(&sb_lock);/* »ñµÃ³¬¼¶¿é×ÔĞıËø */
+	spin_lock(&sb_lock);/* è·å¾—è¶…çº§å—è‡ªæ—‹é” */
 restart:
 	sb = sb_entry(super_blocks.prev);
-	/* ±éÀúËùÓĞ³¬¼¶¿é */
+	/* éå†æ‰€æœ‰è¶…çº§å— */
 	for (; sb != sb_entry(&super_blocks); sb = sb_entry(sb->s_list.prev)) {
-		if (sb_has_dirty_inodes(sb)) {/* ¸Ã³¬¼¶¿éÓĞÔà½Úµã */
+		if (sb_has_dirty_inodes(sb)) {/* è¯¥è¶…çº§å—æœ‰è„èŠ‚ç‚¹ */
 			/* we're making our own get_super here */
-			sb->s_count++;/* ÒıÓÃ¼ÆÊı */
+			sb->s_count++;/* å¼•ç”¨è®¡æ•° */
 			spin_unlock(&sb_lock);
 			/*
 			 * If we can't get the readlock, there's no sense in
 			 * waiting around, most of the time the FS is going to
 			 * be unmounted by the time it is released.
 			 */
-			if (down_read_trylock(&sb->s_umount)) {/* »ñµÃumountËø£¬·ÀÖ¹ÔÚ²Ù×÷ÆÚ¼ä½øĞĞumount²Ù×÷ */
-				if (sb->s_root) {/* ²»ÊÇÎ±ÎÄ¼şÏµÍ³£¬ĞèÒª»ØĞ´¸ùÄ¿Â¼½Úµã */
+			if (down_read_trylock(&sb->s_umount)) {/* è·å¾—umounté”ï¼Œé˜²æ­¢åœ¨æ“ä½œæœŸé—´è¿›è¡Œumountæ“ä½œ */
+				if (sb->s_root) {/* ä¸æ˜¯ä¼ªæ–‡ä»¶ç³»ç»Ÿï¼Œéœ€è¦å›å†™æ ¹ç›®å½•èŠ‚ç‚¹ */
 					spin_lock(&inode_lock);
-					/* »ØĞ´¸ÃÎÄ¼şÏµÍ³ÖĞµÄ½Úµã */
+					/* å›å†™è¯¥æ–‡ä»¶ç³»ç»Ÿä¸­çš„èŠ‚ç‚¹ */
 					sync_sb_inodes(sb, wbc);
 					spin_unlock(&inode_lock);
 				}
 				up_read(&sb->s_umount);
 			}
 			spin_lock(&sb_lock);
-			/* ¿´ÊÇ·ñĞèÒªÖØĞÂÉ¨ÃèÁ´±í */
+			/* çœ‹æ˜¯å¦éœ€è¦é‡æ–°æ‰«æé“¾è¡¨ */
 			if (__put_super_and_need_restart(sb))
 				goto restart;
 		}
-		if (wbc->nr_to_write <= 0)/* ´ïµ½É¨ÃèµÄÏŞ¶îÁË£¬ÍË³ö */
+		if (wbc->nr_to_write <= 0)/* è¾¾åˆ°æ‰«æçš„é™é¢äº†ï¼Œé€€å‡º */
 			break;
 	}
 	spin_unlock(&sb_lock);
@@ -663,21 +663,21 @@ static void __sync_inodes(int wait)
 
 	spin_lock(&sb_lock);
 restart:
-	/* ±éÀúËùÓĞ³¬¼¶¿é */
+	/* éå†æ‰€æœ‰è¶…çº§å— */
 	list_for_each_entry(sb, &super_blocks, s_list) {
-		if (sb->s_syncing)/* µ±Ç°¿éÕıÔÚÍ¬²½£¬ÂÔ¹ı */
+		if (sb->s_syncing)/* å½“å‰å—æ­£åœ¨åŒæ­¥ï¼Œç•¥è¿‡ */
 			continue;
-		/* ÉèÖÃÍ¬²½±êÖ¾ */
+		/* è®¾ç½®åŒæ­¥æ ‡å¿— */
 		sb->s_syncing = 1;
-		/* Ôö¼ÓÒıÓÃ¼ÆÊı */
+		/* å¢åŠ å¼•ç”¨è®¡æ•° */
 		sb->s_count++;
 		spin_unlock(&sb_lock);
-		/* ·ÀÖ¹Ö´ĞĞumount²Ù×÷ */
+		/* é˜²æ­¢æ‰§è¡Œumountæ“ä½œ */
 		down_read(&sb->s_umount);
-		if (sb->s_root) {/* ÆÕÍ¨ÎÄ¼şÏµÍ³ */
-			/* Í¬²½Óë³¬¼¶¿éÏà¹ØµÄËùÓĞinode½Úµã */
+		if (sb->s_root) {/* æ™®é€šæ–‡ä»¶ç³»ç»Ÿ */
+			/* åŒæ­¥ä¸è¶…çº§å—ç›¸å…³çš„æ‰€æœ‰inodeèŠ‚ç‚¹ */
 			sync_inodes_sb(sb, wait);
-			/* ÓĞĞ©ÎÄ¼şÏµÍ³ÔÚÉÏÒ»²½²¢²»Êµ¼ÊĞ´µ½Éè±¸£¬½ö½öÊÇ½«Ò³±ê¼ÇÎªÔà£¬ÕâÒ»²½½«ËüÊµ¼ÊĞ´µ½Éè±¸ */
+			/* æœ‰äº›æ–‡ä»¶ç³»ç»Ÿåœ¨ä¸Šä¸€æ­¥å¹¶ä¸å®é™…å†™åˆ°è®¾å¤‡ï¼Œä»…ä»…æ˜¯å°†é¡µæ ‡è®°ä¸ºè„ï¼Œè¿™ä¸€æ­¥å°†å®ƒå®é™…å†™åˆ°è®¾å¤‡ */
 			sync_blockdev(sb->s_bdev);
 		}
 		up_read(&sb->s_umount);
@@ -690,13 +690,13 @@ restart:
 
 void sync_inodes(int wait)
 {
-	/* ÉèÖÃ³¬¼¶¿éµÄs_syncing±êÖ¾£¬·ÀÖ¹´Ó¶à¸öµØ·½Í¬Ê±½øĞĞÍ¬²½ */
+	/* è®¾ç½®è¶…çº§å—çš„s_syncingæ ‡å¿—ï¼Œé˜²æ­¢ä»å¤šä¸ªåœ°æ–¹åŒæ—¶è¿›è¡ŒåŒæ­¥ */
 	set_sb_syncing(0);
-	/* Í¬²½½Úµã£¬µ«ÊÇ²»µÈ´ıÍ¬²½Íê³É */
+	/* åŒæ­¥èŠ‚ç‚¹ï¼Œä½†æ˜¯ä¸ç­‰å¾…åŒæ­¥å®Œæˆ */
 	__sync_inodes(0);
 
 	if (wait) {
-		/* Í¬²½£¬µ«ÊÇµÈ´ıÆäÍê³É */
+		/* åŒæ­¥ï¼Œä½†æ˜¯ç­‰å¾…å…¶å®Œæˆ */
 		set_sb_syncing(0);
 		__sync_inodes(1);
 	}

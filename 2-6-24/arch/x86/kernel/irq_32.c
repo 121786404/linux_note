@@ -83,7 +83,7 @@ fastcall unsigned int do_IRQ(struct pt_regs *regs)
 		BUG();
 	}
 
-	/* ±£´æ¼Ä´æÆ÷Ö¸Õëµ½Ã¿CPU±äÁ¿ÖĞ */
+	/* ä¿å­˜å¯„å­˜å™¨æŒ‡é’ˆåˆ°æ¯CPUå˜é‡ä¸­ */
 	old_regs = set_irq_regs(regs);
 	irq_enter();
 #ifdef CONFIG_DEBUG_STACKOVERFLOW
@@ -103,9 +103,9 @@ fastcall unsigned int do_IRQ(struct pt_regs *regs)
 
 #ifdef CONFIG_4KSTACKS
 
-	/* »ñµÃ½ø³ÌÕ» */
+	/* è·å¾—è¿›ç¨‹æ ˆ */
 	curctx = (union irq_ctx *) current_thread_info();
-	irqctx = hardirq_ctx[smp_processor_id()];/* ÖĞ¶ÏÕ» */
+	irqctx = hardirq_ctx[smp_processor_id()];/* ä¸­æ–­æ ˆ */
 
 	/*
 	 * this is where we switch to the IRQ stack. However, if we are
@@ -113,7 +113,7 @@ fastcall unsigned int do_IRQ(struct pt_regs *regs)
 	 * handler) we can't do that and just have to keep using the
 	 * current stack (which is the irq stack already after all)
 	 */
-	if (curctx != irqctx) {/* µ±Ç°Õ»²»ÊÇÖĞ¶ÏÕ» */
+	if (curctx != irqctx) {/* å½“å‰æ ˆä¸æ˜¯ä¸­æ–­æ ˆ */
 		int arg1, arg2, ebx;
 
 		/* build the stack frame on the IRQ stack */
@@ -129,7 +129,7 @@ fastcall unsigned int do_IRQ(struct pt_regs *regs)
 			(irqctx->tinfo.preempt_count & ~SOFTIRQ_MASK) |
 			(curctx->tinfo.preempt_count & SOFTIRQ_MASK);
 
-		/* ÇĞ»»ÖĞ¶ÏÕ»£¬²¢µ÷ÓÃÖĞ¶Ï´¦Àíº¯Êı,È»ºóÔÙÇĞ»»»ØÀ´ */
+		/* åˆ‡æ¢ä¸­æ–­æ ˆï¼Œå¹¶è°ƒç”¨ä¸­æ–­å¤„ç†å‡½æ•°,ç„¶åå†åˆ‡æ¢å›æ¥ */
 		asm volatile(
 			"       xchgl  %%ebx,%%esp      \n"
 			"       call   *%%edi           \n"
@@ -196,7 +196,7 @@ void irq_ctx_exit(int cpu)
 extern asmlinkage void __do_softirq(void);
 
 /**
- * ´¦ÀíÈíÖĞ¶Ï
+ * å¤„ç†è½¯ä¸­æ–­
  */
 asmlinkage void do_softirq(void)
 {
@@ -205,12 +205,12 @@ asmlinkage void do_softirq(void)
 	union irq_ctx *irqctx;
 	u32 *isp;
 
-	if (in_interrupt())/* µ±Ç°´¦ÓÚÖĞ¶Ï»òÕßÈíÖĞ¶ÏÉÏÏÂÎÄ£¬ÍË³ö */
+	if (in_interrupt())/* å½“å‰å¤„äºä¸­æ–­æˆ–è€…è½¯ä¸­æ–­ä¸Šä¸‹æ–‡ï¼Œé€€å‡º */
 		return;
 
-	local_irq_save(flags);/* ÕâÀïÒªÅĞ¶ÏÎ»Í¼ÁË£¬ĞèÒª¹Ø±ÕÖĞ¶Ï */
+	local_irq_save(flags);/* è¿™é‡Œè¦åˆ¤æ–­ä½å›¾äº†ï¼Œéœ€è¦å…³é—­ä¸­æ–­ */
 
-	if (local_softirq_pending()) {/* ÓĞ¹ÒÆğµÄÈíÖĞ¶Ï */
+	if (local_softirq_pending()) {/* æœ‰æŒ‚èµ·çš„è½¯ä¸­æ–­ */
 		curctx = current_thread_info();
 		irqctx = softirq_ctx[smp_processor_id()];
 		irqctx->tinfo.task = curctx->task;
@@ -219,7 +219,7 @@ asmlinkage void do_softirq(void)
 		/* build the stack frame on the softirq stack */
 		isp = (u32*) ((char*)irqctx + sizeof(*irqctx));
 
-		/* ÇĞ»»µ½ÈíÖĞ¶Ï¶ÑÕ»£¬²¢´¦ÀíÈíÖĞ¶Ï */
+		/* åˆ‡æ¢åˆ°è½¯ä¸­æ–­å †æ ˆï¼Œå¹¶å¤„ç†è½¯ä¸­æ–­ */
 		asm volatile(
 			"       xchgl   %%ebx,%%esp     \n"
 			"       call    __do_softirq    \n"

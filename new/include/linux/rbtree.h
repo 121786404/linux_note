@@ -33,9 +33,9 @@
 #include <linux/stddef.h>
 #include <linux/rcupdate.h>
 /*
-Ö¸Ïò¸¸½ÚµãµÄ¸½¼ÓÖ¸ÕëÒş²ØÔÚrb_parent_colorÖĞ£º
-Ö»ÓĞÒ»¸ö±ÈÌØÎ»ÓÃÓÚ±íÊ¾Á½ÖÖÑÕÉ«£¬¸ÃĞÅÏ¢±£´ærb_parent_color×îµÍµÄ±ÈÌØÎ»ÖĞ¡£
-¸Ã±äÁ¿ÆäÓàµÄ±ÈÌØÎ»ÓÃÓÚ±£´æ¸¸½ÚµãÖ¸Õë¡£
+æŒ‡å‘çˆ¶èŠ‚ç‚¹çš„é™„åŠ æŒ‡é’ˆéšè—åœ¨rb_parent_colorä¸­ï¼š
+åªæœ‰ä¸€ä¸ªæ¯”ç‰¹ä½ç”¨äºè¡¨ç¤ºä¸¤ç§é¢œè‰²ï¼Œè¯¥ä¿¡æ¯ä¿å­˜rb_parent_coloræœ€ä½çš„æ¯”ç‰¹ä½ä¸­ã€‚
+è¯¥å˜é‡å…¶ä½™çš„æ¯”ç‰¹ä½ç”¨äºä¿å­˜çˆ¶èŠ‚ç‚¹æŒ‡é’ˆã€‚
 */
 struct rb_node {
 	unsigned long  __rb_parent_color;
@@ -53,7 +53,7 @@ struct rb_root {
 
 #define RB_ROOT	(struct rb_root) { NULL, }
 /**
- * rb_entry´ÓÖ¸ÏòºìºÚÊ÷ÖĞÒ»¸ö½ÚµãµÄÖ¸Õëµ¼³öÏàÓ¦ÏßĞÔÇøÃèÊö·ûµÄÖ¸Õë¡£
+ * rb_entryä»æŒ‡å‘çº¢é»‘æ ‘ä¸­ä¸€ä¸ªèŠ‚ç‚¹çš„æŒ‡é’ˆå¯¼å‡ºç›¸åº”çº¿æ€§åŒºæè¿°ç¬¦çš„æŒ‡é’ˆã€‚
  */
 #define	rb_entry(ptr, type, member) container_of(ptr, type, member)
 

@@ -32,33 +32,33 @@
  * by Keith Owens and Andrea Arcangeli
  */
 
- /*Ë³ĞòËø*/
+ /*é¡ºåºé”*/
 
- /* Ê¹ÓÃÀı×Ó
-  * ¶¨ÒåÒ»¸öÈ«¾ÖµÄseqlock±äÁ¿demo_seqlock
+ /* ä½¿ç”¨ä¾‹å­
+  * å®šä¹‰ä¸€ä¸ªå…¨å±€çš„seqlockå˜é‡demo_seqlock
     DEFINE_SEQLOCK(demo_seqlock);
 
-    ¶ÔÓÚĞ´ÈëÕßµÄ´úÂë....
-  * //Êµ¼ÊĞ´Ö®Ç°µ÷ÓÃwrite_seqlock»ñÈ¡×ÔĞıËø,Í¬Ê±¸üĞÂsequenceµÄÖµ
+    å¯¹äºå†™å…¥è€…çš„ä»£ç ....
+  * //å®é™…å†™ä¹‹å‰è°ƒç”¨write_seqlockè·å–è‡ªæ—‹é”,åŒæ—¶æ›´æ–°sequenceçš„å€¼
     write_seqlock(&demo_seqlock);
-  * //»ñµÃ×ÔĞıËøÖ®ºó,µ÷ÓÃdo_write½øĞĞÊµ¼ÊµÄĞ´Èë²Ù×÷
+  * //è·å¾—è‡ªæ—‹é”ä¹‹å,è°ƒç”¨do_writeè¿›è¡Œå®é™…çš„å†™å…¥æ“ä½œ
     do_write();
-    //Ğ´Èë½áÊø,µ÷ÓÃwrite_sequnlockÊÍ·ÅËø
+    //å†™å…¥ç»“æŸ,è°ƒç”¨write_sequnlocké‡Šæ”¾é”
     write_sequnlock(&demo_seqlock);
 
 
-    ¶ÔÓÚ¶ÁÈ¡ÕßµÄ´úÂë....
+    å¯¹äºè¯»å–è€…çš„ä»£ç ....
     unsigned start;
     do{
-    	//¶Á²Ù×÷Ç°ÏÈµÃµ½sequenceµÄÖµstart,ÓÃÒÔÔÚ¶Á²Ù×÷½áÊøÊ±ÅĞ¶ÏÊÇ·ñ·¢ÉúÊı¾İ¸üĞÂ
-	//×¢Òâ¶Á²Ù×÷ÎŞĞè»ñµÃËø
+    	//è¯»æ“ä½œå‰å…ˆå¾—åˆ°sequenceçš„å€¼start,ç”¨ä»¥åœ¨è¯»æ“ä½œç»“æŸæ—¶åˆ¤æ–­æ˜¯å¦å‘ç”Ÿæ•°æ®æ›´æ–°
+	//æ³¨æ„è¯»æ“ä½œæ— éœ€è·å¾—é”
 	start = read_seqbegin(&demo_seqlock);
-	//µ÷ÓÃdo_read½øĞĞÊµ¼ÊµÄ¶Á²Ù×÷
+	//è°ƒç”¨do_readè¿›è¡Œå®é™…çš„è¯»æ“ä½œ
 	do_read();
-    }while(read_seqretry(&demo_seqlock,start));//Èç¹ûÓĞÊı¾İ¸üĞÂ,ÔÙÖØĞÂ¶ÁÈ¡
+    }while(read_seqretry(&demo_seqlock,start));//å¦‚æœæœ‰æ•°æ®æ›´æ–°,å†é‡æ–°è¯»å–
   *
 
-  Èç¹û¿¼ÂÇµ½ÖĞ¶Ï°²È«µÄÎÊÌâ,¿ÉÒÔÊ¹ÓÃ¶ÔÓ¦°æ±¾:
+  å¦‚æœè€ƒè™‘åˆ°ä¸­æ–­å®‰å…¨çš„é—®é¢˜,å¯ä»¥ä½¿ç”¨å¯¹åº”ç‰ˆæœ¬:
   write_seqlock_irq(lock)
   write_seqlock_irqsave(lock, flags);
   write_seqlock_bh(lock)
@@ -442,7 +442,7 @@ static inline void write_seqcount_invalidate(seqcount_t *s)
 
 typedef struct {
 	struct seqcount seqcount;
-	/*ÔÚ¶à¸öĞ´ÈëÕßÖ®¼ä×ö»¥³âÊ¹ÓÃ*/
+	/*åœ¨å¤šä¸ªå†™å…¥è€…ä¹‹é—´åšäº’æ–¥ä½¿ç”¨*/
 	spinlock_t lock;
 } seqlock_t;
 
@@ -456,14 +456,14 @@ typedef struct {
 		.lock =	__SPIN_LOCK_UNLOCKED(lockname)	\
 	}
 
-/*¶¯Ì¬³õÊ¼»¯Ë³ĞòËø*/
+/*åŠ¨æ€åˆå§‹åŒ–é¡ºåºé”*/
 #define seqlock_init(x)					\
 	do {						\
 		seqcount_init(&(x)->seqcount);		\
 		spin_lock_init(&(x)->lock);		\
 	} while (0)
 
-/*¾²Ì¬¶¨ÒåÒ»¸ö»¥³âËø²¢³õÊ¼»¯*/
+/*é™æ€å®šä¹‰ä¸€ä¸ªäº’æ–¥é”å¹¶åˆå§‹åŒ–*/
 #define DEFINE_SEQLOCK(x) \
 		seqlock_t x = __SEQLOCK_UNLOCKED(x)
 
@@ -485,14 +485,14 @@ static inline unsigned read_seqretry(const seqlock_t *sl, unsigned start)
  * Acts like a normal spin_lock/unlock.
  * Don't need preempt_disable() because that is in the spin_lock already.
  */
- /*Ğ´ÈëÕßÔÚseqlockÉÏµÄÉÏËø²Ù×÷*/
+ /*å†™å…¥è€…åœ¨seqlockä¸Šçš„ä¸Šé”æ“ä½œ*/
 static inline void write_seqlock(seqlock_t *sl)
 {
-	/*Ğ´ÈëÖ®Ç°ÏÈ»ñµÃseqlockÉÏµÄ×ÔĞılock,ÔÚĞ´ÈëÕßÖ®¼ä±ØĞë±£Ö¤»¥³â²Ù×÷*/
+	/*å†™å…¥ä¹‹å‰å…ˆè·å¾—seqlockä¸Šçš„è‡ªæ—‹lock,åœ¨å†™å…¥è€…ä¹‹é—´å¿…é¡»ä¿è¯äº’æ–¥æ“ä½œ*/
 	spin_lock(&sl->lock);
 	write_seqcount_begin(&sl->seqcount);
 }
- /*Ğ´ÈëÕßÔÚseqlockÉÏµÄ½âËø²Ù×÷*/
+ /*å†™å…¥è€…åœ¨seqlockä¸Šçš„è§£é”æ“ä½œ*/
 static inline void write_sequnlock(seqlock_t *sl)
 {
 	write_seqcount_end(&sl->seqcount);

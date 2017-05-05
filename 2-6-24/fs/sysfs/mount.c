@@ -40,7 +40,7 @@ struct sysfs_dirent sysfs_root = {
 };
 
 /**
- * sysfsµÄgetsb»Øµ÷¡£
+ * sysfsçš„getsbå›è°ƒã€‚
  */
 static int sysfs_fill_super(struct super_block *sb, void *data, int silent)
 {
@@ -55,7 +55,7 @@ static int sysfs_fill_super(struct super_block *sb, void *data, int silent)
 	sysfs_sb = sb;
 
 	/* get root inode, initialize and unlock it */
-	/* ·ÖÅäĞÂµÄroot inodeÊµÀı */
+	/* åˆ†é…æ–°çš„root inodeå®ä¾‹ */
 	inode = sysfs_get_inode(&sysfs_root);
 	if (!inode) {
 		pr_debug("sysfs: could not get root inode\n");

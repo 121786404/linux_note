@@ -17,15 +17,15 @@
 
 /* Size description struct for general caches. */
 /**
- * ÓÃÓÚkmalloc£¬ÃèÊöÃ¿Ò»¸ö¿ÉÓÃÓÚkmallocµÄkmem_cache
+ * ç”¨äºkmallocï¼Œæè¿°æ¯ä¸€ä¸ªå¯ç”¨äºkmallocçš„kmem_cache
  */
 struct cache_sizes {
-	/* »º´æ³¤¶È */
+	/* ç¼“å­˜é•¿åº¦ */
 	size_t		 	cs_size;
-	/* ÓÃÓÚkmallocµÄ»º´æ */
+	/* ç”¨äºkmallocçš„ç¼“å­˜ */
 	struct kmem_cache	*cs_cachep;
 #ifdef CONFIG_ZONE_DMA
-	/* ÓÃÓÚ·ÖÅäDMAÊ±µÄ»º´æ */
+	/* ç”¨äºåˆ†é…DMAæ—¶çš„ç¼“å­˜ */
 	struct kmem_cache	*cs_dmacachep;
 #endif
 };
@@ -35,15 +35,15 @@ void *kmem_cache_alloc(struct kmem_cache *, gfp_t);
 void *__kmalloc(size_t size, gfp_t flags);
 
 /**
- * ·ÖÅä³¤¶ÈÎªsizeµÄÒ»¶ÎÄÚ´æ£¬²¢·µ»ØÆäÊ×µØÖ·¡£
- * flagsÊÇÆä·ÖÅä±êÖ¾£¬ÈçGFP_KERNEL
+ * åˆ†é…é•¿åº¦ä¸ºsizeçš„ä¸€æ®µå†…å­˜ï¼Œå¹¶è¿”å›å…¶é¦–åœ°å€ã€‚
+ * flagsæ˜¯å…¶åˆ†é…æ ‡å¿—ï¼Œå¦‚GFP_KERNEL
  */
 static inline void *kmalloc(size_t size, gfp_t flags)
 {
-	if (__builtin_constant_p(size)) {/* ³¤¶ÈÊÇ³£Á¿ */
+	if (__builtin_constant_p(size)) {/* é•¿åº¦æ˜¯å¸¸é‡ */
 		int i = 0;
 
-		if (!size)/* ³¤¶ÈÎª0£¬ */
+		if (!size)/* é•¿åº¦ä¸º0ï¼Œ */
 			return ZERO_SIZE_PTR;
 
 #define CACHE(x) \
@@ -51,22 +51,22 @@ static inline void *kmalloc(size_t size, gfp_t flags)
 			goto found; \
 		else \
 			i++;
-#include "kmalloc_sizes.h"/* ÕâÀï¸ù¾İsizeÕÒµ½ºÏÊÊµÄkmem_cache */
+#include "kmalloc_sizes.h"/* è¿™é‡Œæ ¹æ®sizeæ‰¾åˆ°åˆé€‚çš„kmem_cache */
 #undef CACHE
-		{/* Ã»ÕÒµ½£¬±àÒëÆ÷ÌáÊ¾¾¯¸æ */
+		{/* æ²¡æ‰¾åˆ°ï¼Œç¼–è¯‘å™¨æç¤ºè­¦å‘Š */
 			extern void __you_cannot_kmalloc_that_much(void);
 			__you_cannot_kmalloc_that_much();
 		}
 found:
 #ifdef CONFIG_ZONE_DMA
-		if (flags & GFP_DMA)/* ´ÓdmaÖĞ·ÖÅä */
+		if (flags & GFP_DMA)/* ä»dmaä¸­åˆ†é… */
 			return kmem_cache_alloc(malloc_sizes[i].cs_dmacachep,
 						flags);
 #endif
-		/* ´ÓÕı³£ÇøÓòÖĞ·ÖÅä */
+		/* ä»æ­£å¸¸åŒºåŸŸä¸­åˆ†é… */
 		return kmem_cache_alloc(malloc_sizes[i].cs_cachep, flags);
 	}
-	/* ³¤¶È²»ÊÇ³£Á¿£¬µ÷ÓÃ__kmalloc½øĞĞ·ÖÅä */
+	/* é•¿åº¦ä¸æ˜¯å¸¸é‡ï¼Œè°ƒç”¨__kmallocè¿›è¡Œåˆ†é… */
 	return __kmalloc(size, flags);
 }
 

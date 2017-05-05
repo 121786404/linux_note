@@ -68,14 +68,14 @@ static inline int pte_exec_kernel(pte_t pte)
  * Bits 0, 6 and 7 are taken, split up the 29 bits of offset
  * into this range:
  */
-/* Ò³±íÏîÖÐ£¬ÓÐ¶àÉÙ¸öÎ»¿ÉÓÃÓÚ´æ´¢·ÇÏßÐÔÓ³ÉäµÄÆ«ÒÆÁ¿ */
+/* é¡µè¡¨é¡¹ä¸­ï¼Œæœ‰å¤šå°‘ä¸ªä½å¯ç”¨äºŽå­˜å‚¨éžçº¿æ€§æ˜ å°„çš„åç§»é‡ */
 #define PTE_FILE_MAX_BITS	29
 
-/* ´ÓpteÖÐÌáÈ¡³ö·ÇÏßÐÔÓ³ÉäµÄÒ³ºÅ */
+/* ä»Žpteä¸­æå–å‡ºéžçº¿æ€§æ˜ å°„çš„é¡µå· */
 #define pte_to_pgoff(pte) \
 	((((pte).pte_low >> 1) & 0x1f ) + (((pte).pte_low >> 8) << 5 ))
 
-/* ½«ÎÄ¼þÆ«ÒÆÁ¿±àÂëÎªÒ³ºÅ£¬ÓÃÓÚ·ÇÏßÐÔÓ³Éä */
+/* å°†æ–‡ä»¶åç§»é‡ç¼–ç ä¸ºé¡µå·ï¼Œç”¨äºŽéžçº¿æ€§æ˜ å°„ */
 #define pgoff_to_pte(off) \
 	((pte_t) { (((off) & 0x1f) << 1) + (((off) >> 5) << 8) + _PAGE_FILE })
 

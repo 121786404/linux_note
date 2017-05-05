@@ -254,32 +254,32 @@ struct cfs_bandwidth {
 
 /* task group related information */
 /**
- * ÈÎÎñ×é
- * ÓÃÓÚÖ§³ÖcgroupµÄCPU×ÊÔ´¿ØÖÆ
- * ÓÃÓÚÊµÏÖ×éµ÷¶È
+ * ä»»åŠ¡ç»„
+ * ç”¨äºæ”¯æŒcgroupçš„CPUèµ„æºæ§åˆ¶
+ * ç”¨äºå®ç°ç»„è°ƒåº¦
  */
 struct task_group {
     /* 
-    ÓÃÓÚ½ø³ÌÕÒµ½ÆäËùÊô½ø³Ì×é½á¹¹ 
+    ç”¨äºè¿›ç¨‹æ‰¾åˆ°å…¶æ‰€å±è¿›ç¨‹ç»„ç»“æ„ 
     */
 	struct cgroup_subsys_state css;
 
 #ifdef CONFIG_FAIR_GROUP_SCHED
 	/* schedulable entities of this group on each cpu */
 /*
-	CFSµ÷¶ÈÆ÷µÄ½ø³Ì×é±äÁ¿£¬ÔÚ alloc_fair_sched_group() ÖĞ½ø³Ì³õÊ¼»¯¼°·ÖÅäÄÚ´æ 
-      ¸Ã½ø³Ì×éÔÚÃ¿¸öCPUÉÏ¶¼ÓĞ¶ÔÓ¦µÄÒ»¸öµ÷¶ÈÊµÌå£¬
-      ÒòÎªÓĞ¿ÉÄÜ´Ë½ø³Ì×éÍ¬Ê±ÔÚÁ½¸öCPUÉÏÔËĞĞ
-      (ËüµÄA½ø³ÌÔÚCPU0ÉÏÔËĞĞ£¬B½ø³ÌÔÚCPU1ÉÏÔËĞĞ) 
+	CFSè°ƒåº¦å™¨çš„è¿›ç¨‹ç»„å˜é‡ï¼Œåœ¨ alloc_fair_sched_group() ä¸­è¿›ç¨‹åˆå§‹åŒ–åŠåˆ†é…å†…å­˜ 
+      è¯¥è¿›ç¨‹ç»„åœ¨æ¯ä¸ªCPUä¸Šéƒ½æœ‰å¯¹åº”çš„ä¸€ä¸ªè°ƒåº¦å®ä½“ï¼Œ
+      å› ä¸ºæœ‰å¯èƒ½æ­¤è¿›ç¨‹ç»„åŒæ—¶åœ¨ä¸¤ä¸ªCPUä¸Šè¿è¡Œ
+      (å®ƒçš„Aè¿›ç¨‹åœ¨CPU0ä¸Šè¿è¡Œï¼ŒBè¿›ç¨‹åœ¨CPU1ä¸Šè¿è¡Œ) 
 */
 	struct sched_entity **se;
 	/* runqueue "owned" by this group on each cpu */
 /*
-	½ø³Ì×éÔÚÃ¿¸öCPUÉÏ¶¼ÓĞÒ»¸öCFSÔËĞĞ¶ÓÁĞ(ÎªÊ²Ã´ĞèÒª£¬ÉÔºó½âÊÍ) 
+	è¿›ç¨‹ç»„åœ¨æ¯ä¸ªCPUä¸Šéƒ½æœ‰ä¸€ä¸ªCFSè¿è¡Œé˜Ÿåˆ—(ä¸ºä»€ä¹ˆéœ€è¦ï¼Œç¨åè§£é‡Š) 
 */
 	struct cfs_rq **cfs_rq;
 /* 
-    ÓÃÓÚ±£´æÓÅÏÈ¼¶Ä¬ÈÏÎªNICE 0µÄÓÅÏÈ¼¶ 
+    ç”¨äºä¿å­˜ä¼˜å…ˆçº§é»˜è®¤ä¸ºNICE 0çš„ä¼˜å…ˆçº§ 
 */
 	unsigned long shares;
 
@@ -295,7 +295,7 @@ struct task_group {
 
 #ifdef CONFIG_RT_GROUP_SCHED
 /* 
-    ÊµÊ±½ø³Ìµ÷¶ÈÆ÷µÄ½ø³Ì×é±äÁ¿£¬Í¬ CFS 
+    å®æ—¶è¿›ç¨‹è°ƒåº¦å™¨çš„è¿›ç¨‹ç»„å˜é‡ï¼ŒåŒ CFS 
 */
 	struct sched_rt_entity **rt_se;
 	struct rt_rq **rt_rq;
@@ -305,21 +305,21 @@ struct task_group {
 
 	struct rcu_head rcu;
 /* 
-    ÓÃÓÚ½¨Á¢½ø³ÌÁ´±í(ÊôÓÚ´Ëµ÷¶È×éµÄ½ø³ÌÁ´±í) 
+    ç”¨äºå»ºç«‹è¿›ç¨‹é“¾è¡¨(å±äºæ­¤è°ƒåº¦ç»„çš„è¿›ç¨‹é“¾è¡¨) 
 */
 	struct list_head list;
 /* 
-    Ö¸ÏòÆäÉÏ²ãµÄ½ø³Ì×é£¬Ã¿Ò»²ãµÄ½ø³Ì×é¶¼ÊÇËüÉÏÒ»²ã½ø³Ì×é
-    µÄÔËĞĞ¶ÓÁĞµÄÒ»¸öµ÷¶ÈÊµÌå£¬ÔÚÍ¬Ò»²ãÖĞ£¬
-    ½ø³Ì×éºÍ½ø³Ì±»Í¬µÈ¶Ô´ı 
+    æŒ‡å‘å…¶ä¸Šå±‚çš„è¿›ç¨‹ç»„ï¼Œæ¯ä¸€å±‚çš„è¿›ç¨‹ç»„éƒ½æ˜¯å®ƒä¸Šä¸€å±‚è¿›ç¨‹ç»„
+    çš„è¿è¡Œé˜Ÿåˆ—çš„ä¸€ä¸ªè°ƒåº¦å®ä½“ï¼Œåœ¨åŒä¸€å±‚ä¸­ï¼Œ
+    è¿›ç¨‹ç»„å’Œè¿›ç¨‹è¢«åŒç­‰å¯¹å¾… 
 */
 	struct task_group *parent;
 /* 
-    ½ø³Ì×éµÄĞÖµÜ½áµãÁ´±í 
+    è¿›ç¨‹ç»„çš„å…„å¼Ÿç»“ç‚¹é“¾è¡¨ 
 */
 	struct list_head siblings;
 /* 
-    ½ø³Ì×éµÄ¶ù×Ó½áµãÁ´±í 
+    è¿›ç¨‹ç»„çš„å„¿å­ç»“ç‚¹é“¾è¡¨ 
 */
 	struct list_head children;
 
@@ -409,48 +409,48 @@ struct cfs_bandwidth { };
 #endif	/* CONFIG_CGROUP_SCHED */
 
 /* CFS-related fields in a runqueue */
-/* CFSµ÷¶ÈµÄÔËĞĞ¶ÓÁĞ£¬Ã¿¸öCPUµÄrq»á°üº¬Ò»¸öcfs_rq£¬
-¶øÃ¿¸ö×éµ÷¶ÈµÄsched_entityÒ²»áÓĞ×Ô¼ºµÄÒ»¸öcfs_rq¶ÓÁĞ 
+/* CFSè°ƒåº¦çš„è¿è¡Œé˜Ÿåˆ—ï¼Œæ¯ä¸ªCPUçš„rqä¼šåŒ…å«ä¸€ä¸ªcfs_rqï¼Œ
+è€Œæ¯ä¸ªç»„è°ƒåº¦çš„sched_entityä¹Ÿä¼šæœ‰è‡ªå·±çš„ä¸€ä¸ªcfs_rqé˜Ÿåˆ— 
 
-ÔÚÏµÍ³ÖĞÖÁÉÙÓĞÒ»¸öCFSÔËĞĞ¶ÓÁĞ£¬Æä¾ÍÊÇ¸ùCFSÔËĞĞ¶ÓÁĞ£¬
-¶øÆäËûµÄ½ø³Ì×éºÍ½ø³Ì¶¼°üº¬ÔÚ´ËÔËĞĞ¶ÓÁĞÖĞ£¬
-²»Í¬µÄÊÇ½ø³Ì×éÓÖÓĞËü×Ô¼ºµÄCFSÔËĞĞ¶ÓÁĞ£¬
-ÆäÔËĞĞ¶ÓÁĞÖĞ°üº¬µÄÊÇ´Ë½ø³Ì×éÖĞµÄËùÓĞ½ø³Ì¡£
-µ±µ÷¶ÈÆ÷´Ó¸ùCFSÔËĞĞ¶ÓÁĞÖĞÑ¡ÔñÁËÒ»¸ö½ø³Ì×é½øĞĞµ÷¶ÈÊ±£¬
-½ø³Ì×é»á´Ó×Ô¼ºµÄCFSÔËĞĞ¶ÓÁĞÖĞÑ¡ÔñÒ»¸öµ÷¶ÈÊµÌå½øĞĞµ÷¶È
-(Õâ¸öµ÷¶ÈÊµÌå¿ÉÄÜÎª½ø³Ì£¬Ò²¿ÉÄÜÓÖÊÇÒ»¸ö×Ó½ø³Ì×é)£¬
-¾ÍÕâÑùÒ»Ö±ÉîÈë£¬Ö±µ½×îºóÑ¡³öÒ»¸ö½ø³Ì½øĞĞÔËĞĞÎªÖ¹¡£
- struct cfs_rq ´ú±í×ÅÒ»¸öCFSÔËĞĞ¶ÓÁĞ£¬
-²¢ÇÒ°üº¬ÓĞÒ»¸öºìºÚÊ÷½øĞĞÑ¡Ôñµ÷¶È½ø³Ì
+åœ¨ç³»ç»Ÿä¸­è‡³å°‘æœ‰ä¸€ä¸ªCFSè¿è¡Œé˜Ÿåˆ—ï¼Œå…¶å°±æ˜¯æ ¹CFSè¿è¡Œé˜Ÿåˆ—ï¼Œ
+è€Œå…¶ä»–çš„è¿›ç¨‹ç»„å’Œè¿›ç¨‹éƒ½åŒ…å«åœ¨æ­¤è¿è¡Œé˜Ÿåˆ—ä¸­ï¼Œ
+ä¸åŒçš„æ˜¯è¿›ç¨‹ç»„åˆæœ‰å®ƒè‡ªå·±çš„CFSè¿è¡Œé˜Ÿåˆ—ï¼Œ
+å…¶è¿è¡Œé˜Ÿåˆ—ä¸­åŒ…å«çš„æ˜¯æ­¤è¿›ç¨‹ç»„ä¸­çš„æ‰€æœ‰è¿›ç¨‹ã€‚
+å½“è°ƒåº¦å™¨ä»æ ¹CFSè¿è¡Œé˜Ÿåˆ—ä¸­é€‰æ‹©äº†ä¸€ä¸ªè¿›ç¨‹ç»„è¿›è¡Œè°ƒåº¦æ—¶ï¼Œ
+è¿›ç¨‹ç»„ä¼šä»è‡ªå·±çš„CFSè¿è¡Œé˜Ÿåˆ—ä¸­é€‰æ‹©ä¸€ä¸ªè°ƒåº¦å®ä½“è¿›è¡Œè°ƒåº¦
+(è¿™ä¸ªè°ƒåº¦å®ä½“å¯èƒ½ä¸ºè¿›ç¨‹ï¼Œä¹Ÿå¯èƒ½åˆæ˜¯ä¸€ä¸ªå­è¿›ç¨‹ç»„)ï¼Œ
+å°±è¿™æ ·ä¸€ç›´æ·±å…¥ï¼Œç›´åˆ°æœ€åé€‰å‡ºä¸€ä¸ªè¿›ç¨‹è¿›è¡Œè¿è¡Œä¸ºæ­¢ã€‚
+ struct cfs_rq ä»£è¡¨ç€ä¸€ä¸ªCFSè¿è¡Œé˜Ÿåˆ—ï¼Œ
+å¹¶ä¸”åŒ…å«æœ‰ä¸€ä¸ªçº¢é»‘æ ‘è¿›è¡Œé€‰æ‹©è°ƒåº¦è¿›ç¨‹
 */
 struct cfs_rq {
     /* 
-          CFSÔËĞĞ¶ÓÁĞÖĞËùÓĞ½ø³ÌµÄ×Ü¸ºÔØ 
-          ĞèÒª×¢Òâ×Ó½ø³Ì¼ÆËãvruntimeÊ±ĞèÒªÓÃµ½½ø³Ì×éµÄload
+          CFSè¿è¡Œé˜Ÿåˆ—ä¸­æ‰€æœ‰è¿›ç¨‹çš„æ€»è´Ÿè½½ 
+          éœ€è¦æ³¨æ„å­è¿›ç¨‹è®¡ç®—vruntimeæ—¶éœ€è¦ç”¨åˆ°è¿›ç¨‹ç»„çš„load
      */
 	struct load_weight load;
 	/*
-       * nr_running: cfs_rqÖĞµ÷¶ÈÊµÌåÊıÁ¿
-       * h_nr_running: Ö»¶Ô½ø³Ì×éÓĞĞ§£¬ÆäÏÂËùÓĞ½ø³Ì×éÖĞcfs_rqµÄnr_runningÖ®ºÍ
+       * nr_running: cfs_rqä¸­è°ƒåº¦å®ä½“æ•°é‡
+       * h_nr_running: åªå¯¹è¿›ç¨‹ç»„æœ‰æ•ˆï¼Œå…¶ä¸‹æ‰€æœ‰è¿›ç¨‹ç»„ä¸­cfs_rqçš„nr_runningä¹‹å’Œ
       */
 	unsigned int nr_running, h_nr_running;
 
 	u64 exec_clock;
-    /* µ±Ç°CFS¶ÓÁĞÉÏ×îĞ¡ÔËĞĞÊ±¼ä£¬µ¥µ÷µİÔö
-       * Á½ÖÖÇé¿öÏÂ¸üĞÂ¸ÃÖµ: 
-       * 1¡¢¸üĞÂµ±Ç°ÔËĞĞÈÎÎñµÄÀÛ¼ÆÔËĞĞÊ±¼äÊ±
-       * 2¡¢µ±ÈÎÎñ´Ó¶ÓÁĞÉ¾³ıÈ¥£¬ÈçÈÎÎñË¯Ãß»òÍË³ö£¬
-       *        ÕâÊ±ºò»á²é¿´Ê£ÏÂµÄÈÎÎñµÄvruntimeÊÇ·ñ´óÓÚmin_vruntime£¬
-       *        Èç¹ûÊÇÔò¸üĞÂ¸ÃÖµ¡£
+    /* å½“å‰CFSé˜Ÿåˆ—ä¸Šæœ€å°è¿è¡Œæ—¶é—´ï¼Œå•è°ƒé€’å¢
+       * ä¸¤ç§æƒ…å†µä¸‹æ›´æ–°è¯¥å€¼: 
+       * 1ã€æ›´æ–°å½“å‰è¿è¡Œä»»åŠ¡çš„ç´¯è®¡è¿è¡Œæ—¶é—´æ—¶
+       * 2ã€å½“ä»»åŠ¡ä»é˜Ÿåˆ—åˆ é™¤å»ï¼Œå¦‚ä»»åŠ¡ç¡çœ æˆ–é€€å‡ºï¼Œ
+       *        è¿™æ—¶å€™ä¼šæŸ¥çœ‹å‰©ä¸‹çš„ä»»åŠ¡çš„vruntimeæ˜¯å¦å¤§äºmin_vruntimeï¼Œ
+       *        å¦‚æœæ˜¯åˆ™æ›´æ–°è¯¥å€¼ã€‚
        */
 	u64 min_vruntime;
 #ifndef CONFIG_64BIT
 	u64 min_vruntime_copy;
 #endif
-    /* ¸ÃºìºÚÊ÷µÄroot */
+    /* è¯¥çº¢é»‘æ ‘çš„root */
 	struct rb_root tasks_timeline;
-    /* ÏÂÒ»¸öµ÷¶È½áµã(ºìºÚÊ÷×î×ó±ß½áµã£¬
-          ×î×ó±ß½áµã¾ÍÊÇÏÂ¸öµ÷¶ÈÊµÌå) */
+    /* ä¸‹ä¸€ä¸ªè°ƒåº¦ç»“ç‚¹(çº¢é»‘æ ‘æœ€å·¦è¾¹ç»“ç‚¹ï¼Œ
+          æœ€å·¦è¾¹ç»“ç‚¹å°±æ˜¯ä¸‹ä¸ªè°ƒåº¦å®ä½“) */
 	struct rb_node *rb_leftmost;
 
 	/*
@@ -458,10 +458,10 @@ struct cfs_rq {
 	 * It is set to NULL otherwise (i.e when none are currently running).
 	 */
    /*
-      * curr: µ±Ç°ÕıÔÚÔËĞĞµÄsched_entity£¨¶ÔÓÚ×éËäÈ»Ëü²»»áÔÚcpuÉÏÔËĞĞ£¬µ«ÊÇµ±ËüµÄÏÂ²ãÓĞÒ»¸ötaskÔÚcpuÉÏÔËĞĞ£¬ÄÇÃ´ËüËùÔÚµÄcfs_rq¾Í°ÑËüµ±×öÊÇ¸Ãcfs_rqÉÏµ±Ç°ÕıÔÚÔËĞĞµÄsched_entity£©
-      * next: ±íÊ¾ÓĞĞ©½ø³Ì¼±ĞèÔËĞĞ£¬¼´Ê¹²»×ñ´ÓCFSµ÷¶ÈÒ²±ØĞëÔËĞĞËü£¬µ÷¶ÈÊ±»á¼ì²éÊÇ·ñnextĞèÒªµ÷¶È£¬ÓĞ¾Íµ÷¶Ènext
+      * curr: å½“å‰æ­£åœ¨è¿è¡Œçš„sched_entityï¼ˆå¯¹äºç»„è™½ç„¶å®ƒä¸ä¼šåœ¨cpuä¸Šè¿è¡Œï¼Œä½†æ˜¯å½“å®ƒçš„ä¸‹å±‚æœ‰ä¸€ä¸ªtaskåœ¨cpuä¸Šè¿è¡Œï¼Œé‚£ä¹ˆå®ƒæ‰€åœ¨çš„cfs_rqå°±æŠŠå®ƒå½“åšæ˜¯è¯¥cfs_rqä¸Šå½“å‰æ­£åœ¨è¿è¡Œçš„sched_entityï¼‰
+      * next: è¡¨ç¤ºæœ‰äº›è¿›ç¨‹æ€¥éœ€è¿è¡Œï¼Œå³ä½¿ä¸éµä»CFSè°ƒåº¦ä¹Ÿå¿…é¡»è¿è¡Œå®ƒï¼Œè°ƒåº¦æ—¶ä¼šæ£€æŸ¥æ˜¯å¦nextéœ€è¦è°ƒåº¦ï¼Œæœ‰å°±è°ƒåº¦next
       *
-      * skip: ÂÔ¹ı½ø³Ì(²»»áÑ¡ÔñskipÖ¸¶¨µÄ½ø³Ìµ÷¶È)
+      * skip: ç•¥è¿‡è¿›ç¨‹(ä¸ä¼šé€‰æ‹©skipæŒ‡å®šçš„è¿›ç¨‹è°ƒåº¦)
       */
 	struct sched_entity *curr, *next, *last, *skip;
 
@@ -499,7 +499,7 @@ struct cfs_rq {
 #endif /* CONFIG_SMP */
 
 #ifdef CONFIG_FAIR_GROUP_SCHED
-    /* ËùÊôÓÚµÄCPU rq */
+    /* æ‰€å±äºçš„CPU rq */
 	struct rq *rq;	/* cpu runqueue to which this cfs_rq is attached */
 
 	/*
@@ -512,7 +512,7 @@ struct cfs_rq {
 	 */
 	int on_list;
 	struct list_head leaf_cfs_rq_list;
-    /* ÓµÓĞ¸ÃCFSÔËĞĞ¶ÓÁĞµÄ½ø³Ì×é */
+    /* æ‹¥æœ‰è¯¥CFSè¿è¡Œé˜Ÿåˆ—çš„è¿›ç¨‹ç»„ */
 	struct task_group *tg;	/* group that "owns" this runqueue */
 
 #ifdef CONFIG_CFS_BANDWIDTH
@@ -676,17 +676,17 @@ extern void rq_attach_root(struct rq *rq, struct root_domain *rd);
  * (such as the load balancing or the thread migration code), lock
  * acquire operations must be ordered by ascending &runqueue.
  */
-/* CPUÔËĞĞ¶ÓÁĞ£¬Ã¿¸öCPU°üº¬Ò»¸östruct rq */
+/* CPUè¿è¡Œé˜Ÿåˆ—ï¼Œæ¯ä¸ªCPUåŒ…å«ä¸€ä¸ªstruct rq */
 struct rq {
 	/* runqueue lock: */
-    /* ´¦ÓÚÔËĞĞ¶ÓÁĞÖĞËùÓĞ¾ÍĞ÷½ø³ÌµÄloadÖ®ºÍ */
+    /* å¤„äºè¿è¡Œé˜Ÿåˆ—ä¸­æ‰€æœ‰å°±ç»ªè¿›ç¨‹çš„loadä¹‹å’Œ */
 	raw_spinlock_t lock;
 
 	/*
 	 * nr_running and cpu_load should be in the same cacheline because
 	 * remote CPUs use both these fields when doing load calculation.
 	 */
-    /* ´ËCPUÉÏ×Ü¹²¾ÍĞ÷µÄ½ø³ÌÊı£¬°üÀ¨cfs£¬rtºÍÕıÔÚÔËĞĞµÄ */
+    /* æ­¤CPUä¸Šæ€»å…±å°±ç»ªçš„è¿›ç¨‹æ•°ï¼ŒåŒ…æ‹¬cfsï¼Œrtå’Œæ­£åœ¨è¿è¡Œçš„ */
 	unsigned int nr_running;
 #ifdef CONFIG_NUMA_BALANCING
 	unsigned int nr_numa_running;
@@ -694,13 +694,13 @@ struct rq {
 #endif
 	#define CPU_LOAD_IDX_MAX 5
     /* 
-    ¸ù¾İCPUÀúÊ·Çé¿ö¼ÆËãµÄ¸ºÔØ£¬cpu_load[0]Ò»Ö±µÈÓÚload.weight£¬
-    µ±´ïµ½¸ºÔØÆ½ºâÊ±£¬cpu_load[1]ºÍcpu_load[2]¶¼Ó¦¸ÃµÈÓÚload.weight 
+    æ ¹æ®CPUå†å²æƒ…å†µè®¡ç®—çš„è´Ÿè½½ï¼Œcpu_load[0]ä¸€ç›´ç­‰äºload.weightï¼Œ
+    å½“è¾¾åˆ°è´Ÿè½½å¹³è¡¡æ—¶ï¼Œcpu_load[1]å’Œcpu_load[2]éƒ½åº”è¯¥ç­‰äºload.weight 
     */
 	unsigned long cpu_load[CPU_LOAD_IDX_MAX];
 #ifdef CONFIG_NO_HZ_COMMON
 #ifdef CONFIG_SMP
-    /* ×îºóÒ»´Î¸üĞÂ cpu_load µÄÊ±¼ä */
+    /* æœ€åä¸€æ¬¡æ›´æ–° cpu_load çš„æ—¶é—´ */
 	unsigned long last_load_update_tick;
 #endif /* CONFIG_SMP */
 	unsigned long nohz_flags;
@@ -709,15 +709,15 @@ struct rq {
 	unsigned long last_sched_tick;
 #endif
 	/* capture load from *all* tasks on this cpu: */
-    /* CPU¸ºÔØ£¬¸ÃCPUÉÏËùÓĞ¿ÉÔËĞĞ½ø³ÌµÄloadÖ®ºÍ£¬
-          nr_running¸üĞÂÊ±Õâ¸öÖµÒ²±ØĞë¸üĞÂ */
+    /* CPUè´Ÿè½½ï¼Œè¯¥CPUä¸Šæ‰€æœ‰å¯è¿è¡Œè¿›ç¨‹çš„loadä¹‹å’Œï¼Œ
+          nr_runningæ›´æ–°æ—¶è¿™ä¸ªå€¼ä¹Ÿå¿…é¡»æ›´æ–° */
 	struct load_weight load;
 	unsigned long nr_load_updates;
-    /* ½øĞĞÉÏÏÂÎÄÇĞ»»´ÎÊı£¬Ö»ÓĞproc»áÊ¹ÓÃÕâ¸ö */
+    /* è¿›è¡Œä¸Šä¸‹æ–‡åˆ‡æ¢æ¬¡æ•°ï¼Œåªæœ‰procä¼šä½¿ç”¨è¿™ä¸ª */
 	u64 nr_switches;
-    /* cfsµ÷¶ÈÔËĞĞ¶ÓÁĞ£¬°üº¬ºìºÚÊ÷µÄ¸ù */
+    /* cfsè°ƒåº¦è¿è¡Œé˜Ÿåˆ—ï¼ŒåŒ…å«çº¢é»‘æ ‘çš„æ ¹ */
 	struct cfs_rq cfs;
-    /* ÊµÊ±µ÷¶ÈÔËĞĞ¶ÓÁĞ */
+    /* å®æ—¶è°ƒåº¦è¿è¡Œé˜Ÿåˆ— */
 	struct rt_rq rt;
 	struct dl_rq dl;
 
@@ -733,20 +733,20 @@ struct rq {
 	 * one CPU and if it got migrated afterwards it may decrease
 	 * it on another CPU. Always updated under the runqueue lock:
 	 */
-    /* Ôø¾­´¦ÓÚ¶ÓÁĞµ«ÏÖÔÚ´¦ÓÚTASK_UNINTERRUPTIBLE×´Ì¬µÄ½ø³ÌÊıÁ¿ */
+    /* æ›¾ç»å¤„äºé˜Ÿåˆ—ä½†ç°åœ¨å¤„äºTASK_UNINTERRUPTIBLEçŠ¶æ€çš„è¿›ç¨‹æ•°é‡ */
 	unsigned long nr_uninterruptible;
     /*
-       * curr: µ±Ç°ÕıÔÚ´ËCPUÉÏÔËĞĞµÄ½ø³Ì
-       * idle: µ±Ç°CPUÉÏidle½ø³ÌµÄÖ¸Õë£¬idle½ø³ÌÓÃÓÚµ±CPUÃ»ÊÂ×öµÄÊ±ºòµ÷ÓÃ£¬ËüÊ²Ã´¶¼²»Ö´ĞĞ
+       * curr: å½“å‰æ­£åœ¨æ­¤CPUä¸Šè¿è¡Œçš„è¿›ç¨‹
+       * idle: å½“å‰CPUä¸Šidleè¿›ç¨‹çš„æŒ‡é’ˆï¼Œidleè¿›ç¨‹ç”¨äºå½“CPUæ²¡äº‹åšçš„æ—¶å€™è°ƒç”¨ï¼Œå®ƒä»€ä¹ˆéƒ½ä¸æ‰§è¡Œ
        */
 	struct task_struct *curr, *idle, *stop;
-    /* ÏÂ´Î½øĞĞ¸ºÔØÆ½ºâÖ´ĞĞÊ±¼ä */
+    /* ä¸‹æ¬¡è¿›è¡Œè´Ÿè½½å¹³è¡¡æ‰§è¡Œæ—¶é—´ */
 	unsigned long next_balance;
-    /* ÔÚ½ø³ÌÇĞ»»Ê±ÓÃÀ´´æ·Å»»³ö½ø³ÌµÄÄÚ´æÃèÊö·ûµØÖ· */
+    /* åœ¨è¿›ç¨‹åˆ‡æ¢æ—¶ç”¨æ¥å­˜æ”¾æ¢å‡ºè¿›ç¨‹çš„å†…å­˜æè¿°ç¬¦åœ°å€ */
 	struct mm_struct *prev_mm;
 
 	unsigned int clock_update_flags;
-    /* rqÔËĞĞÊ±¼ä */
+    /* rqè¿è¡Œæ—¶é—´ */
 	u64 clock;
 	u64 clock_task;
 
@@ -754,10 +754,10 @@ struct rq {
 
 #ifdef CONFIG_SMP
 	struct root_domain *rd;
-    /* µ±Ç°CPUËùÔÚ»ù±¾µ÷¶ÈÓò£¬Ã¿¸öµ÷¶ÈÓò°üº¬Ò»¸ö»ò¶à¸öCPU×é£¬
-    Ã¿¸öCPU×é°üº¬¸Ãµ÷¶ÈÓòÖĞÒ»¸ö»ò¶à¸öCPU×Ó¼¯£¬
-    ¸ºÔØ¾ùºâ¶¼ÊÇÔÚµ÷¶ÈÓòÖĞµÄ×éÖ®¼äÍê³ÉµÄ£¬
-    ²»ÄÜ¿çÓò½øĞĞ¸ºÔØ¾ùºâ */
+    /* å½“å‰CPUæ‰€åœ¨åŸºæœ¬è°ƒåº¦åŸŸï¼Œæ¯ä¸ªè°ƒåº¦åŸŸåŒ…å«ä¸€ä¸ªæˆ–å¤šä¸ªCPUç»„ï¼Œ
+    æ¯ä¸ªCPUç»„åŒ…å«è¯¥è°ƒåº¦åŸŸä¸­ä¸€ä¸ªæˆ–å¤šä¸ªCPUå­é›†ï¼Œ
+    è´Ÿè½½å‡è¡¡éƒ½æ˜¯åœ¨è°ƒåº¦åŸŸä¸­çš„ç»„ä¹‹é—´å®Œæˆçš„ï¼Œ
+    ä¸èƒ½è·¨åŸŸè¿›è¡Œè´Ÿè½½å‡è¡¡ */
 	struct sched_domain *sd;
 
 	unsigned long cpu_capacity;
@@ -767,19 +767,19 @@ struct rq {
 
 	unsigned char idle_balance;
 	/* For active balancing */
-    /* Èç¹ûĞèÒª°Ñ½ø³ÌÇ¨ÒÆµ½ÆäËûÔËĞĞ¶ÓÁĞ£¬¾ÍĞèÒªÉèÖÃÕâ¸öÎ» */
+    /* å¦‚æœéœ€è¦æŠŠè¿›ç¨‹è¿ç§»åˆ°å…¶ä»–è¿è¡Œé˜Ÿåˆ—ï¼Œå°±éœ€è¦è®¾ç½®è¿™ä¸ªä½ */
 	int active_balance;
 	int push_cpu;
 	struct cpu_stop_work active_balance_work;
 	/* cpu of this runqueue: */
-    /* ¸ÃÔËĞĞ¶ÓÁĞËùÊôCPU */	
+    /* è¯¥è¿è¡Œé˜Ÿåˆ—æ‰€å±CPU */	
 	int cpu;
 	int online;
 
 	struct list_head cfs_tasks;
 
 	u64 rt_avg;
-    /* ¸ÃÔËĞĞ¶ÓÁĞ´æ»îÊ±¼ä */
+    /* è¯¥è¿è¡Œé˜Ÿåˆ—å­˜æ´»æ—¶é—´ */
 	u64 age_stamp;
 	u64 idle_stamp;
 	u64 avg_idle;
@@ -800,7 +800,7 @@ struct rq {
 
 	/* calc_load related fields */
 	unsigned long calc_load_update;
-    /* ÓÃÓÚ¸ºÔØ¾ùºâ */
+    /* ç”¨äºè´Ÿè½½å‡è¡¡ */
 	long calc_load_active;
 
 #ifdef CONFIG_SCHED_HRTICK
@@ -808,7 +808,7 @@ struct rq {
 	int hrtick_csd_pending;
 	struct call_single_data hrtick_csd;
 #endif
-    /* µ÷¶ÈÊ¹ÓÃµÄ¸ß¾«¶È¶¨Ê±Æ÷ */
+    /* è°ƒåº¦ä½¿ç”¨çš„é«˜ç²¾åº¦å®šæ—¶å™¨ */
 	struct hrtimer hrtick_timer;
 #endif
 
@@ -1111,8 +1111,8 @@ struct sched_group_capacity {
 };
 
 struct sched_group {
-    //Ò»¸öµ÷ÓÃÓò¿ÉÄÜ»á°üº¬¶à¸ö×é£¬¸ÃnextÓÃÓÚ½«
-    //sched_group´®µ½µ÷ÓÃÓòµÄÁ´±íÉÏÃæ
+    //ä¸€ä¸ªè°ƒç”¨åŸŸå¯èƒ½ä¼šåŒ…å«å¤šä¸ªç»„ï¼Œè¯¥nextç”¨äºå°†
+    //sched_groupä¸²åˆ°è°ƒç”¨åŸŸçš„é“¾è¡¨ä¸Šé¢
 	struct sched_group *next;	/* Must be a circular list */
 	atomic_t ref;
 
@@ -1430,30 +1430,30 @@ extern const u32 sched_prio_to_wmult[40];
 
 #define RETRY_TASK		((void *)-1UL)
 /*
-Õâ¸öµ÷¶ÈÀà¾ßÌåÓĞÊ²Ã´ÓÃÄØ£¬
-Êµ¼ÊÉÏÔÚÄÚºËÖĞ²»Í¬µÄµ÷¶ÈËã·¨ËüÃÇµÄ²Ù×÷¶¼²»ÏàÍ¬£¬
-ÎªÁË·½±ãĞŞ¸Ä¡¢Ìæ»»µ÷¶ÈËã·¨£¬Ê¹ÓÃÁËµ÷¶ÈÀà£¬
-Ã¿¸öµ÷¶ÈËã·¨Ö»ĞèÒªÊµÏÖ×Ô¼ºµÄµ÷¶ÈÀà¾Í¿ÉÒÔÁË£¬
-CFSËã·¨ÓĞËüµÄµ÷¶ÈÀà£¬
-SCHED_FIFOÒ²ÓĞËü×Ô¼ºµÄµ÷¶ÈÀà£¬
-µ±Ò»¸ö½ø³Ì´´½¨Ê±£¬ÓÃÊ²Ã´µ÷¶ÈËã·¨¾Í½«Æä
-task_struct->sched_class Ö¸ÏòÆäÏàÓ¦µÄµ÷¶ÈÀà£¬
-µ÷¶ÈÆ÷Ã¿´Îµ÷¶È´¦ÀíÊ±£¬¾ÍÍ¨¹ıµ±Ç°½ø³ÌµÄµ÷¶ÈÀàº¯Êı½ø³Ì²Ù×÷
+è¿™ä¸ªè°ƒåº¦ç±»å…·ä½“æœ‰ä»€ä¹ˆç”¨å‘¢ï¼Œ
+å®é™…ä¸Šåœ¨å†…æ ¸ä¸­ä¸åŒçš„è°ƒåº¦ç®—æ³•å®ƒä»¬çš„æ“ä½œéƒ½ä¸ç›¸åŒï¼Œ
+ä¸ºäº†æ–¹ä¾¿ä¿®æ”¹ã€æ›¿æ¢è°ƒåº¦ç®—æ³•ï¼Œä½¿ç”¨äº†è°ƒåº¦ç±»ï¼Œ
+æ¯ä¸ªè°ƒåº¦ç®—æ³•åªéœ€è¦å®ç°è‡ªå·±çš„è°ƒåº¦ç±»å°±å¯ä»¥äº†ï¼Œ
+CFSç®—æ³•æœ‰å®ƒçš„è°ƒåº¦ç±»ï¼Œ
+SCHED_FIFOä¹Ÿæœ‰å®ƒè‡ªå·±çš„è°ƒåº¦ç±»ï¼Œ
+å½“ä¸€ä¸ªè¿›ç¨‹åˆ›å»ºæ—¶ï¼Œç”¨ä»€ä¹ˆè°ƒåº¦ç®—æ³•å°±å°†å…¶
+task_struct->sched_class æŒ‡å‘å…¶ç›¸åº”çš„è°ƒåº¦ç±»ï¼Œ
+è°ƒåº¦å™¨æ¯æ¬¡è°ƒåº¦å¤„ç†æ—¶ï¼Œå°±é€šè¿‡å½“å‰è¿›ç¨‹çš„è°ƒåº¦ç±»å‡½æ•°è¿›ç¨‹æ“ä½œ
 */
 struct sched_class {
-    /* ÏÂÒ»ÓÅÏÈ¼¶µÄµ÷¶ÈÀà
-     * µ÷¶ÈÀàÓÅÏÈ¼¶Ë³Ğò: stop_sched_class -> dl_sched_class -> rt_sched_class -> fair_sched_class -> idle_sched_class
+    /* ä¸‹ä¸€ä¼˜å…ˆçº§çš„è°ƒåº¦ç±»
+     * è°ƒåº¦ç±»ä¼˜å…ˆçº§é¡ºåº: stop_sched_class -> dl_sched_class -> rt_sched_class -> fair_sched_class -> idle_sched_class
      */
 
 	const struct sched_class *next;
-    /* ½«½ø³Ì¼ÓÈëµ½ÔËĞĞ¶ÓÁĞÖĞ£¬¼´½«µ÷¶ÈÊµÌå£¨½ø³Ì£©·ÅÈëºìºÚÊ÷ÖĞ£¬²¢¶Ô nr_running ±äÁ¿¼Ó1 */
+    /* å°†è¿›ç¨‹åŠ å…¥åˆ°è¿è¡Œé˜Ÿåˆ—ä¸­ï¼Œå³å°†è°ƒåº¦å®ä½“ï¼ˆè¿›ç¨‹ï¼‰æ”¾å…¥çº¢é»‘æ ‘ä¸­ï¼Œå¹¶å¯¹ nr_running å˜é‡åŠ 1 */
 	void (*enqueue_task) (struct rq *rq, struct task_struct *p, int flags);
-    /* ´ÓÔËĞĞ¶ÓÁĞÖĞÉ¾³ı½ø³Ì£¬²¢¶Ô nr_running ±äÁ¿ÖĞ¼õ1 */
+    /* ä»è¿è¡Œé˜Ÿåˆ—ä¸­åˆ é™¤è¿›ç¨‹ï¼Œå¹¶å¯¹ nr_running å˜é‡ä¸­å‡1 */
 	void (*dequeue_task) (struct rq *rq, struct task_struct *p, int flags);
-    /* ·ÅÆúCPU£¬ÔÚ compat_yield sysctl ¹Ø±ÕµÄÇé¿öÏÂ£¬¸Ãº¯ÊıÊµ¼ÊÉÏÖ´ĞĞÏÈ³ö¶ÓºóÈë¶Ó£»ÔÚÕâÖÖÇé¿öÏÂ£¬Ëü½«µ÷¶ÈÊµÌå·ÅÔÚºìºÚÊ÷µÄ×îÓÒ¶Ë */
+    /* æ”¾å¼ƒCPUï¼Œåœ¨ compat_yield sysctl å…³é—­çš„æƒ…å†µä¸‹ï¼Œè¯¥å‡½æ•°å®é™…ä¸Šæ‰§è¡Œå…ˆå‡ºé˜Ÿåå…¥é˜Ÿï¼›åœ¨è¿™ç§æƒ…å†µä¸‹ï¼Œå®ƒå°†è°ƒåº¦å®ä½“æ”¾åœ¨çº¢é»‘æ ‘çš„æœ€å³ç«¯ */
 	void (*yield_task) (struct rq *rq);
 	bool (*yield_to_task) (struct rq *rq, struct task_struct *p, bool preempt);
-    /* ¼ì²éµ±Ç°½ø³ÌÊÇ·ñ¿É±»ĞÂ½ø³ÌÇÀÕ¼ */
+    /* æ£€æŸ¥å½“å‰è¿›ç¨‹æ˜¯å¦å¯è¢«æ–°è¿›ç¨‹æŠ¢å  */
 	void (*check_preempt_curr) (struct rq *rq, struct task_struct *p, int flags);
 
 	/*
@@ -1464,35 +1464,35 @@ struct sched_class {
 	 * May return RETRY_TASK when it finds a higher prio class has runnable
 	 * tasks.
 	 */
-    /* Ñ¡ÔñÏÂÒ»¸öÓ¦¸ÃÒªÔËĞĞµÄ½ø³ÌÔËĞĞ */
+    /* é€‰æ‹©ä¸‹ä¸€ä¸ªåº”è¯¥è¦è¿è¡Œçš„è¿›ç¨‹è¿è¡Œ */
 	struct task_struct * (*pick_next_task) (struct rq *rq,
 						struct task_struct *prev,
 						struct rq_flags *rf);
-    /* ½«½ø³Ì·Å»ØÔËĞĞ¶ÓÁĞ */
+    /* å°†è¿›ç¨‹æ”¾å›è¿è¡Œé˜Ÿåˆ— */
 	void (*put_prev_task) (struct rq *rq, struct task_struct *p);
 
 #ifdef CONFIG_SMP
-    /* Îª½ø³ÌÑ¡ÔñÒ»¸öºÏÊÊµÄCPU */
+    /* ä¸ºè¿›ç¨‹é€‰æ‹©ä¸€ä¸ªåˆé€‚çš„CPU */
 	int  (*select_task_rq)(struct task_struct *p, int task_cpu, int sd_flag, int flags);
-    /* Ç¨ÒÆÈÎÎñµ½ÁíÒ»¸öCPU */
+    /* è¿ç§»ä»»åŠ¡åˆ°å¦ä¸€ä¸ªCPU */
 	void (*migrate_task_rq)(struct task_struct *p);
-    /* ÓÃÓÚ½ø³Ì»½ĞÑ */
+    /* ç”¨äºè¿›ç¨‹å”¤é†’ */
 	void (*task_woken) (struct rq *this_rq, struct task_struct *task);
-    /* ĞŞ¸Ä½ø³ÌµÄCPUÇ×ºÍÁ¦(affinity) */
+    /* ä¿®æ”¹è¿›ç¨‹çš„CPUäº²å’ŒåŠ›(affinity) */
 	void (*set_cpus_allowed)(struct task_struct *p,
 				 const struct cpumask *newmask);
-    /* Æô¶¯ÔËĞĞ¶ÓÁĞ */
+    /* å¯åŠ¨è¿è¡Œé˜Ÿåˆ— */
 	void (*rq_online)(struct rq *rq);
-    /* ½ûÖ¹ÔËĞĞ¶ÓÁĞ */
+    /* ç¦æ­¢è¿è¡Œé˜Ÿåˆ— */
 	void (*rq_offline)(struct rq *rq);
 #endif
-    /* µ±½ø³Ì¸Ä±äËüµÄµ÷¶ÈÀà»ò½ø³Ì×éÊ±±»µ÷ÓÃ */
+    /* å½“è¿›ç¨‹æ”¹å˜å®ƒçš„è°ƒåº¦ç±»æˆ–è¿›ç¨‹ç»„æ—¶è¢«è°ƒç”¨ */
 	void (*set_curr_task) (struct rq *rq);
-    /* ¸Ãº¯ÊıÍ¨³£µ÷ÓÃ×Ô time tick º¯Êı£»Ëü¿ÉÄÜÒıÆğ½ø³ÌÇĞ»»¡£Õâ½«Çı¶¯ÔËĞĞÊ±£¨running£©ÇÀÕ¼*/
+    /* è¯¥å‡½æ•°é€šå¸¸è°ƒç”¨è‡ª time tick å‡½æ•°ï¼›å®ƒå¯èƒ½å¼•èµ·è¿›ç¨‹åˆ‡æ¢ã€‚è¿™å°†é©±åŠ¨è¿è¡Œæ—¶ï¼ˆrunningï¼‰æŠ¢å */
 	void (*task_tick) (struct rq *rq, struct task_struct *p, int queued);
-    /* ÔÚ½ø³Ì´´½¨Ê±µ÷ÓÃ£¬²»Í¬µ÷¶È²ßÂÔµÄ½ø³Ì³õÊ¼»¯²»Ò»Ñù */
+    /* åœ¨è¿›ç¨‹åˆ›å»ºæ—¶è°ƒç”¨ï¼Œä¸åŒè°ƒåº¦ç­–ç•¥çš„è¿›ç¨‹åˆå§‹åŒ–ä¸ä¸€æ · */
 	void (*task_fork) (struct task_struct *p);
-    /* ÔÚ½ø³ÌÍË³öÊ±»áÊ¹ÓÃ */
+    /* åœ¨è¿›ç¨‹é€€å‡ºæ—¶ä¼šä½¿ç”¨ */
 	void (*task_dead) (struct task_struct *p);
 
 	/*
@@ -1500,10 +1500,10 @@ struct sched_class {
 	 * cannot assume the switched_from/switched_to pair is serliazed by
 	 * rq->lock. They are however serialized by p->pi_lock.
 	 */
-    /* ÔÚ½ø³ÌÍË³öÊ±»áÊ¹ÓÃ */
+    /* åœ¨è¿›ç¨‹é€€å‡ºæ—¶ä¼šä½¿ç”¨ */
 	void (*switched_from) (struct rq *this_rq, struct task_struct *task);
 	void (*switched_to) (struct rq *this_rq, struct task_struct *task);
-    /* ¸Ä±äÓÅÏÈ¼¶ */
+    /* æ”¹å˜ä¼˜å…ˆçº§ */
 	void (*prio_changed) (struct rq *this_rq, struct task_struct *task,
 			     int oldprio);
 
@@ -1534,8 +1534,8 @@ static inline void set_curr_task(struct rq *rq, struct task_struct *curr)
 #define for_each_class(class) \
    for (class = sched_class_highest; class; class = class->next)
 /*
-Ç°Ïµ½yÖĞ,Scheduling ClassµÄÓÅÏÈ¼¶Ë³ĞòÎªStopTask > RealTime > Fair > IdleTask
-¿ª·¢Õß¿ÉÒÔ¸ù¾İ¼ºµÄÉè¼ÆĞèÇó,í°ÑËùÊôµÄTaskÅäÖÃµ½²»Í¬µÄScheduling ClassÖĞ
+å‰ç³»çµ±ä¸­,Scheduling Classçš„ä¼˜å…ˆçº§é¡ºåºä¸ºStopTask > RealTime > Fair > IdleTask
+å¼€å‘è€…å¯ä»¥æ ¹æ®å·±çš„è®¾è®¡éœ€æ±‚,ä¾†æŠŠæ‰€å±çš„Taské…ç½®åˆ°ä¸åŒçš„Scheduling Classä¸­
 */
 extern const struct sched_class stop_sched_class;
 extern const struct sched_class dl_sched_class;

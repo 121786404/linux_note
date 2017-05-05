@@ -88,7 +88,7 @@ void free_kthread_struct(struct task_struct *k)
 bool kthread_should_stop(void)
 {
 /*
-    ÅĞ¶Ï½ø³ÌËùÔÚ kthread ½á¹¹ÖĞµÄ KTHREAD_SHOULD_STOP ÊÇ·ñ±»ÖÃÎ»
+    åˆ¤æ–­è¿›ç¨‹æ‰€åœ¨ kthread ç»“æ„ä¸­çš„ KTHREAD_SHOULD_STOP æ˜¯å¦è¢«ç½®ä½
 */
 	return test_bit(KTHREAD_SHOULD_STOP, &to_kthread(current)->flags);
 }
@@ -108,7 +108,7 @@ EXPORT_SYMBOL(kthread_should_stop);
 bool kthread_should_park(void)
 {
 /*
-ÅĞ¶Ï½ø³ÌËùÔÚ kthread ½á¹¹ÖĞµÄ KTHREAD_SHOULD_PARK ÊÇ·ñ±»ÖÃÎ»
+åˆ¤æ–­è¿›ç¨‹æ‰€åœ¨ kthread ç»“æ„ä¸­çš„ KTHREAD_SHOULD_PARK æ˜¯å¦è¢«ç½®ä½
 */
 	return test_bit(KTHREAD_SHOULD_PARK, &to_kthread(current)->flags);
 }
@@ -172,10 +172,10 @@ void *kthread_probe_data(struct task_struct *task)
 
 static void __kthread_parkme(struct kthread *self)
 {
-    // Èç¹ûµ±Ç°½ø³ÌµÄ KTHREAD_SHOULD_PARK ±êÖ¾±»ÖÃÎ» ,
-    // ½«µ±Ç°½ø³Ì½øÈë TASK_PARKED µÄ×èÈû×´Ì¬¡£
-    // Èç¹û KTHREAD_SHOULD_PARK ²»Çå³ı£¬
-    // ¾ÍËã±» wake_up »½ĞÑ»¹ÊÇ»áÑ­»·½øÈë TASK_PARKED µÄ×èÈû×´Ì¬¡£
+    // å¦‚æœå½“å‰è¿›ç¨‹çš„ KTHREAD_SHOULD_PARK æ ‡å¿—è¢«ç½®ä½ ,
+    // å°†å½“å‰è¿›ç¨‹è¿›å…¥ TASK_PARKED çš„é˜»å¡çŠ¶æ€ã€‚
+    // å¦‚æœ KTHREAD_SHOULD_PARK ä¸æ¸…é™¤ï¼Œ
+    // å°±ç®—è¢« wake_up å”¤é†’è¿˜æ˜¯ä¼šå¾ªç¯è¿›å…¥ TASK_PARKED çš„é˜»å¡çŠ¶æ€ã€‚
 	__set_current_state(TASK_PARKED);
 	while (test_bit(KTHREAD_SHOULD_PARK, &self->flags)) {
 		if (!test_and_set_bit(KTHREAD_IS_PARKED, &self->flags))
@@ -194,15 +194,15 @@ void kthread_parkme(void)
 EXPORT_SYMBOL_GPL(kthread_parkme);
 
 /**
- * ÄÚºËÏß³ÌÖ÷º¯Êı¡£
+ * å†…æ ¸çº¿ç¨‹ä¸»å‡½æ•°ã€‚
  */
 static int kthread(void *_create)
 {
 	/* Copy data: it's on kthread's stack */
-	//»ñµÃÈÎÎñ²ÎÊı¼°Ö÷º¯Êı¡£
-    /* create Ö¸Ïò kthread_create_info ÖĞµÄ kthread_create_info */
+	//è·å¾—ä»»åŠ¡å‚æ•°åŠä¸»å‡½æ•°ã€‚
+    /* create æŒ‡å‘ kthread_create_info ä¸­çš„ kthread_create_info */
 	struct kthread_create_info *create = _create;
-    /*  ĞÂµÄÏß³Ì´´½¨Íê±ÏºóÖ´ĞĞµÄº¯Êı */
+    /*  æ–°çš„çº¿ç¨‹åˆ›å»ºå®Œæ¯•åæ‰§è¡Œçš„å‡½æ•° */
 	int (*threadfn)(void *data) = create->threadfn;
 	void *data = create->data;
 	struct completion *done;
@@ -232,26 +232,26 @@ static int kthread(void *_create)
 	current->vfork_done = &self->exited;
 
 	/* OK, tell user we're spawned, wait for stop or wakeup */
-    /*  ÉèÖÃÔËĞĞ×´Ì¬Îª TASK_UNINTERRUPTIBLE µÈ´ı±»wakeup»½ĞÑ*/
+    /*  è®¾ç½®è¿è¡ŒçŠ¶æ€ä¸º TASK_UNINTERRUPTIBLE ç­‰å¾…è¢«wakeupå”¤é†’*/
 	__set_current_state(TASK_UNINTERRUPTIBLE);
-    /*  current ±íÊ¾µ±Ç°ĞÂ´´½¨µÄ thread µÄ task_struct ½á¹¹  */
+    /*  current è¡¨ç¤ºå½“å‰æ–°åˆ›å»ºçš„ thread çš„ task_struct ç»“æ„  */
 	create->result = current;
 	complete(done);
-    /*  ÖÁ´ËÏß³Ì´´½¨Íê±Ï ,  Ö´ĞĞÈÎÎñÇĞ»»£¬ÈÃ³ö CPU  */
+    /*  è‡³æ­¤çº¿ç¨‹åˆ›å»ºå®Œæ¯• ,  æ‰§è¡Œä»»åŠ¡åˆ‡æ¢ï¼Œè®©å‡º CPU  */
 	schedule();
 
-    /* ĞÂ´´½¨µÄÏß³ÌÓÉÓÚÖ´ĞĞÁË schedule() µ÷¶È£¬´ËÊ±²¢Ã»ÓĞÖ´ĞĞ.
-          Ö±µ½ÎÒÃÇÊ¹ÓÃwake_up_process(p);»½ĞÑĞÂ´´½¨µÄÏß³Ì
-          Ïß³Ì±»»½ĞÑºó, »á½Ó×ÅÖ´ĞĞthreadfn(data)*/
+    /* æ–°åˆ›å»ºçš„çº¿ç¨‹ç”±äºæ‰§è¡Œäº† schedule() è°ƒåº¦ï¼Œæ­¤æ—¶å¹¶æ²¡æœ‰æ‰§è¡Œ.
+          ç›´åˆ°æˆ‘ä»¬ä½¿ç”¨wake_up_process(p);å”¤é†’æ–°åˆ›å»ºçš„çº¿ç¨‹
+          çº¿ç¨‹è¢«å”¤é†’å, ä¼šæ¥ç€æ‰§è¡Œthreadfn(data)*/
 	ret = -EINTR;
 	
 	if (!test_bit(KTHREAD_SHOULD_STOP, &self->flags)) {
 /*
-	Èç¹ûÊÇ__smpboot_create_thread´´½¨µÄÏß³Ì»¹»á½øÈëpark×´Ì¬
+	å¦‚æœæ˜¯__smpboot_create_threadåˆ›å»ºçš„çº¿ç¨‹è¿˜ä¼šè¿›å…¥parkçŠ¶æ€
 */
 		__kthread_parkme(self);
 /*
-		µ÷ÓÃÊµ¼ÊµÄÓÃ»§º¯Êıthreadfn
+		è°ƒç”¨å®é™…çš„ç”¨æˆ·å‡½æ•°threadfn
 */
 		ret = threadfn(data);
 	}
@@ -269,7 +269,7 @@ int tsk_fork_get_node(struct task_struct *tsk)
 }
 
 /**
- * ´´½¨ÄÚºËÏß³Ì
+ * åˆ›å»ºå†…æ ¸çº¿ç¨‹
  */
 static void create_kthread(struct kthread_create_info *create)
 {
@@ -280,9 +280,9 @@ static void create_kthread(struct kthread_create_info *create)
 #endif
 	/* We want our own signal handler (we take no signals by default). */
 	/*
-    µ÷ÓÃÊ×ÏÈ¹¹ÔìÒ»¸ö¼ÙµÄÉÏÏÂÎÄÖ´ĞĞ»·¾³£¬×îºóµ÷ÓÃ do_fork()
-    ·µ»Ø½ø³Ì id, ´´½¨ºóµÄÏß³ÌÖ´ĞĞ kthread º¯Êı
-    ÈÎºÎÒ»¸öÄÚºËÏß³ÌÈë¿Ú¶¼ÊÇ kthread
+    è°ƒç”¨é¦–å…ˆæ„é€ ä¸€ä¸ªå‡çš„ä¸Šä¸‹æ–‡æ‰§è¡Œç¯å¢ƒï¼Œæœ€åè°ƒç”¨ do_fork()
+    è¿”å›è¿›ç¨‹ id, åˆ›å»ºåçš„çº¿ç¨‹æ‰§è¡Œ kthread å‡½æ•°
+    ä»»ä½•ä¸€ä¸ªå†…æ ¸çº¿ç¨‹å…¥å£éƒ½æ˜¯ kthread
     */
 	pid = kernel_thread(kthread, create, CLONE_FS | CLONE_FILES | SIGCHLD);
 	if (pid < 0) {
@@ -317,13 +317,13 @@ struct task_struct *__kthread_create_on_node(int (*threadfn)(void *data),
 	create->done = &done;
 
 /*
-½«ĞÂ½¨ÈÎÎñ¼ÓÈëkthread_create_list 
+å°†æ–°å»ºä»»åŠ¡åŠ å…¥kthread_create_list 
 */
 	spin_lock(&kthread_create_lock);
 	list_add_tail(&create->list, &kthread_create_list);
 	spin_unlock(&kthread_create_lock);
 /*
-    »½ĞÑkthreadd_taskÀ´´´½¨
+    å”¤é†’kthreadd_taskæ¥åˆ›å»º
 */
 	wake_up_process(kthreadd_task);
 	/*
@@ -332,7 +332,7 @@ struct task_struct *__kthread_create_on_node(int (*threadfn)(void *data),
 	 * new kernel thread.
 	 */
 /*
-	    µÈ´ı´´½¨ÈÎÎñÍê³É
+	    ç­‰å¾…åˆ›å»ºä»»åŠ¡å®Œæˆ
 */
 	if (unlikely(wait_for_completion_killable(&done))) {
 		/*
@@ -352,7 +352,7 @@ struct task_struct *__kthread_create_on_node(int (*threadfn)(void *data),
 	if (!IS_ERR(task)) {
 		static const struct sched_param param = { .sched_priority = 0 };
 /*
-    ÉèÖÃĞÂ½ø³ÌµÄ½ø³ÌÃû
+    è®¾ç½®æ–°è¿›ç¨‹çš„è¿›ç¨‹å
 */
 		vsnprintf(task->comm, sizeof(task->comm), namefmt, args);
 		/*
@@ -463,7 +463,7 @@ struct task_struct *kthread_create_on_cpu(int (*threadfn)(void *data),
 {
 	struct task_struct *p;
 /*
-    ´´½¨½ø³Ì
+    åˆ›å»ºè¿›ç¨‹
 */
 	p = kthread_create_on_node(threadfn, data, cpu_to_node(cpu), namefmt,
 				   cpu);
@@ -487,7 +487,7 @@ struct task_struct *kthread_create_on_cpu(int (*threadfn)(void *data),
 void kthread_unpark(struct task_struct *k)
 {
 	struct kthread *kthread = to_kthread(k);
-    // (4) Çå³ı KTHREAD_IS_PARKED ±êÖ¾Î»
+    // (4) æ¸…é™¤ KTHREAD_IS_PARKED æ ‡å¿—ä½
 	clear_bit(KTHREAD_SHOULD_PARK, &kthread->flags);
 	/*
 	 * We clear the IS_PARKED bit here as we don't wait
@@ -495,13 +495,13 @@ void kthread_unpark(struct task_struct *k)
 	 * park before that happens we'd see the IS_PARKED bit
 	 * which might be about to be cleared.
 	 */
-    // Èç¹û½ø³ÌÒÑ¾­±» park£¬²¢ÇÒ wake_up »½ĞÑ½ø³Ì
+    // å¦‚æœè¿›ç¨‹å·²ç»è¢« parkï¼Œå¹¶ä¸” wake_up å”¤é†’è¿›ç¨‹
 	if (test_and_clear_bit(KTHREAD_IS_PARKED, &kthread->flags)) {
 		/*
 		 * Newly created kthread was parked when the CPU was offline.
 		 * The binding was lost and we need to set it again.
 		 */
-        // Èç¹ûÊÇ per_cpu ½ø³Ì£¬ÖØĞÂ°ó¶¨½ø³Ì cpu
+        // å¦‚æœæ˜¯ per_cpu è¿›ç¨‹ï¼Œé‡æ–°ç»‘å®šè¿›ç¨‹ cpu
 		if (test_bit(KTHREAD_IS_PER_CPU, &kthread->flags))
 			__kthread_bind(k, kthread->cpu, TASK_PARKED);
 		wake_up_state(k, TASK_PARKED);
@@ -527,7 +527,7 @@ int kthread_park(struct task_struct *k)
 
 	if (WARN_ON(k->flags & PF_EXITING))
 		return -ENOSYS;
-    // (3) ÉèÖÃ KTHREAD_IS_PARKED ±êÖ¾Î»£¬²¢ÇÒ»½ĞÑ½ø³Ì½øÈë park ×´Ì¬
+    // (3) è®¾ç½® KTHREAD_IS_PARKED æ ‡å¿—ä½ï¼Œå¹¶ä¸”å”¤é†’è¿›ç¨‹è¿›å…¥ park çŠ¶æ€
 	if (!test_bit(KTHREAD_IS_PARKED, &kthread->flags)) {
 		set_bit(KTHREAD_SHOULD_PARK, &kthread->flags);
 		if (k != current) {
@@ -564,9 +564,9 @@ int kthread_stop(struct task_struct *k)
 
 	get_task_struct(k);
 	kthread = to_kthread(k);
-	//  ÖÃÎ»½ø³ÌËùÔÚ kthread ½á¹¹ÖĞµÄ KTHREAD_SHOULD_STOP
+	//  ç½®ä½è¿›ç¨‹æ‰€åœ¨ kthread ç»“æ„ä¸­çš„ KTHREAD_SHOULD_STOP
 	set_bit(KTHREAD_SHOULD_STOP, &kthread->flags);
-	//  unpark & wake_up ½ø³ÌÀ´ÏìÓ¦ stop ĞÅºÅ
+	//  unpark & wake_up è¿›ç¨‹æ¥å“åº” stop ä¿¡å·
 	kthread_unpark(k);
 	wake_up_process(k);
 	wait_for_completion(&kthread->exited);
@@ -579,66 +579,66 @@ int kthread_stop(struct task_struct *k)
 EXPORT_SYMBOL(kthread_stop);
 
 /**
- * ÄÚºËÏß³ÌÊØ»¤Ïß³Ì
- ËüµÄÈÎÎñ¾ÍÊÇ¹ÜÀíºÍµ÷¶ÈÆäËûÄÚºËÏß³Ìkernel_thread, 
-»áÑ­»·Ö´ĞĞÒ»¸ökthreadµÄº¯Êı£¬
-¸Ãº¯ÊıµÄ×÷ÓÃ¾ÍÊÇÔËĞĞkthread_create_listÈ«¾ÖÁ´±íÖĞÎ¬»¤µÄkthread, 
-µ±ÎÒÃÇµ÷ÓÃkernel_thread´´½¨µÄÄÚºËÏß³Ì»á±»¼ÓÈëµ½´ËÁ´±íÖĞ£¬
-Òò´ËËùÓĞµÄÄÚºËÏß³Ì¶¼ÊÇÖ±½Ó»òÕß¼ä½ÓµÄÒÔkthreaddÎª¸¸½ø³Ì
+ * å†…æ ¸çº¿ç¨‹å®ˆæŠ¤çº¿ç¨‹
+ å®ƒçš„ä»»åŠ¡å°±æ˜¯ç®¡ç†å’Œè°ƒåº¦å…¶ä»–å†…æ ¸çº¿ç¨‹kernel_thread, 
+ä¼šå¾ªç¯æ‰§è¡Œä¸€ä¸ªkthreadçš„å‡½æ•°ï¼Œ
+è¯¥å‡½æ•°çš„ä½œç”¨å°±æ˜¯è¿è¡Œkthread_create_listå…¨å±€é“¾è¡¨ä¸­ç»´æŠ¤çš„kthread, 
+å½“æˆ‘ä»¬è°ƒç”¨kernel_threadåˆ›å»ºçš„å†…æ ¸çº¿ç¨‹ä¼šè¢«åŠ å…¥åˆ°æ­¤é“¾è¡¨ä¸­ï¼Œ
+å› æ­¤æ‰€æœ‰çš„å†…æ ¸çº¿ç¨‹éƒ½æ˜¯ç›´æ¥æˆ–è€…é—´æ¥çš„ä»¥kthreaddä¸ºçˆ¶è¿›ç¨‹
  */
 int kthreadd(void *unused)
 {
-	//»ñµÃµ±Ç°ÈÎÎñÖ¸Õë
+	//è·å¾—å½“å‰ä»»åŠ¡æŒ‡é’ˆ
 	struct task_struct *tsk = current;
 
 	/* Setup a clean context for our children to inherit. */
-	set_task_comm(tsk, "kthreadd");//ÉèÖÃµ±Ç°Ïß³ÌÃû³Æ¡£
-	ignore_signals(tsk);//ºöÂÔËùÓĞĞÅºÅ
-	//ÔÊĞíkthreaddÔÚÈÎÒâCPUÉÏÔËĞĞ
+	set_task_comm(tsk, "kthreadd");//è®¾ç½®å½“å‰çº¿ç¨‹åç§°ã€‚
+	ignore_signals(tsk);//å¿½ç•¥æ‰€æœ‰ä¿¡å·
+	//å…è®¸kthreaddåœ¨ä»»æ„CPUä¸Šè¿è¡Œ
 	set_cpus_allowed_ptr(tsk, cpu_all_mask);
-    // ÔÊĞíÔÚËùÓĞÄÚ´æ½ÚµãµÄ·ÖÅäÄÚ´æ¡£
+    // å…è®¸åœ¨æ‰€æœ‰å†…å­˜èŠ‚ç‚¹çš„åˆ†é…å†…å­˜ã€‚
 	set_mems_allowed(node_states[N_MEMORY]);
 
 	current->flags |= PF_NOFREEZE;
 
 	for (;;) {
-        /*  Ê×ÏÈ½«Ïß³Ì×´Ì¬ÉèÖÃÎª TASK_INTERRUPTIBLE, Èç¹ûµ±Ç°
-                 Ã»ÓĞÒª´´½¨µÄÏß³ÌÔòÖ÷¶¯·ÅÆú CPU Íê³Éµ÷¶È.´Ë½ø³Ì±äÎª×èÈûÌ¬*/
+        /*  é¦–å…ˆå°†çº¿ç¨‹çŠ¶æ€è®¾ç½®ä¸º TASK_INTERRUPTIBLE, å¦‚æœå½“å‰
+                 æ²¡æœ‰è¦åˆ›å»ºçš„çº¿ç¨‹åˆ™ä¸»åŠ¨æ”¾å¼ƒ CPU å®Œæˆè°ƒåº¦.æ­¤è¿›ç¨‹å˜ä¸ºé˜»å¡æ€*/
 
 		set_current_state(TASK_INTERRUPTIBLE);
-		if (list_empty(&kthread_create_list))//Ã»ÓĞĞèÒª´´½¨µÄÄÚºËÏß³Ì£¬µ÷¶È³öÈ¥µÈ´ı»½ĞÑ¡£
-			schedule();  //   Ê²Ã´Ò²²»×ö, Ö´ĞĞÒ»´Îµ÷¶È, ÈÃ³öCPU
+		if (list_empty(&kthread_create_list))//æ²¡æœ‰éœ€è¦åˆ›å»ºçš„å†…æ ¸çº¿ç¨‹ï¼Œè°ƒåº¦å‡ºå»ç­‰å¾…å”¤é†’ã€‚
+			schedule();  //   ä»€ä¹ˆä¹Ÿä¸åš, æ‰§è¡Œä¸€æ¬¡è°ƒåº¦, è®©å‡ºCPU
        
-        /*  ÔËĞĞµ½´Ë±íÊ¾ kthreadd Ïß³Ì±»»½ĞÑ(¾ÍÊÇÎÒÃÇµ±Ç°)
-                    ÉèÖÃ½ø³ÌÔËĞĞ×´Ì¬Îª TASK_RUNNING */
+        /*  è¿è¡Œåˆ°æ­¤è¡¨ç¤º kthreadd çº¿ç¨‹è¢«å”¤é†’(å°±æ˜¯æˆ‘ä»¬å½“å‰)
+                    è®¾ç½®è¿›ç¨‹è¿è¡ŒçŠ¶æ€ä¸º TASK_RUNNING */
 		__set_current_state(TASK_RUNNING);
 
-        /* ÔÚforÑ­»·ÖĞ£¬Èç¹û·¢ÏÖkthread_create_listÊÇÒ»¿ÕÁ´±í£¬
-                Ôòµ÷ÓÃscheduleµ÷¶Èº¯Êı£¬ÒòÎª´ËÇ°ÒÑ¾­½«¸Ã½ø³ÌµÄ×´Ì¬ÉèÖÃÎª
-                TASK_INTERRUPTIBLE£¬ËùÒÔscheduleµÄµ÷ÓÃ½«»áÊ¹µ±Ç°½ø³Ì½øÈëË¯Ãß*/
-		spin_lock(&kthread_create_lock);//»ñÈ¡×ÔĞıËø£¬¿ÉÄÜÓĞ¶à¸ökthreaddÏß³ÌÔÚÔËĞĞ¡£
-		while (!list_empty(&kthread_create_list)) {//¶ÁÈ¡Á´±í£¬ÕÒµ½ËùÓĞĞèÒª´´½¨µÄÈÎÎñ¡£
+        /* åœ¨forå¾ªç¯ä¸­ï¼Œå¦‚æœå‘ç°kthread_create_listæ˜¯ä¸€ç©ºé“¾è¡¨ï¼Œ
+                åˆ™è°ƒç”¨scheduleè°ƒåº¦å‡½æ•°ï¼Œå› ä¸ºæ­¤å‰å·²ç»å°†è¯¥è¿›ç¨‹çš„çŠ¶æ€è®¾ç½®ä¸º
+                TASK_INTERRUPTIBLEï¼Œæ‰€ä»¥scheduleçš„è°ƒç”¨å°†ä¼šä½¿å½“å‰è¿›ç¨‹è¿›å…¥ç¡çœ */
+		spin_lock(&kthread_create_lock);//è·å–è‡ªæ—‹é”ï¼Œå¯èƒ½æœ‰å¤šä¸ªkthreaddçº¿ç¨‹åœ¨è¿è¡Œã€‚
+		while (!list_empty(&kthread_create_list)) {//è¯»å–é“¾è¡¨ï¼Œæ‰¾åˆ°æ‰€æœ‰éœ€è¦åˆ›å»ºçš„ä»»åŠ¡ã€‚
 			struct kthread_create_info *create;
 
-            /*  ´ÓÁ´±íÖĞÈ¡µÃ kthread_create_info ½á¹¹µÄµØÖ·£¬ÔÚÉÏÎÄÖĞÒÑ¾­Íê³É²åÈë²Ù×÷(½«
-                        kthread_create_info ½á¹¹ÖĞµÄ list ³ÉÔ±¼Óµ½Á´±íÖĞ£¬´ËÊ±¸ù¾İ³ÉÔ± list µÄÆ«ÒÆ
-                        »ñµÃ create)  */
+            /*  ä»é“¾è¡¨ä¸­å–å¾— kthread_create_info ç»“æ„çš„åœ°å€ï¼Œåœ¨ä¸Šæ–‡ä¸­å·²ç»å®Œæˆæ’å…¥æ“ä½œ(å°†
+                        kthread_create_info ç»“æ„ä¸­çš„ list æˆå‘˜åŠ åˆ°é“¾è¡¨ä¸­ï¼Œæ­¤æ—¶æ ¹æ®æˆå‘˜ list çš„åç§»
+                        è·å¾— create)  */
 			create = list_entry(kthread_create_list.next,
 					    struct kthread_create_info, list);
             
-            /* Íê³É´´½¨ºó½«Æä´ÓÁ´±íÖĞÉ¾³ı */
+            /* å®Œæˆåˆ›å»ºåå°†å…¶ä»é“¾è¡¨ä¸­åˆ é™¤ */
 			list_del_init(&create->list);
 
-            /* Íê³ÉÕæÕıÏß³ÌµÄ´´½¨ */
+            /* å®ŒæˆçœŸæ­£çº¿ç¨‹çš„åˆ›å»º */
 			spin_unlock(&kthread_create_lock);
 
-			//´´½¨ÄÚºËÏß³Ì
+			//åˆ›å»ºå†…æ ¸çº¿ç¨‹
 			create_kthread(create);
 
-			//ÔÙ´Î»ñÈ¡Ëøºó£¬¿´ÊÇ·ñ»¹ÓĞÈÎÎñĞèÒª´´½¨¡£
+			//å†æ¬¡è·å–é”åï¼Œçœ‹æ˜¯å¦è¿˜æœ‰ä»»åŠ¡éœ€è¦åˆ›å»ºã€‚
 			spin_lock(&kthread_create_lock);
 		}
-		//Ã»ÓĞÁË£¬¼ÌĞøË¯
+		//æ²¡æœ‰äº†ï¼Œç»§ç»­ç¡
 		spin_unlock(&kthread_create_lock);
 	}
 

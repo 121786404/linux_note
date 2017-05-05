@@ -125,7 +125,7 @@ struct sem_undo {
 /* sem_undo_list controls shared access to the list of sem_undo structures
  * that may be shared among all a CLONE_SYSVSEM task group.
  */ 
-/* 没有undo的信号量列表 */
+/* 娌℃湁undo鐨勪俊鍙烽噺鍒楄〃 */
 struct sem_undo_list {
 	atomic_t	refcnt;
 	spinlock_t	lock;

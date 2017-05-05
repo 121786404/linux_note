@@ -151,7 +151,7 @@
 /* Tells if the epoll_ctl(2) operation needs an event copy from userspace */
 #define EP_OP_HASH_EVENT(op) ((op) != EPOLL_CTL_DEL)
 
-/* ½ö½ö°üº¬ÎÄ¼şÖ¸ÕëºÍÎÄ¼şÃèÊö·û£¬ÔÚepoll¼àÌıÊÂ¼şµÄºìºÚÊ÷²éÕÒÖĞ»áÓÃµ½  */
+/* ä»…ä»…åŒ…å«æ–‡ä»¶æŒ‡é’ˆå’Œæ–‡ä»¶æè¿°ç¬¦ï¼Œåœ¨epollç›‘å¬äº‹ä»¶çš„çº¢é»‘æ ‘æŸ¥æ‰¾ä¸­ä¼šç”¨åˆ°  */
 struct epoll_filefd {
 	struct file *file;
 	int fd;
@@ -197,43 +197,43 @@ struct eventpoll {
 	struct rw_semaphore sem;
 
 	/* Wait queue used by sys_epoll_wait() */
-        /* epoll_waitÊ¹ÓÃµÄµÈ´ı¶ÓÁĞ */
+        /* epoll_waitä½¿ç”¨çš„ç­‰å¾…é˜Ÿåˆ— */
 	wait_queue_head_t wq;
 
 	/* Wait queue used by file->poll() */
-        /* ×¢ÒâÕâÀïµÄepollÎÄ¼şÃèÊö·ûÒ²ÊÇ¿ÉÒÔ±»ÆäËûµÄÎÄ¼şÃèÊö·ûÀ´¼àÊÓµÄ */
+        /* æ³¨æ„è¿™é‡Œçš„epollæ–‡ä»¶æè¿°ç¬¦ä¹Ÿæ˜¯å¯ä»¥è¢«å…¶ä»–çš„æ–‡ä»¶æè¿°ç¬¦æ¥ç›‘è§†çš„ */
 	wait_queue_head_t poll_wait;
 
 	/* List of ready file descriptors */
-        /* ¼à¿Ø¿ÉÒÔ²Ù×÷µÄÎÄ¼şÁĞ±í,sys_epoll_waitº¯Êı¾ÍÊÇ´ÓÖĞ¶ÁÈ¡Êı¾İ
-          * ÆäÊµ¾ÍÊÇstruct epitemµÄÁ´±í£¬ÓÉstruct epitemµÄrdllink³ÉÔ±½øĞĞÁ¬½Ó 
+        /* ç›‘æ§å¯ä»¥æ“ä½œçš„æ–‡ä»¶åˆ—è¡¨,sys_epoll_waitå‡½æ•°å°±æ˜¯ä»ä¸­è¯»å–æ•°æ®
+          * å…¶å®å°±æ˜¯struct epitemçš„é“¾è¡¨ï¼Œç”±struct epitemçš„rdllinkæˆå‘˜è¿›è¡Œè¿æ¥ 
           */
 	struct list_head rdllist;
 
 	/* RB-Tree root used to store monitored fd structs */
-        /* ÊÂ¼ş³Ø¶ÔÓ¦µÄºìºÚÊ÷µÄ¸ù½Úµã£¬ËùÓĞÌí¼ÓµÄ¼àÌıÊÂ¼ş¶¼ÔÚ´ËºìºÚÊ÷µ±ÖĞ  */
+        /* äº‹ä»¶æ± å¯¹åº”çš„çº¢é»‘æ ‘çš„æ ¹èŠ‚ç‚¹ï¼Œæ‰€æœ‰æ·»åŠ çš„ç›‘å¬äº‹ä»¶éƒ½åœ¨æ­¤çº¢é»‘æ ‘å½“ä¸­  */
 	struct rb_root rbr;
 };
 
 /* Wait structure used by the poll hooks */
-/* Ò²¾ÍÊÇ½«¸Ã½á¹¹Ìí¼Óµ½ÈçsocketÎÄ¼ş¶ÔÓ¦µÄsock->sk_sleepµÈ´ı¶ÓÁĞµ±ÖĞ
-  * µ±±»»½ĞÑÊ±£¬ÆäÊµ¾ÍÊÇ»½ĞÑ½á¹¹ÖĞµÄwait
+/* ä¹Ÿå°±æ˜¯å°†è¯¥ç»“æ„æ·»åŠ åˆ°å¦‚socketæ–‡ä»¶å¯¹åº”çš„sock->sk_sleepç­‰å¾…é˜Ÿåˆ—å½“ä¸­
+  * å½“è¢«å”¤é†’æ—¶ï¼Œå…¶å®å°±æ˜¯å”¤é†’ç»“æ„ä¸­çš„wait
   */
 struct eppoll_entry {
 	/* List header used to link this structure to the "struct epitem" */
 	struct list_head llink;
 
 	/* The "base" pointer is set to the container "struct epitem" */
-	void *base;    /* Ö´ĞĞ¶ÔÓ¦µÄstruct epitem */
+	void *base;    /* æ‰§è¡Œå¯¹åº”çš„struct epitem */
 
 	/*
 	 * Wait queue item that will be linked to the target file wait
 	 * queue head.
 	 */
-	wait_queue_t wait;       /* ×÷ÎªÒ»¸öÔªËØ¹ÒÈë±»¼àÌıfd¶ÔÓ¦µÄsock->sk_sleepµÈ´ı¶ÓÁĞµ±ÖĞ */
+	wait_queue_t wait;       /* ä½œä¸ºä¸€ä¸ªå…ƒç´ æŒ‚å…¥è¢«ç›‘å¬fdå¯¹åº”çš„sock->sk_sleepç­‰å¾…é˜Ÿåˆ—å½“ä¸­ */
 
 	/* The wait queue head that linked the "wait" wait queue item */
-	wait_queue_head_t *whead;  /* ±»¼àÌıfdµÄµÈ´ı¶ÓÁĞ£¬Èç¹ûfdÎªsocket£¬ÄÇÃ´wheadÎªsock->sk_sleep */
+	wait_queue_head_t *whead;  /* è¢«ç›‘å¬fdçš„ç­‰å¾…é˜Ÿåˆ—ï¼Œå¦‚æœfdä¸ºsocketï¼Œé‚£ä¹ˆwheadä¸ºsock->sk_sleep */
 };
 
 /*
@@ -242,51 +242,51 @@ struct eppoll_entry {
  */
 struct epitem {
 	/* RB-Tree node used to link this structure to the eventpoll rb-tree */
-        /* ¸Ã±äÁ¿×é³Éstruct eventpollÖĞrbrµÄºìºÚÊ÷½á¹¹ */
+        /* è¯¥å˜é‡ç»„æˆstruct eventpollä¸­rbrçš„çº¢é»‘æ ‘ç»“æ„ */
 	struct rb_node rbn;
 
 	/* List header used to link this structure to the eventpoll ready list */
-	struct list_head rdllink;         /* ÊÂ¼şµÄ¾ÍĞ÷¶ÓÁĞ£¬ºÍstruct eventpollÖĞµÄrdllistĞÎ³ÉË«ÏòÁ´±í */
+	struct list_head rdllink;         /* äº‹ä»¶çš„å°±ç»ªé˜Ÿåˆ—ï¼Œå’Œstruct eventpollä¸­çš„rdllistå½¢æˆåŒå‘é“¾è¡¨ */
 
 	/* The file descriptor information this item refers to */
-	struct epoll_filefd ffd;               /* ¼àÌıÏî¶ÔÓ¦µÄÎÄ¼şÃèÊöĞÅÏ¢*/
+	struct epoll_filefd ffd;               /* ç›‘å¬é¡¹å¯¹åº”çš„æ–‡ä»¶æè¿°ä¿¡æ¯*/
 
 	/* Number of active wait queue attached to poll operations */
 	int nwait;
 
 	/* List containing poll wait queues */
-        /* Ë«ÏòÁ´±í£¬±£´æ×Å±»¼àÊÓÎÄ¼şµÄµÈ´ı¶ÓÁĞ */
+        /* åŒå‘é“¾è¡¨ï¼Œä¿å­˜ç€è¢«ç›‘è§†æ–‡ä»¶çš„ç­‰å¾…é˜Ÿåˆ— */
 	struct list_head pwqlist;
 
 	/* The "container" of this item */
-	struct eventpoll *ep;              /* Ö¸Ïò°üº¬×Ô¼ºµÄÖ¸Õë */
+	struct eventpoll *ep;              /* æŒ‡å‘åŒ…å«è‡ªå·±çš„æŒ‡é’ˆ */
 
 	/* The structure that describe the interested events and the source fd */
-	struct epoll_event event;           /* ¼àÌıÏîÄ¿¶ÔÓ¦µÄÊÂ¼ş,Ïàµ±ÓÚÊÇĞ¯´øµÄ²ÎÊıºÍÊı¾İ */
+	struct epoll_event event;           /* ç›‘å¬é¡¹ç›®å¯¹åº”çš„äº‹ä»¶,ç›¸å½“äºæ˜¯æºå¸¦çš„å‚æ•°å’Œæ•°æ® */
 
 	/*
 	 * Used to keep track of the usage count of the structure. This avoids
 	 * that the structure will desappear from underneath our processing.
 	 */
-        /* epitemµÄÒıÓÃ¼ÆÊı 
+        /* epitemçš„å¼•ç”¨è®¡æ•° 
         */
 	atomic_t usecnt;
 
 	/* List header used to link this item to the "struct file" items list */
-        /* Ë«ÏòÁ´±í£¬ÓÃÀ´Á´½Ó±»¼àÊÓµÄÎÄ¼şÃèÊö·û¶ÔÓ¦µÄµÄstruct file
-          * ÒòÎªfileÀïÓĞf_ep_linkÓÃÀ´±£´æËùÓĞ¼àÊÓÕâ¸öÎÄ¼şµÄepoll½Úµã 
+        /* åŒå‘é“¾è¡¨ï¼Œç”¨æ¥é“¾æ¥è¢«ç›‘è§†çš„æ–‡ä»¶æè¿°ç¬¦å¯¹åº”çš„çš„struct file
+          * å› ä¸ºfileé‡Œæœ‰f_ep_linkç”¨æ¥ä¿å­˜æ‰€æœ‰ç›‘è§†è¿™ä¸ªæ–‡ä»¶çš„epollèŠ‚ç‚¹ 
           */
         struct list_head fllink;
 
 	/* List header used to link the item to the transfer list */
-        /* ÔÚ¾ÍĞ÷¶ÓÁĞÖĞÒÑ¾­±»×ª»»µÄË«ÏòÁ´±í */
+        /* åœ¨å°±ç»ªé˜Ÿåˆ—ä¸­å·²ç»è¢«è½¬æ¢çš„åŒå‘é“¾è¡¨ */
 	struct list_head txlink;
 
 	/*
 	 * This is used during the collection/transfer of events to userspace
 	 * to pin items empty events set.
 	 */
-	unsigned int revents;         /* ¼àÌıµÄÊÂ¼ş  */
+	unsigned int revents;         /* ç›‘å¬çš„äº‹ä»¶  */
 };
 
 /* Wrapper struct used by poll queueing */
@@ -362,7 +362,7 @@ static struct file_operations eventpoll_fops = {
  * eventpoll inodes are allocated.
  */
 
-/* epollÎÄ¼şÏµÍ³ÀàĞÍ */
+/* epollæ–‡ä»¶ç³»ç»Ÿç±»å‹ */
 static struct file_system_type eventpoll_fs_type = {
 	.name		= "eventpollfs",
 	.get_sb		= eventpollfs_get_sb,
@@ -492,7 +492,7 @@ void eventpoll_release_file(struct file *file)
  * file descriptors inside the epoll interface. It is the kernel part of
  * the userspace epoll_create(2).
  */
-/* epoll_createÏµÍ³µ÷ÓÃ */
+/* epoll_createç³»ç»Ÿè°ƒç”¨ */
 asmlinkage long sys_epoll_create(int size)
 {
 	int error, fd;
@@ -541,7 +541,7 @@ eexit_1:
  * file descriptors inside the interest set.  It represents
  * the kernel part of the user space epoll_ctl(2).
  */
-/* Ìí¼ÓÎÄ¼ş¼à¿ØÊÂ¼ş */
+/* æ·»åŠ æ–‡ä»¶ç›‘æ§äº‹ä»¶ */
 asmlinkage long
 sys_epoll_ctl(int epfd, int op, int fd, struct epoll_event __user *event)
 {
@@ -572,7 +572,7 @@ sys_epoll_ctl(int epfd, int op, int fd, struct epoll_event __user *event)
 
 	/* The target file descriptor must support poll */
 	error = -EPERM;
-        /* ÎÄ¼ş²Ù×÷º¯Êı¼¯ºÏÒ»¶¨ÒªÊµÏÖpollµ÷ÓÃ */
+        /* æ–‡ä»¶æ“ä½œå‡½æ•°é›†åˆä¸€å®šè¦å®ç°pollè°ƒç”¨ */
 	if (!tfile->f_op || !tfile->f_op->poll)
 		goto eexit_3;
 
@@ -582,7 +582,7 @@ sys_epoll_ctl(int epfd, int op, int fd, struct epoll_event __user *event)
 	 * adding an epoll file descriptor inside itself.
 	 */
 	error = -EINVAL;
-        /* ÅĞ¶ÏÎÄ¼şµÄ²Ù×÷·ûÊÇ²»ÊÇeventpoll_fops */
+        /* åˆ¤æ–­æ–‡ä»¶çš„æ“ä½œç¬¦æ˜¯ä¸æ˜¯eventpoll_fops */
 	if (file == tfile || !IS_FILE_EPOLL(file))
 		goto eexit_3;
 
@@ -591,17 +591,17 @@ sys_epoll_ctl(int epfd, int op, int fd, struct epoll_event __user *event)
 	 * our own data structure.
 	 */
 	ep = file->private_data;
-        /* ×¢Òâ»ñÈ¡ĞÅºÅÁ¿£¬ÏÂÃæÒ»¶Î´úÂëÊÇ»¥³âµÄ */
+        /* æ³¨æ„è·å–ä¿¡å·é‡ï¼Œä¸‹é¢ä¸€æ®µä»£ç æ˜¯äº’æ–¥çš„ */
 	down_write(&ep->sem);
 
 	/* Try to lookup the file inside our hash table */
 	epi = ep_find(ep, tfile, fd);
 
 	error = -EINVAL;
-	/* ¸ù¾İ²»Í¬²Ù×÷·ûÀ´½øĞĞÏàÓ¦µÄ²Ù×÷ */
+	/* æ ¹æ®ä¸åŒæ“ä½œç¬¦æ¥è¿›è¡Œç›¸åº”çš„æ“ä½œ */
 	switch (op) {
         case EPOLL_CTL_ADD:
-                /* Èç¹û¼à¿ØÀïÃæÃ»ÓĞ£¬Ôò¼ÓÈë */
+                /* å¦‚æœç›‘æ§é‡Œé¢æ²¡æœ‰ï¼Œåˆ™åŠ å…¥ */
 		if (!epi) {
 			epds.events |= POLLERR | POLLHUP;
 
@@ -628,7 +628,7 @@ sys_epoll_ctl(int epfd, int op, int fd, struct epoll_event __user *event)
 	 * The function ep_find() increments the usage count of the structure
 	 * so, if this is not NULL, we need to release it.
 	 */
-        /* ÓÃÍêÁËÖ®ºó¾Í¼õĞ¡ÒıÓÃ¼ÆÊı */
+        /* ç”¨å®Œäº†ä¹‹åå°±å‡å°å¼•ç”¨è®¡æ•° */
 	if (epi)
 		ep_release_epitem(epi);
 
@@ -650,7 +650,7 @@ eexit_1:
  * Implement the event wait interface for the eventpoll file. It is the kernel
  * part of the user space epoll_wait(2).
  */
-/* µÈ´ı±»¼à¿ØµÄÎÄ¼şÃèÊö·ûµÄÏàÓ¦Ê±¼ä£¬Í¬Ê±»ñÈ¡ÊÂ¼şÏàÓ¦µÄÊı¾İ
+/* ç­‰å¾…è¢«ç›‘æ§çš„æ–‡ä»¶æè¿°ç¬¦çš„ç›¸åº”æ—¶é—´ï¼ŒåŒæ—¶è·å–äº‹ä»¶ç›¸åº”çš„æ•°æ®
  */
 asmlinkage long sys_epoll_wait(int epfd, struct epoll_event __user *events,
 			       int maxevents, int timeout)
@@ -706,7 +706,7 @@ eexit_1:
 /*
  * Creates the file descriptor to be used by the epoll interface.
  */
-/* ¸Ãº¯ÊıµÄ²ÎÊı¶¼ÊÇÊä³öĞÍ
+/* è¯¥å‡½æ•°çš„å‚æ•°éƒ½æ˜¯è¾“å‡ºå‹
  */
 static int ep_getfd(int *efd, struct inode **einode, struct file **efile)
 {
@@ -749,7 +749,7 @@ static int ep_getfd(int *efd, struct inode **einode, struct file **efile)
 		goto eexit_4;
 	dentry->d_op = &eventpollfs_dentry_operations;
 	d_add(dentry, inode);
-        /* Ôö¼Ó¹ÒÔØÒıÓÃ¼ÆÊı */
+        /* å¢åŠ æŒ‚è½½å¼•ç”¨è®¡æ•° */
 	file->f_vfsmnt = mntget(eventpoll_mnt);
 	file->f_dentry = dentry;
 	file->f_mapping = inode->i_mapping;
@@ -762,7 +762,7 @@ static int ep_getfd(int *efd, struct inode **einode, struct file **efile)
 	file->private_data = NULL;
 
 	/* Install the new setup file into the allocated fd. */
-	/* ÉèÖÃfdºÍfileÖ®¼äµÄÓ³Éä¹ØÏµ */
+	/* è®¾ç½®fdå’Œfileä¹‹é—´çš„æ˜ å°„å…³ç³» */
 	fd_install(fd, file);
 
 	*efd = fd;
@@ -780,7 +780,7 @@ eexit_1:
 	return error;
 }
 
-/* Ö÷ÒªÉèÖÃfileµÄprivate_data³ÉÔ± */
+/* ä¸»è¦è®¾ç½®fileçš„private_dataæˆå‘˜ */
 static int ep_file_init(struct file *file)
 {
 	struct eventpoll *ep;
@@ -796,7 +796,7 @@ static int ep_file_init(struct file *file)
 	INIT_LIST_HEAD(&ep->rdllist);
 	ep->rbr = RB_ROOT;
 
-        /* struct eventpoll×÷ÎªfileÖ¸ÕëË½ÓĞÊı¾İ */
+        /* struct eventpollä½œä¸ºfileæŒ‡é’ˆç§æœ‰æ•°æ® */
 	file->private_data = ep;
 
 	DNPRINTK(3, (KERN_INFO "[%p] eventpoll: ep_file_init() ep=%p\n",
@@ -853,8 +853,8 @@ static void ep_free(struct eventpoll *ep)
  * the returned item, so the caller must call ep_release_epitem()
  * after finished using the "struct epitem".
  */
-/* fd¼à¿ØÎÄ¼şÃèÊö·û
-  * fileÎª¼à¿ØÎÄ¼şÖ¸Õë
+/* fdç›‘æ§æ–‡ä»¶æè¿°ç¬¦
+  * fileä¸ºç›‘æ§æ–‡ä»¶æŒ‡é’ˆ
   */
 static struct epitem *ep_find(struct eventpoll *ep, struct file *file, int fd)
 {
@@ -866,7 +866,7 @@ static struct epitem *ep_find(struct eventpoll *ep, struct file *file, int fd)
 
 	EP_SET_FFD(&ffd, file, fd);
 	read_lock_irqsave(&ep->lock, flags);
-        /* ÔÚºìºÚÊ÷ÖĞÖğ²ã½øĞĞ²éÕÒ */
+        /* åœ¨çº¢é»‘æ ‘ä¸­é€å±‚è¿›è¡ŒæŸ¥æ‰¾ */
 	for (rbp = ep->rbr.rb_node; rbp; ) {
 		epi = rb_entry(rbp, struct epitem, rbn);
 		kcmp = EP_CMP_FFD(&ffd, &epi->ffd);
@@ -875,7 +875,7 @@ static struct epitem *ep_find(struct eventpoll *ep, struct file *file, int fd)
 		else if (kcmp < 0)
 			rbp = rbp->rb_left;
 		else {
-                        /* ÕÒµ½ÁË¶ÔÓ¦µÄepitem */
+                        /* æ‰¾åˆ°äº†å¯¹åº”çš„epitem */
 			ep_use_epitem(epi);
 			epir = epi;
 			break;
@@ -894,7 +894,7 @@ static struct epitem *ep_find(struct eventpoll *ep, struct file *file, int fd)
  * Increment the usage count of the "struct epitem" making it sure
  * that the user will have a valid pointer to reference.
  */
-/* Ôö¼ÓÒıÓÃ¼ÆÊı */
+/* å¢åŠ å¼•ç”¨è®¡æ•° */
 static void ep_use_epitem(struct epitem *epi)
 {
 
@@ -907,7 +907,7 @@ static void ep_use_epitem(struct epitem *epi)
  * has finished using the structure. It might lead to freeing the
  * structure itself if the count goes to zero.
  */
-/* ¼õĞ¡epitemµÄÒıÓÃ¼ÆÊı */
+/* å‡å°epitemçš„å¼•ç”¨è®¡æ•° */
 static void ep_release_epitem(struct epitem *epi)
 {
 
@@ -920,9 +920,9 @@ static void ep_release_epitem(struct epitem *epi)
  * This is the callback that is used to add our wait queue to the
  * target file wakeup lists.
  */
-/* ÔÚpollµ±ÖĞµ÷ÓÃµÄ»Øµ÷º¯Êı,
-  * file±íÊ¾¼àÌıÎÄ¼şµÄstruct fileÖ¸Õë£¬ 
-  * whead£¬Èç¹ûÊÇsocket£¬Ôò±íÊ¾µÄÊÇsock->sk_sleepµÈ´ı¶ÓÁĞ  
+/* åœ¨pollå½“ä¸­è°ƒç”¨çš„å›è°ƒå‡½æ•°,
+  * fileè¡¨ç¤ºç›‘å¬æ–‡ä»¶çš„struct fileæŒ‡é’ˆï¼Œ 
+  * wheadï¼Œå¦‚æœæ˜¯socketï¼Œåˆ™è¡¨ç¤ºçš„æ˜¯sock->sk_sleepç­‰å¾…é˜Ÿåˆ—  
   */
 static void ep_ptable_queue_proc(struct file *file, wait_queue_head_t *whead,
 				 poll_table *pt)
@@ -932,12 +932,12 @@ static void ep_ptable_queue_proc(struct file *file, wait_queue_head_t *whead,
 
 	if (epi->nwait >= 0 && (pwq = PWQ_MEM_ALLOC())) {
 		init_waitqueue_func_entry(&pwq->wait, ep_poll_callback);
-                /* ÉèÖÃµÈ´ı¶ÓÁĞÍ·ºÍ¶ÔÓ¦µÄepitem */
+                /* è®¾ç½®ç­‰å¾…é˜Ÿåˆ—å¤´å’Œå¯¹åº”çš„epitem */
 		pwq->whead = whead;
 		pwq->base = epi;
-                /* ½«pwqÌí¼Óµ½wheadµÄÄ©Î² */
+                /* å°†pwqæ·»åŠ åˆ°wheadçš„æœ«å°¾ */
 		add_wait_queue(whead, &pwq->wait);
-                /* ½«llinkÌí¼Óµ½pwqlistµÄÄ©Î² */
+                /* å°†llinkæ·»åŠ åˆ°pwqlistçš„æœ«å°¾ */
 		list_add_tail(&pwq->llink, &epi->pwqlist);
 		epi->nwait++;
 	} else {
@@ -946,7 +946,7 @@ static void ep_ptable_queue_proc(struct file *file, wait_queue_head_t *whead,
 	}
 }
 
-/* ½«epi²åÈëµ½epÖĞ¶ÔÓ¦µÄºìºÚÊ÷µ±ÖĞ */
+/* å°†epiæ’å…¥åˆ°epä¸­å¯¹åº”çš„çº¢é»‘æ ‘å½“ä¸­ */
 static void ep_rbtree_insert(struct eventpoll *ep, struct epitem *epi)
 {
 	int kcmp;
@@ -966,7 +966,7 @@ static void ep_rbtree_insert(struct eventpoll *ep, struct epitem *epi)
 	rb_insert_color(&epi->rbn, &ep->rbr);
 }
 
-/* ½«ÊÂ¼ş²åÈëµ½Á´±íµ±ÖĞ */
+/* å°†äº‹ä»¶æ’å…¥åˆ°é“¾è¡¨å½“ä¸­ */
 static int ep_insert(struct eventpoll *ep, struct epoll_event *event,
 		     struct file *tfile, int fd)
 {
@@ -976,7 +976,7 @@ static int ep_insert(struct eventpoll *ep, struct epoll_event *event,
 	struct ep_pqueue epq;
 
 	error = -ENOMEM;
-        /* ¸øepitem·ÖÅäÄÚ´æ */
+        /* ç»™epitemåˆ†é…å†…å­˜ */
 	if (!(epi = EPI_MEM_ALLOC()))
 		goto eexit_1;
 
@@ -987,8 +987,8 @@ static int ep_insert(struct eventpoll *ep, struct epoll_event *event,
 	INIT_LIST_HEAD(&epi->txlink);
 	INIT_LIST_HEAD(&epi->pwqlist);
 	epi->ep = ep;
-        /* ÉèÖÃepitemµÄÎÄ¼şÃèÊö·ûºÍÎÄ¼şÖ¸Õë£¬ÔÚep_findº¯ÊıÖĞ
-          * »áÊ¹ÓÃ¸ÃÁ½¸ö±äÁ¿ÔÚstruct eventpollÖĞµÄrbr¶ÔÓ¦µÄºìºÚÊ÷ÖĞ±ÈÖµ
+        /* è®¾ç½®epitemçš„æ–‡ä»¶æè¿°ç¬¦å’Œæ–‡ä»¶æŒ‡é’ˆï¼Œåœ¨ep_findå‡½æ•°ä¸­
+          * ä¼šä½¿ç”¨è¯¥ä¸¤ä¸ªå˜é‡åœ¨struct eventpollä¸­çš„rbrå¯¹åº”çš„çº¢é»‘æ ‘ä¸­æ¯”å€¼
           */
 	EP_SET_FFD(&epi->ffd, tfile, fd);
 	epi->event = *event;
@@ -1023,13 +1023,13 @@ static int ep_insert(struct eventpoll *ep, struct epoll_event *event,
 	write_lock_irqsave(&ep->lock, flags);
 
 	/* Add the current item to the rb-tree */
-        /* ½«epi²åÈëµ½rbrµÄºìºÚÊ÷µ±ÖĞ */
+        /* å°†epiæ’å…¥åˆ°rbrçš„çº¢é»‘æ ‘å½“ä¸­ */
 	ep_rbtree_insert(ep, epi);
 
 	/* If the file is already "ready" we drop it inside the ready list */
-        /* Èç¹û¼àÌıµÄÊÂ¼şÒÑ¾­¾ÍĞ÷£¬ÔòÖ±½Ó½«ÆäÒÆ¶¯µ½¾ÍĞ÷¶ÓÁĞµ±ÖĞ */
+        /* å¦‚æœç›‘å¬çš„äº‹ä»¶å·²ç»å°±ç»ªï¼Œåˆ™ç›´æ¥å°†å…¶ç§»åŠ¨åˆ°å°±ç»ªé˜Ÿåˆ—å½“ä¸­ */
 	if ((revents & event->events) && !EP_IS_LINKED(&epi->rdllink)) {
-                /* ½«epitemÌí¼Óµ½epÖĞµÄ¾ÍĞ÷¶ÓÁĞ */
+                /* å°†epitemæ·»åŠ åˆ°epä¸­çš„å°±ç»ªé˜Ÿåˆ— */
 		list_add_tail(&epi->rdllink, &ep->rdllist);
 
 		/* Notify waiting tasks that events are available */
@@ -1072,7 +1072,7 @@ eexit_1:
  * Modify the interest event mask by dropping an event if the new mask
  * has a match in the current file status.
  */
-/* ĞŞ¸Ä¼àÌıµÄÊÂ¼ş£¬ÈçĞŞ¸Ä¼àÌıÊÂ¼şµÄstruct epoll_event²ÎÊıµÈµÈ */
+/* ä¿®æ”¹ç›‘å¬çš„äº‹ä»¶ï¼Œå¦‚ä¿®æ”¹ç›‘å¬äº‹ä»¶çš„struct epoll_eventå‚æ•°ç­‰ç­‰ */
 static int ep_modify(struct eventpoll *ep, struct epitem *epi, struct epoll_event *event)
 {
 	int pwake = 0;
@@ -1161,7 +1161,7 @@ static void ep_unregister_pollwait(struct eventpoll *ep, struct epitem *epi)
  * Unlink the "struct epitem" from all places it might have been hooked up.
  * This function must be called with write IRQ lock on "ep->lock".
  */
-/* ½«epitem´ÓeventpollµÄ¾ÍĞ÷¶ÓÁĞÖĞÉ¾³ı */
+/* å°†epitemä»eventpollçš„å°±ç»ªé˜Ÿåˆ—ä¸­åˆ é™¤ */
 static int ep_unlink(struct eventpoll *ep, struct epitem *epi)
 {
 	int error;
@@ -1259,7 +1259,7 @@ eexit_1:
  * machanism. It is called by the stored file descriptors when they
  * have events to report.
  */
-/* epollµÄ»Øµ÷º¯Êı */
+/* epollçš„å›è°ƒå‡½æ•° */
 static int ep_poll_callback(wait_queue_t *wait, unsigned mode, int sync, void *key)
 {
 	int pwake = 0;
@@ -1285,7 +1285,7 @@ static int ep_poll_callback(wait_queue_t *wait, unsigned mode, int sync, void *k
 	if (EP_IS_LINKED(&epi->rdllink))
 		goto is_linked;
 
-        /* ½«ÊÂ¼ş×¼±¸ÊÂ¼şÌí¼Óµ½epµÄrdllistµ±ÖĞ */
+        /* å°†äº‹ä»¶å‡†å¤‡äº‹ä»¶æ·»åŠ åˆ°epçš„rdllistå½“ä¸­ */
 	list_add_tail(&epi->rdllink, &ep->rdllist);
 
 is_linked:
@@ -1293,12 +1293,12 @@ is_linked:
 	 * Wake up ( if active ) both the eventpoll wait list and the ->poll()
 	 * wait list.
 	 */
-        /* ÅĞ¶ÏµÈ´ı¶ÓÁĞÊÇ·ñÎª¿Õ£¬Èç¹û´ËÊ±ÒÑ¾­ÓĞepoll_waitÔÚµÈ´ı£¬
-          * Ôò»½ĞÑµÈ´ıµÄ½ø³Ì 
+        /* åˆ¤æ–­ç­‰å¾…é˜Ÿåˆ—æ˜¯å¦ä¸ºç©ºï¼Œå¦‚æœæ­¤æ—¶å·²ç»æœ‰epoll_waitåœ¨ç­‰å¾…ï¼Œ
+          * åˆ™å”¤é†’ç­‰å¾…çš„è¿›ç¨‹ 
           */
 	if (waitqueue_active(&ep->wq))
 		wake_up(&ep->wq);
-        /* »½ĞÑ¼àÊÓepollÎÄ¼şÃèÊö·ûµÄÆäËûepollÎÄ¼şÃèÊö·û */
+        /* å”¤é†’ç›‘è§†epollæ–‡ä»¶æè¿°ç¬¦çš„å…¶ä»–epollæ–‡ä»¶æè¿°ç¬¦ */
 	if (waitqueue_active(&ep->poll_wait))
 		pwake++;
 
@@ -1326,7 +1326,7 @@ static int ep_eventpoll_close(struct inode *inode, struct file *file)
 	return 0;
 }
 
-/* epollÎÄ¼şÃèÊö·ûµÄpollº¯Êı */
+/* epollæ–‡ä»¶æè¿°ç¬¦çš„pollå‡½æ•° */
 static unsigned int ep_eventpoll_poll(struct file *file, poll_table *wait)
 {
 	unsigned int pollflags = 0;
@@ -1351,25 +1351,25 @@ static unsigned int ep_eventpoll_poll(struct file *file, poll_table *wait)
  * during the f_op->poll() call, we try to collect the maximum number of items
  * by reducing the irqlock/irqunlock switching rate.
  */
-/* ·µ»ØÊµ¼Ê×¼±¸ºÃÊÂ¼şµÄÊıÁ¿ */
+/* è¿”å›å®é™…å‡†å¤‡å¥½äº‹ä»¶çš„æ•°é‡ */
 static int ep_collect_ready_items(struct eventpoll *ep, struct list_head *txlist, int maxevents)
 {
 	int nepi;
 	unsigned long flags;
-        /* »ñÈ¡×¼±¸ºÃµÄÊÂ¼şÁĞ±í£¬È»ºóÒÀ´Î¶ÁÈ¡ */
+        /* è·å–å‡†å¤‡å¥½çš„äº‹ä»¶åˆ—è¡¨ï¼Œç„¶åä¾æ¬¡è¯»å– */
 	struct list_head *lsthead = &ep->rdllist, *lnk;
 	struct epitem *epi;
 
 	write_lock_irqsave(&ep->lock, flags);
 
 	for (nepi = 0, lnk = lsthead->next; lnk != lsthead && nepi < maxevents;) {
-                /* È¡³öÁ´±íÖĞµÄstruct epitem½á¹¹ */
+                /* å–å‡ºé“¾è¡¨ä¸­çš„struct epitemç»“æ„ */
 		epi = list_entry(lnk, struct epitem, rdllink);
 
 		lnk = lnk->next;
 
 		/* If this file is already in the ready list we exit soon */
-                /* Èç¹ûtxlinkÁ´±íÎª¿Õ£¬Ò²¾ÍÊÇÃ»ÓĞÌí¼Óµ½ÒÑ¾­×ª»»µÄË«ÏòÁ´±íµ±ÖĞ  */
+                /* å¦‚æœtxlinké“¾è¡¨ä¸ºç©ºï¼Œä¹Ÿå°±æ˜¯æ²¡æœ‰æ·»åŠ åˆ°å·²ç»è½¬æ¢çš„åŒå‘é“¾è¡¨å½“ä¸­  */
 		if (!EP_IS_LINKED(&epi->txlink)) {
 			/*
 			 * This is initialized in this way so that the default
@@ -1385,7 +1385,7 @@ static int ep_collect_ready_items(struct eventpoll *ep, struct list_head *txlist
 			/*
 			 * Unlink the item from the ready list.
 			 */
-                        /* ¶ÁÈ¡¸Ãepitemºó¾Í´ÓÁ´±íÖĞÉ¾³ı */
+                        /* è¯»å–è¯¥epitemåå°±ä»é“¾è¡¨ä¸­åˆ é™¤ */
 			EP_LIST_DEL(&epi->rdllink);
 		}
 	}
@@ -1401,7 +1401,7 @@ static int ep_collect_ready_items(struct eventpoll *ep, struct list_head *txlist
  * __copy_to_user() might sleep, and also f_op->poll() might reenable the IRQ
  * because of the way poll() is traditionally implemented in Linux.
  */
-/* ½«txlistÖĞµÄÊı¾İ×ª»»µ½eventsµ±ÖĞ */
+/* å°†txlistä¸­çš„æ•°æ®è½¬æ¢åˆ°eventså½“ä¸­ */
 static int ep_send_events(struct eventpoll *ep, struct list_head *txlist,
 			  struct epoll_event __user *events)
 {
@@ -1454,7 +1454,7 @@ static int ep_send_events(struct eventpoll *ep, struct list_head *txlist,
  * not already linked, links it to the ready list. Same as above, we are holding
  * "sem" so items cannot vanish underneath our nose.
  */
-/*  txlist±íÊ¾ÔÚepollµÄÊ±ºòÒÑ¾­×ª»»µÄ¾ÍĞ÷Á´±í 
+/*  txlistè¡¨ç¤ºåœ¨epollçš„æ—¶å€™å·²ç»è½¬æ¢çš„å°±ç»ªé“¾è¡¨ 
   */ 
 static void ep_reinject_items(struct eventpoll *ep, struct list_head *txlist)
 {
@@ -1468,7 +1468,7 @@ static void ep_reinject_items(struct eventpoll *ep, struct list_head *txlist)
 		epi = list_entry(txlist->next, struct epitem, txlink);
 
 		/* Unlink the current item from the transfer list */
-                /* °Ñ×Ô¼º´ÓÒÑ¾­×ª»»¶ÓÁĞÖĞÉ¾³ı */
+                /* æŠŠè‡ªå·±ä»å·²ç»è½¬æ¢é˜Ÿåˆ—ä¸­åˆ é™¤ */
 		EP_LIST_DEL(&epi->txlink);
 
 		/*
@@ -1478,7 +1478,7 @@ static void ep_reinject_items(struct eventpoll *ep, struct list_head *txlist)
 		 * item is set to have an Edge Triggered behaviour, we don't have
 		 * to push it back either.
 		 */
-                /* Èç¹ûÊÇË®Æ½´¥·¢¾Í½«¸Ã×ª»»µÄepitemÔÙ´Îpushµ½¾ÍĞ÷¶ÓÁĞµ±ÖĞ */
+                /* å¦‚æœæ˜¯æ°´å¹³è§¦å‘å°±å°†è¯¥è½¬æ¢çš„epitemå†æ¬¡pushåˆ°å°±ç»ªé˜Ÿåˆ—å½“ä¸­ */
 		if (EP_RB_LINKED(&epi->rbn) && !(epi->event.events & EPOLLET) &&
 		    (epi->revents & epi->event.events) && !EP_IS_LINKED(&epi->rdllink)) {
 			list_add_tail(&epi->rdllink, &ep->rdllist);
@@ -1514,7 +1514,7 @@ static int ep_events_transfer(struct eventpoll *ep,
 	int eventcnt = 0;
 	struct list_head txlist;
 
-        /* ³õÊ¼»¯txtlistÁ´±í */
+        /* åˆå§‹åŒ–txtlisté“¾è¡¨ */
 	INIT_LIST_HEAD(&txlist);
 
 	/*
@@ -1524,7 +1524,7 @@ static int ep_events_transfer(struct eventpoll *ep,
 	down_read(&ep->sem);
 
 	/* Collect/extract ready items */
-        /* ½«¶ÁÈ¡µÄÊÂ¼ş´æ·ÅÔÚtxlistÁ´±íµ±ÖĞ */
+        /* å°†è¯»å–çš„äº‹ä»¶å­˜æ”¾åœ¨txlisté“¾è¡¨å½“ä¸­ */
 	if (ep_collect_ready_items(ep, &txlist, maxevents) > 0) {
 		/* Build result set in userspace */
 		eventcnt = ep_send_events(ep, &txlist, events);
@@ -1538,7 +1538,7 @@ static int ep_events_transfer(struct eventpoll *ep,
 	return eventcnt;
 }
 
-/* ¿ªÊ¼¶ÁÈ¡¾ÍĞ÷¶ÓÁĞ */
+/* å¼€å§‹è¯»å–å°±ç»ªé˜Ÿåˆ— */
 static int ep_poll(struct eventpoll *ep, struct epoll_event __user *events,
 		   int maxevents, long timeout)
 {
@@ -1559,7 +1559,7 @@ retry:
 	write_lock_irqsave(&ep->lock, flags);
 
 	res = 0;
-        /* Èç¹ûÁĞ±íÎªNULL */
+        /* å¦‚æœåˆ—è¡¨ä¸ºNULL */
 	if (list_empty(&ep->rdllist)) {
 		/*
 		 * We don't have any available event to return to the caller.
@@ -1616,7 +1616,7 @@ static int eventpollfs_delete_dentry(struct dentry *dentry)
 	return 1;
 }
 
-/* ´ÓepollĞéÄâÎÄ¼şÏµÍ³ÖĞ»ñÈ¡Ò»¸öinode½Úµã£¬²¢ÉèÖÃinode½ÚµãµÄÏàÓ¦ĞÅÏ¢ºÍi_op
+/* ä»epollè™šæ‹Ÿæ–‡ä»¶ç³»ç»Ÿä¸­è·å–ä¸€ä¸ªinodeèŠ‚ç‚¹ï¼Œå¹¶è®¾ç½®inodeèŠ‚ç‚¹çš„ç›¸åº”ä¿¡æ¯å’Œi_op
  */
 static struct inode *ep_eventpoll_inode(void)
 {
@@ -1626,7 +1626,7 @@ static struct inode *ep_eventpoll_inode(void)
 	if (!inode)
 		goto eexit_1;
 
-	/* ÉèÖÃ½ÚµãÏàÓ¦µÄfop */
+	/* è®¾ç½®èŠ‚ç‚¹ç›¸åº”çš„fop */
 	inode->i_fop = &eventpoll_fops;
 
 	/*
@@ -1648,7 +1648,7 @@ eexit_1:
 }
 
 
-/* »ñÈ¡eventpollÎÄ¼şÏµÍ³µÄ³¬¼¶¿é */
+/* è·å–eventpollæ–‡ä»¶ç³»ç»Ÿçš„è¶…çº§å— */
 static struct super_block *
 eventpollfs_get_sb(struct file_system_type *fs_type, int flags,
 		   const char *dev_name, void *data)
@@ -1680,7 +1680,7 @@ static int __init eventpoll_init(void)
 	 * Register the virtual file system that will be the source of inodes
 	 * for the eventpoll files
 	 */
-	/* ×¢²áepollÎÄ¼şÏµÍ³ */
+	/* æ³¨å†Œepollæ–‡ä»¶ç³»ç»Ÿ */
 	error = register_filesystem(&eventpoll_fs_type);
 	if (error)
 		goto epanic;

@@ -15,19 +15,19 @@ struct pidmap {
 #define PIDMAP_ENTRIES         ((PID_MAX_LIMIT + 8*PAGE_SIZE - 1)/PAGE_SIZE/8)
 
 /**
- * PIDÃüÃû¿Õ¼ä
+ * PIDå‘½åç©ºé—´
  */
 struct pid_namespace {
-	/* ÒıÓÃ¼ÆÊı */
+	/* å¼•ç”¨è®¡æ•° */
 	struct kref kref;
 	struct pidmap pidmap[PIDMAP_ENTRIES];
 	int last_pid;
-	/* ¸Ã¿Õ¼äÄÚµÄinit½ø³Ì£¬¶ÔÆäÖĞµÄ¹Â¶ù½ø³Ìµ÷ÓÃwait4 */
+	/* è¯¥ç©ºé—´å†…çš„initè¿›ç¨‹ï¼Œå¯¹å…¶ä¸­çš„å­¤å„¿è¿›ç¨‹è°ƒç”¨wait4 */
 	struct task_struct *child_reaper;
 	struct kmem_cache *pid_cachep;
-	/* ÃüÃû¿Õ¼äµÄÉî¶È¡£ÉÏ²ã¿Õ¼ä¿ÉÒÔ¿´µ½ÏÂ²ã¿Õ¼äµÄpid£¬ËüÒ²´ú±íÁËÒ»¸ö½ø³ÌÓĞ¶àÉÙ¸öpid */
+	/* å‘½åç©ºé—´çš„æ·±åº¦ã€‚ä¸Šå±‚ç©ºé—´å¯ä»¥çœ‹åˆ°ä¸‹å±‚ç©ºé—´çš„pidï¼Œå®ƒä¹Ÿä»£è¡¨äº†ä¸€ä¸ªè¿›ç¨‹æœ‰å¤šå°‘ä¸ªpid */
 	int level;
-	/* ¸¸ÃüÃû¿Õ¼ä */
+	/* çˆ¶å‘½åç©ºé—´ */
 	struct pid_namespace *parent;
 #ifdef CONFIG_PROC_FS
 	struct vfsmount *proc_mnt;

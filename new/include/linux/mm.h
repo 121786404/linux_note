@@ -1695,7 +1695,7 @@ static inline void pte_lock_deinit(struct page *page) {}
 
 static inline void pgtable_init(void)
 {
-	//´´½¨slab¹ÜÀíÆ÷£¬ÓÃÓÚÒ³±íËø¡£
+	//åˆ›å»ºslabç®¡ç†å™¨ï¼Œç”¨äºé¡µè¡¨é”ã€‚
 	ptlock_cache_init();
 	//do nothing
 	pgtable_cache_init();

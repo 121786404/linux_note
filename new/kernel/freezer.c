@@ -39,20 +39,20 @@ static DEFINE_SPINLOCK(freezer_lock);
  */
 bool freezing_slow_path(struct task_struct *p)
 {
-    // (PF_NOFREEZE | PF_SUSPEND_TASK) µ±Ç°½ø³Ì²»ÄÜ±» freeze
+    // (PF_NOFREEZE | PF_SUSPEND_TASK) å½“å‰è¿›ç¨‹ä¸èƒ½è¢« freeze
 	if (p->flags & (PF_NOFREEZE | PF_SUSPEND_TASK))
 		return false;
 
 	if (test_tsk_thread_flag(p, TIF_MEMDIE))
 		return false;
 
-    // Èç¹û pm_nosig_freezing Îª true£¬ÄÚºË½ø³Ì freeze ÒÑ¾­¿ªÊ¼£¬
-    // µ±Ç°½ø³Ì¿ÉÒÔ±» freeze
+    // å¦‚æžœ pm_nosig_freezing ä¸º trueï¼Œå†…æ ¸è¿›ç¨‹ freeze å·²ç»å¼€å§‹ï¼Œ
+    // å½“å‰è¿›ç¨‹å¯ä»¥è¢« freeze
 	if (pm_nosig_freezing || cgroup_freezing(p))
 		return true;
 
-    // Èç¹û pm_freezing Îª true£¬ÇÒµ±Ç°½ø³ÌÎªÓÃ»§½ø³Ì
-    // µ±Ç°½ø³Ì¿ÉÒÔ±» freeze
+    // å¦‚æžœ pm_freezing ä¸º trueï¼Œä¸”å½“å‰è¿›ç¨‹ä¸ºç”¨æˆ·è¿›ç¨‹
+    // å½“å‰è¿›ç¨‹å¯ä»¥è¢« freeze
 	if (pm_freezing && !(p->flags & PF_KTHREAD))
 		return true;
 
@@ -71,13 +71,13 @@ bool __refrigerator(bool check_kthr_stop)
 	pr_debug("%s entered refrigerator\n", current->comm);
 
 	for (;;) {
-        // (1) ÉèÖÃµ±Ç°½ø³Ì½øÈë TASK_UNINTERRUPTIBLE ×èÈû×´Ì¬
+        // (1) è®¾ç½®å½“å‰è¿›ç¨‹è¿›å…¥ TASK_UNINTERRUPTIBLE é˜»å¡žçŠ¶æ€
 		set_current_state(TASK_UNINTERRUPTIBLE);
 
 		spin_lock_irq(&freezer_lock);
-        // (2) ÉèÖÃÒÑ¾­ freeze ±êÖ¾ PF_FROZEN
+        // (2) è®¾ç½®å·²ç» freeze æ ‡å¿— PF_FROZEN
 		current->flags |= PF_FROZEN;
-        // (3) Èç¹ûµ±Ç°½ø³ÌÒÑ¾­²»ÊÇ freeze ×´Ì¬ ÍË³ö freeze
+        // (3) å¦‚æžœå½“å‰è¿›ç¨‹å·²ç»ä¸æ˜¯ freeze çŠ¶æ€ é€€å‡º freeze
 		if (!freezing(current) ||
 		    (check_kthr_stop && kthread_should_stop()))
 			current->flags &= ~PF_FROZEN;
@@ -140,16 +140,16 @@ bool freeze_task(struct task_struct *p)
 		return false;
 
 	spin_lock_irqsave(&freezer_lock, flags);
-	// (4.2.1) ¼ì²éµ±Ç°½ø³ÌÊÇ·ñ¿ÉÒÔ±» freeze£¬
-	// »òÕßÊÇ·ñÒÑ¾­±» freeze
+	// (4.2.1) æ£€æŸ¥å½“å‰è¿›ç¨‹æ˜¯å¦å¯ä»¥è¢« freezeï¼Œ
+	// æˆ–è€…æ˜¯å¦å·²ç»è¢« freeze
 	if (!freezing(p) || frozen(p)) {
 		spin_unlock_irqrestore(&freezer_lock, flags);
 		return false;
 	}
-    // (4.2.2) Èç¹ûÊÇÓÃ»§½ø³Ì£¬Î±ÔìÒ»¸ö signal ·¢ËÍ¸ø½ø³Ì
+    // (4.2.2) å¦‚æžœæ˜¯ç”¨æˆ·è¿›ç¨‹ï¼Œä¼ªé€ ä¸€ä¸ª signal å‘é€ç»™è¿›ç¨‹
 	if (!(p->flags & PF_KTHREAD))
 		fake_signal_wake_up(p);
-    // (4.2.3) Èç¹ûÊÇÄÚºË½ø³Ì£¬wake_up ÄÚºË½ø³Ì
+    // (4.2.3) å¦‚æžœæ˜¯å†…æ ¸è¿›ç¨‹ï¼Œwake_up å†…æ ¸è¿›ç¨‹
 	else
 		wake_up_state(p, TASK_INTERRUPTIBLE);
 

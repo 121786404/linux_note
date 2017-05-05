@@ -74,37 +74,37 @@ enum clock_event_nofitiers {
  * @next_event:		local storage for the next event in oneshot mode
  */
 /**
- * Ê±ÖÓÊÂ¼şÉè±¸£¬ËüÔÊĞí×¢²áÒ»¸öÊÂ¼ş£¬ÔÚÄ³¸öÊ±¼äµã·¢Éú¡£
+ * æ—¶é’Ÿäº‹ä»¶è®¾å¤‡ï¼Œå®ƒå…è®¸æ³¨å†Œä¸€ä¸ªäº‹ä»¶ï¼Œåœ¨æŸä¸ªæ—¶é—´ç‚¹å‘ç”Ÿã€‚
  */
 struct clock_event_device {
-	/* Éè±¸µÄÃû³Æ */
+	/* è®¾å¤‡çš„åç§° */
 	const char		*name;
 	unsigned int		features;
-	/* Ê±¼äµÄ×î´ó¡¢×îĞ¡¼ÆÁ¿Öµ */
+	/* æ—¶é—´çš„æœ€å¤§ã€æœ€å°è®¡é‡å€¼ */
 	unsigned long		max_delta_ns;
 	unsigned long		min_delta_ns;
-	/* ÓÃÓÚÊ±¼äÖµÓënsÖ®¼äµÄ×ª»» */
+	/* ç”¨äºæ—¶é—´å€¼ä¸nsä¹‹é—´çš„è½¬æ¢ */
 	unsigned long		mult;
 	int			shift;
-	/* ¾«¶È */
+	/* ç²¾åº¦ */
 	int			rating;
-	/* Ê¹ÓÃµÄIRQÖĞ¶ÏºÅ */
+	/* ä½¿ç”¨çš„IRQä¸­æ–­å· */
 	int			irq;
-	/* ·şÎñµÄCPU */
+	/* æœåŠ¡çš„CPU */
 	cpumask_t		cpumask;
 	int			(*set_next_event)(unsigned long evt,
 						  struct clock_event_device *);
-	/* ÔÚÖÜÆÚĞÔÄ£Ê½ºÍµ¥´¥·¢Ä£Ê½Ö®¼äÇĞ»» */
+	/* åœ¨å‘¨æœŸæ€§æ¨¡å¼å’Œå•è§¦å‘æ¨¡å¼ä¹‹é—´åˆ‡æ¢ */
 	void			(*set_mode)(enum clock_event_mode mode,
 					    struct clock_event_device *);
-	/* ½«Ê±ÖÓÊÂ¼ş´«µİµ½Í¨ÓÃÊ±¼ä×ÓÏµÍ³ */
+	/* å°†æ—¶é’Ÿäº‹ä»¶ä¼ é€’åˆ°é€šç”¨æ—¶é—´å­ç³»ç»Ÿ */
 	void			(*event_handler)(struct clock_event_device *);
-	/* ¹ã²¥º¯Êı£¬Ä³Ğ©ÌåÏµ½á¹¹ÔÚ½ÚÄÜÄ£Ê½ÏÂÊ±ÖÓÔ´¿ÉÄÜ²»¹¤×÷ */
+	/* å¹¿æ’­å‡½æ•°ï¼ŒæŸäº›ä½“ç³»ç»“æ„åœ¨èŠ‚èƒ½æ¨¡å¼ä¸‹æ—¶é’Ÿæºå¯èƒ½ä¸å·¥ä½œ */
 	void			(*broadcast)(cpumask_t mask);
-	/* Á´½Óµ½È«¾ÖÁ´±í */
+	/* é“¾æ¥åˆ°å…¨å±€é“¾è¡¨ */
 	struct list_head	list;
 	enum clock_event_mode	mode;
-	/* ÏÂÒ»¸öÊÂ¼ş */
+	/* ä¸‹ä¸€ä¸ªäº‹ä»¶ */
 	ktime_t			next_event;
 };
 

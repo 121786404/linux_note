@@ -10,12 +10,12 @@
  *
  * This work is licensed under the terms of the GNU GPL, version 2.
  *
- *Cleancache¿ÉÒÔ±»¿´×÷ÊÇÄÚ´æÒ³µÄ"Victim Cache"(ÊÜº¦Õß»º´æ),µ±»ØÊÕÄÚ´æÒ³Ê±,
- *ÏÈ²»°ÑËüÇå¿Õ,¶øÊÇ°ÑÆä¼ÓÈëµ½ÄÚºË²»ÄÜÖ±½Ó·ÃÎÊµÄ"transcendent memory"ÖĞ,
- *ÕâÑùÖ§³ÖCleancacheµÄÎÄ¼şÏµÍ³ÔÙ´Î·ÃÎÊÕâ¸öÒ³Ê±¿ÉÒÔÖ±½Ó´Ó"transcendent memory"
- *¼ÓÔØËü,´Ó¶ø¼õÉÙ´ÅÅÌIOµÄËğºÄ.Ä¿Ç°Ö»ÓĞzcacheºÍXENÖ§³Ö"transcendent memory",
- *²»¹ı½«À´»áÓĞÔ½À´Ô½¶àµÄÓ¦ÓÃÖ§³Ö.
- *¸ü¶àÏ¸½ÚÇë²Î¿¼"Documentation/vm/cleancache.txt"ÎÄ¼ş
+ *Cleancacheå¯ä»¥è¢«çœ‹ä½œæ˜¯å†…å­˜é¡µçš„"Victim Cache"(å—å®³è€…ç¼“å­˜),å½“å›æ”¶å†…å­˜é¡µæ—¶,
+ *å…ˆä¸æŠŠå®ƒæ¸…ç©º,è€Œæ˜¯æŠŠå…¶åŠ å…¥åˆ°å†…æ ¸ä¸èƒ½ç›´æ¥è®¿é—®çš„"transcendent memory"ä¸­,
+ *è¿™æ ·æ”¯æŒCleancacheçš„æ–‡ä»¶ç³»ç»Ÿå†æ¬¡è®¿é—®è¿™ä¸ªé¡µæ—¶å¯ä»¥ç›´æ¥ä»"transcendent memory"
+ *åŠ è½½å®ƒ,ä»è€Œå‡å°‘ç£ç›˜IOçš„æŸè€—.ç›®å‰åªæœ‰zcacheå’ŒXENæ”¯æŒ"transcendent memory",
+ *ä¸è¿‡å°†æ¥ä¼šæœ‰è¶Šæ¥è¶Šå¤šçš„åº”ç”¨æ”¯æŒ.
+ *æ›´å¤šç»†èŠ‚è¯·å‚è€ƒ"Documentation/vm/cleancache.txt"æ–‡ä»¶
  * <Cleancache and Frontswap> http://lwn.net/Articles/386090/
  */
 

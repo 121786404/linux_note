@@ -10,12 +10,12 @@
 
 /*
  * This structure is used to hold the arguments that are used when loading binaries.
- ÓÃÀ´±£´æÒªÒªÖ´ĞĞµÄÎÄ¼şÏà¹ØµÄĞÅÏ¢, 
- °üÀ¨¿ÉÖ´ĞĞ³ÌĞòµÄÂ·¾¶, ²ÎÊıºÍ»·¾³±äÁ¿µÄĞÅÏ¢
+ ç”¨æ¥ä¿å­˜è¦è¦æ‰§è¡Œçš„æ–‡ä»¶ç›¸å…³çš„ä¿¡æ¯, 
+ åŒ…æ‹¬å¯æ‰§è¡Œç¨‹åºçš„è·¯å¾„, å‚æ•°å’Œç¯å¢ƒå˜é‡çš„ä¿¡æ¯
  */
 struct linux_binprm {
 /*
-±£´æ¿ÉÖ´ĞĞÎÄ¼şµÄÍ·128×Ö½Ú
+ä¿å­˜å¯æ‰§è¡Œæ–‡ä»¶çš„å¤´128å­—èŠ‚
 */
 	char buf[BINPRM_BUF_SIZE];
 #ifdef CONFIG_MMU
@@ -27,7 +27,7 @@ struct linux_binprm {
 #endif
 	struct mm_struct *mm;
 /*
-	µ±Ç°ÄÚ´æÒ³×î¸ßµØÖ·
+	å½“å‰å†…å­˜é¡µæœ€é«˜åœ°å€
 */
 	unsigned long p; /* current top of mem */
 	unsigned int
@@ -40,19 +40,19 @@ struct linux_binprm {
 	unsigned int taso:1;
 #endif
 	unsigned int recursion_depth; /* only for search_binary_handler() */
-	 /*  ÒªÖ´ĞĞµÄÎÄ¼ş  */
+	 /*  è¦æ‰§è¡Œçš„æ–‡ä»¶  */
 	struct file * file;
 	struct cred *cred;	/* new credentials */
 	int unsafe;		/* how unsafe this exec is (mask of LSM_UNSAFE_*) */
 	unsigned int per_clear;	/* bits to clear in current->personality */
-	/*  ÃüÁîĞĞ²ÎÊıºÍ»·¾³±äÁ¿ÊıÄ¿  */
+	/*  å‘½ä»¤è¡Œå‚æ•°å’Œç¯å¢ƒå˜é‡æ•°ç›®  */
 	int argc, envc;
 /*
-	ÒªÖ´ĞĞµÄÎÄ¼şµÄÃû³Æ
+	è¦æ‰§è¡Œçš„æ–‡ä»¶çš„åç§°
 */
 	const char * filename;	/* Name of binary as seen by procps */
 /*
-	ÒªÖ´ĞĞµÄÎÄ¼şµÄÕæÊµÃû³Æ£¬Í¨³£ºÍfilenameÏàÍ¬
+	è¦æ‰§è¡Œçš„æ–‡ä»¶çš„çœŸå®åç§°ï¼Œé€šå¸¸å’Œfilenameç›¸åŒ
 */
 	const char * interp;	/* Name of the binary really executed. Most
 				   of the time same as filename, but could be
@@ -92,15 +92,15 @@ struct linux_binfmt {
 	struct list_head lh;
 	struct module *module;
 /*
-	Í¨¹ı¶Á´æ·ÅÔÚ¿ÉÖ´ĞĞÎÄ¼şÖĞµÄĞÅÏ¢Îªµ±Ç°½ø³Ì½¨Á¢Ò»¸öĞÂµÄÖ´ĞĞ»·¾³
+	é€šè¿‡è¯»å­˜æ”¾åœ¨å¯æ‰§è¡Œæ–‡ä»¶ä¸­çš„ä¿¡æ¯ä¸ºå½“å‰è¿›ç¨‹å»ºç«‹ä¸€ä¸ªæ–°çš„æ‰§è¡Œç¯å¢ƒ
 */
 	int (*load_binary)(struct linux_binprm *);
 /*
-	ÓÃÓÚ¶¯Ì¬µÄ°ÑÒ»¸ö¹²Ïí¿âÀ¦°óµ½Ò»¸öÒÑ¾­ÔÚÔËĞĞµÄ½ø³Ì, ÕâÊÇÓÉuselib()ÏµÍ³µ÷ÓÃ¼¤»îµÄ
+	ç”¨äºåŠ¨æ€çš„æŠŠä¸€ä¸ªå…±äº«åº“æ†ç»‘åˆ°ä¸€ä¸ªå·²ç»åœ¨è¿è¡Œçš„è¿›ç¨‹, è¿™æ˜¯ç”±uselib()ç³»ç»Ÿè°ƒç”¨æ¿€æ´»çš„
 */
 	int (*load_shlib)(struct file *);
 /*
-    ÔÚÃûÎªcoreµÄÎÄ¼şÖĞ, ´æ·Åµ±Ç°½ø³ÌµÄÖ´ĞĞÉÏÏÂÎÄ. Õâ¸öÎÄ¼şÍ¨³£ÊÇÔÚ½ø³Ì½ÓÊÕµ½Ò»¸öÈ±Ê¡²Ù×÷Îª¡±dump¡±µÄĞÅºÅÊ±±»´´½¨µÄ, Æä¸ñÊ½È¡¾öÓÚ±»Ö´ĞĞ³ÌĞòµÄ¿ÉÖ´ĞĞÀàĞÍ
+    åœ¨åä¸ºcoreçš„æ–‡ä»¶ä¸­, å­˜æ”¾å½“å‰è¿›ç¨‹çš„æ‰§è¡Œä¸Šä¸‹æ–‡. è¿™ä¸ªæ–‡ä»¶é€šå¸¸æ˜¯åœ¨è¿›ç¨‹æ¥æ”¶åˆ°ä¸€ä¸ªç¼ºçœæ“ä½œä¸ºâ€dumpâ€çš„ä¿¡å·æ—¶è¢«åˆ›å»ºçš„, å…¶æ ¼å¼å–å†³äºè¢«æ‰§è¡Œç¨‹åºçš„å¯æ‰§è¡Œç±»å‹
 */
 	int (*core_dump)(struct coredump_params *cprm); 
 	unsigned long min_coredump;	/* minimal dump size */

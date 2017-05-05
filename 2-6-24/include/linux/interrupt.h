@@ -58,19 +58,19 @@
 typedef irqreturn_t (*irq_handler_t)(int, void *);
 
 /**
- * ÖĞ¶Ï´¦Àí³ÌĞò
+ * ä¸­æ–­å¤„ç†ç¨‹åº
  */
 struct irqaction {
-	/* ISR´¦Àí³ÌĞò */
+	/* ISRå¤„ç†ç¨‹åº */
 	irq_handler_t handler;
-	/* ±êÖ¾£¬ÈçIRQF_SHARED */
+	/* æ ‡å¿—ï¼Œå¦‚IRQF_SHARED */
 	unsigned long flags;
 	cpumask_t mask;
-	/* Éè±¸Ãû³Æ£¬Èçe100 */
+	/* è®¾å¤‡åç§°ï¼Œå¦‚e100 */
 	const char *name;
-	/* Éè±¸¶ÔÏó£¬ISRµÄË½ÓĞÊı¾İ */
+	/* è®¾å¤‡å¯¹è±¡ï¼ŒISRçš„ç§æœ‰æ•°æ® */
 	void *dev_id;
-	/* ÓÃÓÚ½«¹²ÏíIRQµÄ¼¸¸öISRÁ´½ÓÆğÀ´ */
+	/* ç”¨äºå°†å…±äº«IRQçš„å‡ ä¸ªISRé“¾æ¥èµ·æ¥ */
 	struct irqaction *next;
 	int irq;
 	struct proc_dir_entry *dir;
@@ -305,19 +305,19 @@ extern void FASTCALL(raise_softirq(unsigned int nr));
  */
 
 /**
- * taskletÃèÊö·û
+ * taskletæè¿°ç¬¦
  */
 struct tasklet_struct
 {
-	/* Í¨¹ı´Ë×Ö¶ÎĞÎ³ÉÒ»¸ötaskletÁ´±í */
+	/* é€šè¿‡æ­¤å­—æ®µå½¢æˆä¸€ä¸ªtaskleté“¾è¡¨ */
 	struct tasklet_struct *next;
-	/* ×´Ì¬£¬ÈçTASKLET_STATE_SCHED */
+	/* çŠ¶æ€ï¼Œå¦‚TASKLET_STATE_SCHED */
 	unsigned long state;
-	/* ´óÓÚ0±íÊ¾taskletÒÑ¾­±»½ûÓÃ */
+	/* å¤§äº0è¡¨ç¤ºtaskletå·²ç»è¢«ç¦ç”¨ */
 	atomic_t count;
-	/* tasklet»Øµ÷º¯Êı */
+	/* taskletå›è°ƒå‡½æ•° */
 	void (*func)(unsigned long);
-	/* tasklet²ÎÊı */
+	/* taskletå‚æ•° */
 	unsigned long data;
 };
 

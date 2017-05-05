@@ -2021,7 +2021,7 @@ static int do_file_page(struct mm_struct * mm, struct vm_area_struct * vma,
  * We enter with the pagetable spinlock held, we are supposed to
  * release it when done.
  */
-/* ÄÚ´æ»»Èëº¯Êı
+/* å†…å­˜æ¢å…¥å‡½æ•°
   */
 static inline int handle_pte_fault(struct mm_struct *mm,
 	struct vm_area_struct * vma, unsigned long address,
@@ -2060,8 +2060,8 @@ static inline int handle_pte_fault(struct mm_struct *mm,
 /*
  * By the time we get here, we already hold the mm semaphore
  */
-/* ´¦ÀíÄÚ´æ´íÎó£¬Èçµ±Ç°Òª·ÃÎÊµÄÄÚ´æÔÚ½»»»ÇøÖĞ
-  * Ôò¸Ãº¯Êı¾ÍÒª½«ÄÚ´æ´Ó½»»»ÇøÖĞ»»Èë
+/* å¤„ç†å†…å­˜é”™è¯¯ï¼Œå¦‚å½“å‰è¦è®¿é—®çš„å†…å­˜åœ¨äº¤æ¢åŒºä¸­
+  * åˆ™è¯¥å‡½æ•°å°±è¦å°†å†…å­˜ä»äº¤æ¢åŒºä¸­æ¢å…¥
   */
 int handle_mm_fault(struct mm_struct *mm, struct vm_area_struct * vma,
 		unsigned long address, int write_access)

@@ -63,8 +63,8 @@ static unsigned long __init bootmap_bytes(unsigned long pages)
  * @pages: number of pages the bitmap has to represent
  */
 /*
- * ¼ÆËãbootmemÎ»Í¼ËùĞèÒ³µÄÊıÄ¿¡£¸Ãº¯ÊıÊ¹ÓÃÁËBIOSÔÚe820Ó³Éä
- * Ìá¹©µÄĞÅÏ¢£¬ÀàËÆÓÚIA-32£¬ÏàÓ¦µÄÎ»Í¼¿ÉÓÃÓÚ²éÕÒ³¤¶ÈÊÊµ±µÄÁ¬ĞøÄÚ´æÇø¡£
+ * è®¡ç®—bootmemä½å›¾æ‰€éœ€é¡µçš„æ•°ç›®ã€‚è¯¥å‡½æ•°ä½¿ç”¨äº†BIOSåœ¨e820æ˜ å°„
+ * æä¾›çš„ä¿¡æ¯ï¼Œç±»ä¼¼äºIA-32ï¼Œç›¸åº”çš„ä½å›¾å¯ç”¨äºæŸ¥æ‰¾é•¿åº¦é€‚å½“çš„è¿ç»­å†…å­˜åŒºã€‚
  */
 unsigned long __init bootmem_bootmap_pages(unsigned long pages)
 {
@@ -76,7 +76,7 @@ unsigned long __init bootmem_bootmap_pages(unsigned long pages)
 /*
  * link bdata in order
  */
-/* È·±£bdata_listÊÇÒÔnode_min_pfnÉıĞòµÄ¶ÓÁĞ */
+/* ç¡®ä¿bdata_listæ˜¯ä»¥node_min_pfnå‡åºçš„é˜Ÿåˆ— */
 static void __init link_bootmem(bootmem_data_t *bdata)
 {
 	bootmem_data_t *ent;
@@ -95,8 +95,8 @@ static void __init link_bootmem(bootmem_data_t *bdata)
  * Called once to set up the allocator itself.
  */
 /*
- * ½«bdata°´Ë³Ğò²åÈëÈ«¾Öbdata_list¶ÓÁĞ£¬²¢ÉèÖÃºÃbdataËù´ú±íµÄÄÚ´æÆğÊ¼µØÖ·
- * ÒÔ¼°ÓÃÓÚ±êÖ¾ÄÚ´æÒ³ÃæÊÇ·ñ±£ÁôÒ³µÄbitmapµÄÆğÊ¼µØÖ·
+ * å°†bdataæŒ‰é¡ºåºæ’å…¥å…¨å±€bdata_listé˜Ÿåˆ—ï¼Œå¹¶è®¾ç½®å¥½bdataæ‰€ä»£è¡¨çš„å†…å­˜èµ·å§‹åœ°å€
+ * ä»¥åŠç”¨äºæ ‡å¿—å†…å­˜é¡µé¢æ˜¯å¦ä¿ç•™é¡µçš„bitmapçš„èµ·å§‹åœ°å€
  */
 static unsigned long __init init_bootmem_core(bootmem_data_t *bdata,
 	unsigned long mapstart, unsigned long start, unsigned long end)
@@ -146,11 +146,11 @@ unsigned long __init init_bootmem_node(pg_data_t *pgdat, unsigned long freepfn,
  */
 unsigned long __init init_bootmem(unsigned long start, unsigned long pages)
 {
-	/* ¿ÉÒÔ±»ÄÚºËÓ³ÉäµÄÄÚ´æ×î´ópage±àºÅ */
+	/* å¯ä»¥è¢«å†…æ ¸æ˜ å°„çš„å†…å­˜æœ€å¤§pageç¼–å· */
 	max_low_pfn = pages;
-	/* ¿ÉÒÔ±»ÄÚºËÓ³ÉäµÄÄÚ´æ×îĞ¡page±àºÅ */
+	/* å¯ä»¥è¢«å†…æ ¸æ˜ å°„çš„å†…å­˜æœ€å°pageç¼–å· */
 	min_low_pfn = start;
-	/* Ö»³õÊ¼»¯µÚÒ»¸önode¶ÔÓ¦µÄbdata? */
+	/* åªåˆå§‹åŒ–ç¬¬ä¸€ä¸ªnodeå¯¹åº”çš„bdata? */
 	return init_bootmem_core(NODE_DATA(0)->bdata, start, 0, pages);
 }
 
@@ -179,11 +179,11 @@ void __init free_bootmem_late(unsigned long physaddr, unsigned long size)
 }
 
 /**
- * ÊÍ·ÅÄ³¸öÄÚ´æ¿éÖĞµÄÄÚ´æµ½»ï°éÏµÍ³ÖĞ
- * É¨Ãèbootmem·ÖÅäÆ÷µÄÒ³Î»Í¼£¬ÊÍ·ÅÃ¿¸öÎ´ÓÃµÄÒ³¡£µ½»ï°éÏµÍ³µÄ½Ó¿ÚÊÇ__free_pages_bootmem()£¬
- * ¸Ãº¯Êı¶ÔÃ¿¸ö¿ÕÏĞÒ³µ÷ÓÃ¡£¸Ãº¯ÊıÄÚ²¿ÒÀÀµÓÚ±ê×¼º¯Êı__free_page¡£ËüÊ¹µÃÕâĞ©Ò³²¢Èë»ï°éÏµÍ³
- * µÄÊı¾İ½á¹¹£¬ÔÚÆäÖĞ×÷Îª¿ÕÏĞÒ³¹ÜÀí£¬¿ÉÓÃÓÚ·ÖÅä¡£ÔÚÒ³Î»Í¼ÒÑ¾­ÍêÈ«É¨ÃèÖ®ºó£¬ËüÕ¼¾İµÄÄÚ´æ¿Õ¼ä
- * Ò²±ØĞëÊÍ·Å¡£ËÅºò£¬Ö»ÓĞ»ï°éÏµÍ³¿ÉÓÃÓÚÄÚ´æ·ÖÅä¡£
+ * é‡Šæ”¾æŸä¸ªå†…å­˜å—ä¸­çš„å†…å­˜åˆ°ä¼™ä¼´ç³»ç»Ÿä¸­
+ * æ‰«æbootmemåˆ†é…å™¨çš„é¡µä½å›¾ï¼Œé‡Šæ”¾æ¯ä¸ªæœªç”¨çš„é¡µã€‚åˆ°ä¼™ä¼´ç³»ç»Ÿçš„æ¥å£æ˜¯__free_pages_bootmem()ï¼Œ
+ * è¯¥å‡½æ•°å¯¹æ¯ä¸ªç©ºé—²é¡µè°ƒç”¨ã€‚è¯¥å‡½æ•°å†…éƒ¨ä¾èµ–äºæ ‡å‡†å‡½æ•°__free_pageã€‚å®ƒä½¿å¾—è¿™äº›é¡µå¹¶å…¥ä¼™ä¼´ç³»ç»Ÿ
+ * çš„æ•°æ®ç»“æ„ï¼Œåœ¨å…¶ä¸­ä½œä¸ºç©ºé—²é¡µç®¡ç†ï¼Œå¯ç”¨äºåˆ†é…ã€‚åœ¨é¡µä½å›¾å·²ç»å®Œå…¨æ‰«æä¹‹åï¼Œå®ƒå æ®çš„å†…å­˜ç©ºé—´
+ * ä¹Ÿå¿…é¡»é‡Šæ”¾ã€‚ä¼ºå€™ï¼Œåªæœ‰ä¼™ä¼´ç³»ç»Ÿå¯ç”¨äºå†…å­˜åˆ†é…ã€‚
  */
 static unsigned long __init free_all_bootmem_core(bootmem_data_t *bdata)
 {
@@ -193,7 +193,7 @@ static unsigned long __init free_all_bootmem_core(bootmem_data_t *bdata)
 	if (!bdata->node_bootmem_map)
 		return 0;
 
-	//ÄÚ´æ¿éµÄÓ³ÉäÎ»Í¼£¬ÆğÊ¼½áÊøÒ³Ö¡ºÅ
+	//å†…å­˜å—çš„æ˜ å°„ä½å›¾ï¼Œèµ·å§‹ç»“æŸé¡µå¸§å·
 	map = bdata->node_bootmem_map;
 	start = bdata->node_min_pfn;
 	end = bdata->node_low_pfn;
@@ -201,11 +201,11 @@ static unsigned long __init free_all_bootmem_core(bootmem_data_t *bdata)
 	bdebug("nid=%td start=%lx end=%lx\n",
 		bdata - bootmem_node_data, start, end);
 
-	while (start < end) {//ÒÀ´ÎÊÍ·ÅÃ¿Ò»Ò³
+	while (start < end) {//ä¾æ¬¡é‡Šæ”¾æ¯ä¸€é¡µ
 		unsigned long idx, vec;
 		unsigned shift;
 
-		//¸ÃÒ³ÔÚÎ»Í¼ÖĞµÄÖµ
+		//è¯¥é¡µåœ¨ä½å›¾ä¸­çš„å€¼
 		idx = start - bdata->node_min_pfn;
 		shift = idx & (BITS_PER_LONG - 1);
 		/*
@@ -225,18 +225,18 @@ static unsigned long __init free_all_bootmem_core(bootmem_data_t *bdata)
 		 * BITS_PER_LONG block of pages in front of us, free
 		 * it in one go.
 		 */
-		if (IS_ALIGNED(start, BITS_PER_LONG) && vec == ~0UL) {//Á¬Ğø¶à¸öÒ³Ãæ¶¼¿ÉÓÃ
+		if (IS_ALIGNED(start, BITS_PER_LONG) && vec == ~0UL) {//è¿ç»­å¤šä¸ªé¡µé¢éƒ½å¯ç”¨
 			int order = ilog2(BITS_PER_LONG);
 
-			//Ò»´ÎĞÔÊÍ·Å¶à¸öÄÚ´æ¸ø»ï°éÏµÍ³
+			//ä¸€æ¬¡æ€§é‡Šæ”¾å¤šä¸ªå†…å­˜ç»™ä¼™ä¼´ç³»ç»Ÿ
 			__free_pages_bootmem(pfn_to_page(start), start, order);
 			count += BITS_PER_LONG;
 			start += BITS_PER_LONG;
-		} else {//Ö»ÄÜµ¥¸öÒ³ÃæÊÍ·Å»ØÈ¥ÁË
+		} else {//åªèƒ½å•ä¸ªé¡µé¢é‡Šæ”¾å›å»äº†
 			cur = start;
 
 			start = ALIGN(start + 1, BITS_PER_LONG);
-			while (vec && cur != start) {//Ò»¸öÒ»¸öµÄÊÍ·Å»ØÈ¥¡£
+			while (vec && cur != start) {//ä¸€ä¸ªä¸€ä¸ªçš„é‡Šæ”¾å›å»ã€‚
 				if (vec & 1) {
 					page = pfn_to_page(cur);
 					__free_pages_bootmem(page, cur, 0);
@@ -251,10 +251,10 @@ static unsigned long __init free_all_bootmem_core(bootmem_data_t *bdata)
 	cur = bdata->node_min_pfn;
 	page = virt_to_page(bdata->node_bootmem_map);
 	pages = bdata->node_low_pfn - bdata->node_min_pfn;
-	//¼ÆËãmemmapÊı×éÕ¼ÓÃÁË¶àÉÙÒ³
+	//è®¡ç®—memmapæ•°ç»„å ç”¨äº†å¤šå°‘é¡µ
 	pages = bootmem_bootmap_pages(pages);
 	count += pages;
-	//½«memmapÊı×éÒ»Ò³Ò»Ò³µÄÊÍ·Å¸ø»ï°éÏµÍ³¡£
+	//å°†memmapæ•°ç»„ä¸€é¡µä¸€é¡µçš„é‡Šæ”¾ç»™ä¼™ä¼´ç³»ç»Ÿã€‚
 	while (pages--)
 		__free_pages_bootmem(page++, cur++, 0);
 	bdata->node_bootmem_map = NULL;
@@ -293,7 +293,7 @@ void __init reset_all_zones_managed_pages(void)
  * Returns the number of pages actually released.
  */
 /**
- * ½«bootmemÖĞµÄ¿ÕÏĞÒ³ÊÍ·Åµ½»ï°éÏµÍ³ÖĞ¡£
+ * å°†bootmemä¸­çš„ç©ºé—²é¡µé‡Šæ”¾åˆ°ä¼™ä¼´ç³»ç»Ÿä¸­ã€‚
  */
 unsigned long __init free_all_bootmem(void)
 {
@@ -301,23 +301,23 @@ unsigned long __init free_all_bootmem(void)
 	bootmem_data_t *bdata;
 
 	/**
-	 * ÉèÖÃËùÓĞÄÚ´æ¿éµÄËùÓĞzone£¬½«Æä¹ÜÀíµÄÒ³ÃæÖØÖÃÎª0
-	 * ÎªÊ²Ã´ÖØÖÃÄØ???
+	 * è®¾ç½®æ‰€æœ‰å†…å­˜å—çš„æ‰€æœ‰zoneï¼Œå°†å…¶ç®¡ç†çš„é¡µé¢é‡ç½®ä¸º0
+	 * ä¸ºä»€ä¹ˆé‡ç½®å‘¢???
 	 */
 	reset_all_zones_managed_pages();
 
-	//±éÀúËùÓĞÄÚ´æ¿é
+	//éå†æ‰€æœ‰å†…å­˜å—
 	list_for_each_entry(bdata, &bdata_list, list)
-		//½«²»ĞèÒªµÄÄÚ´æ·µ»¹¸ø»ï°éÏµÍ³¡¢
+		//å°†ä¸éœ€è¦çš„å†…å­˜è¿”è¿˜ç»™ä¼™ä¼´ç³»ç»Ÿã€
 		total_pages += free_all_bootmem_core(bdata);
 
-	//¼ÇÂ¼ÏÂËùÓĞ¿ÉÓÃµÄÄÚ´æÒ³ÃæÊıÁ¿¡£
+	//è®°å½•ä¸‹æ‰€æœ‰å¯ç”¨çš„å†…å­˜é¡µé¢æ•°é‡ã€‚
 	totalram_pages += total_pages;
 
 	return total_pages;
 }
 
-/* ½«[sidx, eidx)¶ÔÓ¦pagesµÄboot·ÖÅäÎ»Í¼Çå¿Õ, ¼´±ê¼ÇÎªÎ´·ÖÅä */
+/* å°†[sidx, eidx)å¯¹åº”pagesçš„bootåˆ†é…ä½å›¾æ¸…ç©º, å³æ ‡è®°ä¸ºæœªåˆ†é… */
 static void __init __free(bootmem_data_t *bdata,
 			unsigned long sidx, unsigned long eidx)
 {
@@ -330,7 +330,7 @@ static void __init __free(bootmem_data_t *bdata,
 	if (WARN_ON(bdata->node_bootmem_map == NULL))
 		return;
 
-	/* hint_idxÖ¸Ê¾µÚÒ»¸ö¿É·ÖÅäµÄ×îĞ¡pageµÄ±àºÅ */
+	/* hint_idxæŒ‡ç¤ºç¬¬ä¸€ä¸ªå¯åˆ†é…çš„æœ€å°pageçš„ç¼–å· */
 	if (bdata->hint_idx > sidx)
 		bdata->hint_idx = sidx;
 
@@ -339,7 +339,7 @@ static void __init __free(bootmem_data_t *bdata,
 			BUG();
 }
 
-/* ½«[sidx, eidx)¶ÔÓ¦pagesµÄboot·ÖÅäÎ»Í¼ÖÃÎ», ¼´±ê¼ÇÎªÒÑ·ÖÅä */
+/* å°†[sidx, eidx)å¯¹åº”pagesçš„bootåˆ†é…ä½å›¾ç½®ä½, å³æ ‡è®°ä¸ºå·²åˆ†é… */
 static int __init __reserve(bootmem_data_t *bdata, unsigned long sidx,
 			unsigned long eidx, int flags)
 {
@@ -376,7 +376,7 @@ static int __init mark_bootmem_node(bootmem_data_t *bdata,
 	bdebug("nid=%td start=%lx end=%lx reserve=%d flags=%x\n",
 		bdata - bootmem_node_data, start, end, reserve, flags);
 
-	/* È·±£[start, end)Ëù´ú±íµÄµØÖ·ÔÚbdataµÄµØÖ··¶Î§ÄÚ */
+	/* ç¡®ä¿[start, end)æ‰€ä»£è¡¨çš„åœ°å€åœ¨bdataçš„åœ°å€èŒƒå›´å†… */
 	BUG_ON(start < bdata->node_min_pfn);
 	BUG_ON(end > bdata->node_low_pfn);
 
@@ -390,7 +390,7 @@ static int __init mark_bootmem_node(bootmem_data_t *bdata,
 	return 0;
 }
 
-/* bootmemÄÚ´æ·ÖÅä»òÊÍ·Å */
+/* bootmemå†…å­˜åˆ†é…æˆ–é‡Šæ”¾ */
 static int __init mark_bootmem(unsigned long start, unsigned long end,
 				int reserve, int flags)
 {
@@ -398,7 +398,7 @@ static int __init mark_bootmem(unsigned long start, unsigned long end,
 	bootmem_data_t *bdata;
 
 	pos = start;
-	/* [start, end)¿ÉÄÜ»á¿çÔ½ºÃ¼¸¸öbdata_listÖĞÏàÁÚµÄbdata */
+	/* [start, end)å¯èƒ½ä¼šè·¨è¶Šå¥½å‡ ä¸ªbdata_listä¸­ç›¸é‚»çš„bdata */
 	list_for_each_entry(bdata, &bdata_list, list) {
 		int err;
 		unsigned long max;
@@ -535,14 +535,14 @@ static unsigned long __init align_off(struct bootmem_data *bdata,
 }
 
 /*
- * ¸Ãº¯ÊıÖ´ĞĞÏÂÁĞ²Ù×÷:
- * 1)´Ógoal¿ªÊ¼£¬É¨ÃèÎ»Í¼£¬²éÕÒÂú×ã·ÖÅäÇëÇóµÄ¿ÕÏĞÄÚ´æÇø
- * 2)Èç¹ûÄ¿±êÒ³½ô½Ó×ÅÉÏÒ»´Î·ÖÅäµÄÒ³£¬¼´bootmem_data->last_end_off£¬
- *   ÄÚºË»á¼ì²ébootmem->last_offset£¬ÅĞ¶ÏËùĞèµÄÄÚ´æ(°üÀ¨¶ÔÆë
- *   Êı¾İËùĞèµÄ¿Õ¼ä)ÊÇ·ñÄÜ¹»ÔÚÉÏÒ»Ò³·ÖÅä»ò´ÓÉÏÒ»Ò³¿ªÊ¼·ÖÅä
- * 3)ĞÂ·ÖÅäµÄÒ³ÔÚÎ»Í¼¶ÔÓ¦µÄ±ÈÌØÎ»ÉèÖÃÎª1.×îºóÒ»Ò³µÄÊıÄ¿
- *   Ò²±£´æÔÚbootmem_data->last_pos¡£Èç¹û¸ÃÒ³Î´ÍêÈ«·ÖÅä£¬ÔòÏàÓ¦
- *   µÄÆ«ÒÆÁ¿±£´æÔÚbootmem_data->last_offset£»·ñÔò£¬¸ÃÖµÉèÖÃÎª0.
+ * è¯¥å‡½æ•°æ‰§è¡Œä¸‹åˆ—æ“ä½œ:
+ * 1)ä»goalå¼€å§‹ï¼Œæ‰«æä½å›¾ï¼ŒæŸ¥æ‰¾æ»¡è¶³åˆ†é…è¯·æ±‚çš„ç©ºé—²å†…å­˜åŒº
+ * 2)å¦‚æœç›®æ ‡é¡µç´§æ¥ç€ä¸Šä¸€æ¬¡åˆ†é…çš„é¡µï¼Œå³bootmem_data->last_end_offï¼Œ
+ *   å†…æ ¸ä¼šæ£€æŸ¥bootmem->last_offsetï¼Œåˆ¤æ–­æ‰€éœ€çš„å†…å­˜(åŒ…æ‹¬å¯¹é½
+ *   æ•°æ®æ‰€éœ€çš„ç©ºé—´)æ˜¯å¦èƒ½å¤Ÿåœ¨ä¸Šä¸€é¡µåˆ†é…æˆ–ä»ä¸Šä¸€é¡µå¼€å§‹åˆ†é…
+ * 3)æ–°åˆ†é…çš„é¡µåœ¨ä½å›¾å¯¹åº”çš„æ¯”ç‰¹ä½è®¾ç½®ä¸º1.æœ€åä¸€é¡µçš„æ•°ç›®
+ *   ä¹Ÿä¿å­˜åœ¨bootmem_data->last_posã€‚å¦‚æœè¯¥é¡µæœªå®Œå…¨åˆ†é…ï¼Œåˆ™ç›¸åº”
+ *   çš„åç§»é‡ä¿å­˜åœ¨bootmem_data->last_offsetï¼›å¦åˆ™ï¼Œè¯¥å€¼è®¾ç½®ä¸º0.
  */
 static void * __init alloc_bootmem_bdata(struct bootmem_data *bdata,
 					unsigned long size, unsigned long align,
@@ -651,7 +651,7 @@ find_block:
 	return NULL;
 }
 
-//bootmem·ÖÅäºËĞÄº¯Êı
+//bootmemåˆ†é…æ ¸å¿ƒå‡½æ•°
 static void * __init alloc_bootmem_core(unsigned long size,
 					unsigned long align,
 					unsigned long goal,
@@ -660,21 +660,21 @@ static void * __init alloc_bootmem_core(unsigned long size,
 	bootmem_data_t *bdata;
 	void *region;
 
-	//ÓĞÈËµ÷´íº¯ÊıÁË£¬¾¯¸æÒ»ÏÂ
+	//æœ‰äººè°ƒé”™å‡½æ•°äº†ï¼Œè­¦å‘Šä¸€ä¸‹
 	if (WARN_ON_ONCE(slab_is_available()))
-		return kzalloc(size, GFP_NOWAIT);//´ËÊ±slab·ÖÅäÆ÷ÒÑ¾­¿ÉÓÃ£¬¾Í´ÓslabÖĞ·ÖÅä°É¡£
+		return kzalloc(size, GFP_NOWAIT);//æ­¤æ—¶slabåˆ†é…å™¨å·²ç»å¯ç”¨ï¼Œå°±ä»slabä¸­åˆ†é…å§ã€‚
 
-	//±éÀúËùÓĞÄÚ´æ¿é
+	//éå†æ‰€æœ‰å†…å­˜å—
 	list_for_each_entry(bdata, &bdata_list, list) {
-		//¸ù¾İgoal²éÕÒºÏÊÊµÄÄÚ´æ¿é¡£
+		//æ ¹æ®goalæŸ¥æ‰¾åˆé€‚çš„å†…å­˜å—ã€‚
 		if (goal && bdata->node_low_pfn <= PFN_DOWN(goal))
 			continue;
 		if (limit && bdata->node_min_pfn >= PFN_DOWN(limit))
 			break;
 
-		//ÔÚÄÚ´æ¿éÖĞ·ÖÅä¡£
+		//åœ¨å†…å­˜å—ä¸­åˆ†é…ã€‚
 		region = alloc_bootmem_bdata(bdata, size, align, goal, limit);
-		if (region)//³É¹¦ÁË£¬·µ»Ø
+		if (region)//æˆåŠŸäº†ï¼Œè¿”å›
 			return region;
 	}
 
@@ -682,8 +682,8 @@ static void * __init alloc_bootmem_core(unsigned long size,
 }
 
 /**
- * ÔÚbootmemÖĞ·ÖÅäÄÚ´æ
- * ÓÅÏÈ´ÓgoalÖĞ·ÖÅä£¬Èç¹ûÔÚgoalÖĞÃ»ÓĞÕÒµ½¿ÉÓÃÄÚ´æ£¬Ôò´ÓÆäËûÄÚ´æÌõÖĞ·ÖÅä¡£
+ * åœ¨bootmemä¸­åˆ†é…å†…å­˜
+ * ä¼˜å…ˆä»goalä¸­åˆ†é…ï¼Œå¦‚æœåœ¨goalä¸­æ²¡æœ‰æ‰¾åˆ°å¯ç”¨å†…å­˜ï¼Œåˆ™ä»å…¶ä»–å†…å­˜æ¡ä¸­åˆ†é…ã€‚
  */
 static void * __init ___alloc_bootmem_nopanic(unsigned long size,
 					      unsigned long align,
@@ -693,16 +693,16 @@ static void * __init ___alloc_bootmem_nopanic(unsigned long size,
 	void *ptr;
 
 restart:
-	//´Ógoal¿ªÊ¼·ÖÅä
+	//ä»goalå¼€å§‹åˆ†é…
 	ptr = alloc_bootmem_core(size, align, goal, limit);
-	if (ptr)//³É¹¦:)
+	if (ptr)//æˆåŠŸ:)
 		return ptr;
-	if (goal) {//Èç¹û·ÖÅäÊ§°Ü£¬²¢ÇÒ²»ÊÇ´ÓÍ·¿ªÊ¼·ÖÅä£¬Ôò»ØÍË
+	if (goal) {//å¦‚æœåˆ†é…å¤±è´¥ï¼Œå¹¶ä¸”ä¸æ˜¯ä»å¤´å¼€å§‹åˆ†é…ï¼Œåˆ™å›é€€
 		goal = 0;
 		goto restart;
 	}
 
-	//È·ÊµÎŞ·¨·ÖÅäÁË:(
+	//ç¡®å®æ— æ³•åˆ†é…äº†:(
 	return NULL;
 }
 
@@ -728,12 +728,12 @@ void * __init __alloc_bootmem_nopanic(unsigned long size, unsigned long align,
 }
 
 /**
- * ·ÖÅäÒ³ÖĞ¼äÄ¿Â¼
- * ÆäÖĞÇ°448ÏîÊÇÓÃRAMÇ°896MBµÄÎïÀíµØÖ·Ìî³ä£¬ËäÈ»ÓĞ512Ïî£¬µ«ÊÇºó64ÏîÁô¸ø·ÇÁ¬Ğø·ÖÅäÄÚ´æ
- * ÔÚËùÓĞ½ÚµãÖĞ·ÖÅäbootÄÚ´æ
- *  size:   ËùĞè·ÖÅäµÄÄÚ´æ³¤¶È
- *  align:  ¶ÔÆë·½Ê½
- *  goal:   ´ÓºÎ´¦¿ªÊ¼·ÖÅä,DMAÄÚ´æ´Ó0¿ªÊ¼£¬ÆÕÍ¨ÄÚ´æ´ÓMAX_DAM_ADDRESS¿ªÊ¼
+ * åˆ†é…é¡µä¸­é—´ç›®å½•
+ * å…¶ä¸­å‰448é¡¹æ˜¯ç”¨RAMå‰896MBçš„ç‰©ç†åœ°å€å¡«å……ï¼Œè™½ç„¶æœ‰512é¡¹ï¼Œä½†æ˜¯å64é¡¹ç•™ç»™éè¿ç»­åˆ†é…å†…å­˜
+ * åœ¨æ‰€æœ‰èŠ‚ç‚¹ä¸­åˆ†é…bootå†…å­˜
+ *  size:   æ‰€éœ€åˆ†é…çš„å†…å­˜é•¿åº¦
+ *  align:  å¯¹é½æ–¹å¼
+ *  goal:   ä»ä½•å¤„å¼€å§‹åˆ†é…,DMAå†…å­˜ä»0å¼€å§‹ï¼Œæ™®é€šå†…å­˜ä»MAX_DAM_ADDRESSå¼€å§‹
  */
 static void * __init ___alloc_bootmem(unsigned long size, unsigned long align,
 					unsigned long goal, unsigned long limit)
@@ -838,7 +838,7 @@ void * __init ___alloc_bootmem_node(pg_data_t *pgdat, unsigned long size,
  * The function panics if the request can not be satisfied.
  */
 /**
- * ÔÚNUMAÏµÍ³ÖĞ£¬ÔÚÖ¸¶¨½Úµã·ÖÅä³õÊ¼»¯ÄÚ´æ
+ * åœ¨NUMAç³»ç»Ÿä¸­ï¼Œåœ¨æŒ‡å®šèŠ‚ç‚¹åˆ†é…åˆå§‹åŒ–å†…å­˜
  */
 void * __init __alloc_bootmem_node(pg_data_t *pgdat, unsigned long size,
 				   unsigned long align, unsigned long goal)

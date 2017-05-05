@@ -15,7 +15,7 @@
  *  Added kerneld support: Jacques Gelinas and Bjorn Ekwall
  *  Added change_root: Werner Almesberger & Hans Lermen, Feb '96
  *  Added options to /proc/mounts:
- *    TorbjÃ¶rn Lindh (torbjorn.lindh@gopta.se), April 14, 1996.
+ *    Torbjæšrn Lindh (torbjorn.lindh@gopta.se), April 14, 1996.
  *  Added devfs support: Richard Gooch <rgooch@atnf.csiro.au>, 13-JAN-1998
  *  Heavily rewritten for 'one fs - one tree' dcache architecture. AV, Mar 2000
  */
@@ -399,21 +399,21 @@ void sync_supers(void)
 {
 	struct super_block *sb;
 
-	/* »ñÈ¡³¬¼¶¿éÁ´±íµÄ×ÔĞıËø */
+	/* è·å–è¶…çº§å—é“¾è¡¨çš„è‡ªæ—‹é” */
 	spin_lock(&sb_lock);
 restart:
-	/* ±éÀúËùÓĞ³¬¼¶¿é */
+	/* éå†æ‰€æœ‰è¶…çº§å— */
 	list_for_each_entry(sb, &super_blocks, s_list) {
-		if (sb->s_dirt) {/* ¸Ã³¬¼¶¿éÊÇÔàµÄ */
-			sb->s_count++;/* ²Ù×÷´ÎÊı¼ÆÊı */
+		if (sb->s_dirt) {/* è¯¥è¶…çº§å—æ˜¯è„çš„ */
+			sb->s_count++;/* æ“ä½œæ¬¡æ•°è®¡æ•° */
 			spin_unlock(&sb_lock);
-			/* ·ÀÖ¹umountÎÄ¼şÏµÍ³ */
+			/* é˜²æ­¢umountæ–‡ä»¶ç³»ç»Ÿ */
 			down_read(&sb->s_umount);
-			/* »ØĞ´³¬¼¶¿é£¬ÕâÊÇÍ¨¹ıµ÷ÓÃÎÄ¼şÏµÍ³µÄ»Øµ÷À´Íê³ÉµÄ */
+			/* å›å†™è¶…çº§å—ï¼Œè¿™æ˜¯é€šè¿‡è°ƒç”¨æ–‡ä»¶ç³»ç»Ÿçš„å›è°ƒæ¥å®Œæˆçš„ */
 			write_super(sb);
 			up_read(&sb->s_umount);
 			spin_lock(&sb_lock);
-			/* ¸ÃÎÄ¼şÏµÍ³ÒÑ¾­±»ÒÆ³ı£¬ËµÃ÷È«¾ÖÁ´±íÒÑ¾­ÓĞ±ä»¯£¬ÖØĞÂ¿ªÊ¼ */
+			/* è¯¥æ–‡ä»¶ç³»ç»Ÿå·²ç»è¢«ç§»é™¤ï¼Œè¯´æ˜å…¨å±€é“¾è¡¨å·²ç»æœ‰å˜åŒ–ï¼Œé‡æ–°å¼€å§‹ */
 			if (__put_super_and_need_restart(sb))
 				goto restart;
 		}
@@ -937,15 +937,15 @@ static struct vfsmount *fs_set_subtype(struct vfsmount *mnt, const char *fstype)
 struct vfsmount *
 do_kern_mount(const char *fstype, int flags, const char *name, void *data)
 {
-	/* ²éÕÒÎÄ¼şÏµÍ³£¬±ØÒªÊ±¼ÓÔØ¶ÔÓ¦µÄÄ£¿é */
+	/* æŸ¥æ‰¾æ–‡ä»¶ç³»ç»Ÿï¼Œå¿…è¦æ—¶åŠ è½½å¯¹åº”çš„æ¨¡å— */
 	struct file_system_type *type = get_fs_type(fstype);
 	struct vfsmount *mnt;
 	if (!type)
 		return ERR_PTR(-ENODEV);
-	/* ¶ÁÈ¡ÎÄ¼şÏµÍ³³¬¼¶¿é */
+	/* è¯»å–æ–‡ä»¶ç³»ç»Ÿè¶…çº§å— */
 	mnt = vfs_kern_mount(type, flags, name, data);
 	if (!IS_ERR(mnt) && (type->fs_flags & FS_HAS_SUBTYPE) &&
-	    !mnt->mnt_sb->s_subtype)/* ´¦Àí×ÓÎÄ¼şÏµÍ³ */
+	    !mnt->mnt_sb->s_subtype)/* å¤„ç†å­æ–‡ä»¶ç³»ç»Ÿ */
 		mnt = fs_set_subtype(mnt, fstype);
 	put_filesystem(type);
 	return mnt;

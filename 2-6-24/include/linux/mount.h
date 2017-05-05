@@ -23,76 +23,76 @@ struct dentry;
 struct mnt_namespace;
 
 /**
- * ½ûÖ¹setuid
+ * ç¦æ­¢setuid
  */
 #define MNT_NOSUID	0x01
 /**
- * ĞéÄâÎÄ¼şÏµÍ³£¬Ã»ÓĞÓëÎïÀíÉè±¸¹ØÁª¡£
+ * è™šæ‹Ÿæ–‡ä»¶ç³»ç»Ÿï¼Œæ²¡æœ‰ä¸ç‰©ç†è®¾å¤‡å…³è”ã€‚
  */
 #define MNT_NODEV	0x02
 /**
- * ²»ÔÊĞíÖ´ĞĞ
+ * ä¸å…è®¸æ‰§è¡Œ
  */
 #define MNT_NOEXEC	0x04
 /**
- * ²»¼ÇÂ¼·ÃÎÊÊ±¼äºÍĞŞ¸ÄÊ±¼ä
+ * ä¸è®°å½•è®¿é—®æ—¶é—´å’Œä¿®æ”¹æ—¶é—´
  */
 #define MNT_NOATIME	0x08
 #define MNT_NODIRATIME	0x10
 #define MNT_RELATIME	0x20
 
 /**
- * ÓÃÓÚNFSºÍAFS
+ * ç”¨äºNFSå’ŒAFS
  */
 #define MNT_SHRINKABLE	0x100
 
-/* ¹²ÏíºÍ²»¿É°ó¶¨×°ÔØ */
+/* å…±äº«å’Œä¸å¯ç»‘å®šè£…è½½ */
 #define MNT_SHARED	0x1000	/* if the vfsmount is a shared mount */
 #define MNT_UNBINDABLE	0x2000	/* if the vfsmount is a unbindable mount */
 #define MNT_PNODE_MASK	0x3000	/* propagation flag mask */
 
 /**
- * ÎÄ¼şÏµÍ³×°ÔØµã
+ * æ–‡ä»¶ç³»ç»Ÿè£…è½½ç‚¹
  */
 struct vfsmount {
-	/* ÓÃÓÚ½«×°ÔØµã¼ÓÈëµ½É¢ÁĞ±íÖĞ */
+	/* ç”¨äºå°†è£…è½½ç‚¹åŠ å…¥åˆ°æ•£åˆ—è¡¨ä¸­ */
 	struct list_head mnt_hash;
-	/* ¸¸ÎÄ¼şÏµÍ³µÄ×°ÔØµã */
+	/* çˆ¶æ–‡ä»¶ç³»ç»Ÿçš„è£…è½½ç‚¹ */
 	struct vfsmount *mnt_parent;	/* fs we are mounted on */
-	/* ×°ÔØµãÔÚ¸¸Ä¿Â¼ÖĞµÄdentry½á¹¹ */
+	/* è£…è½½ç‚¹åœ¨çˆ¶ç›®å½•ä¸­çš„dentryç»“æ„ */
 	struct dentry *mnt_mountpoint;	/* dentry of mountpoint */
-	/* ×°ÔØµãËùÔÚµÄ¸ùÄ¿Â¼»º´æ */
+	/* è£…è½½ç‚¹æ‰€åœ¨çš„æ ¹ç›®å½•ç¼“å­˜ */
 	struct dentry *mnt_root;	/* root of the mounted tree */
-	/* ×°ÔØµãµÄ³¬¼¶¿é */
+	/* è£…è½½ç‚¹çš„è¶…çº§å— */
 	struct super_block *mnt_sb;	/* pointer to superblock */
-	/* Á´±íÍ·£¬±íÊ¾ËùÓĞ×°ÔØÔÚÎÄ¼şÏµÍ³ÄÚµÄÎÄ¼şÏµÍ³ */
+	/* é“¾è¡¨å¤´ï¼Œè¡¨ç¤ºæ‰€æœ‰è£…è½½åœ¨æ–‡ä»¶ç³»ç»Ÿå†…çš„æ–‡ä»¶ç³»ç»Ÿ */
 	struct list_head mnt_mounts;	/* list of children, anchored here */
-	/* Í¨¹ı´Ë×Ö¶Î£¬½«ÎÄ¼şÏµÍ³×°ÔØµãÌí¼Óµ½¸¸ÎÄ¼şÏµÍ³µÄmnt_mountsÁ´±íÖĞ */
+	/* é€šè¿‡æ­¤å­—æ®µï¼Œå°†æ–‡ä»¶ç³»ç»Ÿè£…è½½ç‚¹æ·»åŠ åˆ°çˆ¶æ–‡ä»¶ç³»ç»Ÿçš„mnt_mountsé“¾è¡¨ä¸­ */
 	struct list_head mnt_child;	/* and going through their mnt_child */
-	/* ¼ÓÔØ±êÖ¾£¬ÈçMNT_NOSUID */
+	/* åŠ è½½æ ‡å¿—ï¼Œå¦‚MNT_NOSUID */
 	int mnt_flags;
 	/* 4 bytes hole on 64bits arches */
 	char *mnt_devname;		/* Name of device e.g. /dev/dsk/hda1 */
-	/* Í¨¹ı´Ë×Ö¶ÎÌí¼Óµ½ÃüÃû¿Õ¼äµÄ¼ÓÔØµãÁ´±íÖĞ */
+	/* é€šè¿‡æ­¤å­—æ®µæ·»åŠ åˆ°å‘½åç©ºé—´çš„åŠ è½½ç‚¹é“¾è¡¨ä¸­ */
 	struct list_head mnt_list;
-	/* ×Ô¶¯¹ıÆÚµÄ×°ÔØÁ´±íÔªËØ */
+	/* è‡ªåŠ¨è¿‡æœŸçš„è£…è½½é“¾è¡¨å…ƒç´  */
 	struct list_head mnt_expire;	/* link in fs-specific expiry list */
-	/* ¹²Ïí×°ÔØÁ´±íÔªËØ */
+	/* å…±äº«è£…è½½é“¾è¡¨å…ƒç´  */
 	struct list_head mnt_share;	/* circular list of shared mounts */
-	/* ´ÓÊô×°ÔØ¡¢Ö÷×°ÔØÊ¹ÓÃµÄÁ´±íºÍÖ¸Õë */
+	/* ä»å±è£…è½½ã€ä¸»è£…è½½ä½¿ç”¨çš„é“¾è¡¨å’ŒæŒ‡é’ˆ */
 	struct list_head mnt_slave_list;/* list of slave mounts */
 	struct list_head mnt_slave;	/* slave list entry */
 	struct vfsmount *mnt_master;	/* slave is on master->mnt_slave_list */
-	/* ËùÊôµÄÃüÃû¿Õ¼ä */
+	/* æ‰€å±çš„å‘½åç©ºé—´ */
 	struct mnt_namespace *mnt_ns;	/* containing namespace */
 	/*
 	 * We put mnt_count & mnt_expiry_mark at the end of struct vfsmount
 	 * to let these frequently modified fields in a separate cache line
 	 * (so that reads of mnt_flags wont ping-pong on SMP machines)
 	 */
-	/* ¼ÆÊıÆ÷£¬Ê¹ÓÃmntputºÍmntgetÎ¬»¤ */
+	/* è®¡æ•°å™¨ï¼Œä½¿ç”¨mntputå’Œmntgetç»´æŠ¤ */
 	atomic_t mnt_count;
-	/* ÊÇ·ñ´¦Àí×°ÔØ¹ıÆÚ */
+	/* æ˜¯å¦å¤„ç†è£…è½½è¿‡æœŸ */
 	int mnt_expiry_mark;		/* true if marked for expiry */
 	int mnt_pinned;
 };

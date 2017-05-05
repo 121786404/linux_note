@@ -31,23 +31,23 @@
 //#define ACL_ADD		(0x08)
 //#define ACL_DELETE		(0x10)
 
-/* aclÃèÊö·û,±íÊ¾Ä³¸öÓÃ»§¶ÔÎÄ¼şµÄÈ¨ÏŞ */
+/* aclæè¿°ç¬¦,è¡¨ç¤ºæŸä¸ªç”¨æˆ·å¯¹æ–‡ä»¶çš„æƒé™ */
 struct posix_acl_entry {
-	/* ±ê¼Ç */
+	/* æ ‡è®° */
 	short			e_tag;
-	/* È¨ÏŞ */
+	/* æƒé™ */
 	unsigned short		e_perm;
-	/* ÓÃ»§¡¢×éid */
+	/* ç”¨æˆ·ã€ç»„id */
 	unsigned int		e_id;
 };
 
-/* Ä³¸öinodeµÄËùÓĞacl */
+/* æŸä¸ªinodeçš„æ‰€æœ‰acl */
 struct posix_acl {
-	/* ÒıÓÃ¼ÆÊı */
+	/* å¼•ç”¨è®¡æ•° */
 	atomic_t		a_refcount;
-	/* aclÏîµÄÊıÄ¿ */
+	/* aclé¡¹çš„æ•°ç›® */
 	unsigned int		a_count;
-	/* aclÏîÊı×é */
+	/* aclé¡¹æ•°ç»„ */
 	struct posix_acl_entry	a_entries[0];
 };
 

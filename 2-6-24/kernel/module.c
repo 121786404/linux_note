@@ -182,7 +182,7 @@ static unsigned long __find_symbol(const char *name,
 
 	/* Core kernel first. */
 	*owner = NULL;
-	/* ±éÀú³Ö¾Ãµ½ÄÚºËÖĞµÄËùÓĞ·ûºÅ */
+	/* éå†æŒä¹…åˆ°å†…æ ¸ä¸­çš„æ‰€æœ‰ç¬¦å· */
 	ks = lookup_symbol(name, __start___ksymtab, __stop___ksymtab);
 	if (ks) {
 		*crc = symversion(__start___kcrctab, (ks - __start___ksymtab));
@@ -234,7 +234,7 @@ static unsigned long __find_symbol(const char *name,
 	}
 
 	/* Now try modules. */
-	list_for_each_entry(mod, &modules, list) {/* ÔÚËùÓĞÄ£¿éµ¼³ö·ûºÅ±íÖĞËÑË÷ */
+	list_for_each_entry(mod, &modules, list) {/* åœ¨æ‰€æœ‰æ¨¡å—å¯¼å‡ºç¬¦å·è¡¨ä¸­æœç´¢ */
 		*owner = mod;
 		ks = lookup_symbol(name, mod->syms, mod->syms + mod->num_syms);
 		if (ks) {
@@ -515,18 +515,18 @@ static void module_unload_init(struct module *mod)
 }
 
 /* modules using other modules */
-/* Ä£¿éÒÀÀµ¹ØÏµ */
+/* æ¨¡å—ä¾èµ–å…³ç³» */
 struct module_use
 {
-	/* Í¨¹ı´Ë×Ö¶Î£¬¼ÓÈëµ½Ä£¿éµÄÒıÓÃÁ´±íÖĞ */
+	/* é€šè¿‡æ­¤å­—æ®µï¼ŒåŠ å…¥åˆ°æ¨¡å—çš„å¼•ç”¨é“¾è¡¨ä¸­ */
 	struct list_head list;
-	/* ÒıÓÃµÄÄ£¿é */
+	/* å¼•ç”¨çš„æ¨¡å— */
 	struct module *module_which_uses;
 };
 
 /* Does a already use b? */
 /**
- * ÅĞ¶ÏÄ£¿éaÊÇ·ñÒÀÀµb
+ * åˆ¤æ–­æ¨¡å—aæ˜¯å¦ä¾èµ–b
  */
 static int already_uses(struct module *a, struct module *b)
 {
@@ -544,28 +544,28 @@ static int already_uses(struct module *a, struct module *b)
 
 /* Module a uses b */
 /**
- * ½¨Á¢Ä£¿éa¡¢bÖ®¼äµÄÒÀÀµ¹ØÏµ
+ * å»ºç«‹æ¨¡å—aã€bä¹‹é—´çš„ä¾èµ–å…³ç³»
  */
 static int use_module(struct module *a, struct module *b)
 {
 	struct module_use *use;
 	int no_warn;
 
-	/* Èç¹ûÒÑ¾­ÒÀÀµÁËb£¬ÔòÍË³ö */
+	/* å¦‚æœå·²ç»ä¾èµ–äº†bï¼Œåˆ™é€€å‡º */
 	if (b == NULL || already_uses(a, b)) return 1;
 
-	if (!strong_try_module_get(b))/* Ìí¼ÓÄ£¿éÒıÓÃ¼ÆÊı */
+	if (!strong_try_module_get(b))/* æ·»åŠ æ¨¡å—å¼•ç”¨è®¡æ•° */
 		return 0;
 
 	DEBUGP("Allocating new usage for %s.\n", a->name);
-	use = kmalloc(sizeof(*use), GFP_ATOMIC);/* ·ÖÅäÁ´±íÊı¾İ½á¹¹ */
-	if (!use) {/* ·ÖÅäÊ§°Ü£¬µİ¼õÒıÓÃ¼ÆÊı²¢ÍË³ö */
+	use = kmalloc(sizeof(*use), GFP_ATOMIC);/* åˆ†é…é“¾è¡¨æ•°æ®ç»“æ„ */
+	if (!use) {/* åˆ†é…å¤±è´¥ï¼Œé€’å‡å¼•ç”¨è®¡æ•°å¹¶é€€å‡º */
 		printk("%s: out of memory loading\n", a->name);
 		module_put(b);
 		return 0;
 	}
 
-	/* ½«Ä£¿éÌí¼Óµ½ÒıÓÃÁ´±íÖĞ */
+	/* å°†æ¨¡å—æ·»åŠ åˆ°å¼•ç”¨é“¾è¡¨ä¸­ */
 	use->module_which_uses = a;
 	list_add(&use->list, &b->modules_which_use_me);
 	no_warn = sysfs_create_link(b->holders_dir, &a->mkobj.kobj, a->name);
@@ -668,7 +668,7 @@ static void wait_for_zero_refcount(struct module *mod)
 }
 
 /**
- * ÏµÍ³µ÷ÓÃ:´ÓÄÚºËÖĞÒÆ³ıÒ»¸öÄ£¿é¡£
+ * ç³»ç»Ÿè°ƒç”¨:ä»å†…æ ¸ä¸­ç§»é™¤ä¸€ä¸ªæ¨¡å—ã€‚
  */
 asmlinkage long
 sys_delete_module(const char __user *name_user, unsigned int flags)
@@ -680,7 +680,7 @@ sys_delete_module(const char __user *name_user, unsigned int flags)
 	if (!capable(CAP_SYS_MODULE))
 		return -EPERM;
 
-	/* ´ÓÓÃ»§Ì¬¸´ÖÆÄ£¿éÃû³Æ */
+	/* ä»ç”¨æˆ·æ€å¤åˆ¶æ¨¡å—åç§° */
 	if (strncpy_from_user(name, name_user, MODULE_NAME_LEN-1) < 0)
 		return -EFAULT;
 	name[MODULE_NAME_LEN-1] = '\0';
@@ -688,20 +688,20 @@ sys_delete_module(const char __user *name_user, unsigned int flags)
 	if (mutex_lock_interruptible(&module_mutex) != 0)
 		return -EINTR;
 
-	mod = find_module(name);/* ¸ù¾İÄ£¿éÃû³Æ£¬ÔÚÄÚºËÖĞ²éÕÒÄ£¿é¶ÔÏó */
+	mod = find_module(name);/* æ ¹æ®æ¨¡å—åç§°ï¼Œåœ¨å†…æ ¸ä¸­æŸ¥æ‰¾æ¨¡å—å¯¹è±¡ */
 	if (!mod) {
 		ret = -ENOENT;
 		goto out;
 	}
 
-	if (!list_empty(&mod->modules_which_use_me)) {/* ÆäËûÄ£¿é»¹ĞèÒªÊ¹ÓÃ±¾Ä£¿é */
+	if (!list_empty(&mod->modules_which_use_me)) {/* å…¶ä»–æ¨¡å—è¿˜éœ€è¦ä½¿ç”¨æœ¬æ¨¡å— */
 		/* Other modules depend on us: get rid of them first. */
 		ret = -EWOULDBLOCK;
 		goto out;
 	}
 
 	/* Doing init or already dying? */
-	if (mod->state != MODULE_STATE_LIVE) {/* ¼ÆÊıÆ÷»¹²»Îª0 */
+	if (mod->state != MODULE_STATE_LIVE) {/* è®¡æ•°å™¨è¿˜ä¸ä¸º0 */
 		/* FIXME: if (force), slam module count and wake up
                    waiter --RR */
 		DEBUGP("%s already dying\n", mod->name);
@@ -710,7 +710,7 @@ sys_delete_module(const char __user *name_user, unsigned int flags)
 	}
 
 	/* If it has an init func, it must have an exit func to unload */
-	if (mod->init && !mod->exit) {/* Ã»ÓĞexitº¯Êı£¬ĞèÒªÇ¿ÖÆĞ¶ÔØ */
+	if (mod->init && !mod->exit) {/* æ²¡æœ‰exitå‡½æ•°ï¼Œéœ€è¦å¼ºåˆ¶å¸è½½ */
 		forced = try_force_unload(flags);
 		if (!forced) {
 			/* This module can't be removed */
@@ -732,12 +732,12 @@ sys_delete_module(const char __user *name_user, unsigned int flags)
 		wait_for_zero_refcount(mod);
 
 	/* Final destruction now noone is using it. */
-	if (mod->exit != NULL) {/* Ö´ĞĞÄ£¿éµÄexit»Øµ÷º¯Êı */
+	if (mod->exit != NULL) {/* æ‰§è¡Œæ¨¡å—çš„exitå›è°ƒå‡½æ•° */
 		mutex_unlock(&module_mutex);
 		mod->exit();
 		mutex_lock(&module_mutex);
 	}
-	free_module(mod);/* ÊÍ·ÅÄ£¿éÄÚ´æ */
+	free_module(mod);/* é‡Šæ”¾æ¨¡å—å†…å­˜ */
 
  out:
 	mutex_unlock(&module_mutex);
@@ -966,7 +966,7 @@ static unsigned long resolve_symbol(Elf_Shdr *sechdrs,
 	unsigned long ret;
 	const unsigned long *crc;
 
-	/* __find_symbolÍê³ÉÊµ¼ÊµÄ·ûºÅ½âÎö¹¤×÷ */
+	/* __find_symbolå®Œæˆå®é™…çš„ç¬¦å·è§£æå·¥ä½œ */
 	ret = __find_symbol(name, &owner, &crc,
 			!(mod->taints & TAINT_PROPRIETARY_MODULE));
 	if (ret) {
@@ -1398,11 +1398,11 @@ static int simplify_symbols(Elf_Shdr *sechdrs,
 {
 	Elf_Sym *sym = (void *)sechdrs[symindex].sh_addr;
 	unsigned long secbase;
-	/* ·ûºÅÊıÄ¿ */
+	/* ç¬¦å·æ•°ç›® */
 	unsigned int i, n = sechdrs[symindex].sh_size / sizeof(Elf_Sym);
 	int ret = 0;
 
-	for (i = 1; i < n; i++) {/* ±éÀúËùÓĞĞèÒª´¦ÀíµÄ·ûºÅ */
+	for (i = 1; i < n; i++) {/* éå†æ‰€æœ‰éœ€è¦å¤„ç†çš„ç¬¦å· */
 		switch (sym[i].st_shndx) {
 		case SHN_COMMON:
 			/* We compiled with -fno-common.  These are not
@@ -1413,22 +1413,22 @@ static int simplify_symbols(Elf_Shdr *sechdrs,
 			ret = -ENOEXEC;
 			break;
 
-		case SHN_ABS:/* ÍêÈ«¶¨ÒåµÄ·ûºÅ£¬Ê²Ã´Ò²²»ÓÃ×ö */
+		case SHN_ABS:/* å®Œå…¨å®šä¹‰çš„ç¬¦å·ï¼Œä»€ä¹ˆä¹Ÿä¸ç”¨åš */
 			/* Don't need to do anything */
 			DEBUGP("Absolute symbol: 0x%08lx\n",
 			       (long)sym[i].st_value);
 			break;
 
-		case SHN_UNDEF:/* Î´¶¨ÒåµÄ·ûºÅ */
+		case SHN_UNDEF:/* æœªå®šä¹‰çš„ç¬¦å· */
 			sym[i].st_value
 			  = resolve_symbol(sechdrs, versindex,
-					   strtab + sym[i].st_name, mod);/* ·µ»Ø¸ø¶¨·ûºÅµÄµØÖ· */
+					   strtab + sym[i].st_name, mod);/* è¿”å›ç»™å®šç¬¦å·çš„åœ°å€ */
 
 			/* Ok if resolved.  */
-			if (sym[i].st_value != 0)/* ÒÑ¾­ÕÒµ½·ûºÅ¶¨Òå */
+			if (sym[i].st_value != 0)/* å·²ç»æ‰¾åˆ°ç¬¦å·å®šä¹‰ */
 				break;
 			/* Ok if weak.  */
-			if (ELF_ST_BIND(sym[i].st_info) == STB_WEAK)/* ËäÈ»ÎŞ·¨½âÎö¸Ã·ûºÅ£¬µ«ÊÇËüÊÇÈõ·ûºÅ */
+			if (ELF_ST_BIND(sym[i].st_info) == STB_WEAK)/* è™½ç„¶æ— æ³•è§£æè¯¥ç¬¦å·ï¼Œä½†æ˜¯å®ƒæ˜¯å¼±ç¬¦å· */
 				break;
 
 			printk(KERN_WARNING "%s: Unknown symbol %s\n",
@@ -1436,7 +1436,7 @@ static int simplify_symbols(Elf_Shdr *sechdrs,
 			ret = -ENOENT;
 			break;
 
-		default:/* ÆäËû·ûºÅ£¬ÔÚÄ£¿é·ûºÅ±íÖĞ²éÕÒ */
+		default:/* å…¶ä»–ç¬¦å·ï¼Œåœ¨æ¨¡å—ç¬¦å·è¡¨ä¸­æŸ¥æ‰¾ */
 			/* Divert to percpu allocation if a percpu var. */
 			if (sym[i].st_shndx == pcpuindex)
 				secbase = (unsigned long)mod->percpu;
@@ -1703,15 +1703,15 @@ static struct module *load_module(void __user *umod,
 
 	DEBUGP("load_module: umod=%p, len=%lu, uargs=%p\n",
 	       umod, len, uargs);
-	if (len < sizeof(*hdr))/* Ä£¿é³¤¶È²»ÕıÈ· */
+	if (len < sizeof(*hdr))/* æ¨¡å—é•¿åº¦ä¸æ­£ç¡® */
 		return ERR_PTR(-ENOEXEC);
 
 	/* Suck in entire file: we'll want most of it. */
 	/* vmalloc barfs on "unusual" numbers.  Check here */
-	/* Ä£¿éÌ«´ó£¬»òÕß²»ÄÜÔÚÄÚºËÌ¬·ÖÅäÄÚ´æ */
+	/* æ¨¡å—å¤ªå¤§ï¼Œæˆ–è€…ä¸èƒ½åœ¨å†…æ ¸æ€åˆ†é…å†…å­˜ */
 	if (len > 64 * 1024 * 1024 || (hdr = vmalloc(len)) == NULL)
 		return ERR_PTR(-ENOMEM);
-	if (copy_from_user(hdr, umod, len) != 0) {/* ½«Ä£¿é¶ş½øÖÆÊı¾İ¸´ÖÆµ½ÄÚºË */
+	if (copy_from_user(hdr, umod, len) != 0) {/* å°†æ¨¡å—äºŒè¿›åˆ¶æ•°æ®å¤åˆ¶åˆ°å†…æ ¸ */
 		err = -EFAULT;
 		goto free_hdr;
 	}
@@ -1730,12 +1730,12 @@ static struct module *load_module(void __user *umod,
 		goto truncated;
 
 	/* Convenience variables */
-	sechdrs = (void *)hdr + hdr->e_shoff;/* ELF¶ÎĞÅÏ¢ */
-	/* ¶ÎÃû³ÆÔÚÄÚ´æÖĞµÄÎ»ÖÃ */
+	sechdrs = (void *)hdr + hdr->e_shoff;/* ELFæ®µä¿¡æ¯ */
+	/* æ®µåç§°åœ¨å†…å­˜ä¸­çš„ä½ç½® */
 	secstrings = (void *)hdr + sechdrs[hdr->e_shstrndx].sh_offset;
 	sechdrs[0].sh_addr = 0;
 
-	/* e_shnum¶ÎÊıÄ¿£¬½«è·µØÖ·¸ÄÎª¶ÎÔÚÓ³ÉäÖĞµÄ¾ø¶ÔµØÖ· */
+	/* e_shnumæ®µæ•°ç›®ï¼Œå°†ç’ºåœ°å€æ”¹ä¸ºæ®µåœ¨æ˜ å°„ä¸­çš„ç»å¯¹åœ°å€ */
 	for (i = 1; i < hdr->e_shnum; i++) {
 		if (sechdrs[i].sh_type != SHT_NOBITS
 		    && len < sechdrs[i].sh_offset + sechdrs[i].sh_size)
@@ -1743,14 +1743,14 @@ static struct module *load_module(void __user *umod,
 
 		/* Mark all sections sh_addr with their address in the
 		   temporary image. */
-		/* ĞŞ¸Ä¶ÎµØÖ·Îª¾ø¶ÔµØÖ· */
+		/* ä¿®æ”¹æ®µåœ°å€ä¸ºç»å¯¹åœ°å€ */
 		sechdrs[i].sh_addr = (size_t)hdr + sechdrs[i].sh_offset;
 
 		/* Internal symbols and strings. */
-		if (sechdrs[i].sh_type == SHT_SYMTAB) {/* ¸Ã¶ÎÊÇÄÚ²¿·ûºÅ»òÕß×Ö·û´® */
+		if (sechdrs[i].sh_type == SHT_SYMTAB) {/* è¯¥æ®µæ˜¯å†…éƒ¨ç¬¦å·æˆ–è€…å­—ç¬¦ä¸² */
 			symindex = i;
 			strindex = sechdrs[i].sh_link;
-			/* ÄÚ²¿·ûºÅ±íµÄÎ»ÖÃ */
+			/* å†…éƒ¨ç¬¦å·è¡¨çš„ä½ç½® */
 			strtab = (char *)hdr + sechdrs[strindex].sh_offset;
 		}
 #ifndef CONFIG_MODULE_UNLOAD
@@ -1760,7 +1760,7 @@ static struct module *load_module(void __user *umod,
 #endif
 	}
 
-	/* ²éÕÒthis_module¶Î£¬µÃµ½Ä£¿éĞÅÏ¢ */
+	/* æŸ¥æ‰¾this_moduleæ®µï¼Œå¾—åˆ°æ¨¡å—ä¿¡æ¯ */
 	modindex = find_sec(hdr, sechdrs, secstrings,
 			    ".gnu.linkonce.this_module");
 	if (!modindex) {
@@ -1768,7 +1768,7 @@ static struct module *load_module(void __user *umod,
 		err = -ENOEXEC;
 		goto free_hdr;
 	}
-	mod = (void *)sechdrs[modindex].sh_addr;/* modÖ¸ÏòmoduleÊµÀı,Ìá¹©ÁËÄ£¿éÃû³ÆºÍ³õÊ¼»¯º¯ÊıÖ¸Õë */
+	mod = (void *)sechdrs[modindex].sh_addr;/* modæŒ‡å‘moduleå®ä¾‹,æä¾›äº†æ¨¡å—åç§°å’Œåˆå§‹åŒ–å‡½æ•°æŒ‡é’ˆ */
 
 	if (symindex == 0) {
 		printk(KERN_WARNING "%s: module has no symbols (stripped?)\n",
@@ -1778,7 +1778,7 @@ static struct module *load_module(void __user *umod,
 	}
 
 	/* Optional sections */
-	/* ²éÕÒÆäËû¿ÉÑ¡¶Î */
+	/* æŸ¥æ‰¾å…¶ä»–å¯é€‰æ®µ */
 	exportindex = find_sec(hdr, sechdrs, secstrings, "__ksymtab");
 	gplindex = find_sec(hdr, sechdrs, secstrings, "__ksymtab_gpl");
 	gplfutureindex = find_sec(hdr, sechdrs, secstrings, "__ksymtab_gpl_future");
@@ -1843,7 +1843,7 @@ static struct module *load_module(void __user *umod,
 	mod->state = MODULE_STATE_COMING;
 
 	/* Allow arches to frob section contents and sizes.  */
-	/* ¶ÁÈ¡ÌØ¶¨ÌåÏµ½á¹¹µÄÄ£¿éĞÅÏ¢ */
+	/* è¯»å–ç‰¹å®šä½“ç³»ç»“æ„çš„æ¨¡å—ä¿¡æ¯ */
 	err = module_frob_arch_sections(hdr, sechdrs, secstrings, mod);
 	if (err < 0)
 		goto free_mod;
@@ -1864,11 +1864,11 @@ static struct module *load_module(void __user *umod,
 	/* Determine total sizes, and put offsets in sh_entsize.  For now
 	   this is done generically; there doesn't appear to be any
 	   special cases for the architectures. */
-	/* ÔÚÄÚ´æÖĞ×éÖ¯¸÷¶Î */
+	/* åœ¨å†…å­˜ä¸­ç»„ç»‡å„æ®µ */
 	layout_sections(mod, hdr, sechdrs, secstrings);
 
 	/* Do the allocs. */
-	ptr = module_alloc(mod->core_size);/* ·ÖÅä²¢³õÊ¼»¯ºËĞÄ¶ÎÄÚ´æ */
+	ptr = module_alloc(mod->core_size);/* åˆ†é…å¹¶åˆå§‹åŒ–æ ¸å¿ƒæ®µå†…å­˜ */
 	if (!ptr) {
 		err = -ENOMEM;
 		goto free_percpu;
@@ -1876,7 +1876,7 @@ static struct module *load_module(void __user *umod,
 	memset(ptr, 0, mod->core_size);
 	mod->module_core = ptr;
 
-	ptr = module_alloc(mod->init_size);/* ·ÖÅä²¢³õÊ¼»¯³õÊ¼¶ÎÄÚ´æ */
+	ptr = module_alloc(mod->init_size);/* åˆ†é…å¹¶åˆå§‹åŒ–åˆå§‹æ®µå†…å­˜ */
 	if (!ptr && mod->init_size) {
 		err = -ENOMEM;
 		goto free_core;
@@ -1889,7 +1889,7 @@ static struct module *load_module(void __user *umod,
 	for (i = 0; i < hdr->e_shnum; i++) {
 		void *dest;
 
-		if (!(sechdrs[i].sh_flags & SHF_ALLOC))/* ÕâÑùµÄ¶Î²»±Ø¸´ÖÆµ½ÄÚ´æÖĞ */
+		if (!(sechdrs[i].sh_flags & SHF_ALLOC))/* è¿™æ ·çš„æ®µä¸å¿…å¤åˆ¶åˆ°å†…å­˜ä¸­ */
 			continue;
 
 		if (sechdrs[i].sh_entsize & INIT_OFFSET_MASK)
@@ -1902,7 +1902,7 @@ static struct module *load_module(void __user *umod,
 			memcpy(dest, (void *)sechdrs[i].sh_addr,
 			       sechdrs[i].sh_size);
 		/* Update sh_addr to point to copy in image. */
-		/* ÉèÖÃ¶ÎµØÖ·Îª×îÖÕÄ¿±êµØÖ· */
+		/* è®¾ç½®æ®µåœ°å€ä¸ºæœ€ç»ˆç›®æ ‡åœ°å€ */
 		sechdrs[i].sh_addr = (unsigned long)dest;
 		DEBUGP("\t0x%lx %s\n", sechdrs[i].sh_addr, secstrings + sechdrs[i].sh_name);
 	}
@@ -1918,9 +1918,9 @@ static struct module *load_module(void __user *umod,
 		goto cleanup;
 
 	/* Set up license info based on the info section */
-	set_license(mod, get_modinfo(sechdrs, infoindex, "license"));/* ¼ì²éÄ£¿éµÄĞí¿ÉÖ¤ */
+	set_license(mod, get_modinfo(sechdrs, infoindex, "license"));/* æ£€æŸ¥æ¨¡å—çš„è®¸å¯è¯ */
 
-	if (strcmp(mod->name, "ndiswrapper") == 0)/* ÕâÁ½¸öÄ£¿é»á×°ÔØÆäËû·ÇGPLµÄÄ£¿é£¬Òò´ËËüÊÇÓëGPL²»¼æÈİµÄ */
+	if (strcmp(mod->name, "ndiswrapper") == 0)/* è¿™ä¸¤ä¸ªæ¨¡å—ä¼šè£…è½½å…¶ä»–éGPLçš„æ¨¡å—ï¼Œå› æ­¤å®ƒæ˜¯ä¸GPLä¸å…¼å®¹çš„ */
 		add_taint(TAINT_PROPRIETARY_MODULE);
 	if (strcmp(mod->name, "driverloader") == 0)
 		add_taint_module(mod, TAINT_PROPRIETARY_MODULE);
@@ -1929,14 +1929,14 @@ static struct module *load_module(void __user *umod,
 	setup_modinfo(mod, sechdrs, infoindex);
 
 	/* Fix up syms, so that st_value is a pointer to location. */
-	/* ½â¾öÄ£¿é·ûºÅµÄÖØ¶¨Î»ºÍÒıÓÃ */
+	/* è§£å†³æ¨¡å—ç¬¦å·çš„é‡å®šä½å’Œå¼•ç”¨ */
 	err = simplify_symbols(sechdrs, symindex, strtab, versindex, pcpuindex,
 			       mod);
 	if (err < 0)
 		goto cleanup;
 
 	/* Set up EXPORTed & EXPORT_GPLed symbols (section 0 is 0 length) */
-	/* ÉèÖÃÄ£¿éĞÅÏ¢ */
+	/* è®¾ç½®æ¨¡å—ä¿¡æ¯ */
 	mod->num_syms = sechdrs[exportindex].sh_size / sizeof(*mod->syms);
 	mod->syms = (void *)sechdrs[exportindex].sh_addr;
 	if (crcindex)
@@ -1978,7 +1978,7 @@ static struct module *load_module(void __user *umod,
 					"__markers_strings");
 
 	/* Now do relocations. */
-	for (i = 1; i < hdr->e_shnum; i++) {/* ÔÙ´Î±éÀúËùÓĞ¶Î£¬½øĞĞÖØ¶¨Î»´¦Àí */
+	for (i = 1; i < hdr->e_shnum; i++) {/* å†æ¬¡éå†æ‰€æœ‰æ®µï¼Œè¿›è¡Œé‡å®šä½å¤„ç† */
 		const char *strtab = (char *)sechdrs[strindex].sh_addr;
 		unsigned int info = sechdrs[i].sh_info;
 
@@ -1987,12 +1987,12 @@ static struct module *load_module(void __user *umod,
 			continue;
 
 		/* Don't bother with non-allocated sections */
-		if (!(sechdrs[info].sh_flags & SHF_ALLOC))/* ¸Ã¶Î²»ĞèÒª¼ÓÔØµ½ÄÚ´æ£¬Ò²¾Í²»ĞèÒª´¦ÀíÖØ¶¨Î» */
+		if (!(sechdrs[info].sh_flags & SHF_ALLOC))/* è¯¥æ®µä¸éœ€è¦åŠ è½½åˆ°å†…å­˜ï¼Œä¹Ÿå°±ä¸éœ€è¦å¤„ç†é‡å®šä½ */
 			continue;
 
-		if (sechdrs[i].sh_type == SHT_REL)/* ´¦ÀíÆÕÍ¨ÖØ¶¨Î» */
+		if (sechdrs[i].sh_type == SHT_REL)/* å¤„ç†æ™®é€šé‡å®šä½ */
 			err = apply_relocate(sechdrs, strtab, symindex, i,mod);
-		else if (sechdrs[i].sh_type == SHT_RELA)/* ´¦ÀíÖØ¶¨Î»£¬ĞèÒª¼ÓÉÏ¹Ì¶¨µÄÆ«ÒÆ */
+		else if (sechdrs[i].sh_type == SHT_RELA)/* å¤„ç†é‡å®šä½ï¼Œéœ€è¦åŠ ä¸Šå›ºå®šçš„åç§» */
 			err = apply_relocate_add(sechdrs, strtab, symindex, i,
 						 mod);
 		if (err < 0)
@@ -2026,7 +2026,7 @@ static struct module *load_module(void __user *umod,
 		marker_update_probe_range(mod->markers,
 			mod->markers + mod->num_markers, NULL, NULL);
 #endif
-	/* ÌØ¶¨ÌåÏµ½á¹¹µÄ´¦Àí£¬ÀıÈç£¬Ìæ»»Ò»Ğ©»ã±àÖ¸ÁîÒÔ¼Ó¿ìËÙ¶È */
+	/* ç‰¹å®šä½“ç³»ç»“æ„çš„å¤„ç†ï¼Œä¾‹å¦‚ï¼Œæ›¿æ¢ä¸€äº›æ±‡ç¼–æŒ‡ä»¤ä»¥åŠ å¿«é€Ÿåº¦ */
 	err = module_finalize(hdr, sechdrs, mod);
 	if (err < 0)
 		goto cleanup;
@@ -2060,11 +2060,11 @@ static struct module *load_module(void __user *umod,
 			 sechdrs[setupindex].sh_addr,
 			 sechdrs[setupindex].sh_size
 			 / sizeof(struct kernel_param),
-			 NULL);/* ½âÎö²ÎÊı */
+			 NULL);/* è§£æå‚æ•° */
 	if (err < 0)
 		goto arch_cleanup;
 
-	/* ½«Ä£¿éÌí¼Óµ½sysfsÖĞ */
+	/* å°†æ¨¡å—æ·»åŠ åˆ°sysfsä¸­ */
 	err = mod_sysfs_setup(mod,
 			      (struct kernel_param *)
 			      sechdrs[setupindex].sh_addr,
@@ -2081,7 +2081,7 @@ static struct module *load_module(void __user *umod,
 					    sechdrs[unwindex].sh_size);
 
 	/* Get rid of temporary copy */
-	vfree(hdr);/* ÊÍ·ÅÁÙÊ±ÄÚ´æ */
+	vfree(hdr);/* é‡Šæ”¾ä¸´æ—¶å†…å­˜ */
 
 	/* Done! */
 	return mod;
@@ -2121,8 +2121,8 @@ static int __link_module(void *_mod)
 
 /* This is where the real work happens */
 /**
- * ÏµÍ³µ÷ÓÃ:½«Ò»¸öĞÂÄ£¿é²åÈëµ½ÄÚºËÖĞ¡£ÓÉÓÃ»§Ì¬Ìá¹©ËùĞèÒªµÄ¶ş½øÖÆÊı¾İ¡£
- * ·ûºÅÖØ¶¨Î»¹¤×÷ÓÉÄÚºËÍê³É¡£
+ * ç³»ç»Ÿè°ƒç”¨:å°†ä¸€ä¸ªæ–°æ¨¡å—æ’å…¥åˆ°å†…æ ¸ä¸­ã€‚ç”±ç”¨æˆ·æ€æä¾›æ‰€éœ€è¦çš„äºŒè¿›åˆ¶æ•°æ®ã€‚
+ * ç¬¦å·é‡å®šä½å·¥ä½œç”±å†…æ ¸å®Œæˆã€‚
  */
 asmlinkage long
 sys_init_module(void __user *umod,
@@ -2141,7 +2141,7 @@ sys_init_module(void __user *umod,
 		return -EINTR;
 
 	/* Do all the hard work */
-	mod = load_module(umod, len, uargs);/* ½«Ä£¿é¼ÓÔØµ½ÄÚºËÖĞ */
+	mod = load_module(umod, len, uargs);/* å°†æ¨¡å—åŠ è½½åˆ°å†…æ ¸ä¸­ */
 	if (IS_ERR(mod)) {
 		mutex_unlock(&module_mutex);
 		return PTR_ERR(mod);
@@ -2158,7 +2158,7 @@ sys_init_module(void __user *umod,
 			MODULE_STATE_COMING, mod);
 
 	/* Start the module */
-	if (mod->init != NULL)/* µ÷ÓÃÄ£¿éµÄ³õÊ¼»¯º¯Êı */
+	if (mod->init != NULL)/* è°ƒç”¨æ¨¡å—çš„åˆå§‹åŒ–å‡½æ•° */
 		ret = mod->init();
 	if (ret < 0) {
 		/* Init routine failed: abort.  Try to protect us from
@@ -2178,7 +2178,7 @@ sys_init_module(void __user *umod,
 	/* Drop initial reference. */
 	module_put(mod);
 	unwind_remove_table(mod->unwind_info, 1);
-	/* ÊÍ·ÅÄ£¿é³õÊ¼»¯Êı¾İÇøÓò */
+	/* é‡Šæ”¾æ¨¡å—åˆå§‹åŒ–æ•°æ®åŒºåŸŸ */
 	module_free(mod, mod->module_init);
 	mod->module_init = NULL;
 	mod->init_size = 0;

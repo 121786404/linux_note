@@ -54,9 +54,9 @@ struct linux_binprm{
  */
 struct linux_binfmt {
 	struct linux_binfmt * next;
-	struct module *module;         /* ¶ÔÓ¦Ä£¿é */
+	struct module *module;         /* å¯¹åº”æ¨¡å— */
 	int (*load_binary)(struct linux_binprm *, struct  pt_regs * regs);
-	int (*load_shlib)(struct file *);                /* ¼ÓÔØ¹²Ïí¿â */
+	int (*load_shlib)(struct file *);                /* åŠ è½½å…±äº«åº“ */
 	int (*core_dump)(long signr, struct pt_regs * regs, struct file * file);
 	unsigned long min_coredump;	/* minimal dump size */
 };

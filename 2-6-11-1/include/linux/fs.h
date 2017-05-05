@@ -88,7 +88,7 @@ extern int dir_notify_enable;
 /*
  * These are the fs-independent mount-flags: up to 32 flags are supported
  */
-/* ÒÔÖ»¶ÁµÄ·½Ê½¹ÒÔØ */
+/* ä»¥åªè¯»çš„æ–¹å¼æŒ‚è½½ */
 #define MS_RDONLY	 1	/* Mount read-only */
 #define MS_NOSUID	 2	/* Ignore suid and sgid bits */
 #define MS_NODEV	 4	/* Disallow access to device special files */
@@ -99,7 +99,7 @@ extern int dir_notify_enable;
 #define MS_DIRSYNC	128	/* Directory modifications are synchronous */
 #define MS_NOATIME	1024	/* Do not update access times. */
 #define MS_NODIRATIME	2048	/* Do not update directory access times */
-#define MS_BIND		4096           /* Ò²¾ÍÊÇ³£¼ûµÄ£¬°ÑÒ»¸öÎÄ¼şÏµÍ³ÖĞµÄÄ¿Â¼¹ÒÔØµ½ÁíÒ»¸öÄ¿Â¼µ±ÖĞ */
+#define MS_BIND		4096           /* ä¹Ÿå°±æ˜¯å¸¸è§çš„ï¼ŒæŠŠä¸€ä¸ªæ–‡ä»¶ç³»ç»Ÿä¸­çš„ç›®å½•æŒ‚è½½åˆ°å¦ä¸€ä¸ªç›®å½•å½“ä¸­ */
 #define MS_MOVE		8192
 #define MS_REC		16384
 #define MS_VERBOSE	32768
@@ -424,24 +424,24 @@ static inline int mapping_writably_mapped(struct address_space *mapping)
 #define i_size_ordered_init(inode) do { } while (0)
 #endif
 
-/* ÎÄ¼şÏµÍ³µÄinode½Úµã */
+/* æ–‡ä»¶ç³»ç»Ÿçš„inodeèŠ‚ç‚¹ */
 struct inode {
 	struct hlist_node	i_hash;
-	struct list_head	i_list;             /* ÔÚÊ¹ÓÃµ±ÖĞµÄinodeÁ´±í */
-	struct list_head	i_sb_list;        /* Í¬Ò»¸ö³¬¼¶¿éÖĞµÄinodeÁ´±í */
-        /* ÒòÎªÒ»¸öinode¿ÉÒÔ¶ÔÓ¦¶à¸ödentry½á¹¹£¬¼´Ò»¸öÎÄ¼ş¿ÉÒÔÓĞ²»Ö¹Ò»¸öÎÄ¼şÃû»òÂ·¾¶Ãû¡£
-          * ÒòÎªÒ»¸öÒÑ¾­½¨Á¢µÄÎÄ¼ş¿ÉÒÔ±»Á´½Óµ½ÆäËûÎÄ¼şÃû¡£ËùÒÔinode½á¹¹ÖĞÓĞÒ»¸öi_dentry£¬
-          * ·²ÊÇ´ú±í×ÅÍ¬Ò»¸öÎÄ¼şµÄËùÓĞÄ¿Â¼Ïî¶¼Í¨¹ıÆädentry½á¹¹ÌåÖĞµÄd_aliasÓò¹ÒÈëÏàÓ¦µÄ 
-          * inode½á¹¹ÌåÖĞµÄi_dentry¶ÓÁĞÖĞ¡£ 
+	struct list_head	i_list;             /* åœ¨ä½¿ç”¨å½“ä¸­çš„inodeé“¾è¡¨ */
+	struct list_head	i_sb_list;        /* åŒä¸€ä¸ªè¶…çº§å—ä¸­çš„inodeé“¾è¡¨ */
+        /* å› ä¸ºä¸€ä¸ªinodeå¯ä»¥å¯¹åº”å¤šä¸ªdentryç»“æ„ï¼Œå³ä¸€ä¸ªæ–‡ä»¶å¯ä»¥æœ‰ä¸æ­¢ä¸€ä¸ªæ–‡ä»¶åæˆ–è·¯å¾„åã€‚
+          * å› ä¸ºä¸€ä¸ªå·²ç»å»ºç«‹çš„æ–‡ä»¶å¯ä»¥è¢«é“¾æ¥åˆ°å…¶ä»–æ–‡ä»¶åã€‚æ‰€ä»¥inodeç»“æ„ä¸­æœ‰ä¸€ä¸ªi_dentryï¼Œ
+          * å‡¡æ˜¯ä»£è¡¨ç€åŒä¸€ä¸ªæ–‡ä»¶çš„æ‰€æœ‰ç›®å½•é¡¹éƒ½é€šè¿‡å…¶dentryç»“æ„ä½“ä¸­çš„d_aliasåŸŸæŒ‚å…¥ç›¸åº”çš„ 
+          * inodeç»“æ„ä½“ä¸­çš„i_dentryé˜Ÿåˆ—ä¸­ã€‚ 
           */ 
 	struct list_head	i_dentry;
-	unsigned long		i_ino;   /* i½ÚµãºÅ */
+	unsigned long		i_ino;   /* ièŠ‚ç‚¹å· */
 	atomic_t		i_count;
 	umode_t			i_mode;
-	unsigned int		i_nlink;              /* Á´½ÓµÄÊıÁ¿ */
+	unsigned int		i_nlink;              /* é“¾æ¥çš„æ•°é‡ */
 	uid_t			i_uid;
 	gid_t			i_gid;
-	dev_t			i_rdev;                  /* inode¶ÔÓ¦µÄÉè±¸ºÅ */
+	dev_t			i_rdev;                  /* inodeå¯¹åº”çš„è®¾å¤‡å· */
 	loff_t			i_size;
 	struct timespec		i_atime;
 	struct timespec		i_mtime;
@@ -451,13 +451,13 @@ struct inode {
 	unsigned long		i_version;
 	unsigned long		i_blocks;
 	unsigned short          i_bytes;
-	unsigned char		i_sock;				/* ÊÇ·ñÊÇsocketµÄinode */
+	unsigned char		i_sock;				/* æ˜¯å¦æ˜¯socketçš„inode */
 	spinlock_t		i_lock;	/* i_blocks, i_bytes, maybe i_size */
 	struct semaphore	i_sem;
 	struct rw_semaphore	i_alloc_sem;
 	struct inode_operations	*i_op;
 	struct file_operations	*i_fop;	/* former ->i_op->default_file_ops */
-	/* inode¶ÔÓ¦µÄ³¬¼¶¿é */
+	/* inodeå¯¹åº”çš„è¶…çº§å— */
 	struct super_block	*i_sb;
 	struct file_lock	*i_flock;
 	struct address_space	*i_mapping;
@@ -468,7 +468,7 @@ struct inode {
 	/* These three should probably be a union */
 	struct list_head	i_devices;
 	struct pipe_inode_info	*i_pipe;
-	struct block_device	*i_bdev;          /* inode¶ÔÓ¦µÄÉè±¸Ö¸Õë */
+	struct block_device	*i_bdev;          /* inodeå¯¹åº”çš„è®¾å¤‡æŒ‡é’ˆ */
 	struct cdev		*i_cdev;
 	int			i_cindex;
 
@@ -581,17 +581,17 @@ struct file_ra_state {
 #define RA_FLAG_MISS 0x01	/* a cache miss occured against this file */
 #define RA_FLAG_INCACHE 0x02	/* file is already in cache */
 
-/* fileÎÄ¼ş½á¹¹ */
+/* fileæ–‡ä»¶ç»“æ„ */
 struct file {
-	struct list_head	f_list;            /* Á´½ÓÒ»¸ö³¬¼¶¿éÖĞËùÓĞµÄfile½á¹¹ */
-	struct dentry		*f_dentry;       /* ÎÄ¼ş¶ÔÓ¦µÄÄ¿Â¼Ö¸Õë */
-	struct vfsmount         *f_vfsmnt;   /* ÎÄ¼şËùÔÚÎÄ¼şÏµÍ³µÄ¹ÒÔØµã */
+	struct list_head	f_list;            /* é“¾æ¥ä¸€ä¸ªè¶…çº§å—ä¸­æ‰€æœ‰çš„fileç»“æ„ */
+	struct dentry		*f_dentry;       /* æ–‡ä»¶å¯¹åº”çš„ç›®å½•æŒ‡é’ˆ */
+	struct vfsmount         *f_vfsmnt;   /* æ–‡ä»¶æ‰€åœ¨æ–‡ä»¶ç³»ç»Ÿçš„æŒ‚è½½ç‚¹ */
 	struct file_operations	*f_op;
-	atomic_t		f_count;	  /* ÎÄ¼şµÄÒıÓÃ¼ÆÊı */
+	atomic_t		f_count;	  /* æ–‡ä»¶çš„å¼•ç”¨è®¡æ•° */
 	unsigned int 		f_flags;
 	mode_t			f_mode;
 	int			f_error;
-	loff_t			f_pos;            /* ÎÄ¼ş¶ÁÈ¡µÄÆ«ÒÆÎ»ÖÃ */
+	loff_t			f_pos;            /* æ–‡ä»¶è¯»å–çš„åç§»ä½ç½® */
 	struct fown_struct	f_owner;
 	unsigned int		f_uid, f_gid;
 	struct file_ra_state	f_ra;
@@ -601,7 +601,7 @@ struct file {
 	void			*f_security;
 
 	/* needed for tty driver, and maybe others */
-        /* ÔÚepollµ±ÖĞ£¬¸ÃÖ¸ÕëÖ¸Ïòstruct eventpoll½á¹¹ */
+        /* åœ¨epollå½“ä¸­ï¼Œè¯¥æŒ‡é’ˆæŒ‡å‘struct eventpollç»“æ„ */
 	void			*private_data;
 
 #ifdef CONFIG_EPOLL
@@ -615,7 +615,7 @@ extern spinlock_t files_lock;
 #define file_list_lock() spin_lock(&files_lock);
 #define file_list_unlock() spin_unlock(&files_lock);
 
-/* Ôö¼ÓÎÄ¼şÒıÓÃ¼ÆÊı */
+/* å¢åŠ æ–‡ä»¶å¼•ç”¨è®¡æ•° */
 #define get_file(x)	atomic_inc(&(x)->f_count)
 #define file_count(x)	atomic_read(&(x)->f_count)
 
@@ -762,26 +762,26 @@ extern spinlock_t sb_lock;
 
 #define sb_entry(list)	list_entry((list), struct super_block, s_list)
 #define S_BIAS (1<<30)
-/* ÎÄ¼şÏµÍ³µÄ³¬¼¶¿é */
+/* æ–‡ä»¶ç³»ç»Ÿçš„è¶…çº§å— */
 struct super_block {
-        /* Á´½ÓËùÓĞ³¬¼¶¿éµÄÁ´±í */
+        /* é“¾æ¥æ‰€æœ‰è¶…çº§å—çš„é“¾è¡¨ */
 	struct list_head	s_list;		/* Keep this first */
 	dev_t			s_dev;		/* search index; _not_ kdev_t */
-	unsigned long		s_blocksize;   /* ÒÔ×Ö½ÚÎªµ¥Î»µÄ¿é´óĞ¡ */
+	unsigned long		s_blocksize;   /* ä»¥å­—èŠ‚ä¸ºå•ä½çš„å—å¤§å° */
 	unsigned long		s_old_blocksize;
-	unsigned char		s_blocksize_bits;  /* ÒÔÎ»Îªµ¥Î»µÄ¿é´óĞ¡ */
+	unsigned char		s_blocksize_bits;  /* ä»¥ä½ä¸ºå•ä½çš„å—å¤§å° */
 	unsigned char		s_dirt;
-	unsigned long long	s_maxbytes;	/* Max file size */ /* ÎÄ¼şµÄ×î³¤³¤¶È */
-	struct file_system_type	*s_type;         /* ³¬¼¶¿é¶ÔÓ¦µÃÎÄ¼şÏµÍ³ÀàĞÍ */
-	struct super_operations	*s_op;          /* ³¬¼¶¿éµÄ²Ù×÷·û */
+	unsigned long long	s_maxbytes;	/* Max file size */ /* æ–‡ä»¶çš„æœ€é•¿é•¿åº¦ */
+	struct file_system_type	*s_type;         /* è¶…çº§å—å¯¹åº”å¾—æ–‡ä»¶ç³»ç»Ÿç±»å‹ */
+	struct super_operations	*s_op;          /* è¶…çº§å—çš„æ“ä½œç¬¦ */
 	struct dquot_operations	*dq_op;
  	struct quotactl_ops	*s_qcop;
 	struct export_operations *s_export_op;
-	unsigned long		s_flags;             /* ³¬¼¶¿éµÄ¹ÒÔØ±ê¼Ç */
+	unsigned long		s_flags;             /* è¶…çº§å—çš„æŒ‚è½½æ ‡è®° */
 	unsigned long		s_magic;
-	/* ³¬¼¶¿éµÄ¸ùÄ¿Â¼£¬×¢ÒâÕâ¸ö¸ùÄ¿Â¼ÓĞ¿ÉÄÜºÍ¹ÒÔØµãÖĞµÄ¸ùÄ¿Â¼²»Í¬  */
+	/* è¶…çº§å—çš„æ ¹ç›®å½•ï¼Œæ³¨æ„è¿™ä¸ªæ ¹ç›®å½•æœ‰å¯èƒ½å’ŒæŒ‚è½½ç‚¹ä¸­çš„æ ¹ç›®å½•ä¸åŒ  */
 	struct dentry		*s_root;
-	struct rw_semaphore	s_umount;   /* ³¬¼¶¿éĞÅºÅÁ¿ */
+	struct rw_semaphore	s_umount;   /* è¶…çº§å—ä¿¡å·é‡ */
 	struct semaphore	s_lock;
 	int			s_count;
 	int			s_syncing;
@@ -790,14 +790,14 @@ struct super_block {
 	void                    *s_security;
 	struct xattr_handler	**s_xattr;
 
-	struct list_head	s_inodes;	/* all inodes */ /* ³¬¼¶¿é¶ÔÓ¦µÄËùÓĞinodeÁ´±í */
+	struct list_head	s_inodes;	/* all inodes */ /* è¶…çº§å—å¯¹åº”çš„æ‰€æœ‰inodeé“¾è¡¨ */
 	struct list_head	s_dirty;	/* dirty inodes */
 	struct list_head	s_io;		/* parked for writeback */
 	struct hlist_head	s_anon;		/* anonymous dentries for (nfs) exporting */
 	struct list_head	s_files;
 
-	struct block_device	*s_bdev;          /* ¶ÔÓ¦µÄ¿éÉè±¸Ö¸Õë */
-	struct list_head	s_instances;       /* Á´½ÓÍ¬Ò»ÎÄ¼şÏµÍ³ÖĞËùÓĞ³¬¼¶¿é */
+	struct block_device	*s_bdev;          /* å¯¹åº”çš„å—è®¾å¤‡æŒ‡é’ˆ */
+	struct list_head	s_instances;       /* é“¾æ¥åŒä¸€æ–‡ä»¶ç³»ç»Ÿä¸­æ‰€æœ‰è¶…çº§å— */
 	struct quota_info	s_dquot;	/* Diskquota specific options */
 
 	int			s_frozen;
@@ -1171,18 +1171,18 @@ find_exported_dentry(struct super_block *sb, void *obj, void *parent,
 		     int (*acceptable)(void *context, struct dentry *de),
 		     void *context);
 
-/* ºÍ1.0°æ±¾¹¦ÄÜÉÏÓĞÏàËÆÖ®´¦ */
+/* å’Œ1.0ç‰ˆæœ¬åŠŸèƒ½ä¸Šæœ‰ç›¸ä¼¼ä¹‹å¤„ */
 struct file_system_type {
-	/* ÎÄ¼şÏµÍ³Ãû³Æ */
+	/* æ–‡ä»¶ç³»ç»Ÿåç§° */
 	const char *name;
 	int fs_flags;
-        /* Í¬ÑùÊÇ¶ÁÈ¡ÎÄ¼şÏµÍ³µÄ³¬¼¶¿é */
+        /* åŒæ ·æ˜¯è¯»å–æ–‡ä»¶ç³»ç»Ÿçš„è¶…çº§å— */
 	struct super_block *(*get_sb) (struct file_system_type *, int,
 				       const char *, void *);
 	void (*kill_sb) (struct super_block *);
-	struct module *owner;       /* ÎÄ¼şÏµÍ³Ëù¶ÔÓ¦µÄÄ£¿é */
+	struct module *owner;       /* æ–‡ä»¶ç³»ç»Ÿæ‰€å¯¹åº”çš„æ¨¡å— */
 	struct file_system_type * next;
-	struct list_head fs_supers;             /* Í¬Ò»¸öÎÄ¼şÏµÍ³ÖĞËùÓĞ³¬¼¶¿éÁ´±í */
+	struct list_head fs_supers;             /* åŒä¸€ä¸ªæ–‡ä»¶ç³»ç»Ÿä¸­æ‰€æœ‰è¶…çº§å—é“¾è¡¨ */
 };
 
 struct super_block *get_sb_bdev(struct file_system_type *fs_type,

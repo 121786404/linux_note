@@ -1771,8 +1771,8 @@ int dentry_needs_remove_privs(struct dentry *dentry)
 	if (IS_NOSEC(inode))
 		return 0;
     /*  
-        suidÈ¨ÏÞÒ»¶¨»á±»È¥µô  
-        Í¬Ê±ÉèÖÃsgidºÍxgrpÊ±£¬sgidÈ¨ÏÞÒ²»á±»È¥µô  
+        suidæƒé™ä¸€å®šä¼šè¢«åŽ»æŽ‰  
+        åŒæ—¶è®¾ç½®sgidå’Œxgrpæ—¶ï¼Œsgidæƒé™ä¹Ÿä¼šè¢«åŽ»æŽ‰  
         */  
 	mask = should_remove_suid(dentry);
 	ret = security_inode_need_killpriv(dentry);
@@ -1918,10 +1918,10 @@ __setup("ihash_entries=", set_ihash_entries);
  * Initialize the waitqueues and inode hash table.
  */
 /*
-Í¬pidhash_init();
-Çø±ð:
-É¢ÁÐ¶È±ä»¯ÁË£¨14 - PAGE_SHIFT£©;
-´«Èëalloc_large_system_hashµÄ×îºó²ÎÊýÖµÎª0;
+åŒpidhash_init();
+åŒºåˆ«:
+æ•£åˆ—åº¦å˜åŒ–äº†ï¼ˆ14 - PAGE_SHIFTï¼‰;
+ä¼ å…¥alloc_large_system_hashçš„æœ€åŽå‚æ•°å€¼ä¸º0;
 */
 void __init inode_init_early(void)
 {
@@ -1979,15 +1979,15 @@ void __init inode_init(void)
 		INIT_HLIST_HEAD(&inode_hashtable[loop]);
 }
 
-/* ÎªÐÂÉú³ÉµÄinode³õÊ¼»¯ÆäÖÐµÄi_fopºÍi_rdev³ÉÔ±£»
- * inodeµÄÎÄ¼þº¯ÊýÖ¸Õëi_fop±»Ìæ»»£¬´Ó´Ëinode²»ÔÙÊÇÆÕÍ¨µÄÎÄ¼þinode£¬¶øÊÇ·ÖÅä¿ÉÒÔ´ú±í×Ö·ûÉè±¸¡¢¿éÉè±¸¡¢fifoºÍsocketµÄÌØÊâinode
- * @i_rdev:±íÊ¾¸Ãinode¶ÔÓ¦Éè±¸µÄÉè±¸ºÅ
+/* ä¸ºæ–°ç”Ÿæˆçš„inodeåˆå§‹åŒ–å…¶ä¸­çš„i_fopå’Œi_rdevæˆå‘˜ï¼›
+ * inodeçš„æ–‡ä»¶å‡½æ•°æŒ‡é’ˆi_fopè¢«æ›¿æ¢ï¼Œä»Žæ­¤inodeä¸å†æ˜¯æ™®é€šçš„æ–‡ä»¶inodeï¼Œè€Œæ˜¯åˆ†é…å¯ä»¥ä»£è¡¨å­—ç¬¦è®¾å¤‡ã€å—è®¾å¤‡ã€fifoå’Œsocketçš„ç‰¹æ®Šinode
+ * @i_rdev:è¡¨ç¤ºè¯¥inodeå¯¹åº”è®¾å¤‡çš„è®¾å¤‡å·
  */
 void init_special_inode(struct inode *inode, umode_t mode, dev_t rdev)
 {
 	inode->i_mode = mode;
 	if (S_ISCHR(mode)) {
-		inode->i_fop = &def_chr_fops;/*def_chr_fops¶¨ÒåÁËÒ»¸öopen²Ù×÷*/
+		inode->i_fop = &def_chr_fops;/*def_chr_fopså®šä¹‰äº†ä¸€ä¸ªopenæ“ä½œ*/
 		inode->i_rdev = rdev;
 	} else if (S_ISBLK(mode)) {
 		inode->i_fop = &def_blk_fops;

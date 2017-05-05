@@ -217,7 +217,7 @@ static const void * __init arch_get_next_mach(const char *const **match)
  * correct machine_desc and to setup the system.
  */
 /*
- ¸ù¾İDevice TreeµÄĞÅÏ¢£¬ÕÒµ½×îÊÊºÏµÄmachineÃèÊö·û
+ æ ¹æ®Device Treeçš„ä¿¡æ¯ï¼Œæ‰¾åˆ°æœ€é€‚åˆçš„machineæè¿°ç¬¦
 */
 const struct machine_desc * __init setup_machine_fdt(unsigned int dt_phys)
 {

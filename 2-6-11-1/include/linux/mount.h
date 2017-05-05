@@ -21,34 +21,34 @@
 #define MNT_NOEXEC	4
 
 
-/* ÎÄ¼şÏµÍ³¹ÒÔØµã½á¹¹ */
+/* æ–‡ä»¶ç³»ç»ŸæŒ‚è½½ç‚¹ç»“æ„ */
 struct vfsmount
 {
-        /* ĞÎ³ÉÈ«¾ÖµÄhashÁ´±í */
+        /* å½¢æˆå…¨å±€çš„hashé“¾è¡¨ */
 	struct list_head mnt_hash;
-        /* Ö¸Ïò¸¸ÎÄ¼şÏµÍ³£¬Õâ¸öÎÄ¼şÏµÍ³°²×°ÆäÉÏ */
+        /* æŒ‡å‘çˆ¶æ–‡ä»¶ç³»ç»Ÿï¼Œè¿™ä¸ªæ–‡ä»¶ç³»ç»Ÿå®‰è£…å…¶ä¸Š */
 	struct vfsmount *mnt_parent;	/* fs we are mounted on */
-        /* ¹ÒÔØµãÎÄ¼şÏµÍ³µÄÄ¿Â¼£¬Èç°ÑÎÄ¼şÏµÍ³¹ÒÔÚµ½Ä³¸öÂ·¾¶ÉÏ£¬Ôò¶ÔÓ¦µÄÊÇÕâ¸öÂ·¾¶µÄdentry */
+        /* æŒ‚è½½ç‚¹æ–‡ä»¶ç³»ç»Ÿçš„ç›®å½•ï¼Œå¦‚æŠŠæ–‡ä»¶ç³»ç»ŸæŒ‚åœ¨åˆ°æŸä¸ªè·¯å¾„ä¸Šï¼Œåˆ™å¯¹åº”çš„æ˜¯è¿™ä¸ªè·¯å¾„çš„dentry */
 	struct dentry *mnt_mountpoint;	/* dentry of mountpoint */
-        /* Ö¸ÏòÕâ¸öÎÄ¼şÏµÍ³µÄ¸ùÄ¿Â¼¡®/' £¬ÓĞÊ±²¢²»ÊÇ'/'Õâ¸öÄ¿Â¼£¬ÌØ±ğÊÇMS_BINDµÄÊ±ºò */
+        /* æŒ‡å‘è¿™ä¸ªæ–‡ä»¶ç³»ç»Ÿçš„æ ¹ç›®å½•â€˜/' ï¼Œæœ‰æ—¶å¹¶ä¸æ˜¯'/'è¿™ä¸ªç›®å½•ï¼Œç‰¹åˆ«æ˜¯MS_BINDçš„æ—¶å€™ */
 	struct dentry *mnt_root;	/* root of the mounted tree */
-        /* Ö¸ÏòÎÄ¼şÏµÍ³µÄ³¬¼¶¿é */
+        /* æŒ‡å‘æ–‡ä»¶ç³»ç»Ÿçš„è¶…çº§å— */
 	struct super_block *mnt_sb;	/* pointer to superblock */
-        /* ËùÓĞ¹ÒÔØÔÚ¸ÃÎÄ¼şÏµÍ³ÉÏµÄvfsmount£¬Óë×Ó¹ÒÔØµãµÄmnt_childĞÎ³ÉË«ÏòÁ´±í */
+        /* æ‰€æœ‰æŒ‚è½½åœ¨è¯¥æ–‡ä»¶ç³»ç»Ÿä¸Šçš„vfsmountï¼Œä¸å­æŒ‚è½½ç‚¹çš„mnt_childå½¢æˆåŒå‘é“¾è¡¨ */
 	struct list_head mnt_mounts;	/* list of children, anchored here */
 	struct list_head mnt_child;	/* and going through their mnt_child */
-	atomic_t mnt_count;             /* ÒıÓÃ¼ÆÊı */
+	atomic_t mnt_count;             /* å¼•ç”¨è®¡æ•° */
 	int mnt_flags;
 	int mnt_expiry_mark;		/* true if marked for expiry */
-        /* Éè±¸Ãû³Æ£¬ÆäÊµÒ²¾ÍÊÇÂ·¾¶°É£¬Ò²¿ÉÄÜÊÇÌØÊâÎÄ¼şÏµÍ³µÄrootfs£¬procµÈ */
+        /* è®¾å¤‡åç§°ï¼Œå…¶å®ä¹Ÿå°±æ˜¯è·¯å¾„å§ï¼Œä¹Ÿå¯èƒ½æ˜¯ç‰¹æ®Šæ–‡ä»¶ç³»ç»Ÿçš„rootfsï¼Œprocç­‰ */
 	char *mnt_devname;		/* Name of device e.g. /dev/dsk/hda1 */
 	struct list_head mnt_list;
 	struct list_head mnt_fslink;	/* link in fs-specific expiry list */
-        /* ¹ÒÔØµã¶ÔÓ¦µÄÃû³Æ¿Õ¼ä */
+        /* æŒ‚è½½ç‚¹å¯¹åº”çš„åç§°ç©ºé—´ */
 	struct namespace *mnt_namespace; /* containing namespace */
 };
 
-/* Ôö¼Ó¹ÒÔØµãµÄÒıÓÃ¼ÆÊı */
+/* å¢åŠ æŒ‚è½½ç‚¹çš„å¼•ç”¨è®¡æ•° */
 static inline struct vfsmount *mntget(struct vfsmount *mnt)
 {
 	if (mnt)

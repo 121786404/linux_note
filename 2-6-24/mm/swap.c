@@ -34,7 +34,7 @@
 int page_cluster;
 
 /**
- * Ã¿CPUµÄ»º´æÒ³ÏòÁ¿£¬µ±´ïµ½PAGEVEC_SIZE¸öÒ³Ãæ²ÅÌí¼Óµ½È«¾ÖµÄ»î¶¯¡¢·Ç»î¶¯LRUÁ´±íÖĞ
+ * æ¯CPUçš„ç¼“å­˜é¡µå‘é‡ï¼Œå½“è¾¾åˆ°PAGEVEC_SIZEä¸ªé¡µé¢æ‰æ·»åŠ åˆ°å…¨å±€çš„æ´»åŠ¨ã€éæ´»åŠ¨LRUé“¾è¡¨ä¸­
  */
 static DEFINE_PER_CPU(struct pagevec, lru_add_pvecs) = { 0, };
 static DEFINE_PER_CPU(struct pagevec, lru_add_active_pvecs) = { 0, };
@@ -190,7 +190,7 @@ void fastcall activate_page(struct page *page)
  * active,unreferenced		->	active,referenced
  */
 /**
- * µ±·ÃÎÊÁËÄ³Ò³Ê±£¬±ê¼ÇËüÎª»î¶¯µÄ¡£
+ * å½“è®¿é—®äº†æŸé¡µæ—¶ï¼Œæ ‡è®°å®ƒä¸ºæ´»åŠ¨çš„ã€‚
  */
 void fastcall mark_page_accessed(struct page *page)
 {
@@ -209,23 +209,23 @@ EXPORT_SYMBOL(mark_page_accessed);
  * @page: the page to add
  */
 /**
- * ÏòÃ¿CPU»º´æÒ³ÖĞÌí¼ÓÒ³£¬Èç¹û´ïµ½PAGEVEC_SIZE¸öÒ³£¬ÔòÌí¼Óµ½È«¾ÖLRUÁ´±í¡£
+ * å‘æ¯CPUç¼“å­˜é¡µä¸­æ·»åŠ é¡µï¼Œå¦‚æœè¾¾åˆ°PAGEVEC_SIZEä¸ªé¡µï¼Œåˆ™æ·»åŠ åˆ°å…¨å±€LRUé“¾è¡¨ã€‚
  */
 void fastcall lru_cache_add(struct page *page)
 {
-	/* ½ûÖ¹ÇÀÕ¼ºó»ñµÃµ±Ç°CPUµÄÒ³Ãæ»º´æÊı×é */
+	/* ç¦æ­¢æŠ¢å åè·å¾—å½“å‰CPUçš„é¡µé¢ç¼“å­˜æ•°ç»„ */
 	struct pagevec *pvec = &get_cpu_var(lru_add_pvecs);
 
-	/* Ôö¼ÓÒ³ÃæÒıÓÃ¼ÆÊı */
+	/* å¢åŠ é¡µé¢å¼•ç”¨è®¡æ•° */
 	page_cache_get(page);
-	/* ½«Ò³ÃæÌí¼Óµ½»º´æÊı×éÖĞ£¬Èç¹ûÒÑ¾­´ïµ½PAGEVEC_SIZE¸öÒ³ */
+	/* å°†é¡µé¢æ·»åŠ åˆ°ç¼“å­˜æ•°ç»„ä¸­ï¼Œå¦‚æœå·²ç»è¾¾åˆ°PAGEVEC_SIZEä¸ªé¡µ */
 	if (!pagevec_add(pvec, page))
-		__pagevec_lru_add(pvec);/* ½«»º´æµÄÒ³ÃæÌí¼Óµ½LRUÁ´±íÖĞ */
-	put_cpu_var(lru_add_pvecs);/* ´ò¿ªÇÀÕ¼ */
+		__pagevec_lru_add(pvec);/* å°†ç¼“å­˜çš„é¡µé¢æ·»åŠ åˆ°LRUé“¾è¡¨ä¸­ */
+	put_cpu_var(lru_add_pvecs);/* æ‰“å¼€æŠ¢å  */
 }
 
 /**
- * Óëlru_cache_addÀàËÆ£¬²»¹ı´¦ÀíµÄÊÇ»î¶¯Ò³¡£
+ * ä¸lru_cache_addç±»ä¼¼ï¼Œä¸è¿‡å¤„ç†çš„æ˜¯æ´»åŠ¨é¡µã€‚
  */
 void fastcall lru_cache_add_active(struct page *page)
 {
@@ -266,7 +266,7 @@ static void drain_cpu_pagevecs(int cpu)
 }
 
 /**
- * ½«Ã¿CPU»º´æÖĞµÄÒ³ÃæÏòÁ¿Ìí¼Óµ½LRUÁ´±íÖĞ
+ * å°†æ¯CPUç¼“å­˜ä¸­çš„é¡µé¢å‘é‡æ·»åŠ åˆ°LRUé“¾è¡¨ä¸­
  */
 void lru_add_drain(void)
 {

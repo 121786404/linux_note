@@ -8,7 +8,7 @@
 #else
 /* provoke compile error for invalid uses of size argument */
 extern unsigned int __invalid_size_argument_for_IOC;
-/*¶Ôºê²ÎÊısize½øĞĞ¼ì²â,Ö»ÔÚ¶¨ÒåÁË__KERNEL__µÄÇé¿öÏÂÓĞĞ§,·ñÔòÍË»¯ÎªsizeofÔËËã·û*/
+/*å¯¹å®å‚æ•°sizeè¿›è¡Œæ£€æµ‹,åªåœ¨å®šä¹‰äº†__KERNEL__çš„æƒ…å†µä¸‹æœ‰æ•ˆ,å¦åˆ™é€€åŒ–ä¸ºsizeofè¿ç®—ç¬¦*/
 #define _IOC_TYPECHECK(t) \
 	((sizeof(t) == sizeof(t[1]) && \
 	  sizeof(t) < (1 << _IOC_SIZEBITS)) ? \

@@ -2052,7 +2052,7 @@ void exit_sem(struct task_struct *tsk)
 {
 	struct sem_undo_list *ulp;
 /*
-遍历current->sysvsem.undo_list链表，并清除进程所涉及的每个IPC信号量的操作痕迹
+閬嶅巻current->sysvsem.undo_list閾捐〃锛屽苟娓呴櫎杩涚▼鎵�娑夊強鐨勬瘡涓狪PC淇″彿閲忕殑鎿嶄綔鐥曡抗
 */
 	ulp = tsk->sysvsem.undo_list;
 	if (!ulp)

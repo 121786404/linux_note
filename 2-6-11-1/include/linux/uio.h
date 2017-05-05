@@ -17,12 +17,12 @@
 /* A word of warning: Our uio structure will clash with the C library one (which is now obsolete). Remove the C
    library one from sys/uio.h if you have a very old library set */
 
-/* ·¢ËÍµÄÊı¾İ½á¹¹ */
+/* å‘é€çš„æ•°æ®ç»“æ„ */
 struct iovec
 {
-       /* ·¢ËÍÊı¾İµØÖ· */
+       /* å‘é€æ•°æ®åœ°å€ */
 	void __user *iov_base;	/* BSD uses caddr_t (1003.1g requires void *) */
-        /* ·¢ËÍÊı¾İ³¤¶È */
+        /* å‘é€æ•°æ®é•¿åº¦ */
 	__kernel_size_t iov_len; /* Must be size_t (1003.1g) */
 };
 

@@ -54,12 +54,12 @@ static unsigned long stack_maxrandom_size(void)
 #define MIN_GAP (128*1024*1024UL + stack_maxrandom_size())
 #define MAX_GAP (TASK_SIZE/6*5)
 
-/*º¯ÊýÓÃÀ´ÅÐ¶ÏÒ»¸ö½ø³ÌµÄÐéÄâµØÖ·¿Õ¼äÊÇ´«Í³²¼¾Ö»¹ÊÇÐÂ²¼¾Ö*/
+/*å‡½æ•°ç”¨æ¥åˆ¤æ–­ä¸€ä¸ªè¿›ç¨‹çš„è™šæ‹Ÿåœ°å€ç©ºé—´æ˜¯ä¼ ç»Ÿå¸ƒå±€è¿˜æ˜¯æ–°å¸ƒå±€*/
 static int mmap_is_legacy(void)
 {
-	/*1 Èç¹ûcurrent->personalityÉèÖÃÁËADDR_COMPAT_LAYOUTÎ»,½«²ÉÓÃ´«Í³²¼¾Ö
-	 *2 Èç¹û½ø³Ì¿Õ¼ä¶ÔÕ»µÄÔö³¤Ã»ÓÐÏÞÖÆ,ÄÇÃ´½«²ÉÓÃ´«Í³²¼¾Ö
-	 *3 Èç¹ûÒÔÉÏÁ½¸öÌõ¼þ¶¼Î´ÄÜÂú×ã,²¼¾ÖµÄ·½Ê½½«ÓÉsysctlµÄsysctl_legacy_va_layout²ÎÊýÀ´¿ØÖÆ*/
+	/*1 å¦‚æžœcurrent->personalityè®¾ç½®äº†ADDR_COMPAT_LAYOUTä½,å°†é‡‡ç”¨ä¼ ç»Ÿå¸ƒå±€
+	 *2 å¦‚æžœè¿›ç¨‹ç©ºé—´å¯¹æ ˆçš„å¢žé•¿æ²¡æœ‰é™åˆ¶,é‚£ä¹ˆå°†é‡‡ç”¨ä¼ ç»Ÿå¸ƒå±€
+	 *3 å¦‚æžœä»¥ä¸Šä¸¤ä¸ªæ¡ä»¶éƒ½æœªèƒ½æ»¡è¶³,å¸ƒå±€çš„æ–¹å¼å°†ç”±sysctlçš„sysctl_legacy_va_layoutå‚æ•°æ¥æŽ§åˆ¶*/
 	if (current->personality & ADDR_COMPAT_LAYOUT)
 		return 1;
 
@@ -109,7 +109,7 @@ void arch_pick_mmap_layout(struct mm_struct *mm)
 		random_factor = arch_mmap_rnd();
 
 	mm->mmap_legacy_base = TASK_UNMAPPED_BASE + random_factor;
-	/*º¯ÊýÓÃÀ´ÅÐ¶ÏÒ»¸ö½ø³ÌµÄÐéÄâµØÖ·¿Õ¼äÊÇ´«Í³²¼¾Ö»¹ÊÇÐÂ²¼¾Ö*/
+	/*å‡½æ•°ç”¨æ¥åˆ¤æ–­ä¸€ä¸ªè¿›ç¨‹çš„è™šæ‹Ÿåœ°å€ç©ºé—´æ˜¯ä¼ ç»Ÿå¸ƒå±€è¿˜æ˜¯æ–°å¸ƒå±€*/
 
 	if (mmap_is_legacy()) {
 		mm->mmap_base = mm->mmap_legacy_base;

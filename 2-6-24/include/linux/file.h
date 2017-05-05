@@ -27,13 +27,13 @@ struct embedded_fd_set {
 };
 
 struct fdtable {
-	/* ½ø³Ì¿ÉÒÔ´¦ÀíµÄÎÄ¼ş¶ÔÏóºÍÎÄ¼şÃèÊö·ûµÄ×î´óÊıÁ¿ */
+	/* è¿›ç¨‹å¯ä»¥å¤„ç†çš„æ–‡ä»¶å¯¹è±¡å’Œæ–‡ä»¶æè¿°ç¬¦çš„æœ€å¤§æ•°é‡ */
 	unsigned int max_fds;
-	/* ´ò¿ªµÄÎÄ¼ş¶ÔÏóÖ¸Õë */
+	/* æ‰“å¼€çš„æ–‡ä»¶å¯¹è±¡æŒ‡é’ˆ */
 	struct file ** fd;      /* current fd array */
-	/* execÊ±ĞèÒª¹Ø±ÕµÄÎÄ¼ş¾ä±ú */
+	/* execæ—¶éœ€è¦å…³é—­çš„æ–‡ä»¶å¥æŸ„ */
 	fd_set *close_on_exec;
-	/* ÒÑ¾­´ò¿ªµÄ¾ä±úÎ»Í¼ */
+	/* å·²ç»æ‰“å¼€çš„å¥æŸ„ä½å›¾ */
 	fd_set *open_fds;
 	struct rcu_head rcu;
 	struct fdtable *next;
@@ -47,19 +47,19 @@ struct files_struct {
    * read mostly part
    */
 	atomic_t count;
-  	/* ¸ÃÖ¸ÕëÍ¨¹ırcu»úÖÆ£¬¼Ó¿ì¶àºË¶Ôfdtab½á¹¹µÄ·ÃÎÊ */
+  	/* è¯¥æŒ‡é’ˆé€šè¿‡rcuæœºåˆ¶ï¼ŒåŠ å¿«å¤šæ ¸å¯¹fdtabç»“æ„çš„è®¿é—® */
 	struct fdtable *fdt;
 	struct fdtable fdtab;
   /*
    * written part on a separate cache line in SMP
    */
 	spinlock_t file_lock ____cacheline_aligned_in_smp;
-  	/* ÏÂÒ»´Î¿ÉÓÃµÄÎÄ¼şÃèÊö·û£¬ÓÃÓÚ¼Ó¿ìÎÄ¼ş¾ä±ú·ÖÅä */
+  	/* ä¸‹ä¸€æ¬¡å¯ç”¨çš„æ–‡ä»¶æè¿°ç¬¦ï¼Œç”¨äºåŠ å¿«æ–‡ä»¶å¥æŸ„åˆ†é… */
 	int next_fd;
-	/* Î»Í¼£¬±íÊ¾ÔÚÖ´ĞĞexecÊ±£¬ĞèÒª¹Ø±ÕµÄ¾ä±ú¡£µ±À©³äÎÄ¼ş¾ä±úÊ±£¬ĞèÒªÆúÓÃÕâ¸ö×Ö¶Î¶øÁíĞĞ·ÖÅä */
+	/* ä½å›¾ï¼Œè¡¨ç¤ºåœ¨æ‰§è¡Œexecæ—¶ï¼Œéœ€è¦å…³é—­çš„å¥æŸ„ã€‚å½“æ‰©å……æ–‡ä»¶å¥æŸ„æ—¶ï¼Œéœ€è¦å¼ƒç”¨è¿™ä¸ªå­—æ®µè€Œå¦è¡Œåˆ†é… */
 	struct embedded_fd_set close_on_exec_init;
 	struct embedded_fd_set open_fds_init;
-	/* Ö¸Ïò´ò¿ªµÄÎÄ¼şÊµÀı */
+	/* æŒ‡å‘æ‰“å¼€çš„æ–‡ä»¶å®ä¾‹ */
 	struct file * fd_array[NR_OPEN_DEFAULT];
 };
 

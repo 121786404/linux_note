@@ -5,17 +5,17 @@
  * cloning flags:
  */
 #define CSIGNAL		0x000000ff	/* signal mask to be sent at exit */
-/* ÔÚ¸¸×Ó½ø³ÌÖ®¼ä¹²ÏíµØÖ·¿Õ¼ä */
+/* åœ¨çˆ¶å­è¿›ç¨‹ä¹‹é—´å…±äº«åœ°å€ç©ºé—´ */
 #define CLONE_VM	0x00000100	/* set if VM shared between processes */
 #define CLONE_FS	0x00000200	/* set if fs info shared between processes */
 #define CLONE_FILES	0x00000400	/* set if open files shared between processes */
 #define CLONE_SIGHAND	0x00000800	/* set if signal handlers and blocked signals shared */
 #define CLONE_PTRACE	0x00002000	/* set if we want to let tracing continue on the child too */
-/* ÕıÔÚ½øĞĞVFORKÏµÍ³µ÷ÓÃ£¬ÔÚ×Ó½ø³ÌÊÍ·ÅÆäµØÖ·¿Õ¼äÊ±£¬»½ĞÑ¸¸½ø³Ì */
+/* æ­£åœ¨è¿›è¡ŒVFORKç³»ç»Ÿè°ƒç”¨ï¼Œåœ¨å­è¿›ç¨‹é‡Šæ”¾å…¶åœ°å€ç©ºé—´æ—¶ï¼Œå”¤é†’çˆ¶è¿›ç¨‹ */
 #define CLONE_VFORK	0x00004000	/* set if the parent wants the child to wake it up on mm_release */
 #define CLONE_PARENT	0x00008000	/* set if we want to have the same parent as the cloner */
 #define CLONE_THREAD	0x00010000	/* Same thread group? */
-/* ¸¸×Ó½ø³ÌÊ¹ÓÃ¶ÀÁ¢µÄÃüÃû¿Õ¼ä */
+/* çˆ¶å­è¿›ç¨‹ä½¿ç”¨ç‹¬ç«‹çš„å‘½åç©ºé—´ */
 #define CLONE_NEWNS	0x00020000	/* New namespace group? */
 #define CLONE_SYSVSEM	0x00040000	/* share system V SEM_UNDO semantics */
 #define CLONE_SETTLS	0x00080000	/* create a new TLS for the child */
@@ -25,27 +25,27 @@
 #define CLONE_UNTRACED		0x00800000	/* set if the tracing process can't force CLONE_PTRACE on this clone */
 #define CLONE_CHILD_SETTID	0x01000000	/* set the TID in the child */
 #define CLONE_STOPPED		0x02000000	/* Start in stopped state */
-/* forkÊ±´´½¨ĞÂµÄUTSÃüÃû¿Õ¼ä */
+/* forkæ—¶åˆ›å»ºæ–°çš„UTSå‘½åç©ºé—´ */
 #define CLONE_NEWUTS		0x04000000	/* New utsname group? */
-/* forkÊ±´´½¨ĞÂµÄIPCÃüÃû¿Õ¼ä */
+/* forkæ—¶åˆ›å»ºæ–°çš„IPCå‘½åç©ºé—´ */
 #define CLONE_NEWIPC		0x08000000	/* New ipcs */
-/* forkÊ±´´½¨ĞÂµÄÓÃ»§ÃüÃû¿Õ¼ä */
+/* forkæ—¶åˆ›å»ºæ–°çš„ç”¨æˆ·å‘½åç©ºé—´ */
 #define CLONE_NEWUSER		0x10000000	/* New user namespace */
-/* forkÊ±´´½¨ĞÂµÄPIDÃüÃû¿Õ¼ä */
+/* forkæ—¶åˆ›å»ºæ–°çš„PIDå‘½åç©ºé—´ */
 #define CLONE_NEWPID		0x20000000	/* New pid namespace */
-/* forkÊ±´´½¨ĞÂµÄÍøÂçÃüÃû¿Õ¼ä */
+/* forkæ—¶åˆ›å»ºæ–°çš„ç½‘ç»œå‘½åç©ºé—´ */
 #define CLONE_NEWNET		0x40000000	/* New network namespace */
 
 /*
  * Scheduling policies
  */
-/* ÆÕÍ¨µ÷¶È²ßÂÔ */
+/* æ™®é€šè°ƒåº¦ç­–ç•¥ */
 #define SCHED_NORMAL		0
-/* FIFOÊµÊ±½ø³Ì */
+/* FIFOå®æ—¶è¿›ç¨‹ */
 #define SCHED_FIFO		1
-/* RRÊµÊ±½ø³Ì */
+/* RRå®æ—¶è¿›ç¨‹ */
 #define SCHED_RR		2
-/* SCHED_BATCHºÍSCHED_IDLEÒ²ÓÉ¹«Æ½µ÷¶ÈÆ÷´¦Àí£¬µ«ÊÇ±íÊ¾ÄÇĞ©²»ÊÇºÜÖØÒªµÄ½ø³Ì */
+/* SCHED_BATCHå’ŒSCHED_IDLEä¹Ÿç”±å…¬å¹³è°ƒåº¦å™¨å¤„ç†ï¼Œä½†æ˜¯è¡¨ç¤ºé‚£äº›ä¸æ˜¯å¾ˆé‡è¦çš„è¿›ç¨‹ */
 #define SCHED_BATCH		3
 /* SCHED_ISO: reserved but not implemented yet */
 #define SCHED_IDLE		5
@@ -179,20 +179,20 @@ print_cfs_rq(struct seq_file *m, int cpu, struct cfs_rq *cfs_rq)
  * modifying one set can't modify the other one by
  * mistake.
  */
-/* ¿ÉÔËĞĞ×´Ì¬ */
+/* å¯è¿è¡ŒçŠ¶æ€ */
 #define TASK_RUNNING		0
-/* µÈ´ıÊÂ¼ş×´Ì¬£¬¿É±»ĞÅºÅ»½ĞÑ */
+/* ç­‰å¾…äº‹ä»¶çŠ¶æ€ï¼Œå¯è¢«ä¿¡å·å”¤é†’ */
 #define TASK_INTERRUPTIBLE	1
-/* µÈ´ıÊÂ¼ş×´Ì¬£¬²»¿É±»ĞÅºÅ»½ĞÑ */
+/* ç­‰å¾…äº‹ä»¶çŠ¶æ€ï¼Œä¸å¯è¢«ä¿¡å·å”¤é†’ */
 #define TASK_UNINTERRUPTIBLE	2
-/* ½ø³ÌÌØÒâÍ£Ö¹ÔËĞĞ£¬Èç±»µ÷ÊÔÆ÷ÔİÍ£ */
+/* è¿›ç¨‹ç‰¹æ„åœæ­¢è¿è¡Œï¼Œå¦‚è¢«è°ƒè¯•å™¨æš‚åœ */
 #define TASK_STOPPED		4
-/* ²»ÊôÓÚ½ø³Ì×´Ì¬£¬±íÊ¾½ø³ÌÕıÔÚ±»µ÷ÊÔ */
+/* ä¸å±äºè¿›ç¨‹çŠ¶æ€ï¼Œè¡¨ç¤ºè¿›ç¨‹æ­£åœ¨è¢«è°ƒè¯• */
 #define TASK_TRACED		8
 /* in tsk->exit_state */
-/* ÍË³ö×´Ì¬exit_state£¬±íÊ¾½©Ê¬×´Ì¬ */
+/* é€€å‡ºçŠ¶æ€exit_stateï¼Œè¡¨ç¤ºåƒµå°¸çŠ¶æ€ */
 #define EXIT_ZOMBIE		16
-/* waitÏµÍ³µ÷ÓÃÒÑ¾­·¢³ö£¬¶ø½ø³ÌÍêÈ«´ÓÏµÍ³ÒÆ³ıÖ®Ç°µÄ×´Ì¬£¬µ±¶à¸öÏß³Ì¶ÔÍ¬Ò»¸ö½ø³Ì·¢³öwaitµ÷ÓÃÊ±ÓĞÒâÒå */
+/* waitç³»ç»Ÿè°ƒç”¨å·²ç»å‘å‡ºï¼Œè€Œè¿›ç¨‹å®Œå…¨ä»ç³»ç»Ÿç§»é™¤ä¹‹å‰çš„çŠ¶æ€ï¼Œå½“å¤šä¸ªçº¿ç¨‹å¯¹åŒä¸€ä¸ªè¿›ç¨‹å‘å‡ºwaitè°ƒç”¨æ—¶æœ‰æ„ä¹‰ */
 #define EXIT_DEAD		32
 /* in tsk->state again */
 #define TASK_DEAD		64
@@ -393,11 +393,11 @@ extern int get_dumpable(struct mm_struct *mm);
 	((1 << MMF_DUMP_ANON_PRIVATE) |	(1 << MMF_DUMP_ANON_SHARED))
 
 struct sighand_struct {
-	/* ¹²Ïí¸Ã½á¹¹ÊµÀıµÄ½ø³ÌÊıÄ¿£¬µ±cloneÊ±£¬½ø³Ì¿ÉÒÔÖ¸¶¨¸¸×Ó½ø³Ì¹²ÏíÍ¬Ò»¸öĞÅºÅ´¦Àí³ÌĞò */
+	/* å…±äº«è¯¥ç»“æ„å®ä¾‹çš„è¿›ç¨‹æ•°ç›®ï¼Œå½“cloneæ—¶ï¼Œè¿›ç¨‹å¯ä»¥æŒ‡å®šçˆ¶å­è¿›ç¨‹å…±äº«åŒä¸€ä¸ªä¿¡å·å¤„ç†ç¨‹åº */
 	atomic_t		count;
-	/* ÓÃ»§ÉèÖÃµÄĞÅºÅ´¦Àíº¯Êı£¬Èç¹ûÃ»ÓĞÉèÖÃ£¬ÔòÎªSIG_DFL¡£ */
+	/* ç”¨æˆ·è®¾ç½®çš„ä¿¡å·å¤„ç†å‡½æ•°ï¼Œå¦‚æœæ²¡æœ‰è®¾ç½®ï¼Œåˆ™ä¸ºSIG_DFLã€‚ */
 	struct k_sigaction	action[_NSIG];
-	/* ±£»¤ÈÎÎñĞÅºÅµÄËø */
+	/* ä¿æŠ¤ä»»åŠ¡ä¿¡å·çš„é” */
 	spinlock_t		siglock;
 	wait_queue_head_t	signalfd_wqh;
 };
@@ -449,13 +449,13 @@ struct signal_struct {
 	/* ITIMER_REAL timer for the process */
 	struct hrtimer real_timer;
 	struct task_struct *tsk;
-	/* real¶¨Ê±Æ÷µÄ¶¨Ê±¼ä¸ô£¬Èç¹ûÎª0£¬Ôò±íÊ¾ÊÇÒ»´ÎĞÔ¶¨Ê±Æ÷ */
+	/* realå®šæ—¶å™¨çš„å®šæ—¶é—´éš”ï¼Œå¦‚æœä¸º0ï¼Œåˆ™è¡¨ç¤ºæ˜¯ä¸€æ¬¡æ€§å®šæ—¶å™¨ */
 	ktime_t it_real_incr;
 
 	/* ITIMER_PROF and ITIMER_VIRTUAL timers for the process */
-	/* ITIMER_PROFºÍITIMER_VIRTUAL¶¨Ê±Æ÷»¹Ê£ÏÂ¶àÉÙÊ±¼ä */
+	/* ITIMER_PROFå’ŒITIMER_VIRTUALå®šæ—¶å™¨è¿˜å‰©ä¸‹å¤šå°‘æ—¶é—´ */
 	cputime_t it_prof_expires, it_virt_expires;
-	/* ITIMER_PROFºÍITIMER_VIRTUAL¶¨Ê±Æ÷µÄ¶¨Ê±¼ä¸ô */
+	/* ITIMER_PROFå’ŒITIMER_VIRTUALå®šæ—¶å™¨çš„å®šæ—¶é—´éš” */
 	cputime_t it_prof_incr, it_virt_incr;
 
 	/* job control IDs */
@@ -468,8 +468,8 @@ struct signal_struct {
 	union {
 		pid_t pgrp __deprecated;
 		/**
-		 * ½ø³ÌËùÊô½ø³Ì×é×é³¤µÄpid£¬¿ÉÍ¨¹ısetpgrqÏµÍ³µ÷ÓÃºÏ²¢½ø³Ì×é 
-		 * ½ø³Ì×é¼ò»¯ÁËËùÊôÏò×é·¢ËÍĞÅºÅµÄ²Ù×÷¡£ÓÃ¹ÜµÀÁ¬½ÓµÄ½ø³Ì°üº¬ÔÚÍ¬Ò»½ø³Ì×éÖĞ¡£
+		 * è¿›ç¨‹æ‰€å±è¿›ç¨‹ç»„ç»„é•¿çš„pidï¼Œå¯é€šè¿‡setpgrqç³»ç»Ÿè°ƒç”¨åˆå¹¶è¿›ç¨‹ç»„ 
+		 * è¿›ç¨‹ç»„ç®€åŒ–äº†æ‰€å±å‘ç»„å‘é€ä¿¡å·çš„æ“ä½œã€‚ç”¨ç®¡é“è¿æ¥çš„è¿›ç¨‹åŒ…å«åœ¨åŒä¸€è¿›ç¨‹ç»„ä¸­ã€‚
 		 */
 		pid_t __pgrp;
 	};
@@ -479,8 +479,8 @@ struct signal_struct {
 	union {
 		pid_t session __deprecated;
 		/**
-		 * ½ø³Ì»á»°ID¡£¿ÉÍ¨¹ısetsidÉèÖÃ¡£
-		 * ¼¸¸ö½ø³Ì×é¿ÉÒÔºÏ²¢³ÉÒ»¸ö»á»°¡£
+		 * è¿›ç¨‹ä¼šè¯IDã€‚å¯é€šè¿‡setsidè®¾ç½®ã€‚
+		 * å‡ ä¸ªè¿›ç¨‹ç»„å¯ä»¥åˆå¹¶æˆä¸€ä¸ªä¼šè¯ã€‚
 		 */
 		pid_t __session;
 	};
@@ -559,12 +559,12 @@ struct signal_struct {
  * Some day this will be a full-fledged user tracking system..
  */
 /**
- * ÃüÃû¿Õ¼äÖĞ£¬Ä³¸öÓÃ»§µÄÍ³¼ÆÖµ¡£
- * Èç½ø³ÌºÍ´ò¿ªÎÄ¼ş¼ÆÊı¡£
+ * å‘½åç©ºé—´ä¸­ï¼ŒæŸä¸ªç”¨æˆ·çš„ç»Ÿè®¡å€¼ã€‚
+ * å¦‚è¿›ç¨‹å’Œæ‰“å¼€æ–‡ä»¶è®¡æ•°ã€‚
  */
 struct user_struct {
 	atomic_t __count;	/* reference count */
-	/* ¸ÃÓÃ»§´´½¨µÄ½ø³ÌÊıÁ¿ */
+	/* è¯¥ç”¨æˆ·åˆ›å»ºçš„è¿›ç¨‹æ•°é‡ */
 	atomic_t processes;	/* How many processes does this user have? */
 	atomic_t files;		/* How many open files does this user have? */
 	atomic_t sigpending;	/* How many pending signals does this user have? */
@@ -860,29 +860,29 @@ struct rq;
 struct sched_domain;
 
 /**
- * µ÷¶ÈÀà½á¹¹
+ * è°ƒåº¦ç±»ç»“æ„
  */
 struct sched_class {
-	/* Í¨¹ı´Ë×Ö¶Î½«µ÷¶ÈÀàÁ´½Óµ½ÔÚÒ»Æğ¡£Ë³ĞòÊÇÊµÊ±Àà¡¢CFSÀà¡¢IDLEÀà */
+	/* é€šè¿‡æ­¤å­—æ®µå°†è°ƒåº¦ç±»é“¾æ¥åˆ°åœ¨ä¸€èµ·ã€‚é¡ºåºæ˜¯å®æ—¶ç±»ã€CFSç±»ã€IDLEç±» */
 	const struct sched_class *next;
 
-	/* Ïò¾ÍĞ÷¶ÓÁĞÖĞÌí¼ÓÒ»¸öĞÂ½ø³Ì¡£ÔÚ½ø³Ì´ÓË¯Ãß×´Ì¬±äÎª¿ÉÔËĞĞ×´Ì¬Ê±£¬µ÷ÓÃ´Ëº¯Êı¡£ */
+	/* å‘å°±ç»ªé˜Ÿåˆ—ä¸­æ·»åŠ ä¸€ä¸ªæ–°è¿›ç¨‹ã€‚åœ¨è¿›ç¨‹ä»ç¡çœ çŠ¶æ€å˜ä¸ºå¯è¿è¡ŒçŠ¶æ€æ—¶ï¼Œè°ƒç”¨æ­¤å‡½æ•°ã€‚ */
 	void (*enqueue_task) (struct rq *rq, struct task_struct *p, int wakeup);
-	/* ½«½ø³Ì´Ó¾ÍĞ÷¶ÓÁĞÖĞÒÆ³ı */
+	/* å°†è¿›ç¨‹ä»å°±ç»ªé˜Ÿåˆ—ä¸­ç§»é™¤ */
 	void (*dequeue_task) (struct rq *rq, struct task_struct *p, int sleep);
-	/* ÔÚ½ø³ÌÏëÒª×ÔÔ¸·ÅÆú¶Ô´¦ÀíÆ÷µÄ¿ØÖÆÈ¨Ê±£¬µ÷ÓÃ´Ëº¯Êı */
+	/* åœ¨è¿›ç¨‹æƒ³è¦è‡ªæ„¿æ”¾å¼ƒå¯¹å¤„ç†å™¨çš„æ§åˆ¶æƒæ—¶ï¼Œè°ƒç”¨æ­¤å‡½æ•° */
 	void (*yield_task) (struct rq *rq);
 
-	/* ¼ì²éÊÇ·ñĞèÒªÇÀÕ¼µ±Ç°½ø³Ì£¬ÀıÈç£¬µ±»½ĞÑÒ»¸öĞÂ½ø³ÌÊ±µ÷ÓÃ´Ëº¯Êı */
+	/* æ£€æŸ¥æ˜¯å¦éœ€è¦æŠ¢å å½“å‰è¿›ç¨‹ï¼Œä¾‹å¦‚ï¼Œå½“å”¤é†’ä¸€ä¸ªæ–°è¿›ç¨‹æ—¶è°ƒç”¨æ­¤å‡½æ•° */
 	void (*check_preempt_curr) (struct rq *rq, struct task_struct *p);
 
-	/* Ñ¡ÔñÏÂÒ»¸ö½«ÒªÔËĞĞµÄ½ø³Ì */
+	/* é€‰æ‹©ä¸‹ä¸€ä¸ªå°†è¦è¿è¡Œçš„è¿›ç¨‹ */
 	struct task_struct * (*pick_next_task) (struct rq *rq);
-	/* ÔÚ½ø³Ì±»Ìæ»»Ç°µ÷ÓÃ£¬Ìæ»»ºóÈÔÈ»Î»ÓÚ¾ÍĞ÷¶ÓÁĞÖĞ */
+	/* åœ¨è¿›ç¨‹è¢«æ›¿æ¢å‰è°ƒç”¨ï¼Œæ›¿æ¢åä»ç„¶ä½äºå°±ç»ªé˜Ÿåˆ—ä¸­ */
 	void (*put_prev_task) (struct rq *rq, struct task_struct *p);
 
 #ifdef CONFIG_SMP
-	/* ´Ó×îÃ¦µÄ¾ÍĞ÷¶ÓÁĞÖĞÒÆ¶¯¶à¸ö½ø³Ìµ½µ±Ç°CPU£¬ÒÆ¶¯µÄ¸ºÔØ²»ÄÜ±Èmax_load_move¶à */
+	/* ä»æœ€å¿™çš„å°±ç»ªé˜Ÿåˆ—ä¸­ç§»åŠ¨å¤šä¸ªè¿›ç¨‹åˆ°å½“å‰CPUï¼Œç§»åŠ¨çš„è´Ÿè½½ä¸èƒ½æ¯”max_load_moveå¤š */
 	unsigned long (*load_balance) (struct rq *this_rq, int this_cpu,
 			struct rq *busiest, unsigned long max_load_move,
 			struct sched_domain *sd, enum cpu_idle_type idle,
@@ -893,19 +893,19 @@ struct sched_class {
 			      enum cpu_idle_type idle);
 #endif
 
-	/* µ±Ç°½ø³Ìµ÷¶È²ßÂÔ·¢Éú±ä»¯Ê±£¬µ÷ÓÃ´Ëº¯Êı½«½ø³Ì·ÅÈëÆäËû¶ÓÁĞ */
+	/* å½“å‰è¿›ç¨‹è°ƒåº¦ç­–ç•¥å‘ç”Ÿå˜åŒ–æ—¶ï¼Œè°ƒç”¨æ­¤å‡½æ•°å°†è¿›ç¨‹æ”¾å…¥å…¶ä»–é˜Ÿåˆ— */
 	void (*set_curr_task) (struct rq *rq);
-	/* Ã¿´Î¼¤»îÖÜÆÚĞÔµ÷¶ÈÆ÷Ê±£¬ÓÉÖÜÆÚĞÔµ÷¶ÈÆ÷µ÷ÓÃ */
+	/* æ¯æ¬¡æ¿€æ´»å‘¨æœŸæ€§è°ƒåº¦å™¨æ—¶ï¼Œç”±å‘¨æœŸæ€§è°ƒåº¦å™¨è°ƒç”¨ */
 	void (*task_tick) (struct rq *rq, struct task_struct *p);
-	/* ÓÃÓÚ½¨Á¢forkÏµÍ³µ÷ÓÃºÍµ÷¶ÈÆ÷Ö®¼äµÄ¹ØÁª¡£Ã¿´Î´´½¨ĞÂ½ø³ÌÊ±£¬µ÷ÓÃ´Ëº¯ÊıÍ¨Öªµ÷¶ÈÆ÷ */
+	/* ç”¨äºå»ºç«‹forkç³»ç»Ÿè°ƒç”¨å’Œè°ƒåº¦å™¨ä¹‹é—´çš„å…³è”ã€‚æ¯æ¬¡åˆ›å»ºæ–°è¿›ç¨‹æ—¶ï¼Œè°ƒç”¨æ­¤å‡½æ•°é€šçŸ¥è°ƒåº¦å™¨ */
 	void (*task_new) (struct rq *rq, struct task_struct *p);
 };
 
-/* È¨ÖØ */
+/* æƒé‡ */
 struct load_weight {
 	/**
-	 * ½ø³ÌÈ¨ÖØ£¬ÒÔ¼°È¨ÖØµÄµ¹Êı¡£ 
-	 * ½ø³ÌÃ¿½µµÍÒ»¸öniceÖµ£¬Ôò¶à»ñµÃ10%µÄCPUÊ±¼ä¡£Ã¿Éı¸ßÒ»¸öniceÖµ£¬Ôò·ÅÆú10%µÄCPUÊ±¼ä¡£
+	 * è¿›ç¨‹æƒé‡ï¼Œä»¥åŠæƒé‡çš„å€’æ•°ã€‚ 
+	 * è¿›ç¨‹æ¯é™ä½ä¸€ä¸ªniceå€¼ï¼Œåˆ™å¤šè·å¾—10%çš„CPUæ—¶é—´ã€‚æ¯å‡é«˜ä¸€ä¸ªniceå€¼ï¼Œåˆ™æ”¾å¼ƒ10%çš„CPUæ—¶é—´ã€‚
 	 */
 	unsigned long weight, inv_weight;
 };
@@ -921,23 +921,23 @@ struct load_weight {
  *     6 se->load.weight
  */
 /**
- * µ÷¶ÈÊµÌå
+ * è°ƒåº¦å®ä½“
  */
 struct sched_entity {
-	/* µ÷¶ÈÊµÌåÔÚ¶ÓÁĞÖĞµÄÈ¨ÖØ */
+	/* è°ƒåº¦å®ä½“åœ¨é˜Ÿåˆ—ä¸­çš„æƒé‡ */
 	struct load_weight	load;		/* for load-balancing */
-	/* ÓÃÓÚ½«ÊµÌå¹ÒÈëºìºÚÊ÷ */
+	/* ç”¨äºå°†å®ä½“æŒ‚å…¥çº¢é»‘æ ‘ */
 	struct rb_node		run_node;
-	/* ÊÇ·ñÕıÔÚ¶ÓÁĞÖĞ */
+	/* æ˜¯å¦æ­£åœ¨é˜Ÿåˆ—ä¸­ */
 	unsigned int		on_rq;
 
-	/* ÉÏ´Î¸üĞÂsum_exec_runtimeµÄÊ±¼ä */
+	/* ä¸Šæ¬¡æ›´æ–°sum_exec_runtimeçš„æ—¶é—´ */
 	u64			exec_start;
-	/* ¼ÇÂ¼½ø³ÌÔËĞĞµÄÊ±¼ä */
+	/* è®°å½•è¿›ç¨‹è¿è¡Œçš„æ—¶é—´ */
 	u64			sum_exec_runtime;
-	/* ½ø³ÌÖ´ĞĞ¹ı³ÌÊ±£¬ĞéÄâÊ±ÖÓÉÏÁ÷ÊÅµÄÊ±¼äÊıÁ¿ */
+	/* è¿›ç¨‹æ‰§è¡Œè¿‡ç¨‹æ—¶ï¼Œè™šæ‹Ÿæ—¶é’Ÿä¸Šæµé€çš„æ—¶é—´æ•°é‡ */
 	u64			vruntime;
-	/* ÉÏ´Î½ø³Ì³·ÏúCPUÊ±£¬½ø³ÌÔËĞĞµÄÊ±¼ä */
+	/* ä¸Šæ¬¡è¿›ç¨‹æ’¤é”€CPUæ—¶ï¼Œè¿›ç¨‹è¿è¡Œçš„æ—¶é—´ */
 	u64			prev_sum_exec_runtime;
 
 #ifdef CONFIG_SCHEDSTATS
@@ -973,7 +973,7 @@ struct sched_entity {
 #endif
 
 #ifdef CONFIG_FAIR_GROUP_SCHED
-	/* ÎªÖ§³Öcgroups¹¦ÄÜ£¬Í¨¹ı´Ë×Ö¶ÎÎ¬»¤cgroups¶ÔÏóÖ®¼äµÄ²ã´Î¹ØÏµ¡£ */
+	/* ä¸ºæ”¯æŒcgroupsåŠŸèƒ½ï¼Œé€šè¿‡æ­¤å­—æ®µç»´æŠ¤cgroupså¯¹è±¡ä¹‹é—´çš„å±‚æ¬¡å…³ç³»ã€‚ */
 	struct sched_entity	*parent;
 	/* rq on which this entity is (to be) queued: */
 	struct cfs_rq		*cfs_rq;
@@ -984,7 +984,7 @@ struct sched_entity {
 
 struct task_struct {
 	/**
-	 * ½ø³Ì×´Ì¬£¬ÈçTASK_RUNNING
+	 * è¿›ç¨‹çŠ¶æ€ï¼Œå¦‚TASK_RUNNING
 	 */
 	volatile long state;	/* -1 unrunnable, 0 runnable, >0 stopped */
 	void *stack;
@@ -1001,17 +1001,17 @@ struct task_struct {
 #endif
 
 	/**
-	 * static_prio:½ø³ÌµÄ¾²Ì¬ÓÅÏÈ¼¶£¬ÓÉÆô¶¯Ê±·ÖÅä£¬niceºÍsched_setschedulerĞŞ¸Ä
-	 * prioºÍnormal_prioÊÇ¶¯Ì¬ÓÅÏÈ¼¶¡£
-	 * normal_prioÊÇÓÉµ÷¶È²ßÂÔºÍ¾²Ì¬ÓÅÏÈ¼¶¼ÆËã³öÀ´µÄÓÅÏÈ¼¶¡£
-	 * prioÊÇÔËĞĞÊ±µÄ¶¯Ì¬ÓÅÏÈ¼¶¡£Ä³Ğ©Çé¿öÏÂÄÚºË¿ÉÄÜ»áÔİÊ±ÌáÉı½ø³ÌµÄÓÅÏÈ¼¶¡£ÈçÓÅÏÈ¼¶¼Ì³Ğ¡£
+	 * static_prio:è¿›ç¨‹çš„é™æ€ä¼˜å…ˆçº§ï¼Œç”±å¯åŠ¨æ—¶åˆ†é…ï¼Œniceå’Œsched_setschedulerä¿®æ”¹
+	 * prioå’Œnormal_prioæ˜¯åŠ¨æ€ä¼˜å…ˆçº§ã€‚
+	 * normal_prioæ˜¯ç”±è°ƒåº¦ç­–ç•¥å’Œé™æ€ä¼˜å…ˆçº§è®¡ç®—å‡ºæ¥çš„ä¼˜å…ˆçº§ã€‚
+	 * prioæ˜¯è¿è¡Œæ—¶çš„åŠ¨æ€ä¼˜å…ˆçº§ã€‚æŸäº›æƒ…å†µä¸‹å†…æ ¸å¯èƒ½ä¼šæš‚æ—¶æå‡è¿›ç¨‹çš„ä¼˜å…ˆçº§ã€‚å¦‚ä¼˜å…ˆçº§ç»§æ‰¿ã€‚
 	 */
 	int prio, static_prio, normal_prio;
-	/* ¶ÔÓÚRRÊµÊ±½ø³Ì£¬Í¨¹ı´Ë×Ö¶Î½«Ëü¼ÓÈëµ½RRÁ´±í */
+	/* å¯¹äºRRå®æ—¶è¿›ç¨‹ï¼Œé€šè¿‡æ­¤å­—æ®µå°†å®ƒåŠ å…¥åˆ°RRé“¾è¡¨ */
 	struct list_head run_list;
-	/* ½ø³ÌËùÊôµÄµ÷¶ÈÆ÷Àà */
+	/* è¿›ç¨‹æ‰€å±çš„è°ƒåº¦å™¨ç±» */
 	const struct sched_class *sched_class;
-	/* sched_entity´ú±íÒ»¸öµ÷¶ÈÊµÌå£¬Ò»¸öµ÷¶ÈÊµÌå°üº¬Ò»×é½ø³Ì¡£Õâ¸ö¹¦ÄÜÓÃÓÚcgroup */
+	/* sched_entityä»£è¡¨ä¸€ä¸ªè°ƒåº¦å®ä½“ï¼Œä¸€ä¸ªè°ƒåº¦å®ä½“åŒ…å«ä¸€ç»„è¿›ç¨‹ã€‚è¿™ä¸ªåŠŸèƒ½ç”¨äºcgroup */
 	struct sched_entity se;
 
 #ifdef CONFIG_PREEMPT_NOTIFIERS
@@ -1034,11 +1034,11 @@ struct task_struct {
 	unsigned int btrace_seq;
 #endif
 
-	/* ½ø³ÌµÄµ÷¶È²ßÂÔ£¬ÈçSCHED_NORMAL */
+	/* è¿›ç¨‹çš„è°ƒåº¦ç­–ç•¥ï¼Œå¦‚SCHED_NORMAL */
 	unsigned int policy;
-	/* ½ø³ÌµÄCPUÇ×ºÍĞÔ */
+	/* è¿›ç¨‹çš„CPUäº²å’Œæ€§ */
 	cpumask_t cpus_allowed;
-	/* ¶ÔÓÚRR½ø³ÌÀ´Ëµ£¬´Ë×Ö¶Î±íÊ¾½ø³Ì¿ÉÊ¹ÓÃCPUµÄÊ£ÓàÊ±¼ä¶Î */
+	/* å¯¹äºRRè¿›ç¨‹æ¥è¯´ï¼Œæ­¤å­—æ®µè¡¨ç¤ºè¿›ç¨‹å¯ä½¿ç”¨CPUçš„å‰©ä½™æ—¶é—´æ®µ */
 	unsigned int time_slice;
 
 #if defined(CONFIG_SCHEDSTATS) || defined(CONFIG_TASK_DELAY_ACCT)
@@ -1053,7 +1053,7 @@ struct task_struct {
 	struct list_head ptrace_children;
 	struct list_head ptrace_list;
 
-	/* ·Ö±ğ´ú±íÓÃ»§Ì¬µØÖ·¿Õ¼äºÍÊµ¼ÊÊ¹ÓÃµÄµØÖ·¿Õ¼ä */
+	/* åˆ†åˆ«ä»£è¡¨ç”¨æˆ·æ€åœ°å€ç©ºé—´å’Œå®é™…ä½¿ç”¨çš„åœ°å€ç©ºé—´ */
 	struct mm_struct *mm, *active_mm;
 
 /* task state */
@@ -1061,12 +1061,12 @@ struct task_struct {
 	int exit_state;
 	int exit_code, exit_signal;
 	int pdeath_signal;  /*  The signal sent when the parent dies  */
-	/* ÌåÏµ½á¹¹µÄÒ»Ğ©ÌØÊâÏŞÖÆ£¬ÈçREAD_IMPLIES_EXEC */
+	/* ä½“ç³»ç»“æ„çš„ä¸€äº›ç‰¹æ®Šé™åˆ¶ï¼Œå¦‚READ_IMPLIES_EXEC */
 	unsigned int personality;
 	unsigned did_exec:1;
-	/* ½ø³Ìpid£¬È«¾ÖÃüÃû¿Õ¼äÖĞµÄpid */
+	/* è¿›ç¨‹pidï¼Œå…¨å±€å‘½åç©ºé—´ä¸­çš„pid */
 	pid_t pid;
-	/* ½ø³Ì×éID£¬Èç¹û½ø³ÌÊÇÁìÍ·½ø³Ì£¬ÔòtgidÓëpidÏàµÈ */
+	/* è¿›ç¨‹ç»„IDï¼Œå¦‚æœè¿›ç¨‹æ˜¯é¢†å¤´è¿›ç¨‹ï¼Œåˆ™tgidä¸pidç›¸ç­‰ */
 	pid_t tgid;
 
 #ifdef CONFIG_CC_STACKPROTECTOR
@@ -1084,25 +1084,25 @@ struct task_struct {
 	 * children/sibling forms the list of my children plus the
 	 * tasks I'm ptracing.
 	 */
-	/* ×Ó½ø³ÌÁ´±íÍ· */
+	/* å­è¿›ç¨‹é“¾è¡¨å¤´ */
 	struct list_head children;	/* list of my children */
-	/* Í¨¹ı´Ë×Ö¶ÎÁ´½Óµ½¸¸½ø³ÌµÄchildrenÁ´±í */
+	/* é€šè¿‡æ­¤å­—æ®µé“¾æ¥åˆ°çˆ¶è¿›ç¨‹çš„childrené“¾è¡¨ */
 	struct list_head sibling;	/* linkage in my parent's children list */
-	/* Ïß³Ì×éµÄÁìÍ·½ø³Ì½á¹¹ */
+	/* çº¿ç¨‹ç»„çš„é¢†å¤´è¿›ç¨‹ç»“æ„ */
 	struct task_struct *group_leader;	/* threadgroup leader */
 
 	/* PID/PID hash table linkage. */
-	/* ½«½ø³ÌÁ´½Óµ½È«¾Öpid_hash¹şÏ£±íµÄ½á¹¹ */
+	/* å°†è¿›ç¨‹é“¾æ¥åˆ°å…¨å±€pid_hashå“ˆå¸Œè¡¨çš„ç»“æ„ */
 	struct pid_link pids[PIDTYPE_MAX];
 	struct list_head thread_group;
 
-	/* vforkµ÷ÓÃÊ¹ÓÃµÄÍê³É±äÁ¿£¬×Ó½ø³ÌÔÚÊÍ·ÅĞéÄâµØÖ·¿Õ¼äÊ±£¬»½ĞÑÔÚÕâÉÏÃæµÈ´ıµÄ¸¸½ø³Ì */
+	/* vforkè°ƒç”¨ä½¿ç”¨çš„å®Œæˆå˜é‡ï¼Œå­è¿›ç¨‹åœ¨é‡Šæ”¾è™šæ‹Ÿåœ°å€ç©ºé—´æ—¶ï¼Œå”¤é†’åœ¨è¿™ä¸Šé¢ç­‰å¾…çš„çˆ¶è¿›ç¨‹ */
 	struct completion *vfork_done;		/* for vfork() */
-	/* ÓÃ»§Ì¬±£´æĞÂ½ø³ÌpidµÄµØÖ·£¬ÓÃÓÚNPTL¿â */
+	/* ç”¨æˆ·æ€ä¿å­˜æ–°è¿›ç¨‹pidçš„åœ°å€ï¼Œç”¨äºNPTLåº“ */
 	int __user *set_child_tid;		/* CLONE_CHILD_SETTID */
 	int __user *clear_child_tid;		/* CLONE_CHILD_CLEARTID */
 
-	/* ½ø³ÌµÄÊµÊ±ÓÅÏÈ¼¶£¬×î¸ß99£¬×îµÍ0 */
+	/* è¿›ç¨‹çš„å®æ—¶ä¼˜å…ˆçº§ï¼Œæœ€é«˜99ï¼Œæœ€ä½0 */
 	unsigned int rt_priority;
 	cputime_t utime, stime, utimescaled, stimescaled;
 	cputime_t gtime;
@@ -1123,7 +1123,7 @@ struct task_struct {
 	struct group_info *group_info;
 	kernel_cap_t   cap_effective, cap_inheritable, cap_permitted;
 	unsigned keep_capabilities:1;
-	/* µ±Ç°½ø³ÌµÄÓÃ»§ */
+	/* å½“å‰è¿›ç¨‹çš„ç”¨æˆ· */
 	struct user_struct *user;
 #ifdef CONFIG_KEYS
 	struct key *request_key_auth;	/* assumed request_key authority */
@@ -1135,36 +1135,36 @@ struct task_struct {
 				       it with task_lock())
 				     - initialized normally by flush_old_exec */
 /* file system info */
-	/* ÓÃÓÚÔÚ²éÕÒÎÄ¼şÏµÍ³ÖĞµÄÎÄ¼şÊ±£¬·ÀÖ¹ÎŞÏŞÑ­»· */
+	/* ç”¨äºåœ¨æŸ¥æ‰¾æ–‡ä»¶ç³»ç»Ÿä¸­çš„æ–‡ä»¶æ—¶ï¼Œé˜²æ­¢æ— é™å¾ªç¯ */
 	int link_count, total_link_count;
 #ifdef CONFIG_SYSVIPC
 /* ipc stuff */
-	/* ÔÚ½ø³ÌÒì³£ÍË³öÊ±£¬ÓÃÓÚ³·ÏúÒÑ¾­ÉêÇëµÄsysvĞÅºÅÁ¿£¬·ÀÖ¹ËÀËø */
+	/* åœ¨è¿›ç¨‹å¼‚å¸¸é€€å‡ºæ—¶ï¼Œç”¨äºæ’¤é”€å·²ç»ç”³è¯·çš„sysvä¿¡å·é‡ï¼Œé˜²æ­¢æ­»é” */
 	struct sysv_sem sysvsem;
 #endif
 /* CPU-specific state of this task */
 	struct thread_struct thread;
 /* filesystem information */
-	/* ½ø³ÌÎÄ¼şÏµÍ³Ïà¹ØĞÅÏ¢£¬Èçµ±Ç°Ä¿Â¼ */
+	/* è¿›ç¨‹æ–‡ä»¶ç³»ç»Ÿç›¸å…³ä¿¡æ¯ï¼Œå¦‚å½“å‰ç›®å½• */
 	struct fs_struct *fs;
 /* open file information */
-	/* µ±Ç°½ø³ÌµÄÎÄ¼şÃèÊö·û */
+	/* å½“å‰è¿›ç¨‹çš„æ–‡ä»¶æè¿°ç¬¦ */
 	struct files_struct *files;
 /* namespaces */
-	/* ½ø³ÌËùÊôÃüÃû¿Õ¼ä */
+	/* è¿›ç¨‹æ‰€å±å‘½åç©ºé—´ */
 	struct nsproxy *nsproxy;
 /* signal handlers */
 	struct signal_struct *signal;
-	/* ÓÃÓÚ¹ÜÀíÓÃ»§ÉèÖÃµÄĞÅºÅ´¦Àí³ÌĞò */
+	/* ç”¨äºç®¡ç†ç”¨æˆ·è®¾ç½®çš„ä¿¡å·å¤„ç†ç¨‹åº */
 	struct sighand_struct *sighand;
 
-	/* ËùÓĞ×èÈûµÄĞÅºÅ£¬ÊÇÒ»¸öÎ»ÑÚÂë */
+	/* æ‰€æœ‰é˜»å¡çš„ä¿¡å·ï¼Œæ˜¯ä¸€ä¸ªä½æ©ç  */
 	sigset_t blocked, real_blocked;
 	sigset_t saved_sigmask;		/* To be restored with TIF_RESTORE_SIGMASK */
-	/* ÒÑ¾­´¥·¢¡¢ÓĞ´ı´¦ÀíµÄĞÅºÅÁ´±í */
+	/* å·²ç»è§¦å‘ã€æœ‰å¾…å¤„ç†çš„ä¿¡å·é“¾è¡¨ */
 	struct sigpending pending;
 
-	/* ÓÃ»§Ì¬ĞÅºÅ´¦ÀíÕ»µØÖ·¼°³¤¶È */
+	/* ç”¨æˆ·æ€ä¿¡å·å¤„ç†æ ˆåœ°å€åŠé•¿åº¦ */
 	unsigned long sas_ss_sp;
 	size_t sas_ss_size;
 	int (*notifier)(void *priv);
@@ -1220,11 +1220,11 @@ struct task_struct {
 #endif
 
 /* journalling filesystem info */
-	/* µ±Ç°½ø³ÌµÄÈÕÖ¾£¬ÓÃÓÚJBDºÍext3 */
+	/* å½“å‰è¿›ç¨‹çš„æ—¥å¿—ï¼Œç”¨äºJBDå’Œext3 */
 	void *journal_info;
 
 /* stacked block device info */
-	/* ´¦ÀíbioÇëÇóÊ±Ê¹ÓÃ£¬·ÀÖ¹generic_make_requestºÍ_generic_make_requestÖ®¼äµİ¹éµ÷ÓÃ */
+	/* å¤„ç†bioè¯·æ±‚æ—¶ä½¿ç”¨ï¼Œé˜²æ­¢generic_make_requestå’Œ_generic_make_requestä¹‹é—´é€’å½’è°ƒç”¨ */
 	struct bio *bio_list, **bio_tail;
 
 /* VM state */
@@ -1327,7 +1327,7 @@ static inline void set_task_pgrp(struct task_struct *tsk, pid_t pgrp)
 }
 
 /**
- * »ñÈ¡ÈÎÎñ¹ØÁªµÄPID
+ * è·å–ä»»åŠ¡å…³è”çš„PID
  */
 static inline struct pid *task_pid(struct task_struct *task)
 {
@@ -1340,7 +1340,7 @@ static inline struct pid *task_tgid(struct task_struct *task)
 }
 
 /**
- * »ñÈ¡½ø³Ì×éID
+ * è·å–è¿›ç¨‹ç»„ID
  */
 static inline struct pid *task_pgrp(struct task_struct *task)
 {
@@ -1488,8 +1488,8 @@ static inline void put_task_struct(struct task_struct *t)
 #define PF_LESS_THROTTLE 0x00100000	/* Throttle me less: I clean memory */
 #define PF_BORROWED_MM	0x00200000	/* I am a kthread doing use_mm */
 /**
- * ÄÚ´æ²»»áÎª½ø³ÌµÄÕ»ºÍÄÚ´æÓ³ÉäµÄÆğµãÑ¡Ôñ¹Ì¶¨Î»ÖÃ¡£¶øÊÇÔÚÃ¿´ÎĞÂ½ø³ÌÆô¶¯Ê±Ëæ»ú¸Ä±äÕâĞ©Öµ¡£
- * ÓÃÓÚ°²È«µÄÄ¿µÄ¡£
+ * å†…å­˜ä¸ä¼šä¸ºè¿›ç¨‹çš„æ ˆå’Œå†…å­˜æ˜ å°„çš„èµ·ç‚¹é€‰æ‹©å›ºå®šä½ç½®ã€‚è€Œæ˜¯åœ¨æ¯æ¬¡æ–°è¿›ç¨‹å¯åŠ¨æ—¶éšæœºæ”¹å˜è¿™äº›å€¼ã€‚
+ * ç”¨äºå®‰å…¨çš„ç›®çš„ã€‚
  */
 #define PF_RANDOMIZE	0x00400000	/* randomize virtual address space */
 #define PF_SWAPWRITE	0x00800000	/* Allowed to write to swap */

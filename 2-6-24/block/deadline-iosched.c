@@ -447,8 +447,8 @@ static struct elv_fs_entry deadline_attrs[] = {
 };
 
 /**
- * DeadLineµ÷¶ÈËã·¨
- * ¾¡¿ÉÄÜ±£Ö¤×îµÍµÄÑ°µÀÊ±¼ä£¬Ò²È·±£Ã¿¸öÇëÇóÓĞÒ»¸ö×îµÍÍê³ÉÊ±¼ä
+ * DeadLineè°ƒåº¦ç®—æ³•
+ * å°½å¯èƒ½ä¿è¯æœ€ä½çš„å¯»é“æ—¶é—´ï¼Œä¹Ÿç¡®ä¿æ¯ä¸ªè¯·æ±‚æœ‰ä¸€ä¸ªæœ€ä½å®Œæˆæ—¶é—´
  */
 static struct elevator_type iosched_deadline = {
 	.ops = {

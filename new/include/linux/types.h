@@ -170,7 +170,7 @@ typedef phys_addr_t resource_size_t;
  * big enough to enclose whatever representation is used by a given platform.
  */
 typedef unsigned long irq_hw_number_t;
-/*原子变量, 相关操作与平台相关arch/arm/include/atomic.h*/
+/*鍘熷瓙鍙橀噺, 鐩稿叧鎿嶄綔涓庡钩鍙扮浉鍏砤rch/arm/include/atomic.h*/
 typedef struct {
 	int counter;
 } atomic_t;

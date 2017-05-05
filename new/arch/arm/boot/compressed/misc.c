@@ -142,11 +142,11 @@ void __stack_chk_fail(void)
 extern int do_decompress(u8 *input, int len, u8 *output, void (*error)(char *x));
 
 /**
- * ½âÑ¹ÄÚºË
- *		output_start:½âÑ¹ºóµÄÄÚºËÆğÊ¼µØÖ·
- *		free_mem_ptr_p:½âÑ¹¹ı³ÌÖĞ¿ÉÒÔÊ¹ÓÃµÄÄÚ´æÆğÊ¼µØÖ·£¬ÃÇÓÚ¶ÑÕ»¶¥²¿ÉÏ·½
- *		free_mem_ptr_end_p:¿ÉÓÃÄÚ´æ´óĞ¡
- *		arch_id:ÌåÏµID
+ * è§£å‹å†…æ ¸
+ *		output_start:è§£å‹åçš„å†…æ ¸èµ·å§‹åœ°å€
+ *		free_mem_ptr_p:è§£å‹è¿‡ç¨‹ä¸­å¯ä»¥ä½¿ç”¨çš„å†…å­˜èµ·å§‹åœ°å€ï¼Œä»¬äºå †æ ˆé¡¶éƒ¨ä¸Šæ–¹
+ *		free_mem_ptr_end_p:å¯ç”¨å†…å­˜å¤§å°
+ *		arch_id:ä½“ç³»ID
  */
 void
 decompress_kernel(unsigned long output_start, unsigned long free_mem_ptr_p,

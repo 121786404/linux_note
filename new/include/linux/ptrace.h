@@ -10,20 +10,20 @@
 
 
 /*
-   Linux���ں��ṩ��ptrace������ϵͳ���ã�
-   ͨ������һ�����̣����ǳ�֮ tracer������strace��gdb��
-   ���Թ۲�Ϳ�������һ�����̣���trace�Ľ��̣����ǳ�֮tracee����ִ�С�
-   һ��Tracer�� tracee�����˸��ٹ�ϵ����ô���з��͸�tracee���ź�(��SIGKILL)����㱨��Tracer��
-   �Ա�Tracer���Կ��ƻ��߹۲� tracee��ִ�С�����ϵ�Ĳ�����
-   Tracer����һ����ṩ���棬�Ա��û������趨һ���ϵ㣨��tracee���е��ϵ�ʱ����ͣ��������
-   ���û��趨 �˶ϵ��tracer�ͻᱣ���λ�õ�ָ�
-   Ȼ�����λ��д��SWI __ARM_NR_breakpoint�����ֶϵ���soft break point�������趨���޶����
-   ����hard break point�Ǻ�CPU��ϵ�ṹ��أ�һ��֧��2������
-   ��ִ�е��ϵ�λ�õ�ʱ�򣬷������жϣ��ں˻��tracee���̷���SIGTRAP�źţ�
-   ��Ȼ����ź�Ҳ�ᱻtracer����
-   ����tracee�����յ��źŵ�ʱ��������ʲô�źţ�������ignor���źţ�
-   tracee���̶���ֹͣ���С�Tracer���̿��Զ�tracee���и��ֲ�����
-   ����۲�tracer�ļĴ������۲�����ȵ�
+   Linux的内核提供了ptrace这样的系统调用，
+   通过它，一个进程（我们称之 tracer，例如strace、gdb）
+   可以观测和控制另外一个进程（被trace的进程，我们称之tracee）的执行。
+   一旦Tracer和 tracee建立了跟踪关系，那么所有发送给tracee的信号(除SIGKILL)都会汇报给Tracer，
+   以便Tracer可以控制或者观测 tracee的执行。例如断点的操作。
+   Tracer程序一般会提供界面，以便用户可以设定一个断点（当tracee运行到断点时，会停下来）。
+   当用户设定 了断点后，tracer就会保存该位置的指令，
+   然后向该位置写入SWI __ARM_NR_breakpoint（这种断点是soft break point，可以设定无限多个，
+   对于hard break point是和CPU体系结构相关，一般支持2个）。
+   当执行到断点位置的时候，发生软中断，内核会给tracee进程发出SIGTRAP信号，
+   当然这个信号也会被tracer捕获。
+   对于tracee，当收到信号的时候，无论是什么信号，甚至是ignor的信号，
+   tracee进程都会停止运行。Tracer进程可以对tracee进行各种操作，
+   例如观察tracer的寄存器，观察变量等等
 */
 
 extern int ptrace_access_vm(struct task_struct *tsk, unsigned long addr,

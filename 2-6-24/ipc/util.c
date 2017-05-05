@@ -623,29 +623,29 @@ void ipc_rcu_putref(void *ptr)
  *	Check user, group, other permissions for access
  *	to ipc resources. return 0 if allowed
  */
-/* ¼ì²éÊÇ·ñÓĞÈ¨ÏŞ¶Ôipc½øĞĞ²Ù×÷ */ 
+/* æ£€æŸ¥æ˜¯å¦æœ‰æƒé™å¯¹ipcè¿›è¡Œæ“ä½œ */ 
 int ipcperms (struct kern_ipc_perm *ipcp, short flag)
 {	/* flag will most probably be 0 or S_...UGO from <linux/stat.h> */
 	int requested_mode, granted_mode, err;
 
 	if (unlikely((err = audit_ipc_obj(ipcp))))
 		return err;
-	/* ËùÇëÇóµÄÈ¨ÏŞÎ» */
+	/* æ‰€è¯·æ±‚çš„æƒé™ä½ */
 	requested_mode = (flag >> 6) | (flag >> 3) | flag;
-	/* ipcÔÊĞíµÄÈ¨ÏŞÎ» */
+	/* ipcå…è®¸çš„æƒé™ä½ */
 	granted_mode = ipcp->mode;
-	/* µ±Ç°ÈÎÎñÊÇĞÅºÅµÄ´´½¨Õß¡¢ËùÓĞÕß */
+	/* å½“å‰ä»»åŠ¡æ˜¯ä¿¡å·çš„åˆ›å»ºè€…ã€æ‰€æœ‰è€… */
 	if (current->euid == ipcp->cuid || current->euid == ipcp->uid)
 		granted_mode >>= 6;
-	/* µ±Ç°ÈÎÎñÓë´´½¨ÕßÊôÓÚÍ¬Ò»×é */
+	/* å½“å‰ä»»åŠ¡ä¸åˆ›å»ºè€…å±äºåŒä¸€ç»„ */
 	else if (in_group_p(ipcp->cgid) || in_group_p(ipcp->gid))
 		granted_mode >>= 3;
 	/* is there some bit set in requested_mode but not in granted_mode? */
-	if ((requested_mode & ~granted_mode & 0007) && /* ÇëÇóµÄÈ¨ÏŞ²»·û */
-	    !capable(CAP_IPC_OWNER))/* Ã»ÓĞÌØÈ¨ */
+	if ((requested_mode & ~granted_mode & 0007) && /* è¯·æ±‚çš„æƒé™ä¸ç¬¦ */
+	    !capable(CAP_IPC_OWNER))/* æ²¡æœ‰ç‰¹æƒ */
 		return -1;
 
-	return security_ipc_permission(ipcp, flag);/* ÓÉ°²È«Ä£¿éÀ´È·¶¨ÊÇ·ñÓĞÈ¨ÏŞ */
+	return security_ipc_permission(ipcp, flag);/* ç”±å®‰å…¨æ¨¡å—æ¥ç¡®å®šæ˜¯å¦æœ‰æƒé™ */
 }
 
 /*

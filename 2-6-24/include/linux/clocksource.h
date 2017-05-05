@@ -54,18 +54,18 @@ struct clocksource;
  * @xtime_interval:	Used internally by timekeeping core, please ignore.
  */
 /**
- * Ê±ÖÓÔ´¶ÔÏó
+ * æ—¶é’Ÿæºå¯¹è±¡
  */
 struct clocksource {
 	/*
 	 * First part of structure is read mostly
 	 */
-	char *name;/* ¿É¶ÁµÄÃû×Ö */
-	/* Á´±íÔªËØ */
+	char *name;/* å¯è¯»çš„åå­— */
+	/* é“¾è¡¨å…ƒç´  */
 	struct list_head list;
-	/* Ê±¼äÖÊÁ¿£¬1£­99ºÜ²î£¬100£­99¿ÉÓÃ£¬300£­399¿ìËÙÇÒ×¼È· */
+	/* æ—¶é—´è´¨é‡ï¼Œ1ï¼99å¾ˆå·®ï¼Œ100ï¼99å¯ç”¨ï¼Œ300ï¼399å¿«é€Ÿä¸”å‡†ç¡® */
 	int rating;
-	/* ¶Áµ±Ç°Ê±ÖÓ */
+	/* è¯»å½“å‰æ—¶é’Ÿ */
 	cycle_t (*read)(void);
 	cycle_t mask;
 	u32 mult;

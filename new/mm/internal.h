@@ -138,17 +138,17 @@ struct alloc_context {
  * Assumption: *_mem_map is contiguous at least up to MAX_ORDER
  */
 /*
- Ñ°ÕÒbuddy
+ å¯»æ‰¾buddy
 */
 static inline unsigned long
 __find_buddy_pfn(unsigned long page_pfn, unsigned int order)
 {
     /*
-    pageÊÇÒÔÊı×éµÄĞÎÊ½´æ·ÅÔÚmem_mapµ±ÖĞ, 
-    Õû¸öpageÊÇ¿ÉÒÔÍ¨¹ıindexÏßĞÔË÷ÒıµÄ.
-    ÒªÕÒµ½×Ô¼ºµÄbuddyÖ»ÒªÔÚ¶ÔÓ¦µÄorderÎ»½øĞĞÒÖ»ò¼´¿É
-    idx ÒÖ»ò 2^order orderÄÇÎ»ÊÇ0, ÄÇÃ´buddyÓ¦¸ÃÊÇ1 
-    orderÄÇÎ»ÊÇ1, ÄÇÃ´buddyÓ¦¸ÃÊÇ0 
+    pageæ˜¯ä»¥æ•°ç»„çš„å½¢å¼å­˜æ”¾åœ¨mem_mapå½“ä¸­, 
+    æ•´ä¸ªpageæ˜¯å¯ä»¥é€šè¿‡indexçº¿æ€§ç´¢å¼•çš„.
+    è¦æ‰¾åˆ°è‡ªå·±çš„buddyåªè¦åœ¨å¯¹åº”çš„orderä½è¿›è¡ŒæŠ‘æˆ–å³å¯
+    idx æŠ‘æˆ– 2^order orderé‚£ä½æ˜¯0, é‚£ä¹ˆbuddyåº”è¯¥æ˜¯1 
+    orderé‚£ä½æ˜¯1, é‚£ä¹ˆbuddyåº”è¯¥æ˜¯0 
     */
 	return page_pfn ^ (1 << order);
 }

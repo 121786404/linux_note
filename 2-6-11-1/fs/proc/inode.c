@@ -22,7 +22,7 @@
 
 extern void free_proc_entry(struct proc_dir_entry *);
 
-/* 增加引用计数 */
+/* 澧炲姞寮曠敤璁℃暟 */
 static inline struct proc_dir_entry * de_get(struct proc_dir_entry *de)
 {
 	if (de)
@@ -77,7 +77,7 @@ static void proc_delete_inode(struct inode *inode)
 	clear_inode(inode);
 }
 
-/* proc文件系统的挂载点 */
+/* proc鏂囦欢绯荤粺鐨勬寕杞界偣 */
 struct vfsmount *proc_mnt;
 
 static void proc_read_inode(struct inode * inode)
@@ -87,7 +87,7 @@ static void proc_read_inode(struct inode * inode)
 
 static kmem_cache_t * proc_inode_cachep;
 
-/* 分配一个proc文件系统的inode */
+/* 鍒嗛厤涓�涓猵roc鏂囦欢绯荤粺鐨刬node */
 static struct inode *proc_alloc_inode(struct super_block *sb)
 {
 	struct proc_inode *ei;
@@ -119,7 +119,7 @@ static void init_once(void * foo, kmem_cache_t * cachep, unsigned long flags)
 		inode_init_once(&ei->vfs_inode);
 }
  
-/* 初始化proc文件系统的inode缓存 */
+/* 鍒濆鍖杙roc鏂囦欢绯荤粺鐨刬node缂撳瓨 */
 int __init proc_init_inodecache(void)
 {
 	proc_inode_cachep = kmem_cache_create("proc_inode_cache",
@@ -192,7 +192,7 @@ static int parse_options(char *options,uid_t *uid,gid_t *gid)
 	return 1;
 }
 
-/* 获取proc的inode节点 */
+/* 鑾峰彇proc鐨刬node鑺傜偣 */
 struct inode *proc_get_inode(struct super_block *sb, unsigned int ino,
 				struct proc_dir_entry *de)
 {

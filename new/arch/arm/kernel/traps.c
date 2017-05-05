@@ -809,14 +809,14 @@ static inline void __init kuser_init(void *vectors)
 #endif
 
 /**
- * ³õÊ¼»¯Òì³££¬¸´ÖÆÒì³£ÏòÁ¿±íÏà¹ØµÄ´úÂë¡£
+ * åˆå§‹åŒ–å¼‚å¸¸ï¼Œå¤åˆ¶å¼‚å¸¸å‘é‡è¡¨ç›¸å…³çš„ä»£ç ã€‚
  */
 void __init early_trap_init(void *vectors_base)
 {
 #ifndef CONFIG_CPU_V7M
-	//Òì³£ÏòÁ¿±í»ùµØÖ·£¬¿ÉÄÜÎª0»òÕß0xffff0000
+	//å¼‚å¸¸å‘é‡è¡¨åŸºåœ°å€ï¼Œå¯èƒ½ä¸º0æˆ–è€…0xffff0000
 	unsigned long vectors = (unsigned long)vectors_base;
-	//ÏòÒì³£´¦ÀíÈë¿Ú»ã±à´úÂëµØÖ·¡£ĞèÒª¸´ÖÆ¡£
+	//å‘å¼‚å¸¸å¤„ç†å…¥å£æ±‡ç¼–ä»£ç åœ°å€ã€‚éœ€è¦å¤åˆ¶ã€‚
 	extern char __stubs_start[], __stubs_end[];
 	extern char __vectors_start[], __vectors_end[];
 	unsigned i;
@@ -829,7 +829,7 @@ void __init early_trap_init(void *vectors_base)
 	 * ISAs.  The Thumb version is an undefined instruction with a
 	 * branch back to the undefined instruction.
 	 */
-	//Ê×ÏÈ¶ÔÏòÁ¿±íµØÖ·Ò³½øĞĞÄÚ´æ¶¾»¯¡£
+	//é¦–å…ˆå¯¹å‘é‡è¡¨åœ°å€é¡µè¿›è¡Œå†…å­˜æ¯’åŒ–ã€‚
 	for (i = 0; i < PAGE_SIZE / sizeof(u32); i++)
 		((u32 *)vectors_base)[i] = 0xe7fddef1;
 
@@ -838,14 +838,14 @@ void __init early_trap_init(void *vectors_base)
 	 * into the vector page, mapped at 0xffff0000, and ensure these
 	 * are visible to the instruction stream.
 	 */
-	//½«entry-armv.SÖĞ´¦ÀíÖĞ¶ÏºÍÒì³£µÄ»ã±à´úÂë¸´ÖÆ¹ıÀ´
+	//å°†entry-armv.Sä¸­å¤„ç†ä¸­æ–­å’Œå¼‚å¸¸çš„æ±‡ç¼–ä»£ç å¤åˆ¶è¿‡æ¥
 	memcpy((void *)vectors, __vectors_start, __vectors_end - __vectors_start);
 	memcpy((void *)vectors + 0x1000, __stubs_start, __stubs_end - __stubs_start);
 
-	//´Ó__kuser_helper_start¸´ÖÆ´úÂë£¬°üÀ¨kuser_memory_barrier£¬kernel_cmpxchgµÈµÈ´úÂë¡£
+	//ä»__kuser_helper_startå¤åˆ¶ä»£ç ï¼ŒåŒ…æ‹¬kuser_memory_barrierï¼Œkernel_cmpxchgç­‰ç­‰ä»£ç ã€‚
 	kuser_init(vectors_base);
 
-	//Çå¿ÕÖ¸Áî»º´æ
+	//æ¸…ç©ºæŒ‡ä»¤ç¼“å­˜
 	flush_icache_range(vectors, vectors + PAGE_SIZE * 2);
 #else /* ifndef CONFIG_CPU_V7M */
 	/*

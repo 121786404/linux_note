@@ -18,7 +18,7 @@ struct task_struct *kthread_create(int (*threadfn)(void *data),
  * wake_up_process().  Returns the kthread or ERR_PTR(-ENOMEM).
  */
 /**
- * ´´½¨²¢»½ÐÑÒ»¸öÏß³Ì
+ * åˆ›å»ºå¹¶å”¤é†’ä¸€ä¸ªçº¿ç¨‹
  */
 #define kthread_run(threadfn, data, namefmt, ...)			   \
 ({									   \

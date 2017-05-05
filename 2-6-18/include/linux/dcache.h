@@ -30,17 +30,17 @@ struct vfsmount;
  * hash comes first so it snuggles against d_parent in the
  * dentry.
  */
-// string½á¹¹£¬²¢°üº¬ÁËstringµÄlength and  hash¡£
+// stringç»“æž„ï¼Œå¹¶åŒ…å«äº†stringçš„length and  hashã€‚
 struct qstr {
 	unsigned int hash;
 	unsigned int len;
 	const unsigned char *name;
 };
 
-//dcacheÍ³¼ÆÐÅÏ¢
+//dcacheç»Ÿè®¡ä¿¡æ¯
 struct dentry_stat_t {
-	int nr_dentry;	 /* dcacheÖÐµÄdentry¶ÔÏó×ÜÊý */ 
-	int nr_unused;	 /* dcacheÖÐÎ´Ê¹ÓÃµÄdentry¶ÔÏó¸öÊý */ 
+	int nr_dentry;	 /* dcacheä¸­çš„dentryå¯¹è±¡æ€»æ•° */ 
+	int nr_unused;	 /* dcacheä¸­æœªä½¿ç”¨çš„dentryå¯¹è±¡ä¸ªæ•° */ 
 	int age_limit;          /* age in seconds */
 	int want_pages;         /* pages requested by system */
 	int dummy[2];
@@ -93,30 +93,30 @@ struct dcookie_struct;
 
 #define DNAME_INLINE_LEN_MIN 36
 
-//Ä¿Â¼Ïî
+//ç›®å½•é¡¹
 struct dentry {
 	atomic_t d_count;
 	unsigned int d_flags;		/* protected by d_lock */
 	spinlock_t d_lock;		/* per dentry lock */
-	struct inode *d_inode;	/* Ö¸Ïò¶ÔÓ¦µÄinode½á¹¹£¬inodeÓëdentry¹²Í¬ÃèÊöÒ»¸öÆÕÍ¨ÎÄ¼þ»òÄ¿Â¼ÎÄ¼þ */
+	struct inode *d_inode;	/* æŒ‡å‘å¯¹åº”çš„inodeç»“æž„ï¼Œinodeä¸Ždentryå…±åŒæè¿°ä¸€ä¸ªæ™®é€šæ–‡ä»¶æˆ–ç›®å½•æ–‡ä»¶ */
 					 
 	/*
 	 * The next three fields are touched by __d_lookup.  Place them here
 	 * so they all fit in a cache line.
 	 */
-	struct hlist_node d_hash;¡¡/* Í¨¹ýËü½«dentryÁ´½Óµ½dentry cacheµÄhash±í£¬ÓÃÓÚ¿ìËÙ²éÕÒ¶ÔÓ¦µÄdentry */
-	struct dentry *d_parent;   /* Ö¸Ïò¸¸dentry½á¹¹ */
-	struct qstr d_name; //±£´æÎÄ¼þ»òÄ¿Â¼µÄÃû×Ö£¬´ò¿ªÒ»¸öÎÄ¼þµÄÊ±ºò£¬Í¨¹ýËüÀ´ËÑÑ°Ä¿±êÎÄ¼þ
+	struct hlist_node d_hash;ã€€/* é€šè¿‡å®ƒå°†dentryé“¾æŽ¥åˆ°dentry cacheçš„hashè¡¨ï¼Œç”¨äºŽå¿«é€ŸæŸ¥æ‰¾å¯¹åº”çš„dentry */
+	struct dentry *d_parent;   /* æŒ‡å‘çˆ¶dentryç»“æž„ */
+	struct qstr d_name; //ä¿å­˜æ–‡ä»¶æˆ–ç›®å½•çš„åå­—ï¼Œæ‰“å¼€ä¸€ä¸ªæ–‡ä»¶çš„æ—¶å€™ï¼Œé€šè¿‡å®ƒæ¥æœå¯»ç›®æ ‡æ–‡ä»¶
 
 	struct list_head d_lru;		/* LRU list */
 	/*
 	 * d_child and d_rcu can share memory
 	 */
 	union {
-		struct list_head d_child;	/* Í¨¹ýËü½«dentryÁ´Èëµ½¸¸dentryµÄd_subdirs×Ö¶Î */
+		struct list_head d_child;	/* é€šè¿‡å®ƒå°†dentryé“¾å…¥åˆ°çˆ¶dentryçš„d_subdirså­—æ®µ */
 	 	struct rcu_head d_rcu;
 	} d_u;
-	struct list_head d_subdirs;	/* ¸ÃdentryµÄ×ÓÏî(¿ÉÄÜÊÇÄ¿Â¼»òÎÄ¼þ)Á´±íµÄ±íÍ·--d_childÓëd_subdirs */
+	struct list_head d_subdirs;	/* è¯¥dentryçš„å­é¡¹(å¯èƒ½æ˜¯ç›®å½•æˆ–æ–‡ä»¶)é“¾è¡¨çš„è¡¨å¤´--d_childä¸Žd_subdirs */
 	struct list_head d_alias;	/* inode alias list */
 	unsigned long d_time;		/* used by d_revalidate */
 	struct dentry_operations *d_op;
@@ -125,7 +125,7 @@ struct dentry {
 #ifdef CONFIG_PROFILING
 	struct dcookie_struct *d_cookie; /* cookie, if any */
 #endif
-	int d_mounted;¡¡//Ö¸Ê¾dentryÊÇ·ñÎªÒ»¸ö¹ÒÔØµã
+	int d_mounted;ã€€//æŒ‡ç¤ºdentryæ˜¯å¦ä¸ºä¸€ä¸ªæŒ‚è½½ç‚¹
 	unsigned char d_iname[DNAME_INLINE_LEN_MIN];	/* small names */
 };
 
@@ -217,7 +217,7 @@ static inline void __d_drop(struct dentry *dentry)
 	}
 }
 
-//´Ó¹þÏ£Á´±íÖÐÕª³ýÒ»¸ödentry¶ÔÏó 
+//ä»Žå“ˆå¸Œé“¾è¡¨ä¸­æ‘˜é™¤ä¸€ä¸ªdentryå¯¹è±¡ 
 static inline void d_drop(struct dentry *dentry)
 {
 	spin_lock(&dcache_lock);
@@ -341,7 +341,7 @@ extern struct dentry * dget_locked(struct dentry *);
  *
  *	Returns true if the dentry passed is not currently hashed.
  */
-//µ±Ö¸¶¨µÄdentry¶ÔÏóÃ»ÓÐÁ´½ÓÔÚ¹þÏ£Á´±íÖÐÊ±·µ»Ø·ÇÁãÖµ 
+//å½“æŒ‡å®šçš„dentryå¯¹è±¡æ²¡æœ‰é“¾æŽ¥åœ¨å“ˆå¸Œé“¾è¡¨ä¸­æ—¶è¿”å›žéžé›¶å€¼ 
 static inline int d_unhashed(struct dentry *dentry)
 {
 	return (dentry->d_flags & DCACHE_UNHASHED);

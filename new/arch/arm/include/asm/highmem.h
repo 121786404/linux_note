@@ -3,11 +3,11 @@
 
 #include <asm/kmap_types.h>
 /*
-PKMAP_BASE¶¨ÒåÁËÆäÆðÊ¼µØÖ·, 
+PKMAP_BASEå®šä¹‰äº†å…¶èµ·å§‹åœ°å€, 
 */
 #define PKMAP_BASE		(PAGE_OFFSET - PMD_SIZE)
 /*
-LAST_PKMAP¶¨ÒåÁËÈÝÄÉ¸ÃÓ³ÉäËùÐèµÄÒ³Êý¡£
+LAST_PKMAPå®šä¹‰äº†å®¹çº³è¯¥æ˜ å°„æ‰€éœ€çš„é¡µæ•°ã€‚
 */
 #define LAST_PKMAP		PTRS_PER_PTE
 #define LAST_PKMAP_MASK		(LAST_PKMAP - 1)

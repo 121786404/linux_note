@@ -125,7 +125,7 @@ void skb_under_panic(struct sk_buff *skb, int sz, void *here)
  *	Buffers may only be allocated from interrupts using a @gfp_mask of
  *	%GFP_ATOMIC.
  */
-/* ·ÖÅäÒ»¸öÄÜ¹»´æ·Åsize¸ö´óĞ¡µÄsk_buff */
+/* åˆ†é…ä¸€ä¸ªèƒ½å¤Ÿå­˜æ”¾sizeä¸ªå¤§å°çš„sk_buff */
 struct sk_buff *alloc_skb(unsigned int size, int gfp_mask)
 {
 	struct sk_buff *skb;
@@ -326,7 +326,7 @@ void __kfree_skb(struct sk_buff *skb)
 
 struct sk_buff *skb_clone(struct sk_buff *skb, int gfp_mask)
 {  
-        /* ÖØĞÂ·ÖÅäÒ»¸öskb */
+        /* é‡æ–°åˆ†é…ä¸€ä¸ªskb */
 	struct sk_buff *n = kmem_cache_alloc(skbuff_head_cache, gfp_mask);
 
 	if (!n) 
@@ -334,7 +334,7 @@ struct sk_buff *skb_clone(struct sk_buff *skb, int gfp_mask)
 
 #define C(x) n->x = skb->x
 
-        /* ³õÊ¼»¯skbµÄÁ´±íºÍsockÊôÖ÷ */
+        /* åˆå§‹åŒ–skbçš„é“¾è¡¨å’Œsockå±ä¸» */
 	n->next = n->prev = NULL;
 	n->list = NULL;
 	n->sk = NULL;
@@ -403,7 +403,7 @@ struct sk_buff *skb_clone(struct sk_buff *skb, int gfp_mask)
 	return n;
 }
 
-/* ¿½±´skbµÄÍ·²¿ */
+/* æ‹·è´skbçš„å¤´éƒ¨ */
 static void copy_skb_header(struct sk_buff *new, const struct sk_buff *old)
 {
 	/*
@@ -1282,7 +1282,7 @@ struct sk_buff *skb_dequeue_tail(struct sk_buff_head *list)
  *	the list and one reference dropped. This function takes the list
  *	lock and is atomic with respect to other list locking functions.
  */
-/* ½«Á´±íÖĞµÄËùÓĞÔªËØÊÍ·Å */
+/* å°†é“¾è¡¨ä¸­çš„æ‰€æœ‰å…ƒç´ é‡Šæ”¾ */
 void skb_queue_purge(struct sk_buff_head *list)
 {
 	struct sk_buff *skb;

@@ -43,7 +43,7 @@ static int populate_dir(struct kobject * kobj)
 	return error;
 }
 
-/* ¸ù¾ÝÄÚºË¶ÔÏóÀ´´´½¨Ò»¸ösysfsÄ¿Â¼ */
+/* æ ¹æ®å†…æ ¸å¯¹è±¡æ¥åˆ›å»ºä¸€ä¸ªsysfsç›®å½• */
 static int create_dir(struct kobject * kobj)
 {
 	int error = 0;
@@ -120,15 +120,15 @@ char *kobject_get_path(struct kobject *kobj, int gfp_mask)
  *	kobject_init - initialize object.
  *	@kobj:	object in question.
  */
-/* ÄÚºË¶ÔÏó³õÊ¼»¯ */
+/* å†…æ ¸å¯¹è±¡åˆå§‹åŒ– */
 void kobject_init(struct kobject * kobj)
 {
-        /* ÉèÖÃÒýÓÃ¼ÆÊýÎª1 */
+        /* è®¾ç½®å¼•ç”¨è®¡æ•°ä¸º1 */
 	kref_init(&kobj->kref);
-        /* ²»½ÓÈëÈÎºÎË«ÏòÁ´±í */
+        /* ä¸æŽ¥å…¥ä»»ä½•åŒå‘é“¾è¡¨ */
 	INIT_LIST_HEAD(&kobj->entry);
-        /* Ôö¼Ó¶ÔÓ¦ksetÖÐÄÚÇ¶¶ÔÏóµÄÒýÓÃ¼ÆÊý£¬
-          * Èç¹ûksetÎªNULLÔò²»×öÈÎºÎ´¦Àí
+        /* å¢žåŠ å¯¹åº”ksetä¸­å†…åµŒå¯¹è±¡çš„å¼•ç”¨è®¡æ•°ï¼Œ
+          * å¦‚æžœksetä¸ºNULLåˆ™ä¸åšä»»ä½•å¤„ç†
           */
 	kobj->kset = kset_get(kobj->kset);
 }
@@ -159,7 +159,7 @@ static void unlink(struct kobject * kobj)
  *	@kobj:	object.
  */
 
-/* Ìí¼ÓÄÚºË¶ÔÏó£¬Í¬Ê±Ò²ÔÚsysfsÎÄ¼þÏµÍ³ÖÐ¸øÄÚºË¶ÔÏó´´½¨ÁË¶ÔÓ¦µÄÄ¿Â¼  */
+/* æ·»åŠ å†…æ ¸å¯¹è±¡ï¼ŒåŒæ—¶ä¹Ÿåœ¨sysfsæ–‡ä»¶ç³»ç»Ÿä¸­ç»™å†…æ ¸å¯¹è±¡åˆ›å»ºäº†å¯¹åº”çš„ç›®å½•  */
 int kobject_add(struct kobject * kobj)
 {
 	int error = 0;
@@ -169,7 +169,7 @@ int kobject_add(struct kobject * kobj)
 		return -ENOENT;
 	if (!kobj->k_name)
 		kobj->k_name = kobj->name;
-	/* Ôö¼Ó¸¸kobjectµÄÒýÓÃ¼ÆÊý */
+	/* å¢žåŠ çˆ¶kobjectçš„å¼•ç”¨è®¡æ•° */
 	parent = kobject_get(kobj->parent);
 
 	pr_debug("kobject %s: registering. parent: %s, set: %s\n",
@@ -179,17 +179,17 @@ int kobject_add(struct kobject * kobj)
 	if (kobj->kset) {
 		down_write(&kobj->kset->subsys->rwsem);
 
-		/* Èç¹û¸¸Îª¿Õ£¬Ôò»ñÈ¡¶ÔÓ¦ksetµÄkobj */
+		/* å¦‚æžœçˆ¶ä¸ºç©ºï¼Œåˆ™èŽ·å–å¯¹åº”ksetçš„kobj */
 		if (!parent)
 			parent = kobject_get(&kobj->kset->kobj);
 
 		list_add_tail(&kobj->entry,&kobj->kset->list);
 		up_write(&kobj->kset->subsys->rwsem);
 	}
-        /* ÖØÐÂÉèÖÃkobjectµÄparentÊôÐÔ */
+        /* é‡æ–°è®¾ç½®kobjectçš„parentå±žæ€§ */
 	kobj->parent = parent;
 
-        /* ÔÚsysfsÖÐ´´½¨Ä¿Â¼ */
+        /* åœ¨sysfsä¸­åˆ›å»ºç›®å½• */
 	error = create_dir(kobj);
 	if (error) {
 		/* unlink does the kobject_put() for us */
@@ -209,7 +209,7 @@ int kobject_add(struct kobject * kobj)
  *	@kobj:	object in question.
  */
 
-/* ×¢²áÄÚºË¶ÔÏó£¬Ò²¾ÍÊÇ½«kobjectÌí¼Óµ½ksetµ±ÖÐ */
+/* æ³¨å†Œå†…æ ¸å¯¹è±¡ï¼Œä¹Ÿå°±æ˜¯å°†kobjectæ·»åŠ åˆ°ksetå½“ä¸­ */
 int kobject_register(struct kobject * kobj)
 {
 	int error = 0;
@@ -237,7 +237,7 @@ int kobject_register(struct kobject * kobj)
  *	@kobj->name array.
  */
 
-/* ÉèÖÃÄÚºËÄ£¿éµÄÃû³Æ */
+/* è®¾ç½®å†…æ ¸æ¨¡å—çš„åç§° */
 int kobject_set_name(struct kobject * kobj, const char * fmt, ...)
 {
 	int error = 0;
@@ -277,7 +277,7 @@ int kobject_set_name(struct kobject * kobj, const char * fmt, ...)
 	}
 
 	/* Free the old name, if necessary. */
-	/* ÊÍ·ÅÔ­À´ÀÏµÄÃû³Æ */
+	/* é‡Šæ”¾åŽŸæ¥è€çš„åç§° */
 	if (kobj->k_name && kobj->k_name != kobj->name)
 		kfree(kobj->k_name);
 
@@ -338,7 +338,7 @@ void kobject_unregister(struct kobject * kobj)
  *	@kobj:	object.
  */
 
-/* Ôö¼ÓÄÚºË¶ÔÏóµÄÒýÓÃ¼ÆÊý */
+/* å¢žåŠ å†…æ ¸å¯¹è±¡çš„å¼•ç”¨è®¡æ•° */
 struct kobject * kobject_get(struct kobject * kobj)
 {
 	if (kobj)
@@ -363,15 +363,15 @@ void kobject_cleanup(struct kobject * kobj)
 	kobj->k_name = NULL;
 	if (t && t->release)
 		t->release(kobj);
-	/* ÊÍ·Åsetµ±ÖÐµÄÒýÓÃ¼ÆÊý */
+	/* é‡Šæ”¾setå½“ä¸­çš„å¼•ç”¨è®¡æ•° */
 	if (s)
 		kset_put(s);
-	/* ÊÍ·Å¸¸¶ÔÏóµÄÒýÓÃ¼ÆÊý */
+	/* é‡Šæ”¾çˆ¶å¯¹è±¡çš„å¼•ç”¨è®¡æ•° */
 	if (parent) 
 		kobject_put(parent);
 }
 
-/* Èç¹ûÄÚºË¶ÔÏóµÄÒýÓÃ¼ÆÊýÎª0£¬ÔòÐèÒªÊÍ·Å¸ÃÄÚºË¶ÔÏó */
+/* å¦‚æžœå†…æ ¸å¯¹è±¡çš„å¼•ç”¨è®¡æ•°ä¸º0ï¼Œåˆ™éœ€è¦é‡Šæ”¾è¯¥å†…æ ¸å¯¹è±¡ */
 static void kobject_release(struct kref *kref)
 {
 	kobject_cleanup(container_of(kref, struct kobject, kref));
@@ -395,10 +395,10 @@ void kobject_put(struct kobject * kobj)
  *	@k:	kset 
  */
 
-/* kset³õÊ¼»¯ */
+/* ksetåˆå§‹åŒ– */
 void kset_init(struct kset * k)
 {
-        /* ÏÈ¶ÔÄÚÇ¶¶ÔÏó ½øÐÐ³õÊ¼»¯ */
+        /* å…ˆå¯¹å†…åµŒå¯¹è±¡ è¿›è¡Œåˆå§‹åŒ– */
 	kobject_init(&k->kobj);
 	INIT_LIST_HEAD(&k->list);
 }
@@ -444,7 +444,7 @@ int kset_register(struct kset * k)
  *	@k:	kset.
  */
 
-/* ÄÚºË¼¶·´×¢²á */
+/* å†…æ ¸çº§åæ³¨å†Œ */
 void kset_unregister(struct kset * k)
 {
 	kobject_unregister(&k->kobj);
@@ -478,7 +478,7 @@ struct kobject * kset_find_obj(struct kset * kset, const char * name)
 	return ret;
 }
 
-/* ×ÓÏµÍ³³õÊ¼»¯ */
+/* å­ç³»ç»Ÿåˆå§‹åŒ– */
 void subsystem_init(struct subsystem * s)
 {
 	init_rwsem(&s->rwsem);
@@ -494,7 +494,7 @@ void subsystem_init(struct subsystem * s)
  *	the rwsem. 
  */
 
-/* ×ÓÏµÍ³×¢²á */
+/* å­ç³»ç»Ÿæ³¨å†Œ */
 int subsystem_register(struct subsystem * s)
 {
 	int error;
@@ -509,7 +509,7 @@ int subsystem_register(struct subsystem * s)
 	return error;
 }
 
-/* ·´×¢²á×ÓÏµÍ³ */
+/* åæ³¨å†Œå­ç³»ç»Ÿ */
 void subsystem_unregister(struct subsystem * s)
 {
 	pr_debug("subsystem %s: unregistering\n",s->kset.kobj.name);

@@ -112,14 +112,14 @@ struct nf_bridge_info {
 
 #endif
 
-/* skbË«ÏòÁ´±íµÄÍ·²¿ */
+/* skbåŒå‘é“¾è¡¨çš„å¤´éƒ¨ */
 struct sk_buff_head {
 	/* These two members must be first. */
 	struct sk_buff	*next;
 	struct sk_buff	*prev;
 
-	__u32		qlen;         /* ¶ÓÁĞ³¤¶È */
-	spinlock_t	lock;        /* ²Ù×÷¶ÓÁĞµÄËø */
+	__u32		qlen;         /* é˜Ÿåˆ—é•¿åº¦ */
+	spinlock_t	lock;        /* æ“ä½œé˜Ÿåˆ—çš„é” */
 };
 
 struct sk_buff;
@@ -195,8 +195,8 @@ struct sk_buff {
 	struct sk_buff		*next;
 	struct sk_buff		*prev;
 
-	struct sk_buff_head	*list;      /* Ö¸Ïòsk_buffÁ´±í¶ÔÓ¦µÄÁ´±íÍ· */
-	struct sock		*sk;              /* Ö¸Ïò¶ÔÓ¦µÄsock½á¹¹ */
+	struct sk_buff_head	*list;      /* æŒ‡å‘sk_buffé“¾è¡¨å¯¹åº”çš„é“¾è¡¨å¤´ */
+	struct sock		*sk;              /* æŒ‡å‘å¯¹åº”çš„sockç»“æ„ */
 	struct timeval		stamp;
 	struct net_device	*dev;
 	struct net_device	*input_dev;
@@ -232,7 +232,7 @@ struct sk_buff {
 	 * want to keep them across layers you have to do a skb_clone()
 	 * first. This is owned by whoever has the skb queued ATM.
 	 */
-        /* ÔÚnetlinkĞ­ÒéÖĞÖ¸Ïòstruct netlink_skb_parms½á¹¹ */
+        /* åœ¨netlinkåè®®ä¸­æŒ‡å‘struct netlink_skb_parmsç»“æ„ */
 	char			cb[40];
 
 	unsigned int		len,
@@ -240,7 +240,7 @@ struct sk_buff {
 				mac_len,
 				csum;
 	unsigned char		local_df,
-				cloned,                     /* ±ê¼ÇÊÇ²»ÊÇÍ¨¹ıskb_clone²úÉúµÄskb */
+				cloned,                     /* æ ‡è®°æ˜¯ä¸æ˜¯é€šè¿‡skb_cloneäº§ç”Ÿçš„skb */
 				pkt_type,
 				ip_summed;
 	__u32			priority;
@@ -277,8 +277,8 @@ struct sk_buff {
 
 	/* These elements must be at the end, see alloc_skb() for details.  */
 	unsigned int		truesize;
-	atomic_t		users;      /* skbµÄÒıÓÃ¼ÆÊı */
-	unsigned char		*head,    /* Õâ¼¸¸ö±äÁ¿ÔÚalloc_skÖĞ±»ÉèÖÃ */
+	atomic_t		users;      /* skbçš„å¼•ç”¨è®¡æ•° */
+	unsigned char		*head,    /* è¿™å‡ ä¸ªå˜é‡åœ¨alloc_skä¸­è¢«è®¾ç½® */
 				*data,
 				*tail,
 				*end;
@@ -619,7 +619,7 @@ static inline void __skb_append(struct sk_buff *old, struct sk_buff *newsk)
  */
 extern void	   skb_unlink(struct sk_buff *skb);
 
-/* ½«sk_buff´Ósk_buff_headÁ´±íµ±ÖĞÉ¾³ı */
+/* å°†sk_buffä»sk_buff_headé“¾è¡¨å½“ä¸­åˆ é™¤ */
 static inline void __skb_unlink(struct sk_buff *skb, struct sk_buff_head *list)
 {
 	struct sk_buff *next, *prev;

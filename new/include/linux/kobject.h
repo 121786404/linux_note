@@ -50,10 +50,10 @@ extern u64 uevent_seqnum;
  * kobject_uevent_env(kobj, KOBJ_CHANGE, env) with additional event
  * specific variables added to the event environment.
  */
-/*Ã¶¾ÙĞÍ±äÁ¿,¶¨ÒåÁËkset¶ÔÏóµÄÒ»Ğ©×´Ì¬±ä»¯*/
+/*æšä¸¾å‹å˜é‡,å®šä¹‰äº†ksetå¯¹è±¡çš„ä¸€äº›çŠ¶æ€å˜åŒ–*/
 enum kobject_action {
-	KOBJ_ADD,	/*±íÃ÷½«ÏòÏµÍ³Ìí¼ÓÒ»¸ökset¶ÔÏó*/
-	KOBJ_REMOVE,	/*´ÓÏµÍ³É¾³ıÒ»¸ökset¶ÔÏó*/
+	KOBJ_ADD,	/*è¡¨æ˜å°†å‘ç³»ç»Ÿæ·»åŠ ä¸€ä¸ªksetå¯¹è±¡*/
+	KOBJ_REMOVE,	/*ä»ç³»ç»Ÿåˆ é™¤ä¸€ä¸ªksetå¯¹è±¡*/
 	KOBJ_CHANGE,
 	KOBJ_MOVE,
 	KOBJ_ONLINE,
@@ -62,85 +62,85 @@ enum kobject_action {
 };
 
 /*
-Ä¿Ç°ÎªÖ¹£¬KobjectÖ÷ÒªÌá¹©ÈçÏÂ¹¦ÄÜ£º
-1. Í¨¹ıparentÖ¸Õë£¬¿ÉÒÔ½«ËùÓĞKobjectÒÔ²ã´Î½á¹¹µÄĞÎÊ½×éºÏÆğÀ´¡£
-2. Ê¹ÓÃÒ»¸öÒıÓÃ¼ÆÊı£¨reference count£©£¬À´¼ÇÂ¼Kobject±»ÒıÓÃµÄ´ÎÊı£¬
-    ²¢ÔÚÒıÓÃ´ÎÊı±äÎª0Ê±°ÑËüÊÍ·Å
-3. ºÍsysfsĞéÄâÎÄ¼şÏµÍ³ÅäºÏ£¬½«Ã¿Ò»¸öKobject¼°ÆäÌØĞÔ£¬
-    ÒÔÎÄ¼şµÄĞÎÊ½£¬¿ª·Åµ½ÓÃ»§¿Õ¼ä
+ç›®å‰ä¸ºæ­¢ï¼ŒKobjectä¸»è¦æä¾›å¦‚ä¸‹åŠŸèƒ½ï¼š
+1. é€šè¿‡parentæŒ‡é’ˆï¼Œå¯ä»¥å°†æ‰€æœ‰Kobjectä»¥å±‚æ¬¡ç»“æ„çš„å½¢å¼ç»„åˆèµ·æ¥ã€‚
+2. ä½¿ç”¨ä¸€ä¸ªå¼•ç”¨è®¡æ•°ï¼ˆreference countï¼‰ï¼Œæ¥è®°å½•Kobjectè¢«å¼•ç”¨çš„æ¬¡æ•°ï¼Œ
+    å¹¶åœ¨å¼•ç”¨æ¬¡æ•°å˜ä¸º0æ—¶æŠŠå®ƒé‡Šæ”¾
+3. å’Œsysfsè™šæ‹Ÿæ–‡ä»¶ç³»ç»Ÿé…åˆï¼Œå°†æ¯ä¸€ä¸ªKobjectåŠå…¶ç‰¹æ€§ï¼Œ
+    ä»¥æ–‡ä»¶çš„å½¢å¼ï¼Œå¼€æ”¾åˆ°ç”¨æˆ·ç©ºé—´
 
-object´ó¶àÊıÇé¿öÏÂ»áÇ¶ÔÚÆäËüÊı¾İ½á¹¹ÖĞÊ¹ÓÃ£¬ÆäÊ¹ÓÃÁ÷³ÌÈçÏÂ£º
-1. ¶¨ÒåÒ»¸östruct ksetÀàĞÍµÄÖ¸Õë£¬²¢ÔÚ³õÊ¼»¯Ê±ÎªËü·ÖÅä¿Õ¼ä£¬
-    Ìí¼Óµ½ÄÚºËÖĞ
-2. ¸ù¾İÊµ¼ÊÇé¿ö£¬¶¨Òå×Ô¼ºËùĞèµÄÊı¾İ½á¹¹Ô­ĞÍ£¬
-    ¸ÃÊı¾İ½á¹¹ÖĞ°üº¬ÓĞKobject
-3. ¶¨ÒåÒ»¸öÊÊºÏ×Ô¼ºµÄktype£¬²¢ÊµÏÖÆäÖĞ»Øµ÷º¯Êı
-4. ÔÚĞèÒªÊ¹ÓÃµ½°üº¬KobjectµÄÊı¾İ½á¹¹Ê±£¬¶¯Ì¬·ÖÅä¸ÃÊı¾İ½á¹¹£¬
-    ²¢·ÖÅäKobject¿Õ¼ä£¬Ìí¼Óµ½ÄÚºËÖĞ
-5. Ã¿Ò»´ÎÒıÓÃÊı¾İ½á¹¹Ê±£¬µ÷ÓÃkobject_get½Ó¿ÚÔö¼ÓÒıÓÃ¼ÆÊı£»
-    ÒıÓÃ½áÊøÊ±£¬µ÷ÓÃkobject_put½Ó¿Ú£¬¼õÉÙÒıÓÃ¼ÆÊı
-6. µ±ÒıÓÃ¼ÆÊı¼õÉÙÎª0Ê±£¬KobjectÄ£¿éµ÷ÓÃktypeËùÌá¹©µÄrelease½Ó¿Ú£¬
-    ÊÍ·ÅÉÏ²ãÊı¾İ½á¹¹ÒÔ¼°KobjectµÄÄÚ´æ¿Õ¼ä
+objectå¤§å¤šæ•°æƒ…å†µä¸‹ä¼šåµŒåœ¨å…¶å®ƒæ•°æ®ç»“æ„ä¸­ä½¿ç”¨ï¼Œå…¶ä½¿ç”¨æµç¨‹å¦‚ä¸‹ï¼š
+1. å®šä¹‰ä¸€ä¸ªstruct ksetç±»å‹çš„æŒ‡é’ˆï¼Œå¹¶åœ¨åˆå§‹åŒ–æ—¶ä¸ºå®ƒåˆ†é…ç©ºé—´ï¼Œ
+    æ·»åŠ åˆ°å†…æ ¸ä¸­
+2. æ ¹æ®å®é™…æƒ…å†µï¼Œå®šä¹‰è‡ªå·±æ‰€éœ€çš„æ•°æ®ç»“æ„åŸå‹ï¼Œ
+    è¯¥æ•°æ®ç»“æ„ä¸­åŒ…å«æœ‰Kobject
+3. å®šä¹‰ä¸€ä¸ªé€‚åˆè‡ªå·±çš„ktypeï¼Œå¹¶å®ç°å…¶ä¸­å›è°ƒå‡½æ•°
+4. åœ¨éœ€è¦ä½¿ç”¨åˆ°åŒ…å«Kobjectçš„æ•°æ®ç»“æ„æ—¶ï¼ŒåŠ¨æ€åˆ†é…è¯¥æ•°æ®ç»“æ„ï¼Œ
+    å¹¶åˆ†é…Kobjectç©ºé—´ï¼Œæ·»åŠ åˆ°å†…æ ¸ä¸­
+5. æ¯ä¸€æ¬¡å¼•ç”¨æ•°æ®ç»“æ„æ—¶ï¼Œè°ƒç”¨kobject_getæ¥å£å¢åŠ å¼•ç”¨è®¡æ•°ï¼›
+    å¼•ç”¨ç»“æŸæ—¶ï¼Œè°ƒç”¨kobject_putæ¥å£ï¼Œå‡å°‘å¼•ç”¨è®¡æ•°
+6. å½“å¼•ç”¨è®¡æ•°å‡å°‘ä¸º0æ—¶ï¼ŒKobjectæ¨¡å—è°ƒç”¨ktypeæ‰€æä¾›çš„releaseæ¥å£ï¼Œ
+    é‡Šæ”¾ä¸Šå±‚æ•°æ®ç»“æ„ä»¥åŠKobjectçš„å†…å­˜ç©ºé—´
 */
 struct kobject {
 /*
-¸ÃKobjectµÄÃû³Æ£¬Í¬Ê±Ò²ÊÇsysfsÖĞµÄÄ¿Â¼Ãû³Æ¡£
-ÓÉÓÚKobjectÌí¼Óµ½KernelÊ±£¬ĞèÒª¸ù¾İÃû×Ö×¢²áµ½sysfsÖĞ£¬
-Ö®ºó¾Í²»ÄÜÔÙÖ±½ÓĞŞ¸Ä¸Ã×Ö¶Î¡£
-Èç¹ûĞèÒªĞŞ¸ÄKobjectµÄÃû×Ö£¬ĞèÒªµ÷ÓÃkobject_rename½Ó¿Ú£¬
-¸Ã½Ó¿Ú»áÖ÷¶¯´¦ÀísysfsµÄÏà¹ØÊÂÒË
+è¯¥Kobjectçš„åç§°ï¼ŒåŒæ—¶ä¹Ÿæ˜¯sysfsä¸­çš„ç›®å½•åç§°ã€‚
+ç”±äºKobjectæ·»åŠ åˆ°Kernelæ—¶ï¼Œéœ€è¦æ ¹æ®åå­—æ³¨å†Œåˆ°sysfsä¸­ï¼Œ
+ä¹‹åå°±ä¸èƒ½å†ç›´æ¥ä¿®æ”¹è¯¥å­—æ®µã€‚
+å¦‚æœéœ€è¦ä¿®æ”¹Kobjectçš„åå­—ï¼Œéœ€è¦è°ƒç”¨kobject_renameæ¥å£ï¼Œ
+è¯¥æ¥å£ä¼šä¸»åŠ¨å¤„ç†sysfsçš„ç›¸å…³äº‹å®œ
 */
 	const char		*name;
 	/*
-    ÓÃÓÚ½«Kobject¼ÓÈëµ½KsetÖĞµÄlist_head
+    ç”¨äºå°†KobjectåŠ å…¥åˆ°Ksetä¸­çš„list_head
 	*/
 	struct list_head	entry;
 	/*
-    Ö¸Ïòparent kobject£¬ÒÔ´ËĞÎ³É²ã´Î½á¹¹£¨ÔÚsysfs¾Í±íÏÖÎªÄ¿Â¼½á¹¹£©
+    æŒ‡å‘parent kobjectï¼Œä»¥æ­¤å½¢æˆå±‚æ¬¡ç»“æ„ï¼ˆåœ¨sysfså°±è¡¨ç°ä¸ºç›®å½•ç»“æ„ï¼‰
 	*/
 	struct kobject		*parent;
 	/*
-    ¸ÃkobjectÊôÓÚµÄKset¡£¿ÉÒÔÎªNULL¡£
-    Èç¹û´æÔÚ£¬ÇÒÃ»ÓĞÖ¸¶¨parent£¬Ôò»á°ÑKset×÷Îªparent
-    £¨±ğÍüÁËKsetÊÇÒ»¸öÌØÊâµÄKobject£©
+    è¯¥kobjectå±äºçš„Ksetã€‚å¯ä»¥ä¸ºNULLã€‚
+    å¦‚æœå­˜åœ¨ï¼Œä¸”æ²¡æœ‰æŒ‡å®šparentï¼Œåˆ™ä¼šæŠŠKsetä½œä¸ºparent
+    ï¼ˆåˆ«å¿˜äº†Ksetæ˜¯ä¸€ä¸ªç‰¹æ®Šçš„Kobjectï¼‰
 	*/
 	struct kset		*kset;
 	/*
-    ¸ÃKobjectÊôÓÚµÄkobj_type¡£Ã¿¸öKobject±ØĞëÓĞÒ»¸öktype£¬»òÕßKernel»áÌáÊ¾´íÎó
+    è¯¥Kobjectå±äºçš„kobj_typeã€‚æ¯ä¸ªKobjectå¿…é¡»æœ‰ä¸€ä¸ªktypeï¼Œæˆ–è€…Kernelä¼šæç¤ºé”™è¯¯
 	*/
 	struct kobj_type	*ktype;
 	/*
-    ¸ÃKobjectÔÚsysfsÖĞµÄ±íÊ¾
+    è¯¥Kobjectåœ¨sysfsä¸­çš„è¡¨ç¤º
 	*/
 	struct kernfs_node	*sd; /* sysfs directory entry */
 	/*
-      Ò»¸ö¿ÉÓÃÓÚÔ­×Ó²Ù×÷µÄÒıÓÃ¼ÆÊı
+      ä¸€ä¸ªå¯ç”¨äºåŸå­æ“ä½œçš„å¼•ç”¨è®¡æ•°
 	*/
 	struct kref		kref;
 #ifdef CONFIG_DEBUG_KOBJECT_RELEASE
 	struct delayed_work	release;
 #endif
 /*
-Ö¸Ê¾¸ÃKobjectÊÇ·ñÒÑ¾­³õÊ¼»¯£¬ÒÔÔÚKobjectµÄInit£¬Put£¬AddµÈ²Ù×÷Ê±½øĞĞÒì³£Ğ£Ñé¡£
+æŒ‡ç¤ºè¯¥Kobjectæ˜¯å¦å·²ç»åˆå§‹åŒ–ï¼Œä»¥åœ¨Kobjectçš„Initï¼ŒPutï¼ŒAddç­‰æ“ä½œæ—¶è¿›è¡Œå¼‚å¸¸æ ¡éªŒã€‚
 */
 	unsigned int state_initialized:1;
 /*
-Ö¸Ê¾¸ÃKobjectÊÇ·ñÒÑÔÚsysfsÖĞ³ÊÏÖ£¬ÒÔ±ãÔÚ×Ô¶¯×¢ÏúÊ±´ÓsysfsÖĞÒÆ³ı
+æŒ‡ç¤ºè¯¥Kobjectæ˜¯å¦å·²åœ¨sysfsä¸­å‘ˆç°ï¼Œä»¥ä¾¿åœ¨è‡ªåŠ¨æ³¨é”€æ—¶ä»sysfsä¸­ç§»é™¤
 */
 	unsigned int state_in_sysfs:1;
 /*
-    UeventÌá¹©ÁË¡°ÓÃ»§¿Õ¼äÍ¨Öª¡±µÄ¹¦ÄÜÊµÏÖ£¬Í¨¹ı¸Ã¹¦ÄÜ£¬
-    µ±ÄÚºËÖĞÓĞKobjectµÄÔö¼Ó¡¢É¾³ı¡¢ĞŞ¸ÄµÈ¶¯×÷Ê±£¬»áÍ¨ÖªÓÃ»§¿Õ¼ä
+    Ueventæä¾›äº†â€œç”¨æˆ·ç©ºé—´é€šçŸ¥â€çš„åŠŸèƒ½å®ç°ï¼Œé€šè¿‡è¯¥åŠŸèƒ½ï¼Œ
+    å½“å†…æ ¸ä¸­æœ‰Kobjectçš„å¢åŠ ã€åˆ é™¤ã€ä¿®æ”¹ç­‰åŠ¨ä½œæ—¶ï¼Œä¼šé€šçŸ¥ç”¨æˆ·ç©ºé—´
     
-    ¼ÇÂ¼ÊÇ·ñÒÑ¾­ÏòÓÃ»§¿Õ¼ä·¢ËÍADD uevent£¬Èç¹ûÓĞ£¬ÇÒÃ»ÓĞ·¢ËÍremove uevent£¬
-    ÔòÔÚ×Ô¶¯×¢ÏúÊ±£¬²¹·¢REMOVE uevent£¬ÒÔ±ãÈÃÓÃ»§¿Õ¼äÕıÈ·´¦Àí
+    è®°å½•æ˜¯å¦å·²ç»å‘ç”¨æˆ·ç©ºé—´å‘é€ADD ueventï¼Œå¦‚æœæœ‰ï¼Œä¸”æ²¡æœ‰å‘é€remove ueventï¼Œ
+    åˆ™åœ¨è‡ªåŠ¨æ³¨é”€æ—¶ï¼Œè¡¥å‘REMOVE ueventï¼Œä»¥ä¾¿è®©ç”¨æˆ·ç©ºé—´æ­£ç¡®å¤„ç†
 */
 	unsigned int state_add_uevent_sent:1;
 	unsigned int state_remove_uevent_sent:1;
 
-	/*Èç¹û¸Ãkobject¶ÔÏóÁ¥ÊôÓÚÄ³Ò»¸ökset,ÄÇÃ´ËüµÄ×´Ì¬±ä»¯¿ÉÒÔµ¼ÖÂÆäËùÔÚµÄkset¶ÔÏóÏò
-	 *ÓÃ»§¿Õ¼ä·¢ËÍeventÏûÏ¢,³ÉÔ±uevent_suppressÓÃÀ´±íÊ¾µ±¸Ãkobject×´Ì¬·¢Éú±ä»¯Ê±,
-	 *ÊÇ·ñÈÃÆäËùÔÚµÄksetÏòÓÃ»§¿Õ¼ä·¢ËÍeventÏûÏ¢,Öµ1±íÊ¾²»ÈÃkset·¢ËÍÕâÖÖeventÏûÏ¢*/
+	/*å¦‚æœè¯¥kobjectå¯¹è±¡éš¶å±äºæŸä¸€ä¸ªkset,é‚£ä¹ˆå®ƒçš„çŠ¶æ€å˜åŒ–å¯ä»¥å¯¼è‡´å…¶æ‰€åœ¨çš„ksetå¯¹è±¡å‘
+	 *ç”¨æˆ·ç©ºé—´å‘é€eventæ¶ˆæ¯,æˆå‘˜uevent_suppressç”¨æ¥è¡¨ç¤ºå½“è¯¥kobjectçŠ¶æ€å‘ç”Ÿå˜åŒ–æ—¶,
+	 *æ˜¯å¦è®©å…¶æ‰€åœ¨çš„ksetå‘ç”¨æˆ·ç©ºé—´å‘é€eventæ¶ˆæ¯,å€¼1è¡¨ç¤ºä¸è®©ksetå‘é€è¿™ç§eventæ¶ˆæ¯*/
 	unsigned int uevent_suppress:1;	
 };
 
@@ -155,20 +155,20 @@ static inline const char *kobject_name(const struct kobject *kobj)
 	return kobj->name;
 }
 
-/*kobject³õÊ¼»¯º¯Êı,ÉèÖÃ kobject ÒıÓÃ¼ÆÊıÎª 1*/
+/*kobjectåˆå§‹åŒ–å‡½æ•°,è®¾ç½® kobject å¼•ç”¨è®¡æ•°ä¸º 1*/
 extern void kobject_init(struct kobject *kobj, struct kobj_type *ktype);
 extern __printf(3, 4) __must_check
-/*Ò»ÊÇ½¨Á¢kobject¶ÔÏó¼äµÄ²ã´Î¹ØÏµ,¶şÊÇÔÚsysfsÎÄ¼şÏµÍ³ÖĞ½¨Á¢Ò»¸öÄ¿Â¼,½«Ò»¸ökobject¶ÔÏóÍ¨¹ı
-kobject_addº¯Êıµ÷ÓÃ¼ÓÈëÏµÍ³Ç°,kobject¶ÔÏó±ØĞëÒÑ¾­³õÊ¼»¯*/
+/*ä¸€æ˜¯å»ºç«‹kobjectå¯¹è±¡é—´çš„å±‚æ¬¡å…³ç³»,äºŒæ˜¯åœ¨sysfsæ–‡ä»¶ç³»ç»Ÿä¸­å»ºç«‹ä¸€ä¸ªç›®å½•,å°†ä¸€ä¸ªkobjectå¯¹è±¡é€šè¿‡
+kobject_addå‡½æ•°è°ƒç”¨åŠ å…¥ç³»ç»Ÿå‰,kobjectå¯¹è±¡å¿…é¡»å·²ç»åˆå§‹åŒ–*/
 int kobject_add(struct kobject *kobj, struct kobject *parent,
 		const char *fmt, ...);
 extern __printf(4, 5) __must_check
-/*kobject×¢²áº¯Êı£¬¸Ãº¯ÊıÖ»ÊÇkobject_initºÍkobject_add_vargµÄ¼òµ¥×éºÏ*/
+/*kobjectæ³¨å†Œå‡½æ•°ï¼Œè¯¥å‡½æ•°åªæ˜¯kobject_initå’Œkobject_add_vargçš„ç®€å•ç»„åˆ*/
 int kobject_init_and_add(struct kobject *kobj,
 			 struct kobj_type *ktype, struct kobject *parent,
 			 const char *fmt, ...);
 
-/*´ÓlinuxÉè±¸Ôø²âÖĞ(hierarchy)ÖĞÉ¾³ıkobj¶ÔÏó*/
+/*ä»linuxè®¾å¤‡æ›¾æµ‹ä¸­(hierarchy)ä¸­åˆ é™¤kobjå¯¹è±¡*/
 extern void kobject_del(struct kobject *kobj);
 
 extern struct kobject * __must_check kobject_create(void);
@@ -178,7 +178,7 @@ extern struct kobject * __must_check kobject_create_and_add(const char *name,
 extern int __must_check kobject_rename(struct kobject *, const char *new_name);
 extern int __must_check kobject_move(struct kobject *, struct kobject *);
 
-/*Ôö¼Ó»ò¼õÉÙkobjectµÄÒıÓÃ¼ÆÊı*/
+/*å¢åŠ æˆ–å‡å°‘kobjectçš„å¼•ç”¨è®¡æ•°*/
 extern struct kobject *kobject_get(struct kobject *kobj);
 extern void kobject_put(struct kobject *kobj);
 
@@ -186,36 +186,36 @@ extern const void *kobject_namespace(struct kobject *kobj);
 extern char *kobject_get_path(struct kobject *kobj, gfp_t flag);
 
 /*
-¶øKobject´ó¶àÊıµÄÊ¹ÓÃ³¡¾°£¬
-ÊÇÄÚÇ¶ÔÚ´óĞÍµÄÊı¾İ½á¹¹ÖĞ£¨ÈçKset¡¢device_driverµÈ£©£¬
-Òò´ËÕâĞ©´óĞÍµÄÊı¾İ½á¹¹£¬Ò²±ØĞëÊÇ¶¯Ì¬·ÖÅä¡¢¶¯Ì¬ÊÍ·ÅµÄ¡£
+è€ŒKobjectå¤§å¤šæ•°çš„ä½¿ç”¨åœºæ™¯ï¼Œ
+æ˜¯å†…åµŒåœ¨å¤§å‹çš„æ•°æ®ç»“æ„ä¸­ï¼ˆå¦‚Ksetã€device_driverç­‰ï¼‰ï¼Œ
+å› æ­¤è¿™äº›å¤§å‹çš„æ•°æ®ç»“æ„ï¼Œä¹Ÿå¿…é¡»æ˜¯åŠ¨æ€åˆ†é…ã€åŠ¨æ€é‡Šæ”¾çš„ã€‚
 
-ÄÇÃ´ÊÍ·ÅµÄÊ±»úÊÇÊ²Ã´ÄØ£¿ÊÇÄÚÇ¶µÄKobjectÊÍ·ÅÊ±¡£
-µ«ÊÇKobjectµÄÊÍ·ÅÊÇÓÉKobjectÄ£¿é×Ô¶¯Íê³ÉµÄ£¨ÔÚÒıÓÃ¼ÆÊıÎª0Ê±£©£¬
-ÄÇÃ´ÔõÃ´Ò»²¢ÊÍ·Å°üº¬×Ô¼ºµÄ´óĞÍÊı¾İ½á¹¹ÄØ£¿ 
+é‚£ä¹ˆé‡Šæ”¾çš„æ—¶æœºæ˜¯ä»€ä¹ˆå‘¢ï¼Ÿæ˜¯å†…åµŒçš„Kobjecté‡Šæ”¾æ—¶ã€‚
+ä½†æ˜¯Kobjectçš„é‡Šæ”¾æ˜¯ç”±Kobjectæ¨¡å—è‡ªåŠ¨å®Œæˆçš„ï¼ˆåœ¨å¼•ç”¨è®¡æ•°ä¸º0æ—¶ï¼‰ï¼Œ
+é‚£ä¹ˆæ€ä¹ˆä¸€å¹¶é‡Šæ”¾åŒ…å«è‡ªå·±çš„å¤§å‹æ•°æ®ç»“æ„å‘¢ï¼Ÿ 
 
-ÕâÊ±Ktype¾ÍÅÉÉÏÓÃ³¡ÁË¡£ÎÒÃÇÖªµÀ£¬
-KtypeÖĞµÄrelease»Øµ÷º¯Êı¸ºÔğÊÍ·ÅKobject£¨ÉõÖÁÊÇ°üº¬KobjectµÄÊı¾İ½á¹¹£©µÄÄÚ´æ¿Õ¼ä£¬
-ÄÇÃ´Ktype¼°ÆäÄÚ²¿º¯Êı£¬ÊÇÓÉË­ÊµÏÖÄØ£¿
-ÊÇÓÉÉÏ²ãÊı¾İ½á¹¹ËùÔÚµÄÄ£¿é£¡ÒòÎªÖ»ÓĞËü£¬
-²ÅÇå³şKobjectÇ¶ÔÚÄÄ¸öÊı¾İ½á¹¹ÖĞ£¬
-²¢Í¨¹ıKobjectÖ¸ÕëÒÔ¼°×ÔÉíµÄÊı¾İ½á¹¹ÀàĞÍ£¬
-ÕÒµ½ĞèÒªÊÍ·ÅµÄÉÏ²ãÊı¾İ½á¹¹µÄÖ¸Õë£¬È»ºóÊÍ·ÅËü¡£ 
+è¿™æ—¶Ktypeå°±æ´¾ä¸Šç”¨åœºäº†ã€‚æˆ‘ä»¬çŸ¥é“ï¼Œ
+Ktypeä¸­çš„releaseå›è°ƒå‡½æ•°è´Ÿè´£é‡Šæ”¾Kobjectï¼ˆç”šè‡³æ˜¯åŒ…å«Kobjectçš„æ•°æ®ç»“æ„ï¼‰çš„å†…å­˜ç©ºé—´ï¼Œ
+é‚£ä¹ˆKtypeåŠå…¶å†…éƒ¨å‡½æ•°ï¼Œæ˜¯ç”±è°å®ç°å‘¢ï¼Ÿ
+æ˜¯ç”±ä¸Šå±‚æ•°æ®ç»“æ„æ‰€åœ¨çš„æ¨¡å—ï¼å› ä¸ºåªæœ‰å®ƒï¼Œ
+æ‰æ¸…æ¥šKobjectåµŒåœ¨å“ªä¸ªæ•°æ®ç»“æ„ä¸­ï¼Œ
+å¹¶é€šè¿‡KobjectæŒ‡é’ˆä»¥åŠè‡ªèº«çš„æ•°æ®ç»“æ„ç±»å‹ï¼Œ
+æ‰¾åˆ°éœ€è¦é‡Šæ”¾çš„ä¸Šå±‚æ•°æ®ç»“æ„çš„æŒ‡é’ˆï¼Œç„¶åé‡Šæ”¾å®ƒã€‚ 
 
-½²µ½ÕâÀï£¬¾ÍÇåÎú¶àÁË¡£ËùÒÔ£¬Ã¿Ò»¸öÄÚÇ¶KobjectµÄÊı¾İ½á¹¹£¬
-ÀıÈçkset¡¢device¡¢device_driverµÈµÈ£¬¶¼ÒªÊµÏÖÒ»¸öKtype£¬
-²¢¶¨ÒåÆäÖĞµÄ»Øµ÷º¯Êı¡£Í¬Àí£¬sysfsÏà¹ØµÄ²Ù×÷Ò²Ò»Ñù£¬
-±ØĞë¾­¹ıktypeµÄÖĞ×ª£¬ÒòÎªsysfs¿´µ½µÄÊÇKobject£¬¶øÕæÕıµÄÎÄ¼ş²Ù×÷µÄÖ÷Ìå£¬
-ÊÇÄÚÇ¶KobjectµÄÉÏ²ãÊı¾İ½á¹¹£¡ 
+è®²åˆ°è¿™é‡Œï¼Œå°±æ¸…æ™°å¤šäº†ã€‚æ‰€ä»¥ï¼Œæ¯ä¸€ä¸ªå†…åµŒKobjectçš„æ•°æ®ç»“æ„ï¼Œ
+ä¾‹å¦‚ksetã€deviceã€device_driverç­‰ç­‰ï¼Œéƒ½è¦å®ç°ä¸€ä¸ªKtypeï¼Œ
+å¹¶å®šä¹‰å…¶ä¸­çš„å›è°ƒå‡½æ•°ã€‚åŒç†ï¼Œsysfsç›¸å…³çš„æ“ä½œä¹Ÿä¸€æ ·ï¼Œ
+å¿…é¡»ç»è¿‡ktypeçš„ä¸­è½¬ï¼Œå› ä¸ºsysfsçœ‹åˆ°çš„æ˜¯Kobjectï¼Œè€ŒçœŸæ­£çš„æ–‡ä»¶æ“ä½œçš„ä¸»ä½“ï¼Œ
+æ˜¯å†…åµŒKobjectçš„ä¸Šå±‚æ•°æ®ç»“æ„ï¼ 
 */
 struct kobj_type {
-    /* ¹ı¸Ã»Øµ÷º¯Êı£¬¿ÉÒÔ½«°üº¬¸ÃÖÖÀàĞÍkobjectµÄÊı¾İ½á¹¹µÄÄÚ´æ¿Õ¼äÊÍ·Åµô */
+    /* è¿‡è¯¥å›è°ƒå‡½æ•°ï¼Œå¯ä»¥å°†åŒ…å«è¯¥ç§ç±»å‹kobjectçš„æ•°æ®ç»“æ„çš„å†…å­˜ç©ºé—´é‡Šæ”¾æ‰ */
 	void (*release)(struct kobject *kobj);
-	/* ¸ÃÖÖÀàĞÍµÄKobjectµÄsysfsÎÄ¼şÏµÍ³½Ó¿Ú */
+	/* è¯¥ç§ç±»å‹çš„Kobjectçš„sysfsæ–‡ä»¶ç³»ç»Ÿæ¥å£ */
 	const struct sysfs_ops *sysfs_ops;
-	/* ÖÖÀàĞÍµÄKobjectµÄatrributeÁĞ±í£¨ËùÎ½attribute£¬¾ÍÊÇsysfsÎÄ¼şÏµÍ³ÖĞµÄÒ»¸öÎÄ¼ş£©¡£½«»áÔÚKobjectÌí¼Óµ½ÄÚºËÊ±£¬Ò»²¢×¢²áµ½sysfsÖĞ*/
+	/* ç§ç±»å‹çš„Kobjectçš„atrributeåˆ—è¡¨ï¼ˆæ‰€è°“attributeï¼Œå°±æ˜¯sysfsæ–‡ä»¶ç³»ç»Ÿä¸­çš„ä¸€ä¸ªæ–‡ä»¶ï¼‰ã€‚å°†ä¼šåœ¨Kobjectæ·»åŠ åˆ°å†…æ ¸æ—¶ï¼Œä¸€å¹¶æ³¨å†Œåˆ°sysfsä¸­*/
 	struct attribute **default_attrs;
-	/* ºÍÎÄ¼şÏµÍ³£¨sysfs£©µÄÃüÃû¿Õ¼äÓĞ¹Ø*/
+	/* å’Œæ–‡ä»¶ç³»ç»Ÿï¼ˆsysfsï¼‰çš„å‘½åç©ºé—´æœ‰å…³*/
 	const struct kobj_ns_type_operations *(*child_ns_type)(struct kobject *kobj);
 	const void *(*namespace)(struct kobject *kobj);
 };
@@ -228,12 +228,12 @@ struct kobj_uevent_env {
 	int buflen;
 };
 
-/*¶ÔÈÈ²å°ÎÊÂ¼şµÄ¿ØÖÆ,¶¨ÒåÁËÒ»×éº¯ÊıÖ¸Õë,µ±ksetÖĞµÄÄ³Ğ©kobject¶ÔÏó·¢Éú×´Ì¬±ä»¯ĞèÒª
- *Í¨ÖªÓÃ»§¿Õ¼äÊ±,µ÷ÓÃÆäÖĞµÄº¯ÊıÀ´Íê³É*/
+/*å¯¹çƒ­æ’æ‹”äº‹ä»¶çš„æ§åˆ¶,å®šä¹‰äº†ä¸€ç»„å‡½æ•°æŒ‡é’ˆ,å½“ksetä¸­çš„æŸäº›kobjectå¯¹è±¡å‘ç”ŸçŠ¶æ€å˜åŒ–éœ€è¦
+ *é€šçŸ¥ç”¨æˆ·ç©ºé—´æ—¶,è°ƒç”¨å…¶ä¸­çš„å‡½æ•°æ¥å®Œæˆ*/
 struct kset_uevent_ops {
-	/*Ò»¸ökset¶ÔÏó×´Ì¬µÄ±ä»¯,½«»áÊ×ÏÈµ÷ÓÃÁ¥ÊôÓÚ¸Ãkset¶ÔÏóµÄuevent_ops²Ù×÷¼¯ÖĞµÄfilter
-	 *º¯Êı,¾ö¶¨kset¶ÔÏóµ±Ç°×´Ì¬µÄ¸Ä±äÊÇ·ñÒªÍ¨Öªµ½ÓÃ»§²ã,Èç¹ûuevent_ops->filter·µ»Ø0,
-	 *½«²»ÔÙÍ¨ÖªÓÃ»§²ã*/
+	/*ä¸€ä¸ªksetå¯¹è±¡çŠ¶æ€çš„å˜åŒ–,å°†ä¼šé¦–å…ˆè°ƒç”¨éš¶å±äºè¯¥ksetå¯¹è±¡çš„uevent_opsæ“ä½œé›†ä¸­çš„filter
+	 *å‡½æ•°,å†³å®šksetå¯¹è±¡å½“å‰çŠ¶æ€çš„æ”¹å˜æ˜¯å¦è¦é€šçŸ¥åˆ°ç”¨æˆ·å±‚,å¦‚æœuevent_ops->filterè¿”å›0,
+	 *å°†ä¸å†é€šçŸ¥ç”¨æˆ·å±‚*/
 	int (* const filter)(struct kset *kset, struct kobject *kobj);
 	const char *(* const name)(struct kset *kset, struct kobject *kobj);
 	int (* const uevent)(struct kset *kset, struct kobject *kobj,
@@ -269,36 +269,36 @@ struct sock;
  * can add new environment variables, or filter out the uevents if so
  * desired.
  */
-/*kset¿ÉÒÔÈÎÎñÊÇÒ»×ékobjectµÄ¼¯ºÏ,ÊÇkobjectµÄÈİÆ÷,kset±¾ÉíÒ²ÊÇÒ»¸öÄÚºË¶ÔÏó,ËùÒÔĞèÒªÄÚÇ¶
- *Ò»¸ökobject¶ÔÏó*/
-/*kset¶ÔÏóÓëµ¥¸öµÄkobject¶ÔÏó²»Ò»ÑùµÄµØ·½ÔÚÓÚ,½«Ò»¸ökset¶ÔÏóÏòÏµÍ³×¢²áÊ±,Èç¹ûlinuxÄÚºË
- *±àÒëÊ±ÆôÓÃÁËCONFIG_HOTPLUG,ÄÇÃ´ĞèÒª½«ÕâÒ»ÊÂ¼şÍ¨ÖªÓÃ»§¿Õ¼ä,Õâ¸ö¹ı³ÌÓĞkobject_ueventÍê³É,
- *Èç¹ûÒ»¸ökobject¶ÔÏó²»ÊôÓÚÈÎÒ»kset,ÄÇÃ´Õâ¸ö¹ÂÁ¢µÄkobject¶ÔÏó½«ÎŞ·¨Í¨¹ıuevent»úÖÆÏòÓÃ»§
- *¿Õ¼ä·¢ËÍeventÏûÏ¢*/
+/*ksetå¯ä»¥ä»»åŠ¡æ˜¯ä¸€ç»„kobjectçš„é›†åˆ,æ˜¯kobjectçš„å®¹å™¨,ksetæœ¬èº«ä¹Ÿæ˜¯ä¸€ä¸ªå†…æ ¸å¯¹è±¡,æ‰€ä»¥éœ€è¦å†…åµŒ
+ *ä¸€ä¸ªkobjectå¯¹è±¡*/
+/*ksetå¯¹è±¡ä¸å•ä¸ªçš„kobjectå¯¹è±¡ä¸ä¸€æ ·çš„åœ°æ–¹åœ¨äº,å°†ä¸€ä¸ªksetå¯¹è±¡å‘ç³»ç»Ÿæ³¨å†Œæ—¶,å¦‚æœlinuxå†…æ ¸
+ *ç¼–è¯‘æ—¶å¯ç”¨äº†CONFIG_HOTPLUG,é‚£ä¹ˆéœ€è¦å°†è¿™ä¸€äº‹ä»¶é€šçŸ¥ç”¨æˆ·ç©ºé—´,è¿™ä¸ªè¿‡ç¨‹æœ‰kobject_ueventå®Œæˆ,
+ *å¦‚æœä¸€ä¸ªkobjectå¯¹è±¡ä¸å±äºä»»ä¸€kset,é‚£ä¹ˆè¿™ä¸ªå­¤ç«‹çš„kobjectå¯¹è±¡å°†æ— æ³•é€šè¿‡ueventæœºåˆ¶å‘ç”¨æˆ·
+ *ç©ºé—´å‘é€eventæ¶ˆæ¯*/
 struct kset {
-/* ÓÃÓÚ±£´æ¸ÃksetÏÂËùÓĞµÄkobjectµÄÁ´±í */
+/* ç”¨äºä¿å­˜è¯¥ksetä¸‹æ‰€æœ‰çš„kobjectçš„é“¾è¡¨ */
 	struct list_head list;
-	spinlock_t list_lock;	/*¶ÔksetÉÏµÄlistÁ´±í½øĞĞ·ÃÎÊ²Ù×÷Ê±ÓÃÀ´×÷Îª»¥³â±£»¤Ê¹ÓÃµÄ×ÔĞıËø*/
-	/* ¸Ãkset×Ô¼ºµÄkobject£¨ksetÊÇÒ»¸öÌØÊâµÄkobject£¬Ò²»áÔÚsysfsÖĞÒÔÄ¿Â¼µÄĞÎÊ½ÌåÏÖ£© */
+	spinlock_t list_lock;	/*å¯¹ksetä¸Šçš„listé“¾è¡¨è¿›è¡Œè®¿é—®æ“ä½œæ—¶ç”¨æ¥ä½œä¸ºäº’æ–¥ä¿æŠ¤ä½¿ç”¨çš„è‡ªæ—‹é”*/
+	/* è¯¥ksetè‡ªå·±çš„kobjectï¼ˆksetæ˜¯ä¸€ä¸ªç‰¹æ®Šçš„kobjectï¼Œä¹Ÿä¼šåœ¨sysfsä¸­ä»¥ç›®å½•çš„å½¢å¼ä½“ç°ï¼‰ */
 	struct kobject kobj;
 	/*
-    ksetµÄuevent²Ù×÷º¯Êı¼¯¡£µ±ÈÎºÎKobjectĞèÒªÉÏ±¨ueventÊ±£¬
-    ¶¼Òªµ÷ÓÃËüËù´ÓÊôµÄksetµÄuevent_ops£¬
-    Ìí¼Ó»·¾³±äÁ¿£¬»òÕß¹ıÂËevent£¨kset¿ÉÒÔ¾ö¶¨ÄÄĞ©event¿ÉÒÔÉÏ±¨£©¡£
-    Òò´Ë£¬Èç¹ûÒ»¸ökobject²»ÊôÓÚÈÎºÎksetÊ±£¬ÊÇ²»ÔÊĞí·¢ËÍueventµÄ
+    ksetçš„ueventæ“ä½œå‡½æ•°é›†ã€‚å½“ä»»ä½•Kobjectéœ€è¦ä¸ŠæŠ¥ueventæ—¶ï¼Œ
+    éƒ½è¦è°ƒç”¨å®ƒæ‰€ä»å±çš„ksetçš„uevent_opsï¼Œ
+    æ·»åŠ ç¯å¢ƒå˜é‡ï¼Œæˆ–è€…è¿‡æ»¤eventï¼ˆksetå¯ä»¥å†³å®šå“ªäº›eventå¯ä»¥ä¸ŠæŠ¥ï¼‰ã€‚
+    å› æ­¤ï¼Œå¦‚æœä¸€ä¸ªkobjectä¸å±äºä»»ä½•ksetæ—¶ï¼Œæ˜¯ä¸å…è®¸å‘é€ueventçš„
 	*/
 	const struct kset_uevent_ops *uevent_ops;
 };
 
-/*ÓÃÀ´³õÊ¼»¯Ò»¸ökset¶ÔÏó*/
+/*ç”¨æ¥åˆå§‹åŒ–ä¸€ä¸ªksetå¯¹è±¡*/
 extern void kset_init(struct kset *kset);
-/*ÓÃÀ´³õÊ¼»¯²¢ÏòÏµÍ³×¢²áÒ»¸ökset¶ÔÏó*/
+/*ç”¨æ¥åˆå§‹åŒ–å¹¶å‘ç³»ç»Ÿæ³¨å†Œä¸€ä¸ªksetå¯¹è±¡*/
 extern int __must_check kset_register(struct kset *kset);
-/*ÓÃÀ´½«kÖ¸ÏòµÄkset¶ÔÏó´ÓÏµÍ³ÖĞ×¢Ïú,Íê³ÉµÄÊÇkset_registerµÄ·´Ïò²Ù×÷*/
+/*ç”¨æ¥å°†kæŒ‡å‘çš„ksetå¯¹è±¡ä»ç³»ç»Ÿä¸­æ³¨é”€,å®Œæˆçš„æ˜¯kset_registerçš„åå‘æ“ä½œ*/
 extern void kset_unregister(struct kset *kset);
-/*Ö÷Òª×÷ÓÃÊÇ¶¯Ì¬²úÉúÒ»kset¶ÔÏóÈ»ºó½«Æä¼ÓÈëµ½sysfsÎÄ¼şÏµÍ³ÖĞ,²ÎÊınameÊÇ´´½¨µÄkset¶ÔÏóµÄÃû,
- *uevent_opsÊÇĞÂkset¶ÔÏóÉÏÓÃÀ´´¦ÀíÓÃ»§¿Õ¼äeventÏûÏ¢µÄ²Ù×÷¼¯,parent_kobjÊÇkset¶ÔÏóµÄÉÏ²ã
- *(¸¸¼¶)µÄÄÚºË¶ÔÏóÖ¸Õë*/
+/*ä¸»è¦ä½œç”¨æ˜¯åŠ¨æ€äº§ç”Ÿä¸€ksetå¯¹è±¡ç„¶åå°†å…¶åŠ å…¥åˆ°sysfsæ–‡ä»¶ç³»ç»Ÿä¸­,å‚æ•°nameæ˜¯åˆ›å»ºçš„ksetå¯¹è±¡çš„å,
+ *uevent_opsæ˜¯æ–°ksetå¯¹è±¡ä¸Šç”¨æ¥å¤„ç†ç”¨æˆ·ç©ºé—´eventæ¶ˆæ¯çš„æ“ä½œé›†,parent_kobjæ˜¯ksetå¯¹è±¡çš„ä¸Šå±‚
+ *(çˆ¶çº§)çš„å†…æ ¸å¯¹è±¡æŒ‡é’ˆ*/
 extern struct kset * __must_check kset_create_and_add(const char *name,
 						const struct kset_uevent_ops *u,
 						struct kobject *parent_kobj);

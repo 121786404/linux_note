@@ -30,18 +30,18 @@
 static int __sync_filesystem(struct super_block *sb, int wait)
 {
     /*  
-       Èç¹ûwaitÎªtrue£¬ÔòÒ»Ö±µÈ´ýÖ±µ½ËùÓÐµÄÔàinodeÐ´Èë´ÅÅÌ  
-       Èç¹ûwaitÎªfalse£¬ÔòÆô¶¯Ôàinode»ØÐ´¹¤×÷£¬µ«²»±ØµÈ´ýµ½½áÊø  
+       å¦‚æžœwaitä¸ºtrueï¼Œåˆ™ä¸€ç›´ç­‰å¾…ç›´åˆ°æ‰€æœ‰çš„è„inodeå†™å…¥ç£ç›˜  
+       å¦‚æžœwaitä¸ºfalseï¼Œåˆ™å¯åŠ¨è„inodeå›žå†™å·¥ä½œï¼Œä½†ä¸å¿…ç­‰å¾…åˆ°ç»“æŸ  
        */ 
 
 	if (wait)
 		sync_inodes_sb(sb);
 	else
 		writeback_inodes_sb(sb, WB_REASON_SYNC);
-    /* Èç¹û¸ÃÎÄ¼þÏµÍ³¶¨ÒåÁË×Ô¼ºµÄÍ¬²½²Ù×÷£¬ÔòÖ´ÐÐ¸Ã²Ù×÷ */ 
+    /* å¦‚æžœè¯¥æ–‡ä»¶ç³»ç»Ÿå®šä¹‰äº†è‡ªå·±çš„åŒæ­¥æ“ä½œï¼Œåˆ™æ‰§è¡Œè¯¥æ“ä½œ */ 
 	if (sb->s_op->sync_fs)
 		sb->s_op->sync_fs(sb, wait);
-	/* µ÷ÓÃblockÉè±¸µÄflush²Ù×÷£¬ÕæÕýµØ½«Êý¾ÝÐ´µ½Éè±¸ÉÏ */ 
+	/* è°ƒç”¨blockè®¾å¤‡çš„flushæ“ä½œï¼ŒçœŸæ­£åœ°å°†æ•°æ®å†™åˆ°è®¾å¤‡ä¸Š */ 
 	return __sync_blockdev(sb->s_bdev, wait);
 }
 
@@ -113,24 +113,24 @@ static void fdatawait_one_bdev(struct block_device *bdev, void *arg)
 SYSCALL_DEFINE0(sync)
 {
 	int nowait = 0, wait = 1;
-    /* »½ÐÑºóÌ¨ÄÚºËÏß³Ì£¬½«¡°Ôà¡±»º´æ³åË¢µ½´ÅÅÌÉÏ */ 
+    /* å”¤é†’åŽå°å†…æ ¸çº¿ç¨‹ï¼Œå°†â€œè„â€ç¼“å­˜å†²åˆ·åˆ°ç£ç›˜ä¸Š */ 
 	wakeup_flusher_threads(0, WB_REASON_SYNC);
 	iterate_supers(sync_inodes_one_sb, NULL);
     /*  
-        ²»µÈ´ý£¬¿ÉÒÔÑ¸ËÙµØ½«Ã»ÓÐÉÏËøµÄinodeÍ¬²½¡£
+        ä¸ç­‰å¾…ï¼Œå¯ä»¥è¿…é€Ÿåœ°å°†æ²¡æœ‰ä¸Šé”çš„inodeåŒæ­¥ã€‚
 
-        µÈ´ý, ¶ÔÓÚÉÏËøµÄinode»áµÈ´ýµ½½âËø£¬ÔÙÖ´ÐÐÍ¬²½£¬
-        ÕâÑù¿ÉÒÔÌá¸ßÐÔÄÜ¡£
+        ç­‰å¾…, å¯¹äºŽä¸Šé”çš„inodeä¼šç­‰å¾…åˆ°è§£é”ï¼Œå†æ‰§è¡ŒåŒæ­¥ï¼Œ
+        è¿™æ ·å¯ä»¥æé«˜æ€§èƒ½ã€‚
 
-        ÒòÎªµÚÒ»´Î²Ù×÷ÖÐ£¬ÉÏËøµÄinodeºÜ¿ÉÄÜÔÚµÚÒ»´Î²Ù×÷½áÊøºó£¬
-        ¾ÍÒÑ¾­½âËø£¬ÕâÑù¾Í±ÜÃâÁËµÈ´ý  
+        å› ä¸ºç¬¬ä¸€æ¬¡æ“ä½œä¸­ï¼Œä¸Šé”çš„inodeå¾ˆå¯èƒ½åœ¨ç¬¬ä¸€æ¬¡æ“ä½œç»“æŸåŽï¼Œ
+        å°±å·²ç»è§£é”ï¼Œè¿™æ ·å°±é¿å…äº†ç­‰å¾…  
       */ 
 	iterate_supers(sync_fs_one_sb, &nowait);
 	iterate_supers(sync_fs_one_sb, &wait);
 	iterate_bdevs(fdatawrite_one_bdev, NULL);
 	iterate_bdevs(fdatawait_one_bdev, NULL);
     /*  
-        Èç¹ûÊÇlaptopÄ£Ê½£¬ÄÇÃ´ÒòÎª´Ë´¦¸Õ¸Õ×öÍêÍ¬²½£¬Òò´Ë¿ÉÒÔÍ£µôºóÌ¨Í¬²½¶¨Ê±Æ÷  
+        å¦‚æžœæ˜¯laptopæ¨¡å¼ï¼Œé‚£ä¹ˆå› ä¸ºæ­¤å¤„åˆšåˆšåšå®ŒåŒæ­¥ï¼Œå› æ­¤å¯ä»¥åœæŽ‰åŽå°åŒæ­¥å®šæ—¶å™¨  
       */  
 	if (unlikely(laptop_mode))
 		laptop_sync_completion();
@@ -201,7 +201,7 @@ SYSCALL_DEFINE1(syncfs, int, fd)
 int vfs_fsync_range(struct file *file, loff_t start, loff_t end, int datasync)
 {
 	struct inode *inode = file->f_mapping->host;
-    /* µ÷ÓÃ¾ßÌå²Ù×÷ÏµÍ³µÄÍ¬²½²Ù×÷ */ 
+    /* è°ƒç”¨å…·ä½“æ“ä½œç³»ç»Ÿçš„åŒæ­¥æ“ä½œ */ 
 	if (!file->f_op->fsync)
 		return -EINVAL;
 	if (!datasync && (inode->i_state & I_DIRTY_TIME)) {

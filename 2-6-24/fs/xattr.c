@@ -31,10 +31,10 @@ xattr_permission(struct inode *inode, const char *name, int mask)
 	 * We can never set or remove an extended attribute on a read-only
 	 * filesystem  or on an immutable / append-only inode.
 	 */
-	if (mask & MAY_WRITE) {/* ÅĞ¶ÏĞŞ¸ÄÈ¨ÏŞ */
-		if (IS_RDONLY(inode))/* ÎÄ¼şÖ»¶Á */
+	if (mask & MAY_WRITE) {/* åˆ¤æ–­ä¿®æ”¹æƒé™ */
+		if (IS_RDONLY(inode))/* æ–‡ä»¶åªè¯» */
 			return -EROFS;
-		if (IS_IMMUTABLE(inode) || IS_APPEND(inode))/* ²»ÔÊĞíĞŞ¸Ä */
+		if (IS_IMMUTABLE(inode) || IS_APPEND(inode))/* ä¸å…è®¸ä¿®æ”¹ */
 			return -EPERM;
 	}
 
@@ -44,19 +44,19 @@ xattr_permission(struct inode *inode, const char *name, int mask)
 	 */
 	if (!strncmp(name, XATTR_SECURITY_PREFIX, XATTR_SECURITY_PREFIX_LEN) ||
 	    !strncmp(name, XATTR_SYSTEM_PREFIX, XATTR_SYSTEM_PREFIX_LEN))
-		return 0;/* ²»ÔÊĞíÓÃ»§ĞŞ¸Ä°²È«ÊôĞÔ */
+		return 0;/* ä¸å…è®¸ç”¨æˆ·ä¿®æ”¹å®‰å…¨å±æ€§ */
 
 	/*
 	 * The trusted.* namespace can only be accessed by a privileged user.
 	 */
 	if (!strncmp(name, XATTR_TRUSTED_PREFIX, XATTR_TRUSTED_PREFIX_LEN))
-		return (capable(CAP_SYS_ADMIN) ? 0 : -EPERM);/* ²»ÔÊĞíÓÃ»§ĞŞ¸ÄtrustedÊôĞÔ */
+		return (capable(CAP_SYS_ADMIN) ? 0 : -EPERM);/* ä¸å…è®¸ç”¨æˆ·ä¿®æ”¹trustedå±æ€§ */
 
 	/* In user.* namespace, only regular files and directories can have
 	 * extended attributes. For sticky directories, only the owner and
 	 * privileged user can write attributes.
 	 */
-	if (!strncmp(name, XATTR_USER_PREFIX, XATTR_USER_PREFIX_LEN)) {/* user*¿Õ¼äµÄÊôĞÔ£¬Ö»ÔÊĞíĞŞ¸ÄÄ¿Â¼ºÍÆÕÍ¨ÎÄ¼ş */
+	if (!strncmp(name, XATTR_USER_PREFIX, XATTR_USER_PREFIX_LEN)) {/* user*ç©ºé—´çš„å±æ€§ï¼Œåªå…è®¸ä¿®æ”¹ç›®å½•å’Œæ™®é€šæ–‡ä»¶ */
 		if (!S_ISREG(inode->i_mode) && !S_ISDIR(inode->i_mode))
 			return -EPERM;
 		if (S_ISDIR(inode->i_mode) && (inode->i_mode & S_ISVTX) &&
@@ -64,7 +64,7 @@ xattr_permission(struct inode *inode, const char *name, int mask)
 			return -EPERM;
 	}
 
-	/* Í¨ÓÃÈ¨ÏŞ¼ì²é¹ı³Ì */
+	/* é€šç”¨æƒé™æ£€æŸ¥è¿‡ç¨‹ */
 	return permission(inode, mask, NULL);
 }
 
@@ -75,38 +75,38 @@ vfs_setxattr(struct dentry *dentry, char *name, void *value,
 	struct inode *inode = dentry->d_inode;
 	int error;
 
-	/* ¼ì²éÓÃ»§ÊÇ·ñÓĞÈ¨ÏŞĞŞ¸ÄÀ©Õ¹ÊôĞÔ */
+	/* æ£€æŸ¥ç”¨æˆ·æ˜¯å¦æœ‰æƒé™ä¿®æ”¹æ‰©å±•å±æ€§ */
 	error = xattr_permission(inode, name, MAY_WRITE);
 	if (error)
 		return error;
 
-	/* »ñÈ¡½ÚµãµÄËø */
+	/* è·å–èŠ‚ç‚¹çš„é” */
 	mutex_lock(&inode->i_mutex);
-	/* Selinux°²È«¼ì²é */
+	/* Selinuxå®‰å…¨æ£€æŸ¥ */
 	error = security_inode_setxattr(dentry, name, value, size, flags);
 	if (error)
 		goto out;
 	error = -EOPNOTSUPP;
 	if (inode->i_op->setxattr) {
-		/* ÎÄ¼şÏµÍ³Ö¸¶¨ÁËsetxattr»Øµ÷£¬Ôòµ÷ÓÃËüÀ´ÉèÖÃÊôĞÔ */
+		/* æ–‡ä»¶ç³»ç»ŸæŒ‡å®šäº†setxattrå›è°ƒï¼Œåˆ™è°ƒç”¨å®ƒæ¥è®¾ç½®å±æ€§ */
 		error = inode->i_op->setxattr(dentry, name, value, size, flags);
-		if (!error) {/* Í¬Ê±Í¨¹ıfsnotifyÊôĞÔ±ä»¯ÊÂ¼ş */
+		if (!error) {/* åŒæ—¶é€šè¿‡fsnotifyå±æ€§å˜åŒ–äº‹ä»¶ */
 			fsnotify_xattr(dentry);
-			/* Í¨Öª°²È«Ä£¿é */
+			/* é€šçŸ¥å®‰å…¨æ¨¡å— */
 			security_inode_post_setxattr(dentry, name, value,
 						     size, flags);
 		}
 	} else if (!strncmp(name, XATTR_SECURITY_PREFIX,
-				XATTR_SECURITY_PREFIX_LEN)) {/* Ã»ÓĞÌá¹©»Øµ÷£¬µ«ÊÇÊÇ°²È«Ïà¹ØµÄÊôĞÔ */
+				XATTR_SECURITY_PREFIX_LEN)) {/* æ²¡æœ‰æä¾›å›è°ƒï¼Œä½†æ˜¯æ˜¯å®‰å…¨ç›¸å…³çš„å±æ€§ */
 		const char *suffix = name + XATTR_SECURITY_PREFIX_LEN;
-		/* ÓÉ°²È«Ä£¿é´¦ÀíÊôĞÔ */
+		/* ç”±å®‰å…¨æ¨¡å—å¤„ç†å±æ€§ */
 		error = security_inode_setsecurity(inode, suffix, value,
 						   size, flags);
-		if (!error)/* Í¨Öªfsnotify */
+		if (!error)/* é€šçŸ¥fsnotify */
 			fsnotify_xattr(dentry);
 	}
 out:
-	/* ÊÍ·ÅËø */
+	/* é‡Šæ”¾é” */
 	mutex_unlock(&inode->i_mutex);
 	return error;
 }
@@ -200,7 +200,7 @@ EXPORT_SYMBOL_GPL(vfs_removexattr);
  * Extended attribute SET operations
  */
 /**
- * ÉèÖÃÀ©Õ¹ÊôĞÔ
+ * è®¾ç½®æ‰©å±•å±æ€§
  */
 static long
 setxattr(struct dentry *d, char __user *name, void __user *value,
@@ -213,28 +213,28 @@ setxattr(struct dentry *d, char __user *name, void __user *value,
 	if (flags & ~(XATTR_CREATE|XATTR_REPLACE))
 		return -EINVAL;
 
-	/* ´ÓÓÃ»§¿Õ¼ä»ñÈ¡Ãû³ÆºÍÖµ²ÎÊı */
+	/* ä»ç”¨æˆ·ç©ºé—´è·å–åç§°å’Œå€¼å‚æ•° */
 	error = strncpy_from_user(kname, name, sizeof(kname));
 	if (error == 0 || error == sizeof(kname))
 		error = -ERANGE;
 	if (error < 0)
 		return error;
 
-	if (size) {/* ¼ì²é²ÎÊıÓĞĞ§ĞÔ */
+	if (size) {/* æ£€æŸ¥å‚æ•°æœ‰æ•ˆæ€§ */
 		if (size > XATTR_SIZE_MAX)
 			return -E2BIG;
-		/* ÔÚÄÚºËÖĞ·ÖÅäÄÚ´æ±£´æ²ÎÊı */
+		/* åœ¨å†…æ ¸ä¸­åˆ†é…å†…å­˜ä¿å­˜å‚æ•° */
 		kvalue = kmalloc(size, GFP_KERNEL);
 		if (!kvalue)
 			return -ENOMEM;
-		/* ´ÓÓÃ»§¿Õ¼ä¸´ÖÆÊı¾İ */
+		/* ä»ç”¨æˆ·ç©ºé—´å¤åˆ¶æ•°æ® */
 		if (copy_from_user(kvalue, value, size)) {
 			kfree(kvalue);
 			return -EFAULT;
 		}
 	}
 
-	/* Í¨¹ıVFS²ãÉèÖÃÊôĞÔ */
+	/* é€šè¿‡VFSå±‚è®¾ç½®å±æ€§ */
 	error = vfs_setxattr(d, kname, kvalue, size, flags);
 	kfree(kvalue);
 	return error;
@@ -600,7 +600,7 @@ generic_listxattr(struct dentry *dentry, char *buffer, size_t buffer_size)
  * Find the handler for the prefix and dispatch its set() operation.
  */
 /**
- * Í¨ÓÃµÄÉèÖÃÀ©Õ¹ÊôĞÔµÄ¹ı³Ì
+ * é€šç”¨çš„è®¾ç½®æ‰©å±•å±æ€§çš„è¿‡ç¨‹
  */
 int
 generic_setxattr(struct dentry *dentry, const char *name, const void *value, size_t size, int flags)
@@ -610,11 +610,11 @@ generic_setxattr(struct dentry *dentry, const char *name, const void *value, siz
 
 	if (size == 0)
 		value = "";  /* empty EA, do not remove */
-	/* ÔÚ³¬¼¶¿éÃèÊö·ûÖĞ²éÕÒÊôĞÔËùÊô¿Õ¼äµÄ´¦Àí³ÌĞò */
+	/* åœ¨è¶…çº§å—æè¿°ç¬¦ä¸­æŸ¥æ‰¾å±æ€§æ‰€å±ç©ºé—´çš„å¤„ç†ç¨‹åº */
 	handler = xattr_resolve_name(inode->i_sb->s_xattr, &name);
 	if (!handler)
 		return -EOPNOTSUPP;
-	/* »Øµ÷Æäsetº¯ÊıÀ´´¦ÀíÊôĞÔ */
+	/* å›è°ƒå…¶setå‡½æ•°æ¥å¤„ç†å±æ€§ */
 	return handler->set(inode, name, value, size, flags);
 }
 

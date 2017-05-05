@@ -20,32 +20,32 @@
 #include <linux/sysfs.h>
 
 /*
-���ȣ�CPU��Ӳ�����Ծ��������CPU����ߺ���͹���Ƶ�ʣ�
-���е�Ƶ�ʵ�����ֵ�������������Χ�ڣ�������cpuinfo_xxx_freq����ʾ��
+首先，CPU的硬件特性决定了这个CPU的最高和最低工作频率，
+所有的频率调整数值都必须在这个范围内，它们用cpuinfo_xxx_freq来表示。
 
-Ȼ�����ǿ����������Χ���ٴζ����һ�������ĵ��ڷ�Χ��
-������scaling_xxx_freq����ʾ��ͬʱ�����ݾ����Ӳ��ƽ̨�Ĳ�ͬ��
-���ǻ���Ҫ�ṩһ��Ƶ�ʱ������Ƶ�ʱ��涨��cpu���Թ�����Ƶ��ֵ��
-��Ȼ��ЩƵ��ֵ����Ҫ��cpuinfo_xxx_freq�ķ�Χ�ڡ�
-������ЩƵ����Ϣ��CPUFreqϵͳ�Ϳ��Ը��ݵ�ǰcpu�ĸ�������״����
-�����ش�Ƶ�ʱ���ѡ��һ�����ʵ�Ƶ�ʹ�cpuʹ�ã��Ѵﵽ���ܵ�Ŀ�ġ�
+然后，我们可以在这个范围内再次定义出一个软件的调节范围，
+它们用scaling_xxx_freq来表示，同时，根据具体的硬件平台的不同，
+我们还需要提供一个频率表，这个频率表规定了cpu可以工作的频率值，
+当然这些频率值必须要在cpuinfo_xxx_freq的范围内。
+有了这些频率信息，CPUFreq系统就可以根据当前cpu的负载轻重状况，
+合理地从频率表中选择一个合适的频率供cpu使用，已达到节能的目的。
 
-�������ѡ��Ƶ�ʱ��е�Ƶ�ʣ����Ҫ�ɲ�ͬ��governor��ʵ�֣�
-Ŀǰ���ں˰汾�ṩ��5��governor������ѡ��
+至于如何选择频率表中的频率，这个要由不同的governor来实现，
+目前的内核版本提供了5种governor供我们选择。
 
-ѡ����ʵ���Ƶ���Ժ󣬾����Ƶ�ʵ��ڹ����ͽ���scaling_driver����ɡ�
+选择好适当的频率以后，具体的频率调节工作就交由scaling_driver来完成。
 
-CPUFreqϵͳ��һЩ�������߼��ͽӿڴ�����������
-��Щ������ƽ̨�޹أ�Ҳ�����ĵ�Ƶ�����޹أ�
-�ں˵��ĵ�������ΪCPUFreq Core��/Documents/cpufreq/core.txt����
+CPUFreq系统把一些公共的逻辑和接口代码抽象出来，
+这些代码与平台无关，也与具体的调频策略无关，
+内核的文档把它称为CPUFreq Core（/Documents/cpufreq/core.txt）。
 
-����һ���֣���ʵ�ʵĵ�Ƶ������صĲ��ֱ�����cpufreq_policy��
-cpufreq_policy������Ƶ����Ϣ�;����governor��ɣ�governor���Ǿ�����Ե�ʵ���ߣ�
-��Ȼgovernor��Ҫ�����ṩ��Ҫ��Ƶ����Ϣ��governor��ʵ�����������ƽ̨�޹أ�
-��ƽ̨��صĴ�����cpufreq_driver�����������ʵ�ʵ�Ƶ�ʵ��ڹ�����
+另外一部分，与实际的调频策略相关的部分被称作cpufreq_policy，
+cpufreq_policy又是由频率信息和具体的governor组成，governor才是具体策略的实现者，
+当然governor需要我们提供必要的频率信息，governor的实现最好能做到平台无关，
+与平台相关的代码用cpufreq_driver表述，它完成实际的频率调节工作。
 
-�����������ں�ģ����Ҫ��Ƶ�ʵ��ڵĹ����еõ�֪ͨ��Ϣ��
-�����ͨ��cpufreq notifiers�����
+最后，如果其他内核模块需要在频率调节的过程中得到通知消息，
+则可以通过cpufreq notifiers来完成
 */
 
 /*********************************************************************
@@ -79,11 +79,11 @@ struct cpufreq_freqs {
 };
 
 struct cpufreq_cpuinfo {
-	unsigned int		max_freq; // ֧�ֵ�����Ƶ��
-	unsigned int		min_freq; // ֧�ֵ���С��Ƶ��
+	unsigned int		max_freq; // 支持的最大的频率
+	unsigned int		min_freq; // 支持的最小的频率
 
 	/* in 10^(-9) s = nanoseconds */
-	unsigned int		transition_latency; // �л��ӳ���Ϣ
+	unsigned int		transition_latency; // 切换延迟信息
 };
 
 struct cpufreq_user_policy {
@@ -94,14 +94,14 @@ struct cpufreq_user_policy {
 struct cpufreq_policy {
 	/* CPUs sharing clock, require sw coordination */
 	cpumask_var_t		cpus;	/* Online CPUs only */
-	cpumask_var_t		related_cpus; /* Online + Offline CPUs ,��� policy������������cpu���*/
+	cpumask_var_t		related_cpus; /* Online + Offline CPUs ,这个 policy所管理的所有cpu编号*/
 	cpumask_var_t		real_cpus; /* Related and present */
 
 	unsigned int		shared_type; /* ACPI: ANY or ALL affected CPUs
 						should set cpufreq */
-    /*  ��Ȼһ��policy����ͬʱ���ڶ��cpu��
-           ����ͨ��һ��policyֻ�������е�һ��cpu���й�����
-           cpu�������ڼ�¼���ڹ�����policy��cpu��� */
+    /*  虽然一种policy可以同时用于多个cpu，
+           但是通常一种policy只会由其中的一个cpu进行管理，
+           cpu变量用于记录用于管理该policy的cpu编号 */
 	unsigned int		cpu;    /* cpu managing this policy, must be online */
 
 	struct clk		*clk;
@@ -115,38 +115,38 @@ struct cpufreq_policy {
 	unsigned int		suspend_freq; /* freq to set during suspend */
 
 /* 
-�ñ�������ȡ��������ֵ��CPUFREQ_POLICY_POWERSAVE��CPUFREQ_POLICY_PERFORMANCE��
-�ñ���ֻ�е���Ƶ����֧��setpolicy�ص�������ʱ����Ч��
-��ʱ������������policy������ֵ������ϵͳ�Ĺ���Ƶ�ʻ�״̬��
-�����Ƶ������cpufreq_driver��֧��target�ص�����Ƶ������Ӧ��governor������
+该变量可以取以下两个值：CPUFREQ_POLICY_POWERSAVE和CPUFREQ_POLICY_PERFORMANCE，
+该变量只有当调频驱动支持setpolicy回调函数的时候有效，
+这时候由驱动根据policy变量的值来决定系统的工作频率或状态。
+如果调频驱动（cpufreq_driver）支持target回调，则频率由相应的governor来决定
 */
 	unsigned int		policy; /* see above */
 	unsigned int		last_policy; /* policy before unplug */
 /* 
-ָ���policy��ǰʹ�õ�cpufreq_governor�ṹ���������������ݡ�
-governor��ʵ�ָ�policy�Ĺؼ����ڣ���Ƶ���Ե��߼���governorʵ�֡�
+指向该policy当前使用的cpufreq_governor结构和它的上下文数据。
+governor是实现该policy的关键所在，调频策略的逻辑由governor实现。
 */
 	struct cpufreq_governor	*governor; /* see below */
 	void			*governor_data;
 	char			last_governor[CPUFREQ_NAME_LEN]; /* last governor used */
 
-    /* ��ʱ���ж�����������Ҫ����policy��
-          ��Ҫ���øù������а�ʵ�ʵĹ����Ƶ��Ժ�Ľ�����������ִ�� */
+    /* 有时在中断上下文中需要更新policy，
+          需要利用该工作队列把实际的工作移到稍后的进程上下文中执行 */
 	struct work_struct	update; /* if update_policy() needs to be
 					 * called, but you're in IRQ context */
 
 /*
-��ʱ����Ϊ�����ԭ����Ҫ�޸�policy�Ĳ�����
-����ضȹ���ʱ����������������Ƶ�ʿ��ܻᱻ���ͣ�
-Ϊ�����ʵ���ʱ��ָ�ԭ�е����в�����
-��Ҫʹ��user_policy����ԭʼ�Ĳ�����min��max��policy��governor��
+有时候因为特殊的原因需要修改policy的参数，
+比如溫度过高时，最大可允许的运行频率可能会被降低，
+为了在适当的时候恢复原有的运行参数，
+需要使用user_policy保存原始的参数（min，max，policy，governor）
 */
 	struct cpufreq_user_policy user_policy; 
 	struct cpufreq_frequency_table	*freq_table;
 	enum cpufreq_table_sorting freq_table_sorted;
 
 	struct list_head        policy_list;
-	struct kobject		kobj; // ��policy��sysfs�ж�Ӧ��kobj�Ķ���
+	struct kobject		kobj; // 该policy在sysfs中对应的kobj的对象
 	struct completion	kobj_unregister;
 
 	/*
@@ -305,8 +305,8 @@ static struct global_attr _name =		\
 __ATTR(_name, 0644, show_##_name, store_##_name)
 
 /*
-gonvernorֻ�Ǹ�����㲢������ʵ�Ƶ�ʣ�
-����Ƶ�ʵ��趨������ƽ̨��صģ�����Ҫcpufreq_driver���������
+gonvernor只是负责计算并提出合适的频率，
+但是频率的设定工作是平台相关的，这需要cpufreq_driver驱动来完成
 */
 struct cpufreq_driver {
 	char		name[CPUFREQ_NAME_LEN];
@@ -314,16 +314,16 @@ struct cpufreq_driver {
 	void		*driver_data;
 
 	/* needed by all drivers */
-	int		(*init)(struct cpufreq_policy *policy); // ���������б�Ҫ�ĳ�ʼ������
-	int		(*verify)(struct cpufreq_policy *policy); // ���policy�Ĳ����Ƿ�����֧��
+	int		(*init)(struct cpufreq_policy *policy); // 该驱动进行必要的初始化工作
+	int		(*verify)(struct cpufreq_policy *policy); // 检查policy的参数是否被驱动支持
 
 /*
-setpolicy/target    �ص���������������ʵ�������������е�����һ����
+setpolicy/target    回调函数，驱动必须实现这两个函数中的其中一个，
 
-�����֧��ͨ��governorѡ����ʵ�����Ƶ�ʣ���ʵ��setpolicy�ص�������
-����ϵͳֻ��֧��CPUFREQ_POLICY_POWERSAVE��CPUFREQ_POLICY_PERFORMANCE�����ֹ������ԡ�
+如果不支持通过governor选择合适的运行频率，则实现setpolicy回调函数，
+这样系统只能支持CPUFREQ_POLICY_POWERSAVE和CPUFREQ_POLICY_PERFORMANCE这两种工作策略。
 
-��֮��ʵ��target�ص�������ͨ��target�ص��趨governor����Ҫ��Ƶ�ʡ�
+反之，实现target回调函数，通过target回调设定governor所需要的频率。
 */
 	/* define one out of two */
 	int		(*setpolicy)(struct cpufreq_policy *policy);
@@ -466,28 +466,28 @@ static inline void cpufreq_resume(void) {}
  *                     CPUFREQ NOTIFIER INTERFACE                    *
  *********************************************************************/
 /*
-CPUFreq��֪ͨϵͳʹ�����ں˵ı�׼֪ͨ�ӿڡ�
-�������ṩ������֪ͨ�¼���policy֪ͨ��transition֪ͨ
+CPUFreq的通知系统使用了内核的标准通知接口。
+它对外提供了两个通知事件：policy通知和transition通知
 
-policy֪ͨ����֪ͨ����ģ��cpu��policy��Ҫ�ı䣬
-ÿ��policy�ı�ʱ����֪ͨ���ϵĻص������ò�ͬ���¼�����������3��
+policy通知用于通知其它模块cpu的policy需要改变，
+每次policy改变时，该通知链上的回调将会用不同的事件参数被调用3次
 */
 
 #define CPUFREQ_TRANSITION_NOTIFIER	(0)
 #define CPUFREQ_POLICY_NOTIFIER		(1)
 
 /* Transition notifiers */
-#define CPUFREQ_PRECHANGE		(0) // ����ǰ��֪ͨ
-#define CPUFREQ_POSTCHANGE		(1) // ��ɵ������֪ͨ
+#define CPUFREQ_PRECHANGE		(0) // 调整前的通知
+#define CPUFREQ_POSTCHANGE		(1) // 完成调整后的通知
 
 /* Policy Notifiers  */
 /*
-ֻҪ����Ҫ�����еı�֪ͨ�߿����ڴ�ʱ�޸�policy��������Ϣ��
-�����¿�ϵͳ���ܻ��޸��ڴ��������е�Ƶ��
+只要有需要，所有的被通知者可以在此时修改policy的限制信息，
+比如温控系统可能会修改在大允许运行的频率
 */
 #define CPUFREQ_ADJUST			(0)
 /*
-�����л�policyǰ����֪ͨ�ᷢ�����еı�֪ͨ��
+真正切换policy前，该通知会发往所有的被通知者
 */
 #define CPUFREQ_NOTIFY			(1)
 
@@ -565,7 +565,7 @@ static inline unsigned long cpufreq_scale(unsigned long old, u_int div,
 #define TRANSITION_LATENCY_LIMIT	(10 * 1000 * 1000)
 
 /*
-governor������cpu��ʹ��״��, �Ӷ��ڿ��õķ�Χ��ѡ��һ�����ʵ�Ƶ��
+governor负责检测cpu的使用状况, 从而在可用的范围中选择一个合适的频率
 */
 struct cpufreq_governor {
 	char	name[CPUFREQ_NAME_LEN];

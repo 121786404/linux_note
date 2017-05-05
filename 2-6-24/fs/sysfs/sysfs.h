@@ -41,10 +41,10 @@ struct sysfs_elem_bin_attr {
 struct sysfs_dirent {
 	atomic_t		s_count;
 	atomic_t		s_active;
-	/* Í¨¹ıÕâÁ½¸ö×Ö¶Î¹¹³ÉÊ÷ */
+	/* é€šè¿‡è¿™ä¸¤ä¸ªå­—æ®µæ„æˆæ ‘ */
 	struct sysfs_dirent	*s_parent;
 	struct sysfs_dirent	*s_sibling;
-	/* Ä¿Â¼ÏîµÄÃû³Æ */
+	/* ç›®å½•é¡¹çš„åç§° */
 	const char		*s_name;
 
 	union {
@@ -54,12 +54,12 @@ struct sysfs_dirent {
 		struct sysfs_elem_bin_attr	s_bin_attr;
 	};
 
-	/* ÉèÖÃÊı¾İÏîµÄÀàĞÍºÍ±êÖ¾£¬ÀàĞÍÈçSYSFS_DIR */
+	/* è®¾ç½®æ•°æ®é¡¹çš„ç±»å‹å’Œæ ‡å¿—ï¼Œç±»å‹å¦‚SYSFS_DIR */
 	unsigned int		s_flags;
 	ino_t			s_ino;
-	/* Ä¿Â¼µÄÈ¨ÏŞ */
+	/* ç›®å½•çš„æƒé™ */
 	umode_t			s_mode;
-	/* Ä¿Â¼ÏîµÄÊôĞÔ£¬Èç¹ûÎªNULL±íÊ¾Ä¬ÈÏÊôĞÔ¼¯ºÏ¡£ */
+	/* ç›®å½•é¡¹çš„å±æ€§ï¼Œå¦‚æœä¸ºNULLè¡¨ç¤ºé»˜è®¤å±æ€§é›†åˆã€‚ */
 	struct iattr		*s_iattr;
 };
 

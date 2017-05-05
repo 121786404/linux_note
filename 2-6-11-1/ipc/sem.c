@@ -928,8 +928,8 @@ static inline void unlock_semundo(void)
  *
  * This can block, so callers must hold no locks.
  */
-/* ½«µ±Ç°½ø³ÌµÄundo_list¸ø¿½±´¹ıÀ´£¬½ö½öÊÇ¿½±´ÁËÖ¸Õë
-  * Èç¹ûµ±Ç°½ø³ÌÃ»ÓĞ£¬ÔòÊÇÒ»¸ö¿ÕµÄÁĞ±í 
+/* å°†å½“å‰è¿›ç¨‹çš„undo_listç»™æ‹·è´è¿‡æ¥ï¼Œä»…ä»…æ˜¯æ‹·è´äº†æŒ‡é’ˆ
+  * å¦‚æœå½“å‰è¿›ç¨‹æ²¡æœ‰ï¼Œåˆ™æ˜¯ä¸€ä¸ªç©ºçš„åˆ—è¡¨ 
   */
 static inline int get_undo_list(struct sem_undo_list **undo_listp)
 {
@@ -1225,14 +1225,14 @@ asmlinkage long sys_semop (int semid, struct sembuf __user *tsops, unsigned nsop
  * because of the reasoning in the comment above unlock_semundo.
  */
 
-/* ¸´ÖÆ½ø³Ìµ±Ç°ËùÓĞÃ»ÓĞundoµÄĞÅºÅÁ¿ */
+/* å¤åˆ¶è¿›ç¨‹å½“å‰æ‰€æœ‰æ²¡æœ‰undoçš„ä¿¡å·é‡ */
 int copy_semundo(unsigned long clone_flags, struct task_struct *tsk)
 {
 	struct sem_undo_list *undo_list;
 	int error;
 
-        /* Èç¹ûÊÇ¿½±´½ø³ÌµÄĞÅºÅÁ¿£¬ÆäÊµÒ²¾ÍÊÇºÍµ±Ç°½ø³Ì
-          * ¹²ÏíÃ»ÓĞundoµÄĞÅºÅÁĞ±í
+        /* å¦‚æœæ˜¯æ‹·è´è¿›ç¨‹çš„ä¿¡å·é‡ï¼Œå…¶å®ä¹Ÿå°±æ˜¯å’Œå½“å‰è¿›ç¨‹
+          * å…±äº«æ²¡æœ‰undoçš„ä¿¡å·åˆ—è¡¨
           */
 	if (clone_flags & CLONE_SYSVSEM) {
 		error = get_undo_list(&undo_list);

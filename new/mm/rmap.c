@@ -426,8 +426,8 @@ static void anon_vma_ctor(void *data)
 }
 
 /**
- * Îªanon_vma·ÖÅäslab¹ÜÀíÆ÷¡£
- * ÓÃÓÚ·´ÏòÓ³Éä£¬Í¨¹ıÒ³¿òÕÒµ½ÒıÓÃÏî£¬±ãÓÚÒ³Ãæ»ØÊÕ¡£
+ * ä¸ºanon_vmaåˆ†é…slabç®¡ç†å™¨ã€‚
+ * ç”¨äºåå‘æ˜ å°„ï¼Œé€šè¿‡é¡µæ¡†æ‰¾åˆ°å¼•ç”¨é¡¹ï¼Œä¾¿äºé¡µé¢å›æ”¶ã€‚
  */
 void __init anon_vma_init(void)
 {
@@ -777,11 +777,11 @@ int page_mapped_in_vma(struct page *page, struct vm_area_struct *vma)
 	pte_t *pte;
 	spinlock_t *ptl;
 
-	/* ¼ÆËãÒ³ÃæÔÚ¸ÃµØÖ·¿Õ¼äÄÚµÄĞéÄâµØÖ· */
+	/* è®¡ç®—é¡µé¢åœ¨è¯¥åœ°å€ç©ºé—´å†…çš„è™šæ‹Ÿåœ°å€ */
 	address = __vma_address(page, vma);
 	if (unlikely(address < vma->vm_start || address >= vma->vm_end))
 		return 0;
-	/* ¼ì²é¸ÃµØÖ·ÔÚµØÖ·¿Õ¼äÖĞÊÇ·ñ½øĞĞÁËÓ³Éä */
+	/* æ£€æŸ¥è¯¥åœ°å€åœ¨åœ°å€ç©ºé—´ä¸­æ˜¯å¦è¿›è¡Œäº†æ˜ å°„ */
 	pte = page_check_address(page, vma->vm_mm, address, &ptl, 1);
 	if (!pte)			/* the page is not in this mm */
 		return 0;
@@ -971,7 +971,7 @@ static bool invalid_page_referenced_vma(struct vm_area_struct *vma, void *arg)
  * returns the number of ptes which referenced the page.
  */
 /**
- * ²âÊÔÄ³¸öÒ³ÃæÊÇ·ñ±»ÒıÓÃÍ³¼Æ×î½ü»îÔ¾Ê¹ÓÃÄ³¸ö¹²ÏíÒ³µÄ½ø³ÌÊıÄ¿
+ * æµ‹è¯•æŸä¸ªé¡µé¢æ˜¯å¦è¢«å¼•ç”¨ç»Ÿè®¡æœ€è¿‘æ´»è·ƒä½¿ç”¨æŸä¸ªå…±äº«é¡µçš„è¿›ç¨‹æ•°ç›®
  */
 int page_referenced(struct page *page,
 		    int is_locked,
@@ -1142,13 +1142,13 @@ static void __page_set_anon_rmap(struct page *page,
 		anon_vma = anon_vma->root;
 
 	/*
-	 * anon_vma±íÍ·µÄµØÖ·ÔÚ¼ÓÉÏPAGE_MAPPING_ANONÖ®ºó£¬±£´æµ½
-	 * pageÊµÀıµÄmapping³ÉÔ±ÖĞ¡£ÕâÊ¹µÃÄÚºË¿ÉÒÔÍ¨¹ı¼ì²é×îµÍÎ»À´Çø·Ö
-	 * ÄäÃûÒ³ºÍÆÕÍ¨Ó³ÉäµÄÒ³:Èç¹ûÎª0(Ã»ÓĞÉèÖÃPAGE_MAPPING_ANON)£¬
-	 * ÔòÎªÆÕÍ¨Ó³Éä£»Èç¹ûÎª1(PAGE_MAPPING_ANONÖÃÎ»)£¬ÔòÎªÄäÃûÒ³¡£
+	 * anon_vmaè¡¨å¤´çš„åœ°å€åœ¨åŠ ä¸ŠPAGE_MAPPING_ANONä¹‹åï¼Œä¿å­˜åˆ°
+	 * pageå®ä¾‹çš„mappingæˆå‘˜ä¸­ã€‚è¿™ä½¿å¾—å†…æ ¸å¯ä»¥é€šè¿‡æ£€æŸ¥æœ€ä½ä½æ¥åŒºåˆ†
+	 * åŒ¿åé¡µå’Œæ™®é€šæ˜ å°„çš„é¡µ:å¦‚æœä¸º0(æ²¡æœ‰è®¾ç½®PAGE_MAPPING_ANON)ï¼Œ
+	 * åˆ™ä¸ºæ™®é€šæ˜ å°„ï¼›å¦‚æœä¸º1(PAGE_MAPPING_ANONç½®ä½)ï¼Œåˆ™ä¸ºåŒ¿åé¡µã€‚
 	 */
 	anon_vma = (void *) anon_vma + PAGE_MAPPING_ANON;
-	/* mappingÍ¨¹ı×îºóÒ»Î»±íÊ¾ÊÇ·ñÎªÄäÃûÓ³Éä */
+	/* mappingé€šè¿‡æœ€åä¸€ä½è¡¨ç¤ºæ˜¯å¦ä¸ºåŒ¿åæ˜ å°„ */
 	page->mapping = (struct address_space *) anon_vma;
 	page->index = linear_page_index(vma, address);
 }
@@ -1193,7 +1193,7 @@ static void __page_check_anon_rmap(struct page *page,
  * (but PageKsm is never downgraded to PageAnon).
  */
 /**
- * Èç¹ûÒ»¸öÄäÃûÒ³ÒÑ¾­ÓĞÒıÓÃ¼ÆÊı£¬Ôòµ÷ÓÃ±¾º¯Êı½«Ò³Ìí¼Óµ½·´ÉäÓ³ÉäÊı¾İ½á¹¹ÖĞ¡£
+ * å¦‚æœä¸€ä¸ªåŒ¿åé¡µå·²ç»æœ‰å¼•ç”¨è®¡æ•°ï¼Œåˆ™è°ƒç”¨æœ¬å‡½æ•°å°†é¡µæ·»åŠ åˆ°åå°„æ˜ å°„æ•°æ®ç»“æ„ä¸­ã€‚
  */
 void page_add_anon_rmap(struct page *page,
 	struct vm_area_struct *vma, unsigned long address, bool compound)
@@ -1259,7 +1259,7 @@ void do_page_add_anon_rmap(struct page *page,
  * Page does not have to be locked.
  */
 /**
- * ½«ĞÂµÄÄäÃûÒ³Ìí¼Óµ½·´ÏòÓ³ÉäÊı¾İ½á¹¹ÖĞ
+ * å°†æ–°çš„åŒ¿åé¡µæ·»åŠ åˆ°åå‘æ˜ å°„æ•°æ®ç»“æ„ä¸­
  */
 void page_add_new_anon_rmap(struct page *page,
 	struct vm_area_struct *vma, unsigned long address, bool compound)
@@ -1271,7 +1271,7 @@ void page_add_new_anon_rmap(struct page *page,
 	if (compound) {
 		VM_BUG_ON_PAGE(!PageTransHuge(page), page);
 		/* increment count (starts at -1) */
-		/* ³õÊ¼»¯_mapcount¼ÆÊıÎª0£¬±íÊ¾µÚÒ»¸öÓ³ÉäµÄÄäÃûÒ³ */
+		/* åˆå§‹åŒ–_mapcountè®¡æ•°ä¸º0ï¼Œè¡¨ç¤ºç¬¬ä¸€ä¸ªæ˜ å°„çš„åŒ¿åé¡µ */
 		atomic_set(compound_mapcount_ptr(page), 0);
 		__inc_node_page_state(page, NR_ANON_THPS);
 	} else {
@@ -1281,7 +1281,7 @@ void page_add_new_anon_rmap(struct page *page,
 		atomic_set(&page->_mapcount, 0);
 	}
 	__mod_node_page_state(page_pgdat(page), NR_ANON_MAPPED, nr);
-	/* ½«vmaÌí¼Óµ½·´ÏòÓ³ÉäÖĞ */
+	/* å°†vmaæ·»åŠ åˆ°åå‘æ˜ å°„ä¸­ */
 	__page_set_anon_rmap(page, vma, address, 1);
 }
 
@@ -1292,8 +1292,8 @@ void page_add_new_anon_rmap(struct page *page,
  * The caller needs to hold the pte lock.
  */
 /*
- * Ìí¼Ó»ùÓÚÎÄ¼şÓ³ÉäµÄÒ³¡£»ù±¾ÉÏ£¬ËùĞèÒªµÄ
- * Ö»ÊÇ¶Ô_mapcount±äÁ¿¼Ó1(Ô­×Ó²Ù×÷)²¢¸üĞÂ¸÷ÄÚ´æÓòµÄÍ³¼ÆÁ¿¡£
+ * æ·»åŠ åŸºäºæ–‡ä»¶æ˜ å°„çš„é¡µã€‚åŸºæœ¬ä¸Šï¼Œæ‰€éœ€è¦çš„
+ * åªæ˜¯å¯¹_mapcountå˜é‡åŠ 1(åŸå­æ“ä½œ)å¹¶æ›´æ–°å„å†…å­˜åŸŸçš„ç»Ÿè®¡é‡ã€‚
  */
 void page_add_file_rmap(struct page *page, bool compound)
 {
@@ -1460,9 +1460,9 @@ struct rmap_private {
  * @arg: enum ttu_flags will be passed to this argument
  */
 /**
- * ±»try_to_unmap_anonºÍtry_to_unmap_fileÖØ¸´µ÷ÓÃ¡£ÓÃÓÚ½â³ı·´ÏòÓ³Éä¡£
- * 	page:	ÊÇÒ»¸öÖ¸ÏòÄ¿±êÒ³ÃèÊö·ûµÄÖ¸Õë¡£¸ÃÒ³½«±»½â³ıËùÓĞ·´ÏòÓ³Éä¡£
- *	vma:	Ö¸ÏòÏßĞÔÇøÃèÊö·ûµÄÖ¸Õë¡£
+ * è¢«try_to_unmap_anonå’Œtry_to_unmap_fileé‡å¤è°ƒç”¨ã€‚ç”¨äºè§£é™¤åå‘æ˜ å°„ã€‚
+ * 	page:	æ˜¯ä¸€ä¸ªæŒ‡å‘ç›®æ ‡é¡µæè¿°ç¬¦çš„æŒ‡é’ˆã€‚è¯¥é¡µå°†è¢«è§£é™¤æ‰€æœ‰åå‘æ˜ å°„ã€‚
+ *	vma:	æŒ‡å‘çº¿æ€§åŒºæè¿°ç¬¦çš„æŒ‡é’ˆã€‚
  */
 static int try_to_unmap_one(struct page *page, struct vm_area_struct *vma,
 		     unsigned long address, void *arg)
@@ -1523,7 +1523,7 @@ static int try_to_unmap_one(struct page *page, struct vm_area_struct *vma,
 	/* Nuke the page table entry. */
 	flush_cache_page(vma, address, page_to_pfn(page));
 	/**
-	 * Çå¿ÕÒ³±íÏî²¢Ë¢ĞÂTLB¡£
+	 * æ¸…ç©ºé¡µè¡¨é¡¹å¹¶åˆ·æ–°TLBã€‚
 	 */
 	if (should_defer_flush(mm, flags)) {
 		/*
@@ -1542,7 +1542,7 @@ static int try_to_unmap_one(struct page *page, struct vm_area_struct *vma,
 
 	/* Move the dirty bit to the physical page now the pte is gone. */
 	/**
-	 * Ò³¿ÉÒÔ±»»ØÊÕ£¬Èç¹ûÒ³±íÏîµÄDirty±êÖ¾±»ÖÃÎ»£¬Ôò½«Ò³µÄPG_dirty±êÖ¾ÖÃÎ»¡£
+	 * é¡µå¯ä»¥è¢«å›æ”¶ï¼Œå¦‚æœé¡µè¡¨é¡¹çš„Dirtyæ ‡å¿—è¢«ç½®ä½ï¼Œåˆ™å°†é¡µçš„PG_dirtyæ ‡å¿—ç½®ä½ã€‚
 	 */
 	if (pte_dirty(pteval))
 		set_page_dirty(page);
@@ -1616,18 +1616,18 @@ static int try_to_unmap_one(struct page *page, struct vm_area_struct *vma,
 
 discard:
 	/**
-	 * µİ¼õÒ³ÃèÊö·ûµÄ_mapcount£¬ÒòÎª¶ÔÓÃ»§Ì¬Ò³±íÏîÖĞÒ³¿òµÄÒıÓÃÒÑ¾­±»É¾³ı¡£
+	 * é€’å‡é¡µæè¿°ç¬¦çš„_mapcountï¼Œå› ä¸ºå¯¹ç”¨æˆ·æ€é¡µè¡¨é¡¹ä¸­é¡µæ¡†çš„å¼•ç”¨å·²ç»è¢«åˆ é™¤ã€‚
 	 */
 	page_remove_rmap(page, PageHuge(page));
 	/**
-	 * µİ¼õ´æ·ÅÔÚÒ³ÃèÊö·û_count×Ö¶ÎÖĞµÄÒ³¿òÊ¹ÓÃ¼ÆÊıÆ÷¡£
-	 * Èç¹û¼ÆÊıÆ÷Ğ¡ÓÚ0£¬»¹»á´Ó»î¶¯»òÕß·Ç»î¶¯Á´±íÖĞÉ¾³ıÒ³ÃèÊö·û£¬²¢µ÷ÓÃfree_hot_pageÊÍ·ÅÒ³¿ò¡£
+	 * é€’å‡å­˜æ”¾åœ¨é¡µæè¿°ç¬¦_countå­—æ®µä¸­çš„é¡µæ¡†ä½¿ç”¨è®¡æ•°å™¨ã€‚
+	 * å¦‚æœè®¡æ•°å™¨å°äº0ï¼Œè¿˜ä¼šä»æ´»åŠ¨æˆ–è€…éæ´»åŠ¨é“¾è¡¨ä¸­åˆ é™¤é¡µæè¿°ç¬¦ï¼Œå¹¶è°ƒç”¨free_hot_pageé‡Šæ”¾é¡µæ¡†ã€‚
 	 */
 	put_page(page);
 
 out_unmap:
 	/**
-	 * pte_offset_map¿ÉÄÜ½¨Á¢ÁËÁÙÊ±ÄÚºËÓ³Éä¡£ÔÚ´ËÊÍ·ÅËü¡£
+	 * pte_offset_mapå¯èƒ½å»ºç«‹äº†ä¸´æ—¶å†…æ ¸æ˜ å°„ã€‚åœ¨æ­¤é‡Šæ”¾å®ƒã€‚
 	 */
 	pte_unmap_unlock(pte, ptl);
 	if (ret != SWAP_FAIL && ret != SWAP_MLOCK && !(flags & TTU_MUNLOCK))

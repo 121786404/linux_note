@@ -133,7 +133,7 @@ static inline void sg_inc_cpu_power(struct sched_group *sg, u32 val)
 }
 #endif
 
-/* ÓÃÓÚÅÐ¶Ïµ÷¶È²ßÂÔÊÇ·ñÊôÐÔÊµÊ±Àà */
+/* ç”¨äºŽåˆ¤æ–­è°ƒåº¦ç­–ç•¥æ˜¯å¦å±žæ€§å®žæ—¶ç±» */
 static inline int rt_policy(int policy)
 {
 	if (unlikely(policy == SCHED_FIFO) || unlikely(policy == SCHED_RR))
@@ -141,7 +141,7 @@ static inline int rt_policy(int policy)
 	return 0;
 }
 
-/* ÓÃÓÚÅÐ¶Ï½ø³ÌÊÇ·ñÊôÐÔÊµÊ±Àà */
+/* ç”¨äºŽåˆ¤æ–­è¿›ç¨‹æ˜¯å¦å±žæ€§å®žæ—¶ç±» */
 static inline int task_has_rt_policy(struct task_struct *p)
 {
 	return rt_policy(p->policy);
@@ -231,27 +231,27 @@ static inline void set_task_cfs_rq(struct task_struct *p, unsigned int cpu) { }
 
 /* CFS-related fields in a runqueue */
 /**
- * CFS¾ÍÐ÷¶ÓÁÐ£¬ÔÚCPUµ÷¶È¶ÓÁÐÖÐÇ¶ÈëÁË´Ë¶ÓÁÐ
+ * CFSå°±ç»ªé˜Ÿåˆ—ï¼Œåœ¨CPUè°ƒåº¦é˜Ÿåˆ—ä¸­åµŒå…¥äº†æ­¤é˜Ÿåˆ—
  */
 struct cfs_rq {
-	/* ËùÓÐCFS½ø³ÌµÄÀÛ»ý¸ººÉÖµ */
+	/* æ‰€æœ‰CFSè¿›ç¨‹çš„ç´¯ç§¯è´Ÿè·å€¼ */
 	struct load_weight load;
-	/* ¶ÓÁÐÉÏ¿ÉÔËÐÐ½ø³ÌµÄÊýÄ¿ */
+	/* é˜Ÿåˆ—ä¸Šå¯è¿è¡Œè¿›ç¨‹çš„æ•°ç›® */
 	unsigned long nr_running;
 
 	u64 exec_clock;
-	/* ¼ÇÂ¼¶ÓÁÐÉÏËùÓÐ½ø³ÌµÄ×îÐ¡ÐéÄâÔËÐÐÊ±¼ä£¬¿ÉÄÜ±ÈºìºÚÊ÷×î×ó±ß½áµãµÄvruntimeÖµ´ó */
+	/* è®°å½•é˜Ÿåˆ—ä¸Šæ‰€æœ‰è¿›ç¨‹çš„æœ€å°è™šæ‹Ÿè¿è¡Œæ—¶é—´ï¼Œå¯èƒ½æ¯”çº¢é»‘æ ‘æœ€å·¦è¾¹ç»“ç‚¹çš„vruntimeå€¼å¤§ */
 	u64 min_vruntime;
 
-	/* ÓÃÓÚÔÚ°´Ê±¼äÅÅÐòµÄºìºÚÊ÷ÖÐ¹ÜÀíËùÓÐ½ø³Ì */
+	/* ç”¨äºŽåœ¨æŒ‰æ—¶é—´æŽ’åºçš„çº¢é»‘æ ‘ä¸­ç®¡ç†æ‰€æœ‰è¿›ç¨‹ */
 	struct rb_root tasks_timeline;
-	/* ºìºÚÊ÷×î×ó±ßµÄ½áµã£¬¼´×îÐèÒª±»µ÷¶ÈµÄ½ø³Ì */
+	/* çº¢é»‘æ ‘æœ€å·¦è¾¹çš„ç»“ç‚¹ï¼Œå³æœ€éœ€è¦è¢«è°ƒåº¦çš„è¿›ç¨‹ */
 	struct rb_node *rb_leftmost;
 	struct rb_node *rb_load_balance_curr;
 	/* 'curr' points to currently running entity on this cfs_rq.
 	 * It is set to NULL otherwise (i.e when none are currently running).
 	 */
-	/* µ±Ç°Ö´ÐÐ½ø³ÌµÄ¿Éµ÷¶ÈÊµÌå */
+	/* å½“å‰æ‰§è¡Œè¿›ç¨‹çš„å¯è°ƒåº¦å®žä½“ */
 	struct sched_entity *curr;
 
 	unsigned long nr_spread_over;
@@ -273,11 +273,11 @@ struct cfs_rq {
 };
 
 /* Real-Time classes' related field in a runqueue: */
-/* ÊµÊ±½ø³Ìµ÷¶È¶ÓÁÐ */
+/* å®žæ—¶è¿›ç¨‹è°ƒåº¦é˜Ÿåˆ— */
 struct rt_rq {
-	/* ´¦ÓÚ¼¤»î×´Ì¬µÄÊµÊ±½ø³ÌÓÅÏÈ¼¶Î»Í¼¼°ÆäÁ´±í */
+	/* å¤„äºŽæ¿€æ´»çŠ¶æ€çš„å®žæ—¶è¿›ç¨‹ä¼˜å…ˆçº§ä½å›¾åŠå…¶é“¾è¡¨ */
 	struct rt_prio_array active;
-	/* ÓÃÓÚ¶àºË¸ºÔØ¾ùºâ */
+	/* ç”¨äºŽå¤šæ ¸è´Ÿè½½å‡è¡¡ */
 	int rt_load_balance_idx;
 	struct list_head *rt_load_balance_head, *rt_load_balance_curr;
 };
@@ -290,7 +290,7 @@ struct rt_rq {
  * acquire operations must be ordered by ascending &runqueue.
  */
 /**
- * Ã¿CPUÔËÐÐ¶ÓÁÐ
+ * æ¯CPUè¿è¡Œé˜Ÿåˆ—
  */
 struct rq {
 	/* runqueue lock: */
@@ -300,22 +300,22 @@ struct rq {
 	 * nr_running and cpu_load should be in the same cacheline because
 	 * remote CPUs use both these fields when doing load calculation.
 	 */
-	/* ÔËÐÐ¶ÓÁÐÉÏ¿ÉÔËÐÐ½ø³ÌµÄÊýÄ¿£¬ */
+	/* è¿è¡Œé˜Ÿåˆ—ä¸Šå¯è¿è¡Œè¿›ç¨‹çš„æ•°ç›®ï¼Œ */
 	unsigned long nr_running;
 	#define CPU_LOAD_IDX_MAX 5
-	/* ´ËÇ°µÄ¹¤×÷¸ººÉ */
+	/* æ­¤å‰çš„å·¥ä½œè´Ÿè· */
 	unsigned long cpu_load[CPU_LOAD_IDX_MAX];
 	unsigned char idle_at_tick;
 #ifdef CONFIG_NO_HZ
 	unsigned char in_nohz_recently;
 #endif
 	/* capture load from *all* tasks on this cpu: */
-	/* ¾ÍÐ÷¶ÓÁÐµ±Ç°¸ººÉ¡£ÓÉµ±Ç°¶ÓÁÐÉÏµÄ½ø³ÌÊýÄ¿ºÍÓÅÏÈ¼¶¾ö¶¨¡£ */
+	/* å°±ç»ªé˜Ÿåˆ—å½“å‰è´Ÿè·ã€‚ç”±å½“å‰é˜Ÿåˆ—ä¸Šçš„è¿›ç¨‹æ•°ç›®å’Œä¼˜å…ˆçº§å†³å®šã€‚ */
 	struct load_weight load;
 	unsigned long nr_load_updates;
 	u64 nr_switches;
 
-	/* Ç¶ÈëµÄCFSºÍRTµ÷¶ÈÆ÷µÄ×Ó¾ÍÐ÷¶ÓÁÐ */
+	/* åµŒå…¥çš„CFSå’ŒRTè°ƒåº¦å™¨çš„å­å°±ç»ªé˜Ÿåˆ— */
 	struct cfs_rq cfs;
 #ifdef CONFIG_FAIR_GROUP_SCHED
 	/* list of leaf cfs_rq on this cpu: */
@@ -331,12 +331,12 @@ struct rq {
 	 */
 	unsigned long nr_uninterruptible;
 
-	/* µ±Ç°ÔËÐÐµÄ½ø³ÌºÍidle½ø³Ì */
+	/* å½“å‰è¿è¡Œçš„è¿›ç¨‹å’Œidleè¿›ç¨‹ */
 	struct task_struct *curr, *idle;
 	unsigned long next_balance;
 	struct mm_struct *prev_mm;
 
-	/* ¾ÍÐ÷¶ÓÁÐÊ±ÖÓ¡£update_rq_clockÖÐ¸üÐÂ¡£ */
+	/* å°±ç»ªé˜Ÿåˆ—æ—¶é’Ÿã€‚update_rq_clockä¸­æ›´æ–°ã€‚ */
 	u64 clock, prev_clock_raw;
 	s64 clock_max_delta;
 
@@ -348,19 +348,19 @@ struct rq {
 	atomic_t nr_iowait;
 
 #ifdef CONFIG_SMP
-	/* ¶ÓÁÐËùÔÚµÄµ÷¶ÈÓò */
+	/* é˜Ÿåˆ—æ‰€åœ¨çš„è°ƒåº¦åŸŸ */
 	struct sched_domain *sd;
 
 	/* For active balancing */
-	/* ÊÇ·ñ½øÐÐÖ÷¶¯¾ùºâ */
+	/* æ˜¯å¦è¿›è¡Œä¸»åŠ¨å‡è¡¡ */
 	int active_balance;
 	int push_cpu;
 	/* cpu of this runqueue: */
-	/* ÔËÐÐ¶ÓÁÐËùÔÚµÄCPU */
+	/* è¿è¡Œé˜Ÿåˆ—æ‰€åœ¨çš„CPU */
 	int cpu;
 
 	struct task_struct *migration_thread;
-	/* ËùÓÐ´ý´¦ÀíµÄÇ¨ÒÆÇëÇó */
+	/* æ‰€æœ‰å¾…å¤„ç†çš„è¿ç§»è¯·æ±‚ */
 	struct list_head migration_queue;
 #endif
 
@@ -389,11 +389,11 @@ struct rq {
 	struct lock_class_key rq_lock_key;
 };
 
-/* Ã¿CPU±äÁ¿£¬ÔËÐÐ¶ÓÁÐ */
+/* æ¯CPUå˜é‡ï¼Œè¿è¡Œé˜Ÿåˆ— */
 static DEFINE_PER_CPU_SHARED_ALIGNED(struct rq, runqueues);
 static DEFINE_MUTEX(sched_hotcpu_mutex);
 
-/* ¼ì²éÊÇ·ñÐèÒªÇÀÕ¼µ±Ç°½ø³Ì */
+/* æ£€æŸ¥æ˜¯å¦éœ€è¦æŠ¢å å½“å‰è¿›ç¨‹ */
 static inline void check_preempt_curr(struct rq *rq, struct task_struct *p)
 {
 	rq->curr->sched_class->check_preempt_curr(rq, p);
@@ -839,7 +839,7 @@ static inline void update_load_sub(struct load_weight *lw, unsigned long dec)
  * If a task goes up by ~10% and another task goes down by ~10% then
  * the relative distance between them is ~25%.)
  */
-/* ½ø³ÌÓÅÏÈ¼¶ÓëÈ¨ÖØ×ª»»±í */
+/* è¿›ç¨‹ä¼˜å…ˆçº§ä¸Žæƒé‡è½¬æ¢è¡¨ */
 static const int prio_to_weight[40] = {
  /* -20 */     88761,     71755,     56483,     46273,     36291,
  /* -15 */     29154,     23254,     18705,     14949,     11916,
@@ -948,10 +948,10 @@ static void dec_nr_running(struct task_struct *p, struct rq *rq)
 	dec_load(rq, p);
 }
 
-/* ÉèÖÃ½ø³ÌµÄÈ¨ÖØ */
+/* è®¾ç½®è¿›ç¨‹çš„æƒé‡ */
 static void set_load_weight(struct task_struct *p)
 {
-	if (task_has_rt_policy(p)) {/* ÊµÊ±½ø³ÌµÄÈ¨ÖØÊÇÆÕÍ¨½ø³ÌµÄ2±¶ */
+	if (task_has_rt_policy(p)) {/* å®žæ—¶è¿›ç¨‹çš„æƒé‡æ˜¯æ™®é€šè¿›ç¨‹çš„2å€ */
 		p->se.load.weight = prio_to_weight[0] * 2;
 		p->se.load.inv_weight = prio_to_wmult[0] >> 1;
 		return;
@@ -960,18 +960,18 @@ static void set_load_weight(struct task_struct *p)
 	/*
 	 * SCHED_IDLE tasks get minimal weight:
 	 */
-	if (p->policy == SCHED_IDLE) {/* IDLE½ø³ÌÈ¨ÖØ·Ç³£Ð¡ */
+	if (p->policy == SCHED_IDLE) {/* IDLEè¿›ç¨‹æƒé‡éžå¸¸å° */
 		p->se.load.weight = WEIGHT_IDLEPRIO;
 		p->se.load.inv_weight = WMULT_IDLEPRIO;
 		return;
 	}
 
-	/* ÆÕÍ¨½ø³Ì°´×ª»»±í½øÐÐ×ª»» */
+	/* æ™®é€šè¿›ç¨‹æŒ‰è½¬æ¢è¡¨è¿›è¡Œè½¬æ¢ */
 	p->se.load.weight = prio_to_weight[p->static_prio - MAX_RT_PRIO];
 	p->se.load.inv_weight = prio_to_wmult[p->static_prio - MAX_RT_PRIO];
 }
 
-/* ½ø³ÌÈë¶Ó */
+/* è¿›ç¨‹å…¥é˜Ÿ */
 static void enqueue_task(struct rq *rq, struct task_struct *p, int wakeup)
 {
 	sched_info_queued(p);
@@ -979,7 +979,7 @@ static void enqueue_task(struct rq *rq, struct task_struct *p, int wakeup)
 	p->se.on_rq = 1;
 }
 
-/* ½ø³Ì³ö¶Ó */
+/* è¿›ç¨‹å‡ºé˜Ÿ */
 static void dequeue_task(struct rq *rq, struct task_struct *p, int sleep)
 {
 	p->sched_class->dequeue_task(rq, p, sleep);
@@ -1020,7 +1020,7 @@ static inline int normal_prio(struct task_struct *p)
  * RT-boosted. If not then it returns p->normal_prio.
  */
 /**
- * ¼ÆËã½ø³ÌµÄÓÅÏÈ¼¶
+ * è®¡ç®—è¿›ç¨‹çš„ä¼˜å…ˆçº§
  */
 static int effective_prio(struct task_struct *p)
 {
@@ -1031,9 +1031,9 @@ static int effective_prio(struct task_struct *p)
 	 * to the normal priority:
 	 */
 	/**
-	 * Èç¹ûÊÇÊµÊ±½ø³Ì£¬»òÕßÒÑ¾­Ìá¸ßµ½ÊµÊ±ÓÅÏÈ¼¶£¬Ôò±£³ÖÓÅÏÈ¼¶²»±ä¡£
-	 * ·ñÔò·µ»ØÆÕÍ¨ÓÅÏÈ¼¶ 
-	 * ½ø³Ì¿ÉÄÜÓÉÓÚÓÅÏÈ¼¶¼Ì³ÐµÄÔ­Òò£¬½ø³ÌÁÙÊ±ÌáÉýÎªÊµÊ±ÓÅÏÈ¼¶¡£
+	 * å¦‚æžœæ˜¯å®žæ—¶è¿›ç¨‹ï¼Œæˆ–è€…å·²ç»æé«˜åˆ°å®žæ—¶ä¼˜å…ˆçº§ï¼Œåˆ™ä¿æŒä¼˜å…ˆçº§ä¸å˜ã€‚
+	 * å¦åˆ™è¿”å›žæ™®é€šä¼˜å…ˆçº§ 
+	 * è¿›ç¨‹å¯èƒ½ç”±äºŽä¼˜å…ˆçº§ç»§æ‰¿çš„åŽŸå› ï¼Œè¿›ç¨‹ä¸´æ—¶æå‡ä¸ºå®žæ—¶ä¼˜å…ˆçº§ã€‚
 	 */
 	if (!rt_prio(p->prio))
 		return p->normal_prio;
@@ -1753,17 +1753,17 @@ static void __sched_fork(struct task_struct *p)
  * fork()/clone()-time setup:
  */
 /**
- * ÔÚforkÊ±µÄµ÷¶ÈÆ÷´¦Àí¹ý³Ì
+ * åœ¨forkæ—¶çš„è°ƒåº¦å™¨å¤„ç†è¿‡ç¨‹
  */
 void sched_fork(struct task_struct *p, int clone_flags)
 {
 	int cpu = get_cpu();
 
-	/* ³õÊ¼»¯µ÷¶ÈÆ÷Ïà¹Ø×Ö¶Î */
+	/* åˆå§‹åŒ–è°ƒåº¦å™¨ç›¸å…³å­—æ®µ */
 	__sched_fork(p);
 
 #ifdef CONFIG_SMP
-	/* ¸ºÔØÆ½ºâ´¦Àí */
+	/* è´Ÿè½½å¹³è¡¡å¤„ç† */
 	cpu = sched_balance_self(cpu, SD_BALANCE_FORK);
 #endif
 	set_task_cpu(p, cpu);
@@ -1771,9 +1771,9 @@ void sched_fork(struct task_struct *p, int clone_flags)
 	/*
 	 * Make sure we do not leak PI boosting priority to the child:
 	 */
-	/* ¸´ÖÆ½ø³ÌµÄÆÕÍ¨ÓÅÏÈ¼¶£¬´Ë´¦²»ÄÜ¸´ÖÆprio×Ö¶Î¡£ÒòÎªprio¿ÉÄÜÊÜµ½ÓÅÏÈ¼¶¼Ì³ÐµÄÓ°Ïì¡£ */
+	/* å¤åˆ¶è¿›ç¨‹çš„æ™®é€šä¼˜å…ˆçº§ï¼Œæ­¤å¤„ä¸èƒ½å¤åˆ¶prioå­—æ®µã€‚å› ä¸ºprioå¯èƒ½å—åˆ°ä¼˜å…ˆçº§ç»§æ‰¿çš„å½±å“ã€‚ */
 	p->prio = current->normal_prio;
-	if (!rt_prio(p->prio))/* Èç¹û½ø³Ì²»ÊÇÊµÊ±ÓÅÏÈ¼¶£¬Ôò×ÜÊÇ½øÐÐCFSµ÷¶È */
+	if (!rt_prio(p->prio))/* å¦‚æžœè¿›ç¨‹ä¸æ˜¯å®žæ—¶ä¼˜å…ˆçº§ï¼Œåˆ™æ€»æ˜¯è¿›è¡ŒCFSè°ƒåº¦ */
 		p->sched_class = &fair_sched_class;
 
 #if defined(CONFIG_SCHEDSTATS) || defined(CONFIG_TASK_DELAY_ACCT)
@@ -1797,7 +1797,7 @@ void sched_fork(struct task_struct *p, int clone_flags)
  * that must be done for every newly created context, then puts the task
  * on the runqueue and wakes it.
  */
-/* »½ÐÑÒ»¸öÐÂ´´½¨µÄ½ø³Ì£¬ÐèÒª½«½ø³Ì¼ÓÈëµ½ÈÎÎñ¶ÓÁÐÖÐ */
+/* å”¤é†’ä¸€ä¸ªæ–°åˆ›å»ºçš„è¿›ç¨‹ï¼Œéœ€è¦å°†è¿›ç¨‹åŠ å…¥åˆ°ä»»åŠ¡é˜Ÿåˆ—ä¸­ */
 void fastcall wake_up_new_task(struct task_struct *p, unsigned long clone_flags)
 {
 	unsigned long flags;
@@ -1958,7 +1958,7 @@ static void finish_task_switch(struct rq *rq, struct task_struct *prev)
  * @prev: the thread we just switched away from.
  */
 /**
- * fork´´½¨µÄÐÂ½ø³Ì£¬Ê×ÏÈÖ´ÐÐ´Ë¹ý³Ì
+ * forkåˆ›å»ºçš„æ–°è¿›ç¨‹ï¼Œé¦–å…ˆæ‰§è¡Œæ­¤è¿‡ç¨‹
  */
 asmlinkage void schedule_tail(struct task_struct *prev)
 	__releases(rq->lock)
@@ -1970,7 +1970,7 @@ asmlinkage void schedule_tail(struct task_struct *prev)
 	/* In this case, finish_task_switch does not reenable preemption */
 	preempt_enable();
 #endif
-	if (current->set_child_tid)/* NPTL¿âÒªÇó½«µ±Ç°½ø³ÌµÄIDÐ´Èëµ½ÓÃ»§Ì¬ÌØ¶¨µØÖ·ÖÐ */
+	if (current->set_child_tid)/* NPTLåº“è¦æ±‚å°†å½“å‰è¿›ç¨‹çš„IDå†™å…¥åˆ°ç”¨æˆ·æ€ç‰¹å®šåœ°å€ä¸­ */
 		put_user(task_pid_vnr(current), current->set_child_tid);
 }
 
@@ -1979,7 +1979,7 @@ asmlinkage void schedule_tail(struct task_struct *prev)
  * thread's register state.
  */
 /**
- * ÈÎÎñÉÏÏÂÎÄÇÐ»»
+ * ä»»åŠ¡ä¸Šä¸‹æ–‡åˆ‡æ¢
  */
 static inline void
 context_switch(struct rq *rq, struct task_struct *prev,
@@ -1987,7 +1987,7 @@ context_switch(struct rq *rq, struct task_struct *prev,
 {
 	struct mm_struct *mm, *oldmm;
 
-	/* Ö´ÐÐÌØ¶¨ÌåÏµ½á¹¹µÄÈÎÎñÇÐ»»×¼±¸¹¤×÷£¬Ò»°ã²»ÐèÒª×öÌØ¶¨µÄÈÎÎñ */
+	/* æ‰§è¡Œç‰¹å®šä½“ç³»ç»“æž„çš„ä»»åŠ¡åˆ‡æ¢å‡†å¤‡å·¥ä½œï¼Œä¸€èˆ¬ä¸éœ€è¦åšç‰¹å®šçš„ä»»åŠ¡ */
 	prepare_task_switch(rq, prev, next);
 	mm = next->mm;
 	oldmm = prev->active_mm;
@@ -1998,16 +1998,16 @@ context_switch(struct rq *rq, struct task_struct *prev,
 	 */
 	arch_enter_lazy_cpu_mode();
 
-	if (unlikely(!mm)) {/* ÐÂ½ø³ÌÊÇÄÚºË½ø³Ì£¬²»ÐèÒªÇÐ»»ÄÚ´æ¹ÜÀíÉÏÏÂÎÄ */
+	if (unlikely(!mm)) {/* æ–°è¿›ç¨‹æ˜¯å†…æ ¸è¿›ç¨‹ï¼Œä¸éœ€è¦åˆ‡æ¢å†…å­˜ç®¡ç†ä¸Šä¸‹æ–‡ */
 		next->active_mm = oldmm;
 		atomic_inc(&oldmm->mm_count);
-		/* Í¨Öªµ×²ã½á¹¹²»ÐèÒªÇÐ»»ÓÃ»§Ì¬ÐéÄâµØÖ·¿Õ¼ä¡£Ò²²»ÐèÒªÁ¢¼´Ë¢ÐÂtlb */
+		/* é€šçŸ¥åº•å±‚ç»“æž„ä¸éœ€è¦åˆ‡æ¢ç”¨æˆ·æ€è™šæ‹Ÿåœ°å€ç©ºé—´ã€‚ä¹Ÿä¸éœ€è¦ç«‹å³åˆ·æ–°tlb */
 		enter_lazy_tlb(oldmm, next);
-	} else/* ÐèÒªÇÐ»»ÄÚ´æÉÏÏÂÎÄ */
+	} else/* éœ€è¦åˆ‡æ¢å†…å­˜ä¸Šä¸‹æ–‡ */
 		switch_mm(oldmm, mm, next);
 
-	if (unlikely(!prev->mm)) {/* ½ø³ÌÊÇÄÚºË½ø³Ì */
-		/* ¶Ï¿ªÓë½èÓÃµØÖ·¿Õ¼äµÄÁªÏµ */
+	if (unlikely(!prev->mm)) {/* è¿›ç¨‹æ˜¯å†…æ ¸è¿›ç¨‹ */
+		/* æ–­å¼€ä¸Žå€Ÿç”¨åœ°å€ç©ºé—´çš„è”ç³» */
 		prev->active_mm = NULL;
 		rq->prev_mm = oldmm;
 	}
@@ -2022,17 +2022,17 @@ context_switch(struct rq *rq, struct task_struct *prev,
 #endif
 
 	/* Here we just switch the register state and the stack. */
-	/* Ö´ÐÐÌåÏµ½á¹¹Ïà¹ØµÄ¼Ä´æÆ÷ÄÚÈÝºÍÄÚºËÕ»ÇÐ»» */
+	/* æ‰§è¡Œä½“ç³»ç»“æž„ç›¸å…³çš„å¯„å­˜å™¨å†…å®¹å’Œå†…æ ¸æ ˆåˆ‡æ¢ */
 	switch_to(prev, next, prev);
 
-	/* ±àÒëÆÁÕÏ */
+	/* ç¼–è¯‘å±éšœ */
 	barrier();
 	/*
 	 * this_rq must be evaluated again because prev may have moved
 	 * CPUs since it called schedule(), thus the 'rq' on its stack
 	 * frame will be invalid.
 	 */
-	/* ½øÐÐÒ»Ð©ÇåÀí¹¤×÷£¬ÊÍ·ÅÒ»Ð©Ëø */
+	/* è¿›è¡Œä¸€äº›æ¸…ç†å·¥ä½œï¼Œé‡Šæ”¾ä¸€äº›é” */
 	finish_task_switch(this_rq(), prev);
 }
 
@@ -2244,15 +2244,15 @@ out:
  * this point the task has the smallest effective memory and cache footprint.
  */
 /**
- * µ±Ö´ÐÐexecµ÷ÓÃÊ±£¬µ÷ÓÃ´Ëº¯Êý½øÐÐ¸ºÔØ¾ùºâ
+ * å½“æ‰§è¡Œexecè°ƒç”¨æ—¶ï¼Œè°ƒç”¨æ­¤å‡½æ•°è¿›è¡Œè´Ÿè½½å‡è¡¡
  */
 void sched_exec(void)
 {
 	int new_cpu, this_cpu = get_cpu();
-	/* Ñ¡ÔñÒ»¸ö×îÊÊºÏ½ø³ÌÔËÐÐµÄÄ¿±êCPU */
+	/* é€‰æ‹©ä¸€ä¸ªæœ€é€‚åˆè¿›ç¨‹è¿è¡Œçš„ç›®æ ‡CPU */
 	new_cpu = sched_balance_self(this_cpu, SD_BALANCE_EXEC);
 	put_cpu();
-	if (new_cpu != this_cpu)/* Èç¹ûµ±Ç°CPU²¢²»ÊÇ×îÊÊºÏµÄCPU£¬ÔòÏòÇ¨ÒÆ½ø³Ì·¢³öÒ»¸öÇ¨ÒÆÇëÇó */
+	if (new_cpu != this_cpu)/* å¦‚æžœå½“å‰CPUå¹¶ä¸æ˜¯æœ€é€‚åˆçš„CPUï¼Œåˆ™å‘è¿ç§»è¿›ç¨‹å‘å‡ºä¸€ä¸ªè¿ç§»è¯·æ±‚ */
 		sched_migrate_task(current, new_cpu);
 }
 
@@ -2803,7 +2803,7 @@ find_busiest_queue(struct sched_group *group, enum cpu_idle_type idle,
  * tasks if there is an imbalance.
  */
 /**
- * ÔÚCPUÖ®¼ä½ø³Ì¸ºÔØ¾ùºâ²Ù×÷
+ * åœ¨CPUä¹‹é—´è¿›ç¨‹è´Ÿè½½å‡è¡¡æ“ä½œ
  */
 static int load_balance(int this_cpu, struct rq *this_rq,
 			struct sched_domain *sd, enum cpu_idle_type idle,
@@ -2840,7 +2840,7 @@ redo:
 		goto out_balanced;
 	}
 
-	/* ÔÚ×éÖÐÕÒµ½×î·±Ã¦µÄ¶ÓÁÐ */
+	/* åœ¨ç»„ä¸­æ‰¾åˆ°æœ€ç¹å¿™çš„é˜Ÿåˆ— */
 	busiest = find_busiest_queue(group, idle, imbalance, &cpus);
 	if (!busiest) {
 		schedstat_inc(sd, lb_nobusyq[idle]);
@@ -2852,7 +2852,7 @@ redo:
 	schedstat_add(sd, lb_imbalance[idle], imbalance);
 
 	ld_moved = 0;
-	if (busiest->nr_running > 1) {/* Ö»ÓÐµ±¸Ã¶ÓÁÐÉÏÓÐ³¬¹ý1¸ö¾ÍÐ÷ÈÎÎñÊ±£¬²ÅÓÐ±ØÒª½øÐÐ¾ùºâ */
+	if (busiest->nr_running > 1) {/* åªæœ‰å½“è¯¥é˜Ÿåˆ—ä¸Šæœ‰è¶…è¿‡1ä¸ªå°±ç»ªä»»åŠ¡æ—¶ï¼Œæ‰æœ‰å¿…è¦è¿›è¡Œå‡è¡¡ */
 		/*
 		 * Attempt to move tasks. If find_busiest_group has found
 		 * an imbalance but busiest->nr_running <= 1, the group is
@@ -2861,7 +2861,7 @@ redo:
 		 */
 		local_irq_save(flags);
 		double_rq_lock(this_rq, busiest);
-		/* ´Ó¸Ã¶ÓÁÐÇ¨ÒÆÊÊµ±ÊýÄ¿µÄ½ø³Ìµ½µ±Ç°¶ÓÁÐÖÐ£¬Ëü»áµ÷ÓÃµ÷¶ÈÀàµÄload_balance·½·¨ */
+		/* ä»Žè¯¥é˜Ÿåˆ—è¿ç§»é€‚å½“æ•°ç›®çš„è¿›ç¨‹åˆ°å½“å‰é˜Ÿåˆ—ä¸­ï¼Œå®ƒä¼šè°ƒç”¨è°ƒåº¦ç±»çš„load_balanceæ–¹æ³• */
 		ld_moved = move_tasks(this_rq, this_cpu, busiest,
 				      imbalance, sd, idle, &all_pinned);
 		double_rq_unlock(this_rq, busiest);
@@ -2899,13 +2899,13 @@ redo:
 				goto out_one_pinned;
 			}
 
-			if (!busiest->active_balance) {/* ÐèÒªÔ¶³Ì¶ÓÁÐÖ÷¶¯½øÐÐ¾ùºâ */
+			if (!busiest->active_balance) {/* éœ€è¦è¿œç¨‹é˜Ÿåˆ—ä¸»åŠ¨è¿›è¡Œå‡è¡¡ */
 				busiest->active_balance = 1;
 				busiest->push_cpu = this_cpu;
 				active_balance = 1;
 			}
 			spin_unlock_irqrestore(&busiest->lock, flags);
-			if (active_balance)/* »½ÐÑÔ¶³Ì¶ÓÁÐÉÏµÄÇ¨ÒÆ½ø³Ì£¬ÒªÇóÆäÖ÷¶¯½øÐÐÇ¨ÒÆ */
+			if (active_balance)/* å”¤é†’è¿œç¨‹é˜Ÿåˆ—ä¸Šçš„è¿ç§»è¿›ç¨‹ï¼Œè¦æ±‚å…¶ä¸»åŠ¨è¿›è¡Œè¿ç§» */
 				wake_up_process(busiest->migration_thread);
 
 			/*
@@ -3090,7 +3090,7 @@ static void active_load_balance(struct rq *busiest_rq, int busiest_cpu)
 	struct rq *target_rq;
 
 	/* Is there any task to move? */
-	if (busiest_rq->nr_running <= 1)/* ½ø³ÌÒÑ¾­±»Ç¨ÒÆ×ßÁË£¬²»ÐèÒªÔÙÇ¨ÒÆ */
+	if (busiest_rq->nr_running <= 1)/* è¿›ç¨‹å·²ç»è¢«è¿ç§»èµ°äº†ï¼Œä¸éœ€è¦å†è¿ç§» */
 		return;
 
 	target_rq = cpu_rq(target_cpu);
@@ -3544,9 +3544,9 @@ void account_steal_time(struct task_struct *p, cputime_t steal)
  * timeslices.
  */
 /**
- * ÔÚ¶¨Ê±Æ÷ÖÐ¶¨Ê±µ÷ÓÃµÄµ÷¶ÈÆ÷¡£Ä³Ð©Çé¿öÏÂ»á¹Ø±Õ¡£
- *     ¹ÜÀíµ÷¶ÈÏà¹ØµÄÍ³¼ÆÁ¿¡£
- *     ¼¤»îÖÜÆÚÐÔµ÷¶È·½·¨
+ * åœ¨å®šæ—¶å™¨ä¸­å®šæ—¶è°ƒç”¨çš„è°ƒåº¦å™¨ã€‚æŸäº›æƒ…å†µä¸‹ä¼šå…³é—­ã€‚
+ *     ç®¡ç†è°ƒåº¦ç›¸å…³çš„ç»Ÿè®¡é‡ã€‚
+ *     æ¿€æ´»å‘¨æœŸæ€§è°ƒåº¦æ–¹æ³•
  */
 void scheduler_tick(void)
 {
@@ -3556,7 +3556,7 @@ void scheduler_tick(void)
 	u64 next_tick = rq->tick_timestamp + TICK_NSEC;
 
 	spin_lock(&rq->lock);
-	/* ¸üÐÂ¶ÓÁÐµÄÊ±ÖÓ */
+	/* æ›´æ–°é˜Ÿåˆ—çš„æ—¶é’Ÿ */
 	__update_rq_clock(rq);
 	/*
 	 * Let rq->clock advance by at least TICK_NSEC:
@@ -3564,16 +3564,16 @@ void scheduler_tick(void)
 	if (unlikely(rq->clock < next_tick))
 		rq->clock = next_tick;
 	rq->tick_timestamp = rq->clock;
-	/* ¸üÐÂ¶ÓÁÐµÄcpu_loadÊý×é£¬¼ÇÂ¼ÀúÊ·¸ºÔØÊý¾Ý */
+	/* æ›´æ–°é˜Ÿåˆ—çš„cpu_loadæ•°ç»„ï¼Œè®°å½•åŽ†å²è´Ÿè½½æ•°æ® */
 	update_cpu_load(rq);
-	/* µ÷ÓÃµ×²ãµ÷¶ÈÆ÷µÄ¶¨Ê±Æ÷ */
+	/* è°ƒç”¨åº•å±‚è°ƒåº¦å™¨çš„å®šæ—¶å™¨ */
 	if (curr != rq->idle) /* FIXME: needed? */
 		curr->sched_class->task_tick(rq, curr);
 	spin_unlock(&rq->lock);
 
 #ifdef CONFIG_SMP
 	rq->idle_at_tick = idle_cpu(cpu);
-	/* ´¥·¢SCHEDULE_SOFTIRQÈíÖÐ¶Ï£¬ÔÚÊÊµ±µÄÊ±»úÖ´ÐÐrun_rebalance_domains¡£ */
+	/* è§¦å‘SCHEDULE_SOFTIRQè½¯ä¸­æ–­ï¼Œåœ¨é€‚å½“çš„æ—¶æœºæ‰§è¡Œrun_rebalance_domainsã€‚ */
 	trigger_load_balance(rq, cpu);
 #endif
 }
@@ -3696,7 +3696,7 @@ pick_next_task(struct rq *rq, struct task_struct *prev)
  * schedule() is the main scheduler function.
  */
 /**
- * µ÷¶ÈÖ÷º¯Êý
+ * è°ƒåº¦ä¸»å‡½æ•°
  */
 asmlinkage void __sched schedule(void)
 {
@@ -3708,7 +3708,7 @@ asmlinkage void __sched schedule(void)
 need_resched:
 	preempt_disable();
 	cpu = smp_processor_id();
-	/* È¡µ±Ç°¶ÓÁÐºÍÈÎÎñ */
+	/* å–å½“å‰é˜Ÿåˆ—å’Œä»»åŠ¡ */
 	rq = cpu_rq(cpu);
 	rcu_qsctr_inc(cpu);
 	prev = rq->curr;
@@ -3723,42 +3723,42 @@ need_resched_nonpreemptible:
 	 * Do the rq-clock update outside the rq lock:
 	 */
 	local_irq_disable();
-	/* ¸üÐÂ¶ÓÁÐÔËÐÐÊ±ÖÓ */
+	/* æ›´æ–°é˜Ÿåˆ—è¿è¡Œæ—¶é’Ÿ */
 	__update_rq_clock(rq);
 	spin_lock(&rq->lock);
-	/* Çå³ý½ø³ÌµÄÖØÐÂµ÷¶È±êÖ¾ */
+	/* æ¸…é™¤è¿›ç¨‹çš„é‡æ–°è°ƒåº¦æ ‡å¿— */
 	clear_tsk_need_resched(prev);
 
-	/* Èç¹û½ø³Ì´¦ÓÚÔËÐÐ×´Ì¬£¬»òÕß´ËÊ±ÈÎÎñÊÇ±»ÇÀÕ¼£¬Ôò²»ÐèÒª´¦Àí³ö¶Ó²Ù×÷ */
+	/* å¦‚æžœè¿›ç¨‹å¤„äºŽè¿è¡ŒçŠ¶æ€ï¼Œæˆ–è€…æ­¤æ—¶ä»»åŠ¡æ˜¯è¢«æŠ¢å ï¼Œåˆ™ä¸éœ€è¦å¤„ç†å‡ºé˜Ÿæ“ä½œ */
 	if (prev->state && !(preempt_count() & PREEMPT_ACTIVE)) {
-		/* µ±Ç°½ø³Ì¿ÉÒÔ±»ÐÅºÅÖÐ¶Ï£¬Í¬Ê±ÊÕµ½ÁËÐÅºÅ */
+		/* å½“å‰è¿›ç¨‹å¯ä»¥è¢«ä¿¡å·ä¸­æ–­ï¼ŒåŒæ—¶æ”¶åˆ°äº†ä¿¡å· */
 		if (unlikely((prev->state & TASK_INTERRUPTIBLE) &&
 				unlikely(signal_pending(prev)))) {
-			prev->state = TASK_RUNNING;/* ½«½ø³ÌÉèÖÃÎª¿ÉÔËÐÐ×´Ì¬ */
+			prev->state = TASK_RUNNING;/* å°†è¿›ç¨‹è®¾ç½®ä¸ºå¯è¿è¡ŒçŠ¶æ€ */
 		} else {
-			/* ´ÓÔËÐÐ¶ÓÁÐÖÐÈ¡³ö½ø³Ì */
+			/* ä»Žè¿è¡Œé˜Ÿåˆ—ä¸­å–å‡ºè¿›ç¨‹ */
 			deactivate_task(rq, prev, 1);
 		}
 		switch_count = &prev->nvcsw;
 	}
 
-	/* µ±Ç°ºËÃ»ÓÐ¿ÉÔËÐÐ½ø³Ì£¬´ÓÆäËûºËÀ­Ò»Ð©½ø³Ìµ½µ±Ç°ºË£¬½øÐÐ¸ºÔØÆ½ºâ */
+	/* å½“å‰æ ¸æ²¡æœ‰å¯è¿è¡Œè¿›ç¨‹ï¼Œä»Žå…¶ä»–æ ¸æ‹‰ä¸€äº›è¿›ç¨‹åˆ°å½“å‰æ ¸ï¼Œè¿›è¡Œè´Ÿè½½å¹³è¡¡ */
 	if (unlikely(!rq->nr_running))
 		idle_balance(cpu, rq);
 
-	/* ¸æÖªµ÷¶ÈÆ÷£¬µ±Ç°½ø³Ì½«±»Ìæ´ú¡£½øÐÐÒ»Ð©Í³¼Æ¹¤×÷¡£ */
+	/* å‘ŠçŸ¥è°ƒåº¦å™¨ï¼Œå½“å‰è¿›ç¨‹å°†è¢«æ›¿ä»£ã€‚è¿›è¡Œä¸€äº›ç»Ÿè®¡å·¥ä½œã€‚ */
 	prev->sched_class->put_prev_task(rq, prev);
-	/* Ñ¡ÔñÏÂÒ»¸öÓ¦¸ÃÖ´ÐÐµÄ½ø³Ì */
+	/* é€‰æ‹©ä¸‹ä¸€ä¸ªåº”è¯¥æ‰§è¡Œçš„è¿›ç¨‹ */
 	next = pick_next_task(rq, prev);
 
 	sched_info_switch(prev, next);
 
-	if (likely(prev != next)) {/* Èç¹ûÓÐ¿ÉÔËÐÐµÄ½ø³Ì£¬ÔòÐèÒªÇÐ»»µ½ÐÂ½ø³Ì */
+	if (likely(prev != next)) {/* å¦‚æžœæœ‰å¯è¿è¡Œçš„è¿›ç¨‹ï¼Œåˆ™éœ€è¦åˆ‡æ¢åˆ°æ–°è¿›ç¨‹ */
 		rq->nr_switches++;
 		rq->curr = next;
 		++*switch_count;
 
-		/* ÌØ¶¨ÌåÏµ½á¹¹µÄÉÏÏÂÎÄÇÐ»»¹ý³Ì */
+		/* ç‰¹å®šä½“ç³»ç»“æž„çš„ä¸Šä¸‹æ–‡åˆ‡æ¢è¿‡ç¨‹ */
 		context_switch(rq, prev, next); /* unlocks the rq */
 	} else
 		spin_unlock_irq(&rq->lock);
@@ -3769,7 +3769,7 @@ need_resched_nonpreemptible:
 		goto need_resched_nonpreemptible;
 	}
 	preempt_enable_no_resched();
-	/* ¼ì²éÊÇ·ñÓÐ±ØÒª½øÐÐÖØÐÂµ÷¶È£¬Èç¹ûÐèÒª£¬¾ÍÖØÐÂÑ¡Ôñ½ø³Ìµ÷¶È */
+	/* æ£€æŸ¥æ˜¯å¦æœ‰å¿…è¦è¿›è¡Œé‡æ–°è°ƒåº¦ï¼Œå¦‚æžœéœ€è¦ï¼Œå°±é‡æ–°é€‰æ‹©è¿›ç¨‹è°ƒåº¦ */
 	if (unlikely(test_thread_flag(TIF_NEED_RESCHED)))
 		goto need_resched;
 }
@@ -3792,12 +3792,12 @@ asmlinkage void __sched preempt_schedule(void)
 	 * If there is a non-zero preempt_count or interrupts are disabled,
 	 * we do not want to preempt the current task. Just return..
 	 */
-	/* µ±Ç°ÈÔÈ»½ûÖ¹ÇÀÕ¼£¬»òÕßÄ¿Ç°ÖÐ¶Ï±»½ûÖ¹£¬´ËÊ±²»ÄÜ½øÐÐÇÀÕ¼µ÷¶È */
+	/* å½“å‰ä»ç„¶ç¦æ­¢æŠ¢å ï¼Œæˆ–è€…ç›®å‰ä¸­æ–­è¢«ç¦æ­¢ï¼Œæ­¤æ—¶ä¸èƒ½è¿›è¡ŒæŠ¢å è°ƒåº¦ */
 	if (likely(ti->preempt_count || irqs_disabled()))
 		return;
 
 	do {
-		/* ´Ë±êÖ¾±íÊ¾ÕýÔÚ´¦ÀíÇÀÕ¼µ÷¶È */
+		/* æ­¤æ ‡å¿—è¡¨ç¤ºæ­£åœ¨å¤„ç†æŠ¢å è°ƒåº¦ */
 		add_preempt_count(PREEMPT_ACTIVE);
 
 		/*
@@ -3813,7 +3813,7 @@ asmlinkage void __sched preempt_schedule(void)
 #ifdef CONFIG_PREEMPT_BKL
 		task->lock_depth = saved_lock_depth;
 #endif
-		/* ÔÙ´Îµ÷¶È»ØÀ´ºó£¬µÝ¼õ±êÖ¾ */
+		/* å†æ¬¡è°ƒåº¦å›žæ¥åŽï¼Œé€’å‡æ ‡å¿— */
 		sub_preempt_count(PREEMPT_ACTIVE);
 
 		/*
@@ -3821,7 +3821,7 @@ asmlinkage void __sched preempt_schedule(void)
 		 * between schedule and now.
 		 */
 		barrier();
-	} while (unlikely(test_thread_flag(TIF_NEED_RESCHED)));/* Èç¹ûÐèÒª¼ÌÐø´¦ÀíÇÀÕ¼£¬ÔòÔÙ´Î´¦Àí */
+	} while (unlikely(test_thread_flag(TIF_NEED_RESCHED)));/* å¦‚æžœéœ€è¦ç»§ç»­å¤„ç†æŠ¢å ï¼Œåˆ™å†æ¬¡å¤„ç† */
 }
 EXPORT_SYMBOL(preempt_schedule);
 
@@ -4111,7 +4111,7 @@ EXPORT_SYMBOL(sleep_on_timeout);
  * Used by the rt_mutex code to implement priority inheritance logic.
  */
 /**
- * µ±ÐÂ½ø³Ì½øÈëÊµÊ±»¥³âÁ¿µÄµÈ´ý¶ÓÁÐÊ±£¬Í¨¹ý´Ë½Ó¿ÚÐÞ¸Ä³ÖÓÐÕßµÄÓÅÏÈ¼¶
+ * å½“æ–°è¿›ç¨‹è¿›å…¥å®žæ—¶äº’æ–¥é‡çš„ç­‰å¾…é˜Ÿåˆ—æ—¶ï¼Œé€šè¿‡æ­¤æŽ¥å£ä¿®æ”¹æŒæœ‰è€…çš„ä¼˜å…ˆçº§
  */
 void rt_mutex_setprio(struct task_struct *p, int prio)
 {
@@ -4782,7 +4782,7 @@ static void __cond_resched(void)
 	} while (need_resched());
 }
 
-/* ÓÐÌõ¼þ½øÐÐÖØÐÂµ÷¶È  */
+/* æœ‰æ¡ä»¶è¿›è¡Œé‡æ–°è°ƒåº¦  */
 int __sched cond_resched(void)
 {
 	if (need_resched() && !(preempt_count() & PREEMPT_ACTIVE) &&
@@ -5248,9 +5248,9 @@ out:
  * another runqueue.
  */
 /**
- * Ç¨ÒÆ½ø³Ì£¬Ö÷Òª¸ºÔð:
- *     Íê³Éµ÷¶ÈÆ÷µÄÇ¨ÒÆÇëÇó
- *     ÊµÏÖÖ÷¶¯¾ùºâ
+ * è¿ç§»è¿›ç¨‹ï¼Œä¸»è¦è´Ÿè´£:
+ *     å®Œæˆè°ƒåº¦å™¨çš„è¿ç§»è¯·æ±‚
+ *     å®žçŽ°ä¸»åŠ¨å‡è¡¡
  */
 static int migration_thread(void *data)
 {
@@ -5272,18 +5272,18 @@ static int migration_thread(void *data)
 			goto wait_to_die;
 		}
 
-		if (rq->active_balance) {/* ÐèÒªÖ÷¶¯Ç¨ÒÆ */
-			/* Ö÷¶¯¾ùºâ£¬ÆäÇ¨ÒÆ²ßÂÔ±Èload_balance¸ü¼¤½ø¡£ÀýÈç£¬²»½øÐÐÓÅÏÈ¼¶±È½Ï */
+		if (rq->active_balance) {/* éœ€è¦ä¸»åŠ¨è¿ç§» */
+			/* ä¸»åŠ¨å‡è¡¡ï¼Œå…¶è¿ç§»ç­–ç•¥æ¯”load_balanceæ›´æ¿€è¿›ã€‚ä¾‹å¦‚ï¼Œä¸è¿›è¡Œä¼˜å…ˆçº§æ¯”è¾ƒ */
 			active_load_balance(rq, cpu);
-			/* Çå³ýÖ÷¶¯Ç¨ÒÆ±êÖ¾ */
+			/* æ¸…é™¤ä¸»åŠ¨è¿ç§»æ ‡å¿— */
 			rq->active_balance = 0;
 		}
 
 		head = &rq->migration_queue;
 
-		if (list_empty(head)) {/* Ã»ÓÐÀ´×Ôµ÷¶ÈÆ÷µÄ´ý¾öÇ¨ÒÆÇëÇó */
+		if (list_empty(head)) {/* æ²¡æœ‰æ¥è‡ªè°ƒåº¦å™¨çš„å¾…å†³è¿ç§»è¯·æ±‚ */
 			spin_unlock_irq(&rq->lock);
-			/* ÖØÐÂµ÷¶È */
+			/* é‡æ–°è°ƒåº¦ */
 			schedule();
 			set_current_state(TASK_INTERRUPTIBLE);
 			continue;
@@ -5292,7 +5292,7 @@ static int migration_thread(void *data)
 		list_del_init(head->next);
 
 		spin_unlock(&rq->lock);
-		/* Ö±½ÓÇ¨ÒÆÄ³¸öÈÎÎñµ½Ä¿±êCPU */
+		/* ç›´æŽ¥è¿ç§»æŸä¸ªä»»åŠ¡åˆ°ç›®æ ‡CPU */
 		__migrate_task(req->task, cpu, req->dest_cpu);
 		local_irq_enable();
 

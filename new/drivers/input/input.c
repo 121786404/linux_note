@@ -2417,19 +2417,19 @@ static int __init input_init(void)
 {
 	int err;
 
-	/*inputÒª×¢²áinputÀà*/
+	/*inputè¦æ³¨å†Œinputç±»*/
 	err = class_register(&input_class);
 	if (err) {
 		pr_err("unable to register input_dev class\n");
 		return err;
 	}
 
-	/*ÔÚprocÄ¿Â¼ÏÂ´´½¨inputÏà¹ØµÄÎÄ¼ş*/
+	/*åœ¨procç›®å½•ä¸‹åˆ›å»ºinputç›¸å…³çš„æ–‡ä»¶*/
 	err = input_proc_init();
 	if (err)
 		goto fail1;
 
-	/*input×îÖÕµ÷ÓÃregister_chrdevÀ´×¢²áinputÇı¶¯*/
+	/*inputæœ€ç»ˆè°ƒç”¨register_chrdevæ¥æ³¨å†Œinputé©±åŠ¨*/
 	err = register_chrdev_region(MKDEV(INPUT_MAJOR, 0),
 				     INPUT_MAX_CHAR_DEVICES, "input");
 	if (err) {

@@ -63,13 +63,13 @@ static inline void kunmap(struct page *page)
 {
 }
 /*
-kmap�������������жϴ���������Ϊ�����ܽ���˯��״̬��
-���pkmap������û�п���λ�ã��ú��������˯��״̬��
-ֱ�������������ơ�����ں��ṩ��һ����ѡ��ӳ�亯����
-��ִ����ԭ�ӵģ��߼��ϳ�Ϊkmap_atomic��
-�ú�����һ����Ҫ�ŵ���������ͨ��kmap���١�
-�����������ڿ��ܽ���˯�ߵĴ��롣
-��ˣ������ںܿ����Ҫһ����ʱҳ�ļ�̴��룬�Ƿǳ�����ġ�
+kmap函数不能用于中断处理程序，因为它可能进入睡眠状态。
+如果pkmap数组中没有空闲位置，该函数会进入睡眠状态，
+直至情形有所改善。因此内核提供了一个备选的映射函数，
+其执行是原子的，逻辑上称为kmap_atomic。
+该函数的一个主要优点是它比普通的kmap快速。
+但它不能用于可能进入睡眠的代码。
+因此，它对于很快就需要一个临时页的简短代码，是非常理想的。
  */
 static inline void *kmap_atomic(struct page *page)
 {

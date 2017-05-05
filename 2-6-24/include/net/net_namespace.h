@@ -10,28 +10,28 @@
 
 struct proc_dir_entry;
 struct net_device;
-/* ÍøÂçÃüÃû¿Õ¼ä */
+/* ç½‘ç»œå‘½åç©ºé—´ */
 struct net {
-	/* Ê¹ÓÃ¼ÆÊıÆ÷£¬¸¨Öúº¯Êıget_net,put_net */
+	/* ä½¿ç”¨è®¡æ•°å™¨ï¼Œè¾…åŠ©å‡½æ•°get_net,put_net */
 	atomic_t		count;		/* To decided when the network
 						 *  namespace should be freed.
 						 */
 	atomic_t		use_count;	/* To track references we
 						 * destroy on demand
 						 */
-	/* Í¨¹ı´Ë×Ö¶Î¼ÓÈëÈ«¾ÖÍøÂçÃüÃû¿Õ¼äÁ´±í */
+	/* é€šè¿‡æ­¤å­—æ®µåŠ å…¥å…¨å±€ç½‘ç»œå‘½åç©ºé—´é“¾è¡¨ */
 	struct list_head	list;		/* list of network namespaces */
 	struct work_struct	work;		/* work struct for freeing */
 
-	/* ¸ÃÃüÃû¿Õ¼äÖĞµÄproc½Úµã */
+	/* è¯¥å‘½åç©ºé—´ä¸­çš„procèŠ‚ç‚¹ */
 	struct proc_dir_entry 	*proc_net;
 	struct proc_dir_entry 	*proc_net_stat;
 	struct proc_dir_entry 	*proc_net_root;
 
-	/* ÃüÃû¿Õ¼äÖĞµÄ»Ø»·Éè±¸ */
+	/* å‘½åç©ºé—´ä¸­çš„å›ç¯è®¾å¤‡ */
 	struct net_device       *loopback_dev;          /* The loopback */
 
-	/* ¸ÃÃüÃû¿Õ¼äÖĞµÄËùÓĞÉè±¸ */
+	/* è¯¥å‘½åç©ºé—´ä¸­çš„æ‰€æœ‰è®¾å¤‡ */
 	struct list_head 	dev_base_head;
 	struct hlist_head 	*dev_name_head;
 	struct hlist_head	*dev_index_head;

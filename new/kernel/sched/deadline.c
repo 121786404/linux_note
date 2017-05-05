@@ -1774,7 +1774,7 @@ static void prio_changed_dl(struct rq *rq, struct task_struct *p,
 }
 
 /*
-²ÉÓÃEDF×îÔç½ØÖÁÊ±¼äÓÅÏÈËã·¨µ÷¶ÈÊµÊ±½ø³Ì
+é‡‡ç”¨EDFæœ€æ—©æˆªè‡³æ—¶é—´ä¼˜å…ˆç®—æ³•è°ƒåº¦å®æ—¶è¿›ç¨‹
 */
 const struct sched_class dl_sched_class = {
 	.next			= &rt_sched_class,

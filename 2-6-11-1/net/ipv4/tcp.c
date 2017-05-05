@@ -327,8 +327,8 @@ static __inline__ unsigned int tcp_listen_poll(struct sock *sk,
  *	take care of normal races (between the test and the event) and we don't
  *	go look at any of the socket buffers directly.
  */
-/* ¸Ãº¯Êı»áÔÚep_insertº¯ÊıÖĞµ÷ÓÃ
-  * poll_table±íÊ¾Ò»¸ö¼àÌıÏîºÍ¼àÌıÏîµÄ»Øµ÷º¯Êı 
+/* è¯¥å‡½æ•°ä¼šåœ¨ep_insertå‡½æ•°ä¸­è°ƒç”¨
+  * poll_tableè¡¨ç¤ºä¸€ä¸ªç›‘å¬é¡¹å’Œç›‘å¬é¡¹çš„å›è°ƒå‡½æ•° 
   */
 unsigned int tcp_poll(struct file *file, struct socket *sock, poll_table *wait)
 {
@@ -336,11 +336,11 @@ unsigned int tcp_poll(struct file *file, struct socket *sock, poll_table *wait)
 	struct sock *sk = sock->sk;
 	struct tcp_sock *tp = tcp_sk(sk);
 
-        /* ÕâÀï¿ªÊ¼µ÷ÓÃepollÖĞµÄ»Øµ÷º¯Êı
-          * ×¢Òâ´«µİ¹ıÈ¥µÄÊÇskµÄsk_sleepµÈ´ı¶ÓÁĞ 
+        /* è¿™é‡Œå¼€å§‹è°ƒç”¨epollä¸­çš„å›è°ƒå‡½æ•°
+          * æ³¨æ„ä¼ é€’è¿‡å»çš„æ˜¯skçš„sk_sleepç­‰å¾…é˜Ÿåˆ— 
           */
 	poll_wait(file, sk->sk_sleep, wait);
-	/* Èç¹ûÊÇ¼àÌıÌ×½Ó×Ö */
+	/* å¦‚æœæ˜¯ç›‘å¬å¥—æ¥å­— */
 	if (sk->sk_state == TCP_LISTEN)
 		return tcp_listen_poll(sk, wait);
 
@@ -1067,8 +1067,8 @@ static int tcp_recv_urg(struct sock *sk, long timeo,
  * calculation of whether or not we must ACK for the sake of
  * a window update.
  */
-/* ÇåÀíµôsockµÄ¶ÁÈ¡¶ÓÁĞÖĞ£¬ÒÑ¾­±»¶ÁÈ¡µÄcopied×Ö½ÚµÄÊı¾İ
-  * Í¬Ê±ÔÚ¸Ãº¯Êı×îºó»áÏò¶Ô·½·¢ËÍÒ»¸öackÈ·ÈÏ
+/* æ¸…ç†æ‰sockçš„è¯»å–é˜Ÿåˆ—ä¸­ï¼Œå·²ç»è¢«è¯»å–çš„copiedå­—èŠ‚çš„æ•°æ®
+  * åŒæ—¶åœ¨è¯¥å‡½æ•°æœ€åä¼šå‘å¯¹æ–¹å‘é€ä¸€ä¸ªackç¡®è®¤
   */ 
 static void cleanup_rbuf(struct sock *sk, int copied)
 {
@@ -1229,7 +1229,7 @@ int tcp_read_sock(struct sock *sk, read_descriptor_t *desc,
  *	tricks with *seq access order and skb->users are not required.
  *	Probably, code can be easily improved even more.
  */
-/* tcpĞ­Òé²ãµÄÊı¾İ¶ÁÈ¡º¯Êı  
+/* tcpåè®®å±‚çš„æ•°æ®è¯»å–å‡½æ•°  
   */ 
 int tcp_recvmsg(struct kiocb *iocb, struct sock *sk, struct msghdr *msg,
 		size_t len, int nonblock, int flags, int *addr_len)
@@ -1255,7 +1255,7 @@ int tcp_recvmsg(struct kiocb *iocb, struct sock *sk, struct msghdr *msg,
 	timeo = sock_rcvtimeo(sk, nonblock);
 
 	/* Urgent data needs to be handled specially. */
-        /* Èç¹ûÊÕµ½´øÍâÊı¾İ £¬Ò²¾ÍÊÇ½ô¼±Êı¾İ */
+        /* å¦‚æœæ”¶åˆ°å¸¦å¤–æ•°æ® ï¼Œä¹Ÿå°±æ˜¯ç´§æ€¥æ•°æ® */
 	if (flags & MSG_OOB)
 		goto recv_urg;
 
@@ -1903,7 +1903,7 @@ static int wait_for_connect(struct sock *sk, long timeo)
  *	This will accept the next outstanding connection.
  */
 
-/* tcpĞ­Òé²ãµÄacceptÊµÏÖ */
+/* tcpåè®®å±‚çš„acceptå®ç° */
 struct sock *tcp_accept(struct sock *sk, int flags, int *err)
 {
 	struct tcp_sock *tp = tcp_sk(sk);

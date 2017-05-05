@@ -30,7 +30,7 @@
 
 #define DEBUGP(fmt...) 
  
-/* Ä£¿éÐéÄâÄÚ´æÁ´±í */
+/* æ¨¡å—è™šæ‹Ÿå†…å­˜é“¾è¡¨ */
 static struct vm_struct *mod_vmlist;
 
 void module_free(struct module *mod, void *module_region)
@@ -54,7 +54,7 @@ void module_free(struct module *mod, void *module_region)
  found:
 	unmap_vm_area(map);
 	write_unlock(&vmlist_lock); 
-        /* ÊÍ·ÅÏßÐÔµØÖ·Ëù¶ÔÓ¦µÄÄÚ´æÒ³ */
+        /* é‡Šæ”¾çº¿æ€§åœ°å€æ‰€å¯¹åº”çš„å†…å­˜é¡µ */
 	if (map->pages) {
 		for (i = 0; i < map->nr_pages; i++)
 			if (map->pages[i])
@@ -64,7 +64,7 @@ void module_free(struct module *mod, void *module_region)
 	kfree(map);					
 }
 
-/* ¸øÄ£¿é·ÖÅäsize´óÐ¡µÄÒ»¿éÄÚ´æ */
+/* ç»™æ¨¡å—åˆ†é…sizeå¤§å°çš„ä¸€å—å†…å­˜ */
 void *module_alloc(unsigned long size)
 {
 	struct vm_struct **p, *tmp, *area;
@@ -85,7 +85,7 @@ void *module_alloc(unsigned long size)
 
 	write_lock(&vmlist_lock);
 	addr = (void *) MODULES_VADDR;
-        /* ´ÓÁ´±íµ±ÖÐÕÒµ½Ò»¸öºÏÊÊµÄÇø¼ä */
+        /* ä»Žé“¾è¡¨å½“ä¸­æ‰¾åˆ°ä¸€ä¸ªåˆé€‚çš„åŒºé—´ */
 	for (p = &mod_vmlist; (tmp = *p); p = &tmp->next) {
 		void *next; 
 		DEBUGP("vmlist %p %lu addr %p\n", tmp->addr, tmp->size, addr);
@@ -109,7 +109,7 @@ void *module_alloc(unsigned long size)
 	area->addr = addr;
 	write_unlock(&vmlist_lock);
 
-        /* ¼ÆËãÄÚ´æÒ³µÄÊýÁ¿ºÍÄÚ´æÒ³ÃèÊö·ûµÄ¿Õ¼ä */
+        /* è®¡ç®—å†…å­˜é¡µçš„æ•°é‡å’Œå†…å­˜é¡µæè¿°ç¬¦çš„ç©ºé—´ */
 	nr_pages = size >> PAGE_SHIFT;
 	array_size = (nr_pages * sizeof(struct page *));
 
@@ -120,7 +120,7 @@ void *module_alloc(unsigned long size)
 
 	memset(area->pages, 0, array_size);
 	for (i = 0; i < nr_pages; i++) {
-                /* ·ÖÅäÒ»Ò³µÄÎïÀíÄÚ´æ */
+                /* åˆ†é…ä¸€é¡µçš„ç‰©ç†å†…å­˜ */
 		area->pages[i] = alloc_page(GFP_KERNEL);
 		if (area->pages[i] == NULL)
 			goto fail;

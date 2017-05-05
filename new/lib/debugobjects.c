@@ -1054,18 +1054,18 @@ static inline void debug_objects_selftest(void) { }
  * the object tracker is fully operational.
  */
 /**
- * ¶ÔÏó¸ú×ÙÄ£¿é»áÔÚÄÚºËÖĞ×¢Èë´úÂë£¬¸ú×Ù¶ÔÏóµÄÉúÃüÖÜÆÚ
- * ²¢ÑéÖ¤ÔÚÕâĞ©¶ÔÏóÉÏµÄ²Ù×÷ÊÇ·ñºÏ·¨¡£
+ * å¯¹è±¡è·Ÿè¸ªæ¨¡å—ä¼šåœ¨å†…æ ¸ä¸­æ³¨å…¥ä»£ç ï¼Œè·Ÿè¸ªå¯¹è±¡çš„ç”Ÿå‘½å‘¨æœŸ
+ * å¹¶éªŒè¯åœ¨è¿™äº›å¯¹è±¡ä¸Šçš„æ“ä½œæ˜¯å¦åˆæ³•ã€‚
  */
 void __init debug_objects_early_init(void)
 {
 	int i;
 
-	//³õÊ¼»¯±£»¤¹şÏ£Í°µÄ×ÔĞıËø
+	//åˆå§‹åŒ–ä¿æŠ¤å“ˆå¸Œæ¡¶çš„è‡ªæ—‹é”
 	for (i = 0; i < ODEBUG_HASH_SIZE; i++)
 		raw_spin_lock_init(&obj_hash[i].lock);
 
-	//½«³õÊ¼¾²Ì¬½ÚµãÌí¼Óµ½obj_poolÖĞ¡£
+	//å°†åˆå§‹é™æ€èŠ‚ç‚¹æ·»åŠ åˆ°obj_poolä¸­ã€‚
 	for (i = 0; i < ODEBUG_POOL_SIZE; i++)
 		hlist_add_head(&obj_static_pool[i].node, &obj_pool);
 }

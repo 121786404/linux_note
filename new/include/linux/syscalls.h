@@ -336,7 +336,7 @@ asmlinkage long sys_futex(u32 __user *uaddr, int op, u32 val,
 			struct timespec __user *utime, u32 __user *uaddr2,
 			u32 val3);
 
-/*´¦ÀíÄ£¿é¼ÓÔØµÄÕû¸ö¹ı³Ì*/
+/*å¤„ç†æ¨¡å—åŠ è½½çš„æ•´ä¸ªè¿‡ç¨‹*/
 asmlinkage long sys_init_module(void __user *umod, unsigned long len,
 				const char __user *uargs);
 asmlinkage long sys_delete_module(const char __user *name_user,

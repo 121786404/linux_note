@@ -67,7 +67,7 @@ int arch_show_interrupts(struct seq_file *p, int prec)
  * level decoding.
  */
 /**
- * ÖÐ¶Ï´¦Àí£¬ÖÐ¶ÏºÅÓÉÆ½Ì¨Ïà¹ØµÄ´úÂë½øÐÐ½âÎö¡£
+ * ä¸­æ–­å¤„ç†ï¼Œä¸­æ–­å·ç”±å¹³å°ç›¸å…³çš„ä»£ç è¿›è¡Œè§£æžã€‚
  */
 void handle_IRQ(unsigned int irq, struct pt_regs *regs)
 {
@@ -78,7 +78,7 @@ void handle_IRQ(unsigned int irq, struct pt_regs *regs)
  * asm_do_IRQ is the interface to be used from assembly code.
  */
 /**
- * ´Ó»ã±àÓïÑÔÖÐµ÷ÓÃ´Ëº¯Êý´¦ÀíÖÐ¶Ï¡£
+ * ä»Žæ±‡ç¼–è¯­è¨€ä¸­è°ƒç”¨æ­¤å‡½æ•°å¤„ç†ä¸­æ–­ã€‚
  */
 asmlinkage void __exception_irq_entry
 asm_do_IRQ(unsigned int irq, struct pt_regs *regs)
@@ -87,13 +87,13 @@ asm_do_IRQ(unsigned int irq, struct pt_regs *regs)
 }
 
 /**
- * ³õÊ¼»¯irq
+ * åˆå§‹åŒ–irq
  */
 void __init init_IRQ(void)
 {
 	int ret;
 
-	//Ö´ÐÐÖÐ¶Ï¿ØÖÆÆ÷µÄ³õÊ¼»¯¡£
+	//æ‰§è¡Œä¸­æ–­æŽ§åˆ¶å™¨çš„åˆå§‹åŒ–ã€‚
 	if (IS_ENABLED(CONFIG_OF) && !machine_desc->init_irq)
 		irqchip_init();
 	else

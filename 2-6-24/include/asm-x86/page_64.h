@@ -78,7 +78,7 @@ extern unsigned long phys_base;
 
 #endif /* !__ASSEMBLY__ */
 
-/* �ں˹�����������ַ��ʼλ�ã�����kdump���߶��ں˵���� */
+/* 内核管理的物理地址起始位置，用于kdump或者多内核的情况 */
 #define __PHYSICAL_START	CONFIG_PHYSICAL_START
 #define __KERNEL_ALIGN		0x200000
 

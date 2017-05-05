@@ -613,7 +613,7 @@ static inline int rtnetlink_rcv_skb(struct sk_buff *skb)
  *	  exclusive lock failed.
  */
 
-/* netlinkÂ·ÓÉÁ´µÄÏûÏ¢½ÓÊÕº¯Êı */
+/* netlinkè·¯ç”±é“¾çš„æ¶ˆæ¯æ¥æ”¶å‡½æ•° */
 static void rtnetlink_rcv(struct sock *sk, int len)
 {
 	do {
@@ -679,7 +679,7 @@ static struct notifier_block rtnetlink_dev_notifier = {
 	.notifier_call	= rtnetlink_event,
 };
 
-/* netlinkÂ·ÓÉÁ´µÄ³õÊ¼»¯ */
+/* netlinkè·¯ç”±é“¾çš„åˆå§‹åŒ– */
 void __init rtnetlink_init(void)
 {
 	int i;
@@ -692,7 +692,7 @@ void __init rtnetlink_init(void)
 	if (!rta_buf)
 		panic("rtnetlink_init: cannot allocate rta_buf\n");
 
-        /* netlinkÂ·ÓÉÌ×½Ó×ÖµÄ³õÊ¼»¯ */
+        /* netlinkè·¯ç”±å¥—æ¥å­—çš„åˆå§‹åŒ– */
 	rtnl = netlink_kernel_create(NETLINK_ROUTE, rtnetlink_rcv);
 	if (rtnl == NULL)
 		panic("rtnetlink_init: cannot initialize rtnetlink\n");

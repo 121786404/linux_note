@@ -14,9 +14,9 @@
 /* Random magic number */
 #define SYSFS_MAGIC 0x62656572
 
-/* sysfsÎÄ¼şÏµÍ³µÄ¹ÒÔØµã */
+/* sysfsæ–‡ä»¶ç³»ç»Ÿçš„æŒ‚è½½ç‚¹ */
 struct vfsmount *sysfs_mount;
-/* sysfsÎÄ¼şÏµÍ³µÄ³¬¼¶¿é */
+/* sysfsæ–‡ä»¶ç³»ç»Ÿçš„è¶…çº§å— */
 struct super_block * sysfs_sb = NULL;
 kmem_cache_t *sysfs_dir_cachep;
 
@@ -42,7 +42,7 @@ static int sysfs_fill_super(struct super_block *sb, void *data, int silent)
 	sb->s_magic = SYSFS_MAGIC;
 	sb->s_op = &sysfs_ops;
 	sb->s_time_gran = 1;
-        /* ÉèÖÃsysfs_sb³¬¼¶¿é */
+        /* è®¾ç½®sysfs_sbè¶…çº§å— */
 	sysfs_sb = sb;
 
 	inode = sysfs_new_inode(S_IFDIR | S_IRWXU | S_IRUGO | S_IXUGO);
@@ -55,7 +55,7 @@ static int sysfs_fill_super(struct super_block *sb, void *data, int silent)
 		pr_debug("sysfs: could not get root inode\n");
 		return -ENOMEM;
 	}
-        /* ·ÖÅäsysfsÎÄ¼şÏµÍ³µÄ¡®/'Ä¿Â¼ */
+        /* åˆ†é…sysfsæ–‡ä»¶ç³»ç»Ÿçš„â€˜/'ç›®å½• */
 	root = d_alloc_root(inode);
 	if (!root) {
 		pr_debug("%s: could not get root dentry!\n",__FUNCTION__);
@@ -63,7 +63,7 @@ static int sysfs_fill_super(struct super_block *sb, void *data, int silent)
 		return -ENOMEM;
 	}
 	root->d_fsdata = &sysfs_root;
-        /* ÉèÖÃ³¬¼¶¿éµÄ¸ùÄ¿Â¼£¬Ò²¾ÍÉÏ¸Õ²Å·ÖÅäµÄ'/¡¯Ä¿Â¼ */
+        /* è®¾ç½®è¶…çº§å—çš„æ ¹ç›®å½•ï¼Œä¹Ÿå°±ä¸Šåˆšæ‰åˆ†é…çš„'/â€™ç›®å½• */
 	sb->s_root = root;
 	return 0;
 }
@@ -80,7 +80,7 @@ static struct file_system_type sysfs_fs_type = {
 	.kill_sb	= kill_litter_super,
 };
 
-/* ³õÊ¼»¯sysfsÎÄ¼şÏµÍ³ */
+/* åˆå§‹åŒ–sysfsæ–‡ä»¶ç³»ç»Ÿ */
 int __init sysfs_init(void)
 {
 	int err = -ENOMEM;

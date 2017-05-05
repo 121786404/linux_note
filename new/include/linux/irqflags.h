@@ -29,9 +29,9 @@
 # define lockdep_softirq_exit()	do { current->softirq_context--; } while (0)
 # define INIT_TRACE_IRQFLAGS	.softirqs_enabled = 1,
 #else
-/*ÓÃ×÷µ÷ÊÔ*/
+/*ç”¨ä½œè°ƒè¯•*/
 # define trace_hardirqs_on()		do { } while (0)
-/*ÓÃ×÷µ÷ÊÔ*/
+/*ç”¨ä½œè°ƒè¯•*/
 # define trace_hardirqs_off()		do { } while (0)
 # define trace_softirqs_on(ip)		do { } while (0)
 # define trace_softirqs_off(ip)		do { } while (0)
@@ -88,13 +88,13 @@
  * if !TRACE_IRQFLAGS.
  */
 #ifdef CONFIG_TRACE_IRQFLAGS
-/*ÓÃÀ´´ò¿ª±¾µØ´¦ÀíÆ÷µÄÖĞ¶Ï*/
+/*ç”¨æ¥æ‰“å¼€æœ¬åœ°å¤„ç†å™¨çš„ä¸­æ–­*/
 #define local_irq_enable() \
 	do { trace_hardirqs_on(); raw_local_irq_enable(); } while (0)
-/*ÓÃÀ´¹Ø±Õ±¾µØ´¦ÀíÆ÷µÄÖĞ¶Ï*/
+/*ç”¨æ¥å…³é—­æœ¬åœ°å¤„ç†å™¨çš„ä¸­æ–­*/
 #define local_irq_disable() \
 	do { raw_local_irq_disable(); trace_hardirqs_off(); } while (0)
-/*local_irq_enableµÄ±äÌå£¬²»Í¬ÔÚÓÚ¹Ø±ÕÖĞ¶ÏÇ°£¬½«´¦ÀíÆ÷µ±Ç°µÄ±êÖ¾Î»±£´æÔÚÒ»¸öunsigned long flagsÖĞ,·ÀÖ¹½«Ö®Ç°µÄÖĞ¶ÏÏìÓ¦×´Ì¬ÆÆ»µµô*/
+/*local_irq_enableçš„å˜ä½“ï¼Œä¸åŒåœ¨äºå…³é—­ä¸­æ–­å‰ï¼Œå°†å¤„ç†å™¨å½“å‰çš„æ ‡å¿—ä½ä¿å­˜åœ¨ä¸€ä¸ªunsigned long flagsä¸­,é˜²æ­¢å°†ä¹‹å‰çš„ä¸­æ–­å“åº”çŠ¶æ€ç ´åæ‰*/
 #define local_irq_save(flags)				\
 	do {						\
 		raw_local_irq_save(flags);		\
@@ -102,7 +102,7 @@
 	} while (0)
 
 
-/*½«local_irq_save±£´æµÄflags»Ø¸´µ½´¦ÀíÆ÷µÄFLAGS¼Ä´æÆ÷ÖĞ*/
+/*å°†local_irq_saveä¿å­˜çš„flagså›å¤åˆ°å¤„ç†å™¨çš„FLAGSå¯„å­˜å™¨ä¸­*/
 #define local_irq_restore(flags)			\
 	do {						\
 		if (raw_irqs_disabled_flags(flags)) {	\

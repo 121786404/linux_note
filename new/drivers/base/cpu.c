@@ -502,14 +502,14 @@ static void __init cpu_dev_register_generic(void)
 }
 
 /*
-����һ��cpu���ߣ������¹���ϵͳ�����е�cpu��
-cpu�����豸�ĸ�Ŀ¼��λ�ڣ�/sys/devices/system/cpu��
-ͬʱ��/sys/bus��Ҳ�����һ��cpu�����߽ڵ㡣
-cpu�����豸�ĸ�Ŀ¼�»����γ���cpu0��cpu1��...... cpux�ڵ㣬
-ÿ��cpu��Ӧ���е�һ���豸�ڵ㡣
+建立一根cpu总线，总线下挂着系统中所有的cpu，
+cpu总线设备的根目录就位于：/sys/devices/system/cpu，
+同时，/sys/bus下也会出现一个cpu的总线节点。
+cpu总线设备的根目录下会依次出现cpu0，cpu1，...... cpux节点，
+每个cpu对应其中的一个设备节点。
 
-CPUFreq��ϵͳ�������cpu_subsys����ȡϵͳ�е�cpu�豸��
-������Щcpu�豸���潨����Ӧ��cpufreq����
+CPUFreq子系统利用这个cpu_subsys来获取系统中的cpu设备，
+并在这些cpu设备下面建立相应的cpufreq对象
 */
 void __init cpu_dev_init(void)
 {

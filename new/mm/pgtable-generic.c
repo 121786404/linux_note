@@ -45,7 +45,7 @@ void pmd_clear_bad(pmd_t *pmd)
  * force that call on sun4c so we changed this macro slightly
  */
  /*
-如果 Dirty 标志被设置为 1 则将页的访问权设置为指定的值，并调用flush_tlb_page() 函数
+濡傛灉 Dirty 鏍囧織琚缃负 1 鍒欏皢椤电殑璁块棶鏉冭缃负鎸囧畾鐨勫�硷紝骞惰皟鐢╢lush_tlb_page() 鍑芥暟
 */
 int ptep_set_access_flags(struct vm_area_struct *vma,
 			  unsigned long address, pte_t *ptep,

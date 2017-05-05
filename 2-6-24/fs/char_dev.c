@@ -46,29 +46,29 @@ struct backing_dev_info directly_mappable_cdev_bdi = {
 };
 
 /**
- * ËùÓĞ×Ö·ûÉè±¸µÄÈ«¾ÖÉ¢ÁĞ±í£¬ÒÔÖ÷Éè±¸ºÅÎªÉ¢ÁĞ¹Ø¼ü×Ö
+ * æ‰€æœ‰å­—ç¬¦è®¾å¤‡çš„å…¨å±€æ•£åˆ—è¡¨ï¼Œä»¥ä¸»è®¾å¤‡å·ä¸ºæ•£åˆ—å…³é”®å­—
  */
 static struct kobj_map *cdev_map;
 
 static DEFINE_MUTEX(chrdevs_lock);
 
 /**
- * ÓÃÓÚ×Ö·ûÉè±¸¿ÉÓÃÉè±¸ºÅ¹ÜÀí£¬±¾½á¹¹ÊÇ¹şÏ£Í°ÖĞÃ¿Ò»¸öÔªËØµÄ½á¹¹
+ * ç”¨äºå­—ç¬¦è®¾å¤‡å¯ç”¨è®¾å¤‡å·ç®¡ç†ï¼Œæœ¬ç»“æ„æ˜¯å“ˆå¸Œæ¡¶ä¸­æ¯ä¸€ä¸ªå…ƒç´ çš„ç»“æ„
  */
 static struct char_device_struct {
-	/* Í¬Ò»Í°ÖĞÏÂÒ»ÔªËØ */
+	/* åŒä¸€æ¡¶ä¸­ä¸‹ä¸€å…ƒç´  */
 	struct char_device_struct *next;
-	/* Ö÷Éè±¸ºÅ£¬È·¶¨ÁËËüËùÊôµÄÍ°Ë÷Òı */
+	/* ä¸»è®¾å¤‡å·ï¼Œç¡®å®šäº†å®ƒæ‰€å±çš„æ¡¶ç´¢å¼• */
 	unsigned int major;
-	/* ×îĞ¡´ÓÉè±¸ºÅ */
+	/* æœ€å°ä»è®¾å¤‡å· */
 	unsigned int baseminor;
-	/* ´ÓÉè±¸ºÅ·¶Î§ */
+	/* ä»è®¾å¤‡å·èŒƒå›´ */
 	int minorct;
-	/* Éè±¸Ãû³Æ */
+	/* è®¾å¤‡åç§° */
 	char name[64];
-	/* ÓëÉè±¸Ïà¹ØµÄÎÄ¼ş²Ù×÷»Øµ÷º¯Êı */
+	/* ä¸è®¾å¤‡ç›¸å…³çš„æ–‡ä»¶æ“ä½œå›è°ƒå‡½æ•° */
 	struct file_operations *fops;
-	/* ×Ö·ûÉè±¸¶ÔÏó */
+	/* å­—ç¬¦è®¾å¤‡å¯¹è±¡ */
 	struct cdev *cdev;		/* will die */
 } *chrdevs[CHRDEV_MAJOR_HASH_SIZE];
 
@@ -208,7 +208,7 @@ __unregister_chrdev_region(unsigned major, unsigned baseminor, int minorct)
  * Return value is zero on success, a negative error code on failure.
  */
 /**
- * ×¢²á×Ö·ûÉè±¸ºÅ
+ * æ³¨å†Œå­—ç¬¦è®¾å¤‡å·
  */
 int register_chrdev_region(dev_t from, unsigned count, const char *name)
 {
@@ -247,7 +247,7 @@ fail:
  * in @dev.  Returns zero or a negative error code.
  */
 /**
- * ·ÖÅä×Ö·ûÉè±¸ºÅ·¶Î§
+ * åˆ†é…å­—ç¬¦è®¾å¤‡å·èŒƒå›´
  */
 int alloc_chrdev_region(dev_t *dev, unsigned baseminor, unsigned count,
 			const char *name)
@@ -377,7 +377,7 @@ void cdev_put(struct cdev *p)
  * Called every time a character special file is opened
  */
 /**
- * ´ò¿ª×Ö·ûÉè±¸Ê±µ÷ÓÃµÄ·½·¨
+ * æ‰“å¼€å­—ç¬¦è®¾å¤‡æ—¶è°ƒç”¨çš„æ–¹æ³•
  */
 int chrdev_open(struct inode * inode, struct file * filp)
 {
@@ -385,27 +385,27 @@ int chrdev_open(struct inode * inode, struct file * filp)
 	struct cdev *new = NULL;
 	int ret = 0;
 
-	spin_lock(&cdev_lock);/* »ñÈ¡È«¾Ö×Ö·ûÉè±¸Ëø */
+	spin_lock(&cdev_lock);/* è·å–å…¨å±€å­—ç¬¦è®¾å¤‡é” */
 	p = inode->i_cdev;
-	if (!p) {/* ¸ÃÉè±¸»¹Ã»ÓĞ±»´ò¿ª¹ı */
+	if (!p) {/* è¯¥è®¾å¤‡è¿˜æ²¡æœ‰è¢«æ‰“å¼€è¿‡ */
 		struct kobject *kobj;
 		int idx;
 		spin_unlock(&cdev_lock);
-		/* ¸ù¾İÉè±¸ºÅ£¬ÔÚ×Ö·ûÉè±¸É¢ÁĞ±íÖĞ²éÕÒÉè±¸ */
+		/* æ ¹æ®è®¾å¤‡å·ï¼Œåœ¨å­—ç¬¦è®¾å¤‡æ•£åˆ—è¡¨ä¸­æŸ¥æ‰¾è®¾å¤‡ */
 		kobj = kobj_lookup(cdev_map, inode->i_rdev, &idx);
-		if (!kobj)/* Ê§°Ü£¬Ã»ÓĞ¸ÃÉè±¸ */
+		if (!kobj)/* å¤±è´¥ï¼Œæ²¡æœ‰è¯¥è®¾å¤‡ */
 			return -ENXIO;
 		new = container_of(kobj, struct cdev, kobj);
-		spin_lock(&cdev_lock);/* ÖØĞÂ»ñÈ¡×ÔĞıËø */
+		spin_lock(&cdev_lock);/* é‡æ–°è·å–è‡ªæ—‹é” */
 		p = inode->i_cdev;
-		if (!p) {/* ÔÚÊÍ·ÅËøµÄÆÚ¼ä£¬Ã»ÓĞÆäËûÈË´ò¿ª¸ÃÉè±¸ */
-			/* ³õÊ¼»¯Ò»Ğ©×Ö¶Î */
+		if (!p) {/* åœ¨é‡Šæ”¾é”çš„æœŸé—´ï¼Œæ²¡æœ‰å…¶ä»–äººæ‰“å¼€è¯¥è®¾å¤‡ */
+			/* åˆå§‹åŒ–ä¸€äº›å­—æ®µ */
 			inode->i_cdev = p = new;
 			inode->i_cindex = idx;
-			/* ½«inode¼ÓÈëµ½¸ÃÉè±¸µÄinodeÁ´±íÖĞ */
+			/* å°†inodeåŠ å…¥åˆ°è¯¥è®¾å¤‡çš„inodeé“¾è¡¨ä¸­ */
 			list_add(&inode->i_devices, &p->list);
 			new = NULL;
-		} else if (!cdev_get(p))/* ÆäËûÈËÒÑ¾­´ò¿ª¸ÃÉè±¸ÁË£¬µ«ÊÇ»ñÈ¡ÒıÓÃÊ§°Ü */
+		} else if (!cdev_get(p))/* å…¶ä»–äººå·²ç»æ‰“å¼€è¯¥è®¾å¤‡äº†ï¼Œä½†æ˜¯è·å–å¼•ç”¨å¤±è´¥ */
 			ret = -ENXIO;
 	} else if (!cdev_get(p))
 		ret = -ENXIO;
@@ -413,13 +413,13 @@ int chrdev_open(struct inode * inode, struct file * filp)
 	cdev_put(new);
 	if (ret)
 		return ret;
-	/* ¸´ÖÆÎÄ¼ş²Ù×÷»Øµ÷ */
+	/* å¤åˆ¶æ–‡ä»¶æ“ä½œå›è°ƒ */
 	filp->f_op = fops_get(p->ops);
 	if (!filp->f_op) {
 		cdev_put(p);
 		return -ENXIO;
 	}
-	/* µ÷ÓÃÇı¶¯µÄopen»Øµ÷ */
+	/* è°ƒç”¨é©±åŠ¨çš„openå›è°ƒ */
 	if (filp->f_op->open) {
 		lock_kernel();
 		ret = filp->f_op->open(inode,filp);
@@ -482,7 +482,7 @@ static int exact_lock(dev_t dev, void *data)
  * live immediately.  A negative error code is returned on failure.
  */
 /**
- * ½«Éè±¸Ìí¼Óµ½×Ö·ûÉè±¸Êı¾İ¿â£¬ÒÔ¼¤»îÉè±¸
+ * å°†è®¾å¤‡æ·»åŠ åˆ°å­—ç¬¦è®¾å¤‡æ•°æ®åº“ï¼Œä»¥æ¿€æ´»è®¾å¤‡
  */
 int cdev_add(struct cdev *p, dev_t dev, unsigned count)
 {
@@ -556,7 +556,7 @@ struct cdev *cdev_alloc(void)
  * system with cdev_add().
  */
 /**
- * ³õÊ¼»¯Ò»¸ö×Ö·ûÉè±¸½á¹¹
+ * åˆå§‹åŒ–ä¸€ä¸ªå­—ç¬¦è®¾å¤‡ç»“æ„
  */
 void cdev_init(struct cdev *cdev, const struct file_operations *fops)
 {

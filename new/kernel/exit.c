@@ -337,35 +337,35 @@ static int will_become_orphaned_pgrp(struct pid *pgrp,
 {
 	struct task_struct *p;
 /*
-ѭ����ѯ�߳����е�ÿһ���߳�
+循环查询线程组中的每一个线程
 */
 	do_each_pid_task(pgrp, PIDTYPE_PGID, p) {
 		if ((p == ignored_task) ||
 /*
-		���pgrp�е�p�����������˳�״̬���������ڵ��߳����ǿյ���  
+		如果pgrp中的p进程正处于退出状态而且其所在的线程组是空的了  
 */
 		    (p->exit_state && thread_group_empty(p)) ||
 /*
-		����pgrp��p���̵ĸ�������init���̣�
-		˵���ڸ��߳������Ѿ�û�������߳��ˣ���list_empty(&p->thread_group) == 1;��
+		或者pgrp中p进程的父进程是init进程，
+		说明在该线程组中已经没有其他线程了（即list_empty(&p->thread_group) == 1;）
 */
 		    is_global_init(p->real_parent))
 			continue;
 /*
-            ���p�ĸ����̺�p����ͬһ������
+            如果p的父进程和p不再同一个组中
 */
 		if (task_pgrp(p->real_parent) != pgrp &&
 /*
-		      ����p�ĸ����̺�p���̹�����һ���Ự
+		      但是p的父进程和p进程功属于一个会话
 */
 		    task_session(p->real_parent) == task_session(p))
 /*
-		    ����0�������ɹ¶�  
+		    返回0，不会变成孤儿  
 */
 			return 0;
 	} while_each_pid_task(pgrp, PIDTYPE_PGID, p);
 /*
-    ����1�����ɹ¶���
+    返回1，会变成孤儿。
 */
 	return 1;
 }
@@ -415,10 +415,10 @@ kill_orphaned_pgrp(struct task_struct *tsk, struct task_struct *parent)
 		 */
 		ignored_task = NULL;
 
-	if (task_pgrp(parent) != pgrp && //����tsk���丸���̲�����ͬһ����
-	    task_session(parent) == task_session(tsk) &&  //����tsk���丸��������һ���Ự 
-	    will_become_orphaned_pgrp(pgrp, ignored_task) && //�����齫���Ϊ��
-	    has_stopped_jobs(pgrp)) {//�Ƿ��б�ֹͣ��job����ֹͣ��ԭ���������Ϊdebugger
+	if (task_pgrp(parent) != pgrp && //进程tsk和其父进程不属于同一个组
+	    task_session(parent) == task_session(tsk) &&  //进程tsk和其父进程属于一个会话 
+	    will_become_orphaned_pgrp(pgrp, ignored_task) && //进程组将会成为孤
+	    has_stopped_jobs(pgrp)) {//是否有被停止的job，被停止的原因可能是因为debugger
 		__kill_pgrp_info(SIGHUP, SEND_SIG_PRIV, pgrp);
 		__kill_pgrp_info(SIGCONT, SEND_SIG_PRIV, pgrp);
 	}
@@ -576,7 +576,7 @@ static struct task_struct *find_alive_thread(struct task_struct *p)
 	struct task_struct *t;
 
 	for_each_thread(p, t) {
-	//����õ�����һ�����̱������ PF_EXITING ���Ͳ�����Ҫ����Ҫ��������  
+	//如果得到的下一个进程被标记了 PF_EXITING ，就不符合要求，需要继续遍历  
 		if (!(t->flags & PF_EXITING))
 			return t;
 	}
@@ -618,13 +618,13 @@ static struct task_struct *find_child_reaper(struct task_struct *father)
  * 3. give it to the init process (PID 1) in our pid namespace
  */
 /*
-���ڵ�ǰ�߳�������һ���߳���Ϊ���ף�����Ҳ�����
-����init�������̡�(init��������linux����ʱ��һֱ���ڵ�)
+先在当前线程组中找一个线程作为父亲，如果找不到，
+就让init做父进程。(init进程是在linux启动时就一直存在的)
 
-�� init ����ͨ����һ�������Ľ��̣��������н��̶��� init ���ӽ��̣�
-����һ����˵������й¶����̶����� init ���̽ӹܡ�
-������Ϊ����һ�����̣��������Ϊ child_subreaper��
-ʹ��ӹ��䴴�������й¶����̣��Ӷ������� init ���̽ӹ�
+而 init 进程通常第一个启动的进程，其他所有进程都是 init 的子进程，
+所以一般来说最后所有孤儿进程都将被 init 进程接管。
+可以人为创建一个进程，将它标记为 child_subreaper，
+使其接管其创建的所有孤儿进程，从而不必让 init 进程接管
 */
 static struct task_struct *find_new_reaper(struct task_struct *father,
 					   struct task_struct *child_reaper)
@@ -642,20 +642,20 @@ static struct task_struct *find_new_reaper(struct task_struct *father,
 		 * namespace, this is safe because all its threads are dead.
 		 */
 /*
-		 ��һ�����̳�Ϊ�˹¶����̣����ұ����Ϊӵ��һ�� subreaper��
-		 ��ô���������Ľ����������Ƚ�����һ��������� child_subreaper 
-		 ���������ŵĽ��̣�������̽���ӹ�����¶�����
+		 当一个进程成为了孤儿进程，并且被标记为拥有一个 subreaper。
+		 那么会沿着它的进程树向祖先进程找一个最近的是 child_subreaper 
+		 并且运行着的进程，这个进程将会接管这个孤儿进程
 */
 		for (reaper = father;
-            /* �ҵ���ͬ�߳��������������߳� */
+            /* 找到相同线程组里其它可用线程 */
 		     !same_thread_group(reaper, child_reaper);
 		     reaper = reaper->real_parent) {
 			/* call_usermodehelper() descendants need this check */
 			if (reaper == &init_task)
 				break;
             /*
-                �������Ľ����������Ƚ�����һ�������child_subreaper
-                ���������ŵĽ���
+                沿着它的进程树向祖先进程找一个最近的child_subreaper
+                并且运行着的进程
                 */
 			if (!reaper->signal->is_child_subreaper)
 				continue;
@@ -682,13 +682,13 @@ static void reparent_leader(struct task_struct *father, struct task_struct *p,
 
 	/* If it has exited notify the new parent about this child's death. */
 /*
-	����������̵��ӽ���û�б����٣�
-	����״̬�ǽ���״̬���������߳����Ѿ��ǿյ���  
+	如果将死进程的子进程没有被跟踪，
+	且其状态是僵死状态并且所在线程组已经是空的了  
 */
 	if (!p->ptrace &&
 	    p->exit_state == EXIT_ZOMBIE && thread_group_empty(p)) {
 /*
-	���丸���̷���һ���źţ�����֪���ӽ��̵������Ѿ�������
+	向其父进程发送一个信号，让其知道子进程的生命已经结束，
 */
 		if (do_notify_parent(p, p->exit_signal)) {
 			p->exit_state = EXIT_DEAD;
@@ -708,9 +708,9 @@ static void reparent_leader(struct task_struct *father, struct task_struct *p,
  *	jobs, send them a SIGHUP and then a SIGCONT.  (POSIX 3.2.2.2)
  */
 /*
- A. ��init���̼̳�������̵������ӽ���
- B. ���ý������ڵĽ������ڸý��������Ƿ���Ϊ�¶������飬
-     ��������Ѿ�ֹͣ�˹���
+ A. 让init进程继承这个进程的所有子进程
+ B. 检查该进程所在的进程组在该进程死后是否会变为孤儿进程组，
+     如果他们已经停止了工作
 
 */
 static void forget_original_parent(struct task_struct *father,
@@ -726,16 +726,16 @@ static void forget_original_parent(struct task_struct *father,
 	if (list_empty(&father->children))
 		return;
 /*
-    Ѱ���µĸ����̡� 
+    寻找新的父进程。 
 */
 	reaper = find_new_reaper(father, reaper);
 /*
-	��������������̵��ӽ��̵��ֵܽ���Ϊ���������µĸ�����
+	逐个处理将死进程的子进程的兄弟进程为他们设置新的父进程
 */
 	list_for_each_entry(p, &father->children, sibling) {
 		for_each_thread(p, t) {
 /*
-		���������̵��ӽ��̵��ֵܽ��̵�real_parentָ��reaper����
+		将将死进程的子进程的兄弟进程的real_parent指向reaper进程
 */
 			t->real_parent = reaper;
 			BUG_ON((!t->ptrace) != (t->parent == father));
@@ -743,8 +743,8 @@ static void forget_original_parent(struct task_struct *father,
 				t->parent = t->real_parent;
 			if (t->pdeath_signal)
 /*
-			����SEND_SIG_NOINFO�źţ�ע��task_struct�ṹ�е�pdeath_dignal
-			���ǵ�������������ʱ��Żᱻ���ã�Ҳ�������ʱ��
+			发送SEND_SIG_NOINFO信号，注意task_struct结构中的pdeath_dignal
+			就是当父进程死亡的时候才会被设置，也就是这个时候
 */
 				group_send_sig_info(t->pdeath_signal,
 						    SEND_SIG_NOINFO, t);
@@ -836,18 +836,18 @@ void __noreturn do_exit(long code)
 	profile_task_exit(tsk);
 	kcov_task_exit(tsk);
 /*
-    ��֤task_struct�е�plug�ֶ��ǿյģ�����plug�ֶ�ָ��Ķ����ǿյġ�
-    plug�ֶε�������stack plugging
+    保证task_struct中的plug字段是空的，或者plug字段指向的队列是空的。
+    plug字段的意义是stack plugging
 */
 	WARN_ON(blk_needs_flush_plug(tsk));
 
 /*
-    �ж������Ĳ���ִ��do_exit����, ��Ϊû�н��������� 
+    中断上下文不能执行do_exit函数, 因为没有进程上下文 
 */
 	if (unlikely(in_interrupt()))
 		panic("Aiee, killing interrupt handler!");
 /*
-    ������ֹPIDΪ0�Ľ���
+    不能终止PID为0的进程
 */
 	if (unlikely(!tsk->pid))
 		panic("Attempted to kill the idle task!");
@@ -860,7 +860,7 @@ void __noreturn do_exit(long code)
 	 * kernel address.
 	 */
 /*
-	 �趨���̿���ʹ�õ������ַ�����ޣ��û��ռ䣩
+	 设定进程可以使用的虚拟地址的上限（用户空间）
 */
 	set_fs(USER_DS);
 
@@ -873,10 +873,10 @@ void __noreturn do_exit(long code)
 	 * leave this task alone and wait for reboot.
 	 */
      /* 
-       ��task�˳���ʱ�򣬻ᱻ������PF_EXITING��־��
-	 ������ִ�ʱflags�Ѿ������˸ñ�־����˵�������˴���
-	 ��ʱ��Ҫ����ע����˵�ģ��ȫ�ķ�����ʲô��������
-	 ֪ͨ���ȴ�����
+       当task退出的时候，会被设置上PF_EXITING标志。
+	 如果发现此时flags已经设置了该标志，则说明发生了错误。
+	 此时就要按照注释所说的，最安全的方法是什么都不做，
+	 通知并等待重启
       */
 	if (unlikely(tsk->flags & PF_EXITING)) {
 		pr_alert("Fixing recursive fault but reboot is needed!\n");
@@ -889,28 +889,28 @@ void __noreturn do_exit(long code)
 		 * OWNER_DIED bit is set by now or we push the blocked
 		 * task into the wait for ever nirwana as well.
 		 */
-		 /*  ���ý��̱�ʶΪPF_EXITPIDONE*/
+		 /*  设置进程标识为PF_EXITPIDONE*/
 		tsk->flags |= PF_EXITPIDONE;
-		 /*  ���ý���״̬Ϊ�����жϵĵȴ�״̬ */
+		 /*  设置进程状态为不可中断的等待状态 */
 		set_current_state(TASK_UNINTERRUPTIBLE);
-		/*  ������������  */
+		/*  调度其它进程  */
 		schedule();
 	}
 /*
-    ����˱�ʶδ������, ��ͨ��exit_signals������
+    如果此标识未被设置, 则通过exit_signals来设置
 */
 	exit_signals(tsk);  /* sets PF_EXITING */
 	/*
 	 * Ensure that all new tsk->pi_lock acquisitions must observe
 	 * PF_EXITING. Serializes against futex.c:attach_to_pi_owner().
 	 */
-	/*  �ڴ����ϣ�����ȷ������֮��Ĳ�����ʼִ��֮ǰ����֮ǰ�Ĳ����Ѿ����  */
+	/*  内存屏障，用于确保在它之后的操作开始执行之前，它之前的操作已经完成  */
 	smp_mb();
 	/*
 	 * Ensure that we must observe the pi_state in exit_mm() ->
 	 * mm_release() -> exit_pi_state_list().
 	 */
-	 /*  һֱ�ȴ���ֱ�����current->pi_lock������  */
+	 /*  一直等待，直到获得current->pi_lock自旋锁  */
 	raw_spin_unlock_wait(&tsk->pi_lock);
 
 	if (unlikely(in_atomic())) {
@@ -922,18 +922,18 @@ void __noreturn do_exit(long code)
 
 	/* sync mm's RSS info before statistics gathering */
 /*
-	ͬ�����̵�mm��rss_stat
+	同步进程的mm的rss_stat
 */
 	if (tsk->mm)
 		sync_mm_rss(tsk->mm);
     /*
         cct_update_integrals - update mm integral fields in task_struct
-        ���½��̵�����ʱ��, ��ȡcurrent->mm->rss_stat.count[member]���� 
+        更新进程的运行时间, 获取current->mm->rss_stat.count[member]计数 
         http://lxr.free-electrons.com/source/kernel/tsacct.c?v=4.6#L152
      */
 	acct_update_integrals(tsk);
 /*
-	�����ʱ��
+	清除定时器
 */
 	group_dead = atomic_dec_and_test(&tsk->signal->live);
 	if (group_dead) {
@@ -945,11 +945,11 @@ void __noreturn do_exit(long code)
 			setmax_mm_hiwater_rss(&tsk->signal->maxrss, tsk->mm);
 	}
 /*
-	�ռ����̻����Ϣ
+	收集进程会计信息
 */
 	acct_collect(code, group_dead);
 /*
-	���
+	审计
 */
 	if (group_dead)
 		tty_audit_exit();
@@ -958,34 +958,34 @@ void __noreturn do_exit(long code)
 	tsk->exit_code = code;
 	taskstats_exit(tsk, group_dead);
 /*
-�ͷ���������������ҳ��
+释放线性区描述符和页表
 */
 	exit_mm();
 /*
-������̻����Ϣ
+输出进程会计信息
 */
 	if (group_dead)
 		acct_process();
 	trace_sched_process_exit(tsk);
 /*
-�ͷ��û��ռ�ġ��ź�����
+释放用户空间的“信号量”
 */
 	exit_sem(tsk);
-	/* �ͷ���  */
+	/* 释放锁  */
 	exit_shm(tsk);
 /*
-	�������ļ�������ص���Դ�ͷ�
+	将进程文件管理相关的资源释放
 */
 	exit_files(tsk);
-	/*  �ͷ����ڱ�ʾ����Ŀ¼�Ƚṹ  */
+	/*  释放用于表示工作目录等结构  */
 	exit_fs(tsk);
 	if (group_dead)
 		disassociate_ctty(1);
-	/*  �ͷ������ռ�  */
+	/*  释放命名空间  */
 	exit_task_namespaces(tsk);
 	exit_task_work(tsk);
 /*
-	�ͷ�ƽ̨��ص�һЩ��Դ
+	释放平台相关的一些资源
 */
 	exit_thread(tsk);
 
@@ -996,7 +996,7 @@ void __noreturn do_exit(long code)
 	 * because of cgroup mode, must be called before cgroup_exit()
 	 */
 /*
-	 Performance Event���������Դ���ͷ�
+	 Performance Event功能相关资源的释放
 */
 	perf_event_exit_task(tsk);
 
@@ -1007,7 +1007,7 @@ void __noreturn do_exit(long code)
 	 * FIXME: do that only when needed, using sched_exit tracepoint
 	 */
 /*
-	 ע���ϵ�
+	 注销断点
 */
 	flush_ptrace_hw_breakpoint(tsk);
 
@@ -1015,19 +1015,19 @@ void __noreturn do_exit(long code)
 	TASKS_RCU(tasks_rcu_i = __srcu_read_lock(&tasks_rcu_exit_srcu));
 	TASKS_RCU(preempt_enable());
 /*
-	�����˳���ԭ����߸����̣�
-	�����̵���wait()ϵͳ���ú����һ���ȴ�������˯��
-	���������ӽ��̵ĸ�����
+	将其退出的原因告诉父进程，
+	父进程调用wait()系统调用后会在一个等待队列上睡眠
+	更新所有子进程的父进程
 */
 	exit_notify(tsk, group_dead);
 /*
-	�����¼���������ͨ�������������fork��exec��exit��
-	�������û�ID����ID�ı仯��
+	进程事件连接器（通过它来报告进程fork、exec、exit以
+	及进程用户ID与组ID的变化）
 */
 	proc_exit_connector(tsk);
 	mpol_put_task_policy(tsk);
 /*
-	�ͷ�struct futex_pi_state�ṹ����ռ�õ��ڴ�
+	释放struct futex_pi_state结构体所占用的内存
 */
 #ifdef CONFIG_FUTEX
 	if (unlikely(current->pi_state_cache))
@@ -1044,12 +1044,12 @@ void __noreturn do_exit(long code)
 	 */
 	tsk->flags |= PF_EXITPIDONE;
 /*
-�ͷ�io_context�ṹ����ռ�õ��ڴ�
+释放io_context结构体所占用的内存
 */
 	if (tsk->io_context)
 		exit_io_context(tsk);
 /*
-�ͷ������������splice_pipe�ֶ���ص���Դ
+释放与进程描述符splice_pipe字段相关的资源
 */
 	if (tsk->splice_pipe)
 		free_pipe_info(tsk->splice_pipe);
@@ -1059,7 +1059,7 @@ void __noreturn do_exit(long code)
 
 	validate_creds_for_do_exit(tsk);
 /*
-����ж���δʹ�õĽ����ں�ջ
+检查有多少未使用的进程内核栈
 */
 	check_stack_usage();
 	preempt_disable();
@@ -1091,10 +1091,10 @@ SYSCALL_DEFINE1(exit, int, error_code)
  * as well as by sys_exit_group (below).
  */
 /*
- ɱ������current�߳�������н��̡�
- �����ܽ�����ֹ������Ϊ������
- ������ֹ���ſ�����ϵͳ����exit_group()ָ����һ��ֵ��
- Ҳ�������ں��ṩ��һ���������
+ 杀死属于current线程组的所有进程。
+ 它接受进程终止代码作为参数，
+ 进程终止代号可能是系统调用exit_group()指定的一个值，
+ 也可能是内核提供的一个错误代号
 */
 void
 do_group_exit(int exit_code)
@@ -1104,16 +1104,16 @@ do_group_exit(int exit_code)
 	BUG_ON(exit_code & 0x80); /* core dumps don't get here */
 
     /*
-           ���current->sig->flags��SIGNAL_GROUP_EXIT��־�Ƿ���λ
-           ����current->sig->group_exit_task�Ƿ�ΪNULL
+           检查current->sig->flags的SIGNAL_GROUP_EXIT标志是否置位
+           或者current->sig->group_exit_task是否不为NULL
 
-           �����߳����Ƿ������˳����������Ϊ�棬
-           ����Ҫ�����߳����˳���������
-           ֱ��ִ�б��߳�task�˳�����do_exit����
+           检查该线程组是否正在退出，如果条件为真，
+           则不需要设置线程组退出的条件，
+           直接执行本线程task退出流程do_exit即可
     */
 	if (signal_group_exit(sig))
 		exit_code = sig->group_exit_code;
-	/*  ����߳��������Ƿ�Ϊ��  */
+	/*  检查线程组链表是否不为空  */
 	else if (!thread_group_empty(current)) {
 		struct sighand_struct *const sighand = current->sighand;
 
@@ -1123,17 +1123,17 @@ do_group_exit(int exit_code)
 			exit_code = sig->group_exit_code;
 		else {
 /*
-		�����߳�����˳�ֵ���˳�״̬
+		设置线程组的退出值和退出状态
 */
 			sig->group_exit_code = exit_code;
 			sig->flags = SIGNAL_GROUP_EXIT;
-			/*  ���������߳�����������ɱ��(SIGKILL)���е�ÿ���߳�  */
+			/*  遍历整个线程组链表，并杀死(SIGKILL)其中的每个线程  */
 			zap_other_threads(current);
 		}
 		spin_unlock_irq(&sighand->siglock);
 	}
 	
-    /* �������˳��������˳���ǰ�߳�task */
+    /* 真正的退出动作，退出当前线程task */
 	do_exit(exit_code);
 	/* NOTREACHED */
 }
@@ -1841,17 +1841,17 @@ SYSCALL_DEFINE5(waitid, int, which, pid_t, upid, struct siginfo __user *,
 	return ret;
 }
 /*
-�����������ӽ��̵�ʱ�򣬸�������Ҫ֪���ӽ����Ƿ������
-wait4()ϵͳ�����������̵ȴ���ֱ�����е�һ���ӽ��̽�����
-wait4()��������ֹ���̵Ľ��̱�ʶ����Process ID��PID����
+当父进程有子进程的时候，父进程需要知道子进程是否结束。
+wait4()系统调用允许进程等待，直到其中的一个子进程结束，
+wait4()返回已中止进程的进程标识符（Process ID，PID）。
 
-�ں���ִ�����ϵͳ����ʱ������ӽ����Ƿ��Ѿ���ֹ��
-���뽩ʬ���̵�����״̬��Ϊ�˱�ʾ��ֹ���̣�
-������ִ����wait4()����֮ǰ�����̾�һֱͣ��������״̬��
-ϵͳ���ô�������ӽ����������ֶ��л�ȡ�й���Դ
-ʹ�õ�һЩ���ݣ�һ���õ������ݣ��Ϳ����ͷŽ�����������
-������ִ��wait4()����ʱ���û���ӽ��̽�����
-�ں˾ͰѸ���������Ϊ�ȴ�״̬��һֱ���ӽ��̽���1
+内核在执行这个系统调用时，检查子进程是否已经终止。
+引入僵尸进程的特殊状态是为了表示终止进程：
+父进程执行完wait4()调用之前，进程就一直停留在那种状态。
+系统调用处理程序从进程描述符字段中获取有关资源
+使用的一些数据；一旦得到了数据，就可以释放进程描述符。
+当进程执行wait4()调用时如果没有子进程结束，
+内核就把父进程设置为等待状态，一直到子进程结束1
 */
 SYSCALL_DEFINE4(wait4, pid_t, upid, int __user *, stat_addr,
 		int, options, struct rusage __user *, ru)

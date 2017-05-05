@@ -213,7 +213,7 @@ extern int bootloader_type;
 /*
  * User space process size: 3GB (default).
  */
-/* 进程地址虚拟空间上限 */
+/* 杩涚▼鍦板潃铏氭嫙绌洪棿涓婇檺 */
 #define TASK_SIZE	(PAGE_OFFSET)
 
 /* This decides where the kernel will search for a free chunk of vm

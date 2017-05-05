@@ -138,7 +138,7 @@ static inline void smp_send_reschedule(int cpu) { }
 # define _smp_processor_id() smp_processor_id()
 #endif
 
-/* 获取当前正在运行的CPU */
+/* 鑾峰彇褰撳墠姝ｅ湪杩愯鐨凜PU */
 #define get_cpu()		({ preempt_disable(); smp_processor_id(); })
 #define put_cpu()		preempt_enable()
 #define put_cpu_no_resched()	preempt_enable_no_resched()

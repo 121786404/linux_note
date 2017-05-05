@@ -12,10 +12,10 @@
  */
 
 struct sigqueue {
-	/* Í¨¹ı´Ë×Ö¶Î½«ĞÅºÅÁ´½Óµ½´ı¾öÁ´±í */
+	/* é€šè¿‡æ­¤å­—æ®µå°†ä¿¡å·é“¾æ¥åˆ°å¾…å†³é“¾è¡¨ */
 	struct list_head list;
 	int flags;
-	/* ´ı¾öĞÅºÅµÄÏêÏ¸ĞÅÏ¢ */
+	/* å¾…å†³ä¿¡å·çš„è¯¦ç»†ä¿¡æ¯ */
 	siginfo_t info;
 	struct user_struct *user;
 };
@@ -24,9 +24,9 @@ struct sigqueue {
 #define SIGQUEUE_PREALLOC	1
 
 struct sigpending {
-	/* ´ı¾öÁ´±íÍ·Ö¸Õë£¬ËùÓĞÁ´±íÖĞµÄ¶ÔÏóÊÇsigqueue */
+	/* å¾…å†³é“¾è¡¨å¤´æŒ‡é’ˆï¼Œæ‰€æœ‰é“¾è¡¨ä¸­çš„å¯¹è±¡æ˜¯sigqueue */
 	struct list_head list;
-	/* ´ı´¦ÀíĞÅºÅµÄÎ»ÑÚÂë */
+	/* å¾…å¤„ç†ä¿¡å·çš„ä½æ©ç  */
 	sigset_t signal;
 };
 

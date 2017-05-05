@@ -22,7 +22,7 @@
 
 struct free_area {
 	struct list_head	free_list;
-	unsigned long		nr_free;        /* Á´ÖĞ¿ÕÏĞÊı */
+	unsigned long		nr_free;        /* é“¾ä¸­ç©ºé—²æ•° */
 };
 
 struct pglist_data;
@@ -66,7 +66,7 @@ struct per_cpu_pageset {
 #define ZONE_NORMAL		1
 #define ZONE_HIGHMEM		2
 
-/* ½ÚµãÖĞÄÚ´æÇøµÄ×î´ó¸öÊıÎª3¸ö */
+/* èŠ‚ç‚¹ä¸­å†…å­˜åŒºçš„æœ€å¤§ä¸ªæ•°ä¸º3ä¸ª */
 #define MAX_NR_ZONES		3	/* Sync this with ZONES_SHIFT */
 #define ZONES_SHIFT		2	/* ceil(log2(MAX_NR_ZONES)) */
 
@@ -110,8 +110,8 @@ struct per_cpu_pageset {
 
 struct zone {
 	/* Fields commonly accessed by the page allocator */
-	unsigned long		free_pages;               /* ¹ÜÀíÇøÖĞ¿ÕÏĞÒ³µÄÊıÁ¿ */
-        /* pages_minÎª¹ÜÀíÇøÖĞ±£ÁôÒ³µÄÊıÄ¿
+	unsigned long		free_pages;               /* ç®¡ç†åŒºä¸­ç©ºé—²é¡µçš„æ•°é‡ */
+        /* pages_minä¸ºç®¡ç†åŒºä¸­ä¿ç•™é¡µçš„æ•°ç›®
           *
           */
 	unsigned long		pages_min, pages_low, pages_high;
@@ -123,7 +123,7 @@ struct zone {
 	 * on the higher zones). This array is recalculated at runtime if the
 	 * sysctl_lowmem_reserve_ratio sysctl changes.
 	 */
-        /* Ö¸Ã÷ÔÚÄÚ´æ²»×ãµÄÇé¿öÏÂ£¬Ã¿¸ö¹ÜÀíÇø±ØĞë±£ÁôµÄÒ³¿òÊıÄ¿ */
+        /* æŒ‡æ˜åœ¨å†…å­˜ä¸è¶³çš„æƒ…å†µä¸‹ï¼Œæ¯ä¸ªç®¡ç†åŒºå¿…é¡»ä¿ç•™çš„é¡µæ¡†æ•°ç›® */
 	unsigned long		lowmem_reserve[MAX_NR_ZONES];
 
 	struct per_cpu_pageset	pageset[NR_CPUS];
@@ -132,10 +132,10 @@ struct zone {
 	 * free areas of different sizes
 	 */
 	spinlock_t		lock;
-        /* ±êÊ¶³ö¹ÜÀíÇøÖĞµÄ¿ÕÏĞÒ³¿ò¿é,ÊÇÒ»¸öÊı×é£¬
-          * Êı×éÖĞ×î´óµÄÔªËØ¸öÊıÎªMAX_ORDER¡£ 
-          * Ã¿Ò»¸öÔªËØ¶¼±£³ÖÒ»¸öÁ¬Ğø¿ÕÏĞÒ³Îª2µÄorder´Î 
-          * ÄÚ´æ¿éÁ´±í 
+        /* æ ‡è¯†å‡ºç®¡ç†åŒºä¸­çš„ç©ºé—²é¡µæ¡†å—,æ˜¯ä¸€ä¸ªæ•°ç»„ï¼Œ
+          * æ•°ç»„ä¸­æœ€å¤§çš„å…ƒç´ ä¸ªæ•°ä¸ºMAX_ORDERã€‚ 
+          * æ¯ä¸€ä¸ªå…ƒç´ éƒ½ä¿æŒä¸€ä¸ªè¿ç»­ç©ºé—²é¡µä¸º2çš„orderæ¬¡ 
+          * å†…å­˜å—é“¾è¡¨ 
           */
 	struct free_area	free_area[MAX_ORDER];
 
@@ -144,13 +144,13 @@ struct zone {
 
 	/* Fields commonly accessed by the page reclaim scanner */
 	spinlock_t		lru_lock;	
-	struct list_head	active_list;             /* ¹ÜÀíÇøÖĞ»î¶¯Ò³µÄµÄÁ´±í */
-	struct list_head	inactive_list;          /* ¹ÜÀíÇøÖĞ·Ç»î¶¯Ò³µÄÁ´±í */
-	unsigned long		nr_scan_active;     /* »ØÊÕÒ³¿òÊ±ĞèÒªÉ¨ÃèµÄ»î¶¯Ò³Êı */
+	struct list_head	active_list;             /* ç®¡ç†åŒºä¸­æ´»åŠ¨é¡µçš„çš„é“¾è¡¨ */
+	struct list_head	inactive_list;          /* ç®¡ç†åŒºä¸­éæ´»åŠ¨é¡µçš„é“¾è¡¨ */
+	unsigned long		nr_scan_active;     /* å›æ”¶é¡µæ¡†æ—¶éœ€è¦æ‰«æçš„æ´»åŠ¨é¡µæ•° */
 	unsigned long		nr_scan_inactive;
-	unsigned long		nr_active;             /* ¹ÜÀíÇøÖĞ»î¶¯Á´±íÉÏµÄÒ³ÊıÄ¿ */
+	unsigned long		nr_active;             /* ç®¡ç†åŒºä¸­æ´»åŠ¨é“¾è¡¨ä¸Šçš„é¡µæ•°ç›® */
 	unsigned long		nr_inactive;
-        /* ¹ÜÀíÇøÄÚ»ØÊÕÒ³¿òÊ±Ê¹ÓÃµÄ¼ÆÊıÆ÷ */
+        /* ç®¡ç†åŒºå†…å›æ”¶é¡µæ¡†æ—¶ä½¿ç”¨çš„è®¡æ•°å™¨ */
 	unsigned long		pages_scanned;	   /* since last reclaim */
 	int			all_unreclaimable; /* All pages pinned */
 
@@ -201,28 +201,28 @@ struct zone {
 	 * primary users of these fields, and in mm/page_alloc.c
 	 * free_area_init_core() performs the initialization of them.
 	 */
-        /* ½ø³ÌµÈ´ı¶ÓÁĞµÄÉ¢ÁĞ±í£¬ÕâĞ©½ø³ÌÔÚµÈ´ı¹ÜÀíÇøÖĞµÄÄ³Ò³ */
+        /* è¿›ç¨‹ç­‰å¾…é˜Ÿåˆ—çš„æ•£åˆ—è¡¨ï¼Œè¿™äº›è¿›ç¨‹åœ¨ç­‰å¾…ç®¡ç†åŒºä¸­çš„æŸé¡µ */
 	wait_queue_head_t	* wait_table;        
-	unsigned long		wait_table_size;    /* µÈ´ı¶ÓÁĞÉ¢ÁĞ±íµÄ´óĞ¡ */
+	unsigned long		wait_table_size;    /* ç­‰å¾…é˜Ÿåˆ—æ•£åˆ—è¡¨çš„å¤§å° */
 	unsigned long		wait_table_bits;
 
 	/*
 	 * Discontig memory support fields.
 	 */
-	struct pglist_data	*zone_pgdat;        /* ÏàÓ¦µÄÄÚ´æ½Úµã */
-	struct page		*zone_mem_map;   /* Ö¸Ïò¹ÜÀíÇøÖĞµÚÒ»¸öÒ²ÃèÊö·ûµÄÖ¸Õë */
+	struct pglist_data	*zone_pgdat;        /* ç›¸åº”çš„å†…å­˜èŠ‚ç‚¹ */
+	struct page		*zone_mem_map;   /* æŒ‡å‘ç®¡ç†åŒºä¸­ç¬¬ä¸€ä¸ªä¹Ÿæè¿°ç¬¦çš„æŒ‡é’ˆ */
 	/* zone_start_pfn == zone_start_paddr >> PAGE_SHIFT */
-	unsigned long		zone_start_pfn;    /* ¹ÜÀíÇøÖĞµÚÒ»¸öÒ³¿òµÄÏÂ±ê */
+	unsigned long		zone_start_pfn;    /* ç®¡ç†åŒºä¸­ç¬¬ä¸€ä¸ªé¡µæ¡†çš„ä¸‹æ ‡ */
 
-        /* ÒÔÒ³Îªµ¥Î»µÄ¹ÜÀíÇøµÄ×Ü´óĞ¡£¬°üÀ¨¶´ */
+        /* ä»¥é¡µä¸ºå•ä½çš„ç®¡ç†åŒºçš„æ€»å¤§å°ï¼ŒåŒ…æ‹¬æ´ */
 	unsigned long		spanned_pages;	/* total size, including holes */
-        /* ÒÔÒ³Îªµ¥Î»µÄ¹ÜÀíÇøµÄ×Ü´óĞ¡£¬²»°üÀ¨¶´ */
+        /* ä»¥é¡µä¸ºå•ä½çš„ç®¡ç†åŒºçš„æ€»å¤§å°ï¼Œä¸åŒ…æ‹¬æ´ */
 	unsigned long		present_pages;	/* amount of memory (excluding holes) */
 
 	/*
 	 * rarely used fields:
 	 */
-        /* Ö¸Ïò¹ÜÀíÇøµÄÃû³Æ */
+        /* æŒ‡å‘ç®¡ç†åŒºçš„åç§° */
 	char			*name;
 } ____cacheline_maxaligned_in_smp;
 
@@ -245,14 +245,14 @@ struct zone {
  * so despite the zonelist table being relatively big, the cache
  * footprint of this construct is very small.
  */
-/*  ±íÊ¾½ÚµãÖĞÇøµÄ·ÖÅä²ßÂÔ½á¹¹£¬Ã¿Ò»¸öÕâÑùµÄ½á¹¹¶¼±íÊ¾
-  * ´Ó´æ´¢½ÚµãÖĞ´ÓÇøÖĞ·ÖÅäÄÚ´æµÄ²ßÂÔ£¬ÒòÎªµ±ÓĞÄÚ´æ·ÖÅäĞèÇó 
-  * Ê±£¬Ó¦¸ÃÏÈ´ÓÄÄ¸öÇø·ÖÅäºó´ÓÄÄ¸öÇø·ÖÅä£¬¿ÉÒÔÍ¨¹ı¸Ã½á¹¹À´È·¶¨ 
+/*  è¡¨ç¤ºèŠ‚ç‚¹ä¸­åŒºçš„åˆ†é…ç­–ç•¥ç»“æ„ï¼Œæ¯ä¸€ä¸ªè¿™æ ·çš„ç»“æ„éƒ½è¡¨ç¤º
+  * ä»å­˜å‚¨èŠ‚ç‚¹ä¸­ä»åŒºä¸­åˆ†é…å†…å­˜çš„ç­–ç•¥ï¼Œå› ä¸ºå½“æœ‰å†…å­˜åˆ†é…éœ€æ±‚ 
+  * æ—¶ï¼Œåº”è¯¥å…ˆä»å“ªä¸ªåŒºåˆ†é…åä»å“ªä¸ªåŒºåˆ†é…ï¼Œå¯ä»¥é€šè¿‡è¯¥ç»“æ„æ¥ç¡®å®š 
   */ 
 struct zonelist {
-        /* ¸÷¸öÔªËØ°´ÕÕÌØ¶¨µÄ´ÎĞòÖ¸Ïò¾ßÌåµÄÒ³Ãæ¹ÜÀíÇø£¬
-          * ±íÊ¾·ÖÅäÒ³ÃæÊ±ÏÈÊÔ0£¬È»ºóÒÀ´ÎÍùºó£¬ÕâĞ©¹ÜÀíÇø¿ÉÒÔ 
-          * ÊôÓÚ²»Í¬µÄ´æ´¢½Úµã
+        /* å„ä¸ªå…ƒç´ æŒ‰ç…§ç‰¹å®šçš„æ¬¡åºæŒ‡å‘å…·ä½“çš„é¡µé¢ç®¡ç†åŒºï¼Œ
+          * è¡¨ç¤ºåˆ†é…é¡µé¢æ—¶å…ˆè¯•0ï¼Œç„¶åä¾æ¬¡å¾€åï¼Œè¿™äº›ç®¡ç†åŒºå¯ä»¥ 
+          * å±äºä¸åŒçš„å­˜å‚¨èŠ‚ç‚¹
           */
 	struct zone *zones[MAX_NUMNODES * MAX_NR_ZONES + 1]; // NULL delimited
 };
@@ -272,32 +272,32 @@ struct zonelist {
 struct bootmem_data;
 
 
-/* Linux¿ÉÒÔÖ§³Ö´óÁ¿µÄ¼Ü¹¹£¬ËùÒÔĞèÒªÓÃÒ»ÖÖÓë¼Ü¹¹ÎŞ¹ØµÄ·½Ê½È¥ÃèÊöÄÚ´æ¡£
-  * ÔÚlinuxµÄÄÚ´æ¹ÜÀíÖĞ£¬ÎÒÃÇÊ×ÏÈÒªÃ÷È·µÄÒ»¸ö¸ÅÄî¾ÍÊÇNUMA(Non-Uniform Memory Access,
-  * ¹ØÓÚNUMAµÄ½éÉÜ¿ÉÒÔ²Î¿¼ÎÒÇ°ÃæµÄÎÄÕÂ)¡£ºÜ¶à´óĞÍ»úÆ÷¶¼²ÉÓÃNUMA¼Ü¹¹£¬
-  * ½«ÄÚ´æºÍCPU·ÖÎªºÜ¶à×é£¬Ã¿Ò»×é³ÆÎªÒ»¸ö½Úµã(node)¡£
-  * ½ÚµãÓë½ÚµãÖ®¼äµÄ»¥Ïà·ÃÎÊ£¬»áÒòÎª¡°¾àÀë¡±µÄ²»Í¬µ¼ÖÂ²»Í¬µÄ¿ªÏú¡£
-  * LinuxÍ¨¹ıstruct pglist_dataÕâ¸ö½á¹¹ÌåÀ´ÃèÊö½Úµã£¬¶ÔÓÚUMA¼Ü¹¹£¬
-  * LinuxÍ¬Ñù»á±£Áô½ÚµãµÄ¸ÅÄî£¬Ö»ÊÇÕû¸öÏµÍ³¾ÍÊÇÒ»¸ö½Úµã£¬
-  * Ö»ĞèÒªÒ»¸östruct pglist_dataÀ´ÃèÊö£¬Ëü½Ğ×÷contig_page_data. 
-  * ¶ÔÓÚPC desktopsÕâÑùµÄUMA½á¹¹£¬½ö½öÓĞÒ»¸ö³ÆÎªcontig_page_dataµÄ¾²Ì¬pg_data_t½á¹¹ 
+/* Linuxå¯ä»¥æ”¯æŒå¤§é‡çš„æ¶æ„ï¼Œæ‰€ä»¥éœ€è¦ç”¨ä¸€ç§ä¸æ¶æ„æ— å…³çš„æ–¹å¼å»æè¿°å†…å­˜ã€‚
+  * åœ¨linuxçš„å†…å­˜ç®¡ç†ä¸­ï¼Œæˆ‘ä»¬é¦–å…ˆè¦æ˜ç¡®çš„ä¸€ä¸ªæ¦‚å¿µå°±æ˜¯NUMA(Non-Uniform Memory Access,
+  * å…³äºNUMAçš„ä»‹ç»å¯ä»¥å‚è€ƒæˆ‘å‰é¢çš„æ–‡ç« )ã€‚å¾ˆå¤šå¤§å‹æœºå™¨éƒ½é‡‡ç”¨NUMAæ¶æ„ï¼Œ
+  * å°†å†…å­˜å’ŒCPUåˆ†ä¸ºå¾ˆå¤šç»„ï¼Œæ¯ä¸€ç»„ç§°ä¸ºä¸€ä¸ªèŠ‚ç‚¹(node)ã€‚
+  * èŠ‚ç‚¹ä¸èŠ‚ç‚¹ä¹‹é—´çš„äº’ç›¸è®¿é—®ï¼Œä¼šå› ä¸ºâ€œè·ç¦»â€çš„ä¸åŒå¯¼è‡´ä¸åŒçš„å¼€é”€ã€‚
+  * Linuxé€šè¿‡struct pglist_dataè¿™ä¸ªç»“æ„ä½“æ¥æè¿°èŠ‚ç‚¹ï¼Œå¯¹äºUMAæ¶æ„ï¼Œ
+  * LinuxåŒæ ·ä¼šä¿ç•™èŠ‚ç‚¹çš„æ¦‚å¿µï¼Œåªæ˜¯æ•´ä¸ªç³»ç»Ÿå°±æ˜¯ä¸€ä¸ªèŠ‚ç‚¹ï¼Œ
+  * åªéœ€è¦ä¸€ä¸ªstruct pglist_dataæ¥æè¿°ï¼Œå®ƒå«ä½œcontig_page_data. 
+  * å¯¹äºPC desktopsè¿™æ ·çš„UMAç»“æ„ï¼Œä»…ä»…æœ‰ä¸€ä¸ªç§°ä¸ºcontig_page_dataçš„é™æ€pg_data_tç»“æ„ 
   */
 typedef struct pglist_data {
-	struct zone node_zones[MAX_NR_ZONES];         /* ½ÚµãÖĞ¹ÜÀíÇøÃèÊö·ûµÄÊı×é */
+	struct zone node_zones[MAX_NR_ZONES];         /* èŠ‚ç‚¹ä¸­ç®¡ç†åŒºæè¿°ç¬¦çš„æ•°ç»„ */
 	struct zonelist node_zonelists[GFP_ZONETYPES];
-	int nr_zones;                        /* ½ÚµãÖĞ¹ÜÀíÇøµÄ¸öÊı */
-	struct page *node_mem_map;           /* ½ÚµãÖĞÒ³ÃèÊö·ûµÄÊı×é */
-	struct bootmem_data *bdata;            /* ÓÃÔÚÄÚºË³õÊ¼»¯½×¶Î */
-	unsigned long node_start_pfn;          /* ½ÚµãÖĞµÚÒ»¸öÒ³¿òµÄÏÂ±ê */
-        /* ÄÚ´æ½ÚµãµÄ´óĞ¡£¬²»°üÀ¨¶´ (ÒÔÒ³¿òÎªµ¥Î») */
+	int nr_zones;                        /* èŠ‚ç‚¹ä¸­ç®¡ç†åŒºçš„ä¸ªæ•° */
+	struct page *node_mem_map;           /* èŠ‚ç‚¹ä¸­é¡µæè¿°ç¬¦çš„æ•°ç»„ */
+	struct bootmem_data *bdata;            /* ç”¨åœ¨å†…æ ¸åˆå§‹åŒ–é˜¶æ®µ */
+	unsigned long node_start_pfn;          /* èŠ‚ç‚¹ä¸­ç¬¬ä¸€ä¸ªé¡µæ¡†çš„ä¸‹æ ‡ */
+        /* å†…å­˜èŠ‚ç‚¹çš„å¤§å°ï¼Œä¸åŒ…æ‹¬æ´ (ä»¥é¡µæ¡†ä¸ºå•ä½) */
 	unsigned long node_present_pages; /* total number of physical pages */
-        /* ÄÚ´æ½ÚµãµÄ´óĞ¡£¬°üÀ¨¶´ */
+        /* å†…å­˜èŠ‚ç‚¹çš„å¤§å°ï¼ŒåŒ…æ‹¬æ´ */
 	unsigned long node_spanned_pages; /* total size of physical page
 					     range, including holes */
-	int node_id;              /* ½Úµã±êÊ¶·û */
-	struct pglist_data *pgdat_next;          /* ÄÚ´æ½ÚµãµÄÏÂÒ»Ïî */
-	wait_queue_head_t kswapd_wait;     /* µÈ´ı²Ù×÷´æ´¢½ÚµãµÄ½ø³Ì¶ÓÁĞ */
-	struct task_struct *kswapd;                /* ¸Ã´æ´¢½Úµãµ±ÖĞ¶¨ÆÚÖ´ĞĞÄÚ´æ»»³öµÄ½ø³Ì */
+	int node_id;              /* èŠ‚ç‚¹æ ‡è¯†ç¬¦ */
+	struct pglist_data *pgdat_next;          /* å†…å­˜èŠ‚ç‚¹çš„ä¸‹ä¸€é¡¹ */
+	wait_queue_head_t kswapd_wait;     /* ç­‰å¾…æ“ä½œå­˜å‚¨èŠ‚ç‚¹çš„è¿›ç¨‹é˜Ÿåˆ— */
+	struct task_struct *kswapd;                /* è¯¥å­˜å‚¨èŠ‚ç‚¹å½“ä¸­å®šæœŸæ‰§è¡Œå†…å­˜æ¢å‡ºçš„è¿›ç¨‹ */
 	int kswapd_max_order;
 } pg_data_t;
 

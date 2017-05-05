@@ -21,8 +21,8 @@ struct mfd_cell;
 struct property_entry;
 
 struct platform_device {
-	const char	* name;	/*Éè±¸Ãû*/
-	int		id;	/*Éè±¸±àºÅ£¬ÅäºÏÉè±¸ÃûÊ¹ÓÃ*/
+	const char	* name;	/*è®¾å¤‡å*/
+	int		id;	/*è®¾å¤‡ç¼–å·ï¼Œé…åˆè®¾å¤‡åä½¿ç”¨*/
 	bool		id_auto;
 	struct device	dev;
 	u32		num_resources;
@@ -164,7 +164,7 @@ static inline struct platform_device *platform_device_register_data(
 	return platform_device_register_resndata(parent, name, id,
 			NULL, 0, data, size);
 }
-/*Éè±¸µÄ·ÖÅä;	name:Éè±¸Ãû;id:Éè±¸ID£¬Ò»°ãÎª-1*/
+/*è®¾å¤‡çš„åˆ†é…;	name:è®¾å¤‡å;id:è®¾å¤‡IDï¼Œä¸€èˆ¬ä¸º-1*/
 extern struct platform_device *platform_device_alloc(const char *name, int id);
 extern int platform_device_add_resources(struct platform_device *pdev,
 					 const struct resource *res,

@@ -56,7 +56,7 @@
  * Store this function in the HCD's struct pci_driver as probe().
  */
 /**
- * HCDÌ½²âº¯Êı¡£
+ * HCDæ¢æµ‹å‡½æ•°ã€‚
  */
 int usb_hcd_pci_probe (struct pci_dev *dev, const struct pci_device_id *id)
 {
@@ -71,18 +71,18 @@ int usb_hcd_pci_probe (struct pci_dev *dev, const struct pci_device_id *id)
 		return -EINVAL;
 
 	/**
-	 * ¼¤»îPCIÉè±¸ÉÏµÄIO×ÊÔ´ºÍÄÚ´æ×ÊÔ´¡£
+	 * æ¿€æ´»PCIè®¾å¤‡ä¸Šçš„IOèµ„æºå’Œå†…å­˜èµ„æºã€‚
 	 */
 	if (pci_enable_device (dev) < 0)
 		return -ENODEV;
 	/**
-	 * PCIÉè±¸Õı³£µÄ¹¤×÷µçÔ´×´Ì¬¡£
+	 * PCIè®¾å¤‡æ­£å¸¸çš„å·¥ä½œç”µæºçŠ¶æ€ã€‚
 	 */
 	dev->current_state = PCI_D0;
 	dev->dev.power.power_state = PMSG_ON;
 	
 	/**
-	 * USBÖ÷»ú¿ØÖÆÆ÷Éè±¸±ØĞëÓĞÖĞ¶ÏºÅ¡£
+	 * USBä¸»æœºæ§åˆ¶å™¨è®¾å¤‡å¿…é¡»æœ‰ä¸­æ–­å·ã€‚
 	 */
         if (!dev->irq) {
         	dev_err (&dev->dev,
@@ -93,7 +93,7 @@ int usb_hcd_pci_probe (struct pci_dev *dev, const struct pci_device_id *id)
         }
 
 	/**
-	 * ·ÖÅä²¢³õÊ¼»¯HCD½á¹¹¡£
+	 * åˆ†é…å¹¶åˆå§‹åŒ–HCDç»“æ„ã€‚
 	 */
 	hcd = usb_create_hcd (driver, &dev->dev, pci_name(dev));
 	if (!hcd) {
@@ -121,7 +121,7 @@ int usb_hcd_pci_probe (struct pci_dev *dev, const struct pci_device_id *id)
 		int	region;
 
 		/**
-		 * ·ÃÎÊPCIÉè±¸µÄIO»ùµØÖ·
+		 * è®¿é—®PCIè®¾å¤‡çš„IOåŸºåœ°å€
 		 */
 		for (region = 0; region < PCI_ROM_RESOURCE; region++) {
 			if (!(pci_resource_flags (dev, region) &
@@ -131,14 +131,14 @@ int usb_hcd_pci_probe (struct pci_dev *dev, const struct pci_device_id *id)
 			hcd->rsrc_start = pci_resource_start (dev, region);
 			hcd->rsrc_len = pci_resource_len (dev, region);
 			/**
-			 * ÉêÇëIO¿Õ¼ä¡£
+			 * ç”³è¯·IOç©ºé—´ã€‚
 			 */
 			if (request_region (hcd->rsrc_start, hcd->rsrc_len,
 					driver->description))
-				break;/* Ò»µ©³É¹¦¾ÍÍË³öÑ­»·£¬ÒòÎª¹æ·¶¶¨ÒåHCDÖ»ÓĞÒ»¸ö»ùÖ·¼Ä´æÆ÷ */
+				break;/* ä¸€æ—¦æˆåŠŸå°±é€€å‡ºå¾ªç¯ï¼Œå› ä¸ºè§„èŒƒå®šä¹‰HCDåªæœ‰ä¸€ä¸ªåŸºå€å¯„å­˜å™¨ */
 		}
 		/**
-		 * Ã»ÓĞÉêÇëµ½ÈÎºÎÒ»¸öIO·¶Î§£¬ËµÃ÷³öÏÖÁË´íÎó¡£
+		 * æ²¡æœ‰ç”³è¯·åˆ°ä»»ä½•ä¸€ä¸ªIOèŒƒå›´ï¼Œè¯´æ˜å‡ºç°äº†é”™è¯¯ã€‚
 		 */
 		if (region == PCI_ROM_RESOURCE) {
 			dev_dbg (&dev->dev, "no i/o regions available\n");
@@ -148,12 +148,12 @@ int usb_hcd_pci_probe (struct pci_dev *dev, const struct pci_device_id *id)
 	}
 
 	/**
-	 * HCDÊÇ×÷ÎªmasterÉè±¸¹¤×÷µÄ¡£ÕâÑùµÄÉè±¸¿ÉÒÔ²»ÔÚÖ÷»úCPUµÄ¸ÉÔ¤ÏÂ·ÃÎÊÖ÷»úµÄµØÖ·¿Õ¼ä¡£DMA¾ÍÊôÓÚÕâÖÖmasterÉè±¸¡£
+	 * HCDæ˜¯ä½œä¸ºmasterè®¾å¤‡å·¥ä½œçš„ã€‚è¿™æ ·çš„è®¾å¤‡å¯ä»¥ä¸åœ¨ä¸»æœºCPUçš„å¹²é¢„ä¸‹è®¿é—®ä¸»æœºçš„åœ°å€ç©ºé—´ã€‚DMAå°±å±äºè¿™ç§masterè®¾å¤‡ã€‚
 	 */
 	pci_set_master (dev);
 
 	/**
-	 * ³õÊ¼»¯²¢×¢²áHCDÉè±¸¡£
+	 * åˆå§‹åŒ–å¹¶æ³¨å†ŒHCDè®¾å¤‡ã€‚
 	 */
 	retval = usb_add_hcd (hcd, dev->irq, IRQF_SHARED);
 	if (retval != 0)

@@ -28,7 +28,7 @@ static kmem_cache_t *uid_cachep;
 static struct list_head uidhash_table[UIDHASH_SZ];
 static DEFINE_SPINLOCK(uidhash_lock);
 
-/* 根用户的结构信息 */
+/* 鏍圭敤鎴风殑缁撴瀯淇℃伅 */
 struct user_struct root_user = {
 	.__count	= ATOMIC_INIT(1),
 	.processes	= ATOMIC_INIT(1),

@@ -265,7 +265,7 @@ static unsigned long calculate_numa_remap_pages(void)
 
 extern void setup_bootmem_allocator(void);
 /**
- * ³õÊ¼»¯IA32¼Ü¹¹µÄ³õÊ¼ÄÚ´æ·ÖÅäÆ÷
+ * åˆå§‹åŒ–IA32æ¶æ„çš„åˆå§‹å†…å­˜åˆ†é…å™¨
  */
 unsigned long __init setup_memory(void)
 {
@@ -279,7 +279,7 @@ unsigned long __init setup_memory(void)
 	 * this space and use it to adjust the boundary between ZONE_NORMAL
 	 * and ZONE_HIGHMEM.
 	 */
-	/* È·¶¨ÄÚºË¿ÉÖ±½Ó·ÃÎÊÄÚ´æÇøÓò */
+	/* ç¡®å®šå†…æ ¸å¯ç›´æ¥è®¿é—®å†…å­˜åŒºåŸŸ */
 	find_max_pfn();
 	get_memcfg_numa();
 
@@ -343,7 +343,7 @@ unsigned long __init setup_memory(void)
 
 	memset(NODE_DATA(0), 0, sizeof(struct pglist_data));
 	NODE_DATA(0)->bdata = &node0_bdata;
-	/* ³õÊ¼»¯bootÄÚ´æ·ÖÅäÆ÷ */
+	/* åˆå§‹åŒ–bootå†…å­˜åˆ†é…å™¨ */
 	setup_bootmem_allocator();
 	return max_low_pfn;
 }

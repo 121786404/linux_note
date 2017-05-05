@@ -20,7 +20,7 @@
 #include <asm/ioctls.h>
 
 /**
- * 	EXAMPLE:  unlocked_ioctlÊµÏÖ·¶Àı
+ * 	EXAMPLE:  unlocked_ioctlå®ç°èŒƒä¾‹
 
 static long zl30310_espi_ioctl(struct *filp, unsigned int cmd, unsigned ong arg)
 {
@@ -81,7 +81,7 @@ static long zl30310_espi_ioctl(struct *filp, unsigned int cmd, unsigned ong arg)
  *
  * Returns 0 on success, -errno on error.
  */
- /*×îÖÕÖ´ĞĞÇı¶¯³ÌĞòÖĞÊµÏÖµÄioctl*/
+ /*æœ€ç»ˆæ‰§è¡Œé©±åŠ¨ç¨‹åºä¸­å®ç°çš„ioctl*/
 long vfs_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
 {
 	int error = -ENOTTY;
@@ -89,7 +89,7 @@ long vfs_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
 	if (!filp->f_op->unlocked_ioctl)
 		goto out;
 
-	/*ÓÅÏÈÖ´ĞĞunlocked_ioctlº¯Êı,À´×ÔÓÃ»§¿Õ¼äµÄcmdºÍarg½«Ô­Ñù²»¶¯µÄ´«µİ¸øËüÃÇ*/
+	/*ä¼˜å…ˆæ‰§è¡Œunlocked_ioctlå‡½æ•°,æ¥è‡ªç”¨æˆ·ç©ºé—´çš„cmdå’Œargå°†åŸæ ·ä¸åŠ¨çš„ä¼ é€’ç»™å®ƒä»¬*/
 	error = filp->f_op->unlocked_ioctl(filp, cmd, arg);
 	if (error == -ENOIOCTLCMD)
 		error = -ENOTTY;
@@ -670,7 +670,7 @@ out:
  * It's just a simple helper for sys_ioctl and compat_sys_ioctl.
  */
 /**
- * Í¨¹ıioctlµÄ²»Í¬cmd²ÎÊı,Ó¦ÓÃ³ÌĞò¿ÉÒÔ×öºÜ¶àÊÂÇé*/
+ * é€šè¿‡ioctlçš„ä¸åŒcmdå‚æ•°,åº”ç”¨ç¨‹åºå¯ä»¥åšå¾ˆå¤šäº‹æƒ…*/
 int do_vfs_ioctl(struct file *filp, unsigned int fd, unsigned int cmd,
 	     unsigned long arg)
 {
@@ -679,31 +679,31 @@ int do_vfs_ioctl(struct file *filp, unsigned int fd, unsigned int cmd,
 	struct inode *inode = file_inode(filp);
 
 	switch (cmd) {
-	/* Ö´ĞĞÊ±¹Ø±Õ±êÖ¾,¼´File IOctl Close on EXec,Í¨ÖªÄÚºËÔÚµ÷ÓÃ½ø³ÌÒ»¸öĞÂ³ÌĞò
-	 * Ê±,±ÈÈçexec()ÏµÍ³µ÷ÓÃ,×Ô¶¯¹Ø±Õ´ò¿ªµÄÎÄ¼ş*/
+	/* æ‰§è¡Œæ—¶å…³é—­æ ‡å¿—,å³File IOctl Close on EXec,é€šçŸ¥å†…æ ¸åœ¨è°ƒç”¨è¿›ç¨‹ä¸€ä¸ªæ–°ç¨‹åº
+	 * æ—¶,æ¯”å¦‚exec()ç³»ç»Ÿè°ƒç”¨,è‡ªåŠ¨å…³é—­æ‰“å¼€çš„æ–‡ä»¶*/
 	case FIOCLEX:
 		set_close_on_exec(fd, 1);
 		break;
 
-	/*Çå³ıÖ´ĞĞÊ±¹Ø±Õ±êÖ¾,¼´File IOctl Not CLose on EXec,ÓëFIOCLEX±êÖ¾Ïà·´,
-	 * Çå³ıÓÉFIOCLEXÃüÁîÉèÖÃµÄ±êÖ¾*/
+	/*æ¸…é™¤æ‰§è¡Œæ—¶å…³é—­æ ‡å¿—,å³File IOctl Not CLose on EXec,ä¸FIOCLEXæ ‡å¿—ç›¸å,
+	 * æ¸…é™¤ç”±FIOCLEXå‘½ä»¤è®¾ç½®çš„æ ‡å¿—*/
 	case FIONCLEX:
 		set_close_on_exec(fd, 0);
 		break;
 
-	/*ÎÄ¼şµÄioctlÎª·Ç×èÈûĞÍI/O²Ù×÷,¼´File IOctl Non-Blocking I/O,Õâ¸öµ÷ÓÃĞŞ¸Ä
-	 * ÔÚfilp->f_flagsÖĞµÄO_NONBLOCK±êÖ¾*/
+	/*æ–‡ä»¶çš„ioctlä¸ºéé˜»å¡å‹I/Oæ“ä½œ,å³File IOctl Non-Blocking I/O,è¿™ä¸ªè°ƒç”¨ä¿®æ”¹
+	 * åœ¨filp->f_flagsä¸­çš„O_NONBLOCKæ ‡å¿—*/
 	case FIONBIO:
 		error = ioctl_fionbio(filp, argp);
 		break;
 
-	/*ÉèÖÃ»òÕß¸´Î»ÎÄ¼şµÄÒì²½Í¨Öª,ÕâÁ½¸ö¶¯×÷ÔÚÄÚºËÖĞÊµ¼ÊµÄÖ´ĞĞÕßÊÇfcntl,ËùÒÔ
-	 * ÄÚºË´úÂë²¢²»Ê¹ÓÃ¸Ãcmd*/
+	/*è®¾ç½®æˆ–è€…å¤ä½æ–‡ä»¶çš„å¼‚æ­¥é€šçŸ¥,è¿™ä¸¤ä¸ªåŠ¨ä½œåœ¨å†…æ ¸ä¸­å®é™…çš„æ‰§è¡Œè€…æ˜¯fcntl,æ‰€ä»¥
+	 * å†…æ ¸ä»£ç å¹¶ä¸ä½¿ç”¨è¯¥cmd*/
 	case FIOASYNC:
 		error = ioctl_fioasync(fd, filp, argp);
 		break;
 
-	/*»ñµÃÒ»¸öÎÄ¼ş»òÕßÄ¿Â¼µÄ´óĞ¡,ÓÃÓÚÉè±¸ÎÄ¼şÊ±,½«·µ»ØÒ»¸öENOTTY´íÎó*/
+	/*è·å¾—ä¸€ä¸ªæ–‡ä»¶æˆ–è€…ç›®å½•çš„å¤§å°,ç”¨äºè®¾å¤‡æ–‡ä»¶æ—¶,å°†è¿”å›ä¸€ä¸ªENOTTYé”™è¯¯*/
 	case FIOQSIZE:
 		if (S_ISDIR(inode->i_mode) || S_ISREG(inode->i_mode) ||
 		    S_ISLNK(inode->i_mode)) {
@@ -741,7 +741,7 @@ int do_vfs_ioctl(struct file *filp, unsigned int fd, unsigned int cmd,
 		if (S_ISREG(inode->i_mode))
 			error = file_ioctl(filp, cmd, arg);
 		else
-			/*ºóĞøµÄµ÷ÓÃ¾ÍÊÇfilp->f_ops->ioctl*/
+			/*åç»­çš„è°ƒç”¨å°±æ˜¯filp->f_ops->ioctl*/
 			error = vfs_ioctl(filp, cmd, arg);
 		break;
 	}
@@ -749,8 +749,8 @@ int do_vfs_ioctl(struct file *filp, unsigned int fd, unsigned int cmd,
 }
 
 /**
- * µ±ÓÃ»§¿Õ¼ä³ÌĞòµ÷ÓÃioctlº¯ÊıÊ±,ÏµÍ³»á¾­¹ısys_ioctl½øÈëµ½ÄÚºË¿Õ¼ä,ÏµÍ³µ÷ÓÃ
- * sys_ioctlµÄ¶¨ÒåÎª:*/
+ * å½“ç”¨æˆ·ç©ºé—´ç¨‹åºè°ƒç”¨ioctlå‡½æ•°æ—¶,ç³»ç»Ÿä¼šç»è¿‡sys_ioctlè¿›å…¥åˆ°å†…æ ¸ç©ºé—´,ç³»ç»Ÿè°ƒç”¨
+ * sys_ioctlçš„å®šä¹‰ä¸º:*/
 SYSCALL_DEFINE3(ioctl, unsigned int, fd, unsigned int, cmd, unsigned long, arg)
 {
 	int error;

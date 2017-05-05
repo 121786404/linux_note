@@ -33,7 +33,7 @@ struct ext2_xattr_header {
 };
 
 /**
- * ext2Ë÷Òı½ÚµãÔöÇ¿ÊôĞÔ¡£´æ·ÅÔÚµ¥¶ÀµÄ´ÅÅÌ¿éÊ×²¿ÖĞ¡£
+ * ext2ç´¢å¼•èŠ‚ç‚¹å¢å¼ºå±æ€§ã€‚å­˜æ”¾åœ¨å•ç‹¬çš„ç£ç›˜å—é¦–éƒ¨ä¸­ã€‚
  */
 struct ext2_xattr_entry {
 	__u8	e_name_len;	/* length of name */

@@ -83,7 +83,7 @@ EXPORT_SYMBOL(num_physpages);
 EXPORT_SYMBOL(high_memory);
 
 /**
- * ÊÇ·ñÆô¶¯µØÖ·¿Õ¼äËæ»ú»¯¹¦ÄÜ
+ * æ˜¯å¦å¯åŠ¨åœ°å€ç©ºé—´éšæœºåŒ–åŠŸèƒ½
  */
 int randomize_va_space __read_mostly = 1;
 
@@ -1546,7 +1546,7 @@ static inline void cow_user_page(struct page *dst, struct page *src, unsigned lo
  * We return with mmap_sem still held, but pte unmapped and unlocked.
  */
 /**
- * ´¦ÀíĞ´Ê±¸´ÖÆÏà¹ØµÄÈ±Ò³¡£
+ * å¤„ç†å†™æ—¶å¤åˆ¶ç›¸å…³çš„ç¼ºé¡µã€‚
  */
 static int do_wp_page(struct mm_struct *mm, struct vm_area_struct *vma,
 		unsigned long address, pte_t *page_table, pmd_t *pmd,
@@ -1558,7 +1558,7 @@ static int do_wp_page(struct mm_struct *mm, struct vm_area_struct *vma,
 	int page_mkwrite = 0;
 	struct page *dirty_page = NULL;
 
-	/* Í¨¹ıÒ³±íÕÒµ½Ò³ */
+	/* é€šè¿‡é¡µè¡¨æ‰¾åˆ°é¡µ */
 	old_page = vm_normal_page(vma, address, orig_pte);
 	if (!old_page)
 		goto gotten;
@@ -1573,7 +1573,7 @@ static int do_wp_page(struct mm_struct *mm, struct vm_area_struct *vma,
 			unlock_page(old_page);
 		}
 	} else if (unlikely((vma->vm_flags & (VM_WRITE|VM_SHARED)) ==
-					(VM_WRITE|VM_SHARED))) {/* ¹²ÏíÓ³ÉäµÄ¿ÉĞ´Ò³ */
+					(VM_WRITE|VM_SHARED))) {/* å…±äº«æ˜ å°„çš„å¯å†™é¡µ */
 		/*
 		 * Only catch write-faults on shared writable pages,
 		 * read-only shared pages can get COWed by
@@ -1588,10 +1588,10 @@ static int do_wp_page(struct mm_struct *mm, struct vm_area_struct *vma,
 			 * We do this without the lock held, so that it can
 			 * sleep if it needs to.
 			 */
-			page_cache_get(old_page);/* »ñÈ¡Ò³ÃæÒıÓÃ¼ÆÊı£¬ÒòÎª½ÓÏÂÀ´ÒªÊÍ·ÅËøÁË¡£ */
-			pte_unmap_unlock(page_table, ptl);/* Ëø·ÅËø£¬ÒòÎªºóÃæµÄ»Øµ÷¿ÉÄÜ»áË¯Ãß */
+			page_cache_get(old_page);/* è·å–é¡µé¢å¼•ç”¨è®¡æ•°ï¼Œå› ä¸ºæ¥ä¸‹æ¥è¦é‡Šæ”¾é”äº†ã€‚ */
+			pte_unmap_unlock(page_table, ptl);/* é”æ”¾é”ï¼Œå› ä¸ºåé¢çš„å›è°ƒå¯èƒ½ä¼šç¡çœ  */
 
-			/* »Øµ÷vmaµÄ·½·¨´¦ÀíĞ´Ê±¸´ÖÆ */
+			/* å›è°ƒvmaçš„æ–¹æ³•å¤„ç†å†™æ—¶å¤åˆ¶ */
 			if (vma->vm_ops->page_mkwrite(vma, old_page) < 0)
 				goto unwritable_page;
 
@@ -1603,9 +1603,9 @@ static int do_wp_page(struct mm_struct *mm, struct vm_area_struct *vma,
 			 */
 			page_table = pte_offset_map_lock(mm, pmd, address,
 							 &ptl);
-			/* µİ¼õÒ³ÃæÒıÓÃ¼ÆÊı */
+			/* é€’å‡é¡µé¢å¼•ç”¨è®¡æ•° */
 			page_cache_release(old_page);
-			/* Ò³±íÏîÒÑ¾­·¢ÉúÁË±ä»¯£¬ÍË³ö */
+			/* é¡µè¡¨é¡¹å·²ç»å‘ç”Ÿäº†å˜åŒ–ï¼Œé€€å‡º */
 			if (!pte_same(*page_table, orig_pte))
 				goto unlock;
 
@@ -1636,11 +1636,11 @@ gotten:
 	if (unlikely(anon_vma_prepare(vma)))
 		goto oom;
 	VM_BUG_ON(old_page == ZERO_PAGE(0));
-	/* ·ÖÅäÒ»¸öĞÂÒ³ */
+	/* åˆ†é…ä¸€ä¸ªæ–°é¡µ */
 	new_page = alloc_page_vma(GFP_HIGHUSER_MOVABLE, vma, address);
 	if (!new_page)
 		goto oom;
-	/* ½«¾ÉÒ³ÄÚÈİ¸´ÖÆµ½ĞÂÒ³ */
+	/* å°†æ—§é¡µå†…å®¹å¤åˆ¶åˆ°æ–°é¡µ */
 	cow_user_page(new_page, old_page, address, vma);
 
 	/*
@@ -1649,7 +1649,7 @@ gotten:
 	page_table = pte_offset_map_lock(mm, pmd, address, &ptl);
 	if (likely(pte_same(*page_table, orig_pte))) {
 		if (old_page) {
-			/* É¾³ıÔ­ÓĞÒ³ÃæµÄ·´ÏòÓ³Éä */
+			/* åˆ é™¤åŸæœ‰é¡µé¢çš„åå‘æ˜ å°„ */
 			page_remove_rmap(old_page, vma);
 			if (!PageAnon(old_page)) {
 				dec_mm_counter(mm, file_rss);
@@ -1657,7 +1657,7 @@ gotten:
 			}
 		} else
 			inc_mm_counter(mm, anon_rss);
-		/* ĞŞ¸ÄÁËÒ³ÃæÓ³Éä£¬¸üĞÂÒ³»º´æ */
+		/* ä¿®æ”¹äº†é¡µé¢æ˜ å°„ï¼Œæ›´æ–°é¡µç¼“å­˜ */
 		flush_cache_page(vma, address, pte_pfn(orig_pte));
 		entry = mk_pte(new_page, vma->vm_page_prot);
 		entry = maybe_mkwrite(pte_mkdirty(entry), vma);
@@ -1667,12 +1667,12 @@ gotten:
 		 * seen in the presence of one thread doing SMC and another
 		 * thread doing COW.
 		 */
-		ptep_clear_flush(vma, address, page_table);/* ½«ĞÂÒ³¸üĞÂµ½Ò³±íÏî */
+		ptep_clear_flush(vma, address, page_table);/* å°†æ–°é¡µæ›´æ–°åˆ°é¡µè¡¨é¡¹ */
 		set_pte_at(mm, address, page_table, entry);
-		update_mmu_cache(vma, address, entry);/* Ò³ÃæpteÒÑ¾­ĞŞ¸Ä£¬Çå¿ÕMMUÖĞ»º´æµÄÊı¾İ */
-		/* ½«Ò³ÃæÌí¼Óµ½»î¶¯Á´±í */
+		update_mmu_cache(vma, address, entry);/* é¡µé¢pteå·²ç»ä¿®æ”¹ï¼Œæ¸…ç©ºMMUä¸­ç¼“å­˜çš„æ•°æ® */
+		/* å°†é¡µé¢æ·»åŠ åˆ°æ´»åŠ¨é“¾è¡¨ */
 		lru_cache_add_active(new_page);
-		/* ½«Ò³ÃæÌí¼Óµ½·´ÏòÓ³ÉäÊı¾İ½á¹¹ÖĞ */
+		/* å°†é¡µé¢æ·»åŠ åˆ°åå‘æ˜ å°„æ•°æ®ç»“æ„ä¸­ */
 		page_add_new_anon_rmap(new_page, vma, address);
 
 		/* Free the old page.. */
@@ -2026,17 +2026,17 @@ void swapin_readahead(swp_entry_t entry, unsigned long addr,struct vm_area_struc
 	/*
 	 * Get the number of handles we should do readahead io to.
 	 */
-	/* ¼ÆËãÔ¤¶ÁÒ³Ãæ£¬Ò»°ãÎª2»òÕß3£¬µ«ÊÇÈç¹ûµ½´ï½»»»ÇøÄ©Î²»òÕßÓöµ½¿Õ¶´£¬Ôò»á¼õÉÙÔ¤¶ÁÊıÁ¿ */
+	/* è®¡ç®—é¢„è¯»é¡µé¢ï¼Œä¸€èˆ¬ä¸º2æˆ–è€…3ï¼Œä½†æ˜¯å¦‚æœåˆ°è¾¾äº¤æ¢åŒºæœ«å°¾æˆ–è€…é‡åˆ°ç©ºæ´ï¼Œåˆ™ä¼šå‡å°‘é¢„è¯»æ•°é‡ */
 	num = valid_swaphandles(entry, &offset);
-	/* Ñ­»·¶ÁÈëÔ¤ÆÚµÄÒ³Ãæ */
+	/* å¾ªç¯è¯»å…¥é¢„æœŸçš„é¡µé¢ */
 	for (i = 0; i < num; offset++, i++) {
 		/* Ok, do the async read-ahead now */
-		/* Ô¤¶ÁÒ³Ãæ */
+		/* é¢„è¯»é¡µé¢ */
 		new_page = read_swap_cache_async(swp_entry(swp_type(entry),
 							   offset), vma, addr);
-		if (!new_page)/* Ã»ÓĞÄÚ´æ¾ÍËãÁË */
+		if (!new_page)/* æ²¡æœ‰å†…å­˜å°±ç®—äº† */
 			break;
-		/* read_swap_cache_asyncÔö¼ÓÁËÒ³Ãæ¼ÆÊı£¬ÕâÀï¼õÉÙÆä¼ÆÊı */
+		/* read_swap_cache_asyncå¢åŠ äº†é¡µé¢è®¡æ•°ï¼Œè¿™é‡Œå‡å°‘å…¶è®¡æ•° */
 		page_cache_release(new_page);
 #ifdef CONFIG_NUMA
 		/*
@@ -2069,7 +2069,7 @@ void swapin_readahead(swp_entry_t entry, unsigned long addr,struct vm_area_struc
  * We return with mmap_sem still held, but pte unmapped and unlocked.
  */
 /**
- * »»Èë½ø³ÌµÄÒ³Ãæ¡£
+ * æ¢å…¥è¿›ç¨‹çš„é¡µé¢ã€‚
  */
 static int do_swap_page(struct mm_struct *mm, struct vm_area_struct *vma,
 		unsigned long address, pte_t *page_table, pmd_t *pmd,
@@ -2084,7 +2084,7 @@ static int do_swap_page(struct mm_struct *mm, struct vm_area_struct *vma,
 	if (!pte_unmap_same(mm, pmd, page_table, orig_pte))
 		goto out;
 
-	/* ²éÕÒ¸ÃÒ³ËùÔÚµÄ½»»»²Û */
+	/* æŸ¥æ‰¾è¯¥é¡µæ‰€åœ¨çš„äº¤æ¢æ§½ */
 	entry = pte_to_swp_entry(orig_pte);
 	if (is_migration_entry(entry)) {
 		migration_entry_wait(mm, pmd, address);
@@ -2092,16 +2092,16 @@ static int do_swap_page(struct mm_struct *mm, struct vm_area_struct *vma,
 	}
 	delayacct_set_flag(DELAYACCT_PF_SWAPIN);
 	/**
-	 * ÔÚ½»»»»º´æÖĞ²éÕÒ
-	 * Èç¹û¸ÃÒ³ÉĞÎ´Ğ´³ö£¬»òÕß¸ÃÒ³ÊÇ¹²ÏíÒ³²¢ÇÒÓÉÆäËû½ø³Ì¶ÁÈëÄÚ´æÁË£¬ÄÇÃ´¾Í»á´æÔÚÓÚ½»»»»º´æÖĞ¡£
+	 * åœ¨äº¤æ¢ç¼“å­˜ä¸­æŸ¥æ‰¾
+	 * å¦‚æœè¯¥é¡µå°šæœªå†™å‡ºï¼Œæˆ–è€…è¯¥é¡µæ˜¯å…±äº«é¡µå¹¶ä¸”ç”±å…¶ä»–è¿›ç¨‹è¯»å…¥å†…å­˜äº†ï¼Œé‚£ä¹ˆå°±ä¼šå­˜åœ¨äºäº¤æ¢ç¼“å­˜ä¸­ã€‚
 	 */
 	page = lookup_swap_cache(entry);
-	if (!page) {/* Ã»ÓĞÔÚ½»»»»º´æÖĞ */
-		/* ÊÔÍ¼»ñÈ¡½»»»ÁîÅÆ */
+	if (!page) {/* æ²¡æœ‰åœ¨äº¤æ¢ç¼“å­˜ä¸­ */
+		/* è¯•å›¾è·å–äº¤æ¢ä»¤ç‰Œ */
 		grab_swap_token(); /* Contend for token _before_ read-in */
-		/* Ô¤¶Á¸ü¶àµÄÒ³µ½ÄÚ´æÖĞ */
+		/* é¢„è¯»æ›´å¤šçš„é¡µåˆ°å†…å­˜ä¸­ */
  		swapin_readahead(entry, address, vma);
-		/* Òì²½¶ÁÈ¡Êı¾İ */
+		/* å¼‚æ­¥è¯»å–æ•°æ® */
  		page = read_swap_cache_async(entry, vma, address);
 		if (!page) {
 			/*
@@ -2120,7 +2120,7 @@ static int do_swap_page(struct mm_struct *mm, struct vm_area_struct *vma,
 		count_vm_event(PGMAJFAULT);
 	}
 
-	/* ±ê¼ÇÒ³ÃæÒÑ¾­±»·ÃÎÊ¹ı¡£ */
+	/* æ ‡è®°é¡µé¢å·²ç»è¢«è®¿é—®è¿‡ã€‚ */
 	mark_page_accessed(page);
 	lock_page(page);
 	delayacct_clear_flag(DELAYACCT_PF_SWAPIN);
@@ -2140,30 +2140,30 @@ static int do_swap_page(struct mm_struct *mm, struct vm_area_struct *vma,
 	/* The page isn't present yet, go ahead with the fault. */
 
 	inc_mm_counter(mm, anon_rss);
-	/* ¹¹½¨PTE */
+	/* æ„å»ºPTE */
 	pte = mk_pte(page, vma->vm_page_prot);
-	/* Ğ´·ÃÎÊ£¬²¢ÇÒµ±Ç°½ø³Ì¿ÉÒÔÖ±½ÓĞ´½»»»»º´æÖĞµÄÒ³¡£ */
+	/* å†™è®¿é—®ï¼Œå¹¶ä¸”å½“å‰è¿›ç¨‹å¯ä»¥ç›´æ¥å†™äº¤æ¢ç¼“å­˜ä¸­çš„é¡µã€‚ */
 	if (write_access && can_share_swap_page(page)) {
-		/* ¹¹½¨PTE£¬²¢ÉèÖÃÆä¿ÉĞ´ÊôĞÔ */
+		/* æ„å»ºPTEï¼Œå¹¶è®¾ç½®å…¶å¯å†™å±æ€§ */
 		pte = maybe_mkwrite(pte_mkdirty(pte), vma);
 		write_access = 0;
 	}
 
-	/* Ë¢ĞÂCPUÖ¸Áî»º³å */
+	/* åˆ·æ–°CPUæŒ‡ä»¤ç¼“å†² */
 	flush_icache_page(vma, page);
 	set_pte_at(mm, address, page_table, pte);
-	/* Ìí¼Óµ½ÄæÏòÓ³Éä»úÖÆÖĞ¡£ */
+	/* æ·»åŠ åˆ°é€†å‘æ˜ å°„æœºåˆ¶ä¸­ã€‚ */
 	page_add_anon_rmap(page, vma, address);
 
-	/* ÊÍ·Å½»»»²ÛÎ» */
+	/* é‡Šæ”¾äº¤æ¢æ§½ä½ */
 	swap_free(entry);
 	if (vm_swap_full())
 		remove_exclusive_swap_page(page);
 	unlock_page(page);
 
-	if (write_access) {/* Ğ´²Ù×÷ */
+	if (write_access) {/* å†™æ“ä½œ */
 		/* XXX: We could OR the do_wp_page code with this one? */
-		/* ´¦ÀíĞ´Ê±¸´ÖÆ£¬¸´ÖÆÒ»Ò³ */
+		/* å¤„ç†å†™æ—¶å¤åˆ¶ï¼Œå¤åˆ¶ä¸€é¡µ */
 		if (do_wp_page(mm, vma, address,
 				page_table, pmd, ptl, pte) & VM_FAULT_OOM)
 			ret = VM_FAULT_OOM;
@@ -2189,7 +2189,7 @@ out_nomap:
  * We return with mmap_sem still held, but pte unmapped and unlocked.
  */
 /**
- * ´¦ÀíÄäÃûÒ³µÄÈ±Ò³
+ * å¤„ç†åŒ¿åé¡µçš„ç¼ºé¡µ
  */
 static int do_anonymous_page(struct mm_struct *mm, struct vm_area_struct *vma,
 		unsigned long address, pte_t *page_table, pmd_t *pmd,
@@ -2204,7 +2204,7 @@ static int do_anonymous_page(struct mm_struct *mm, struct vm_area_struct *vma,
 
 	if (unlikely(anon_vma_prepare(vma)))
 		goto oom;
-	/* ÕâÀïÇ¿ÖÆ·ÖÅäÁËÒ»¸öĞÂÒ³£¬¶ø²»ÊÇÏóÀÏ°æ±¾ÄÇÑùÊ¹ÓÃ0Ò³ */
+	/* è¿™é‡Œå¼ºåˆ¶åˆ†é…äº†ä¸€ä¸ªæ–°é¡µï¼Œè€Œä¸æ˜¯è±¡è€ç‰ˆæœ¬é‚£æ ·ä½¿ç”¨0é¡µ */
 	page = alloc_zeroed_user_highpage_movable(vma, address);
 	if (!page)
 		goto oom;
@@ -2266,16 +2266,16 @@ static int __do_fault(struct mm_struct *mm, struct vm_area_struct *vma,
 
 	BUG_ON(vma->vm_flags & VM_PFNMAP);
 
-	/* Èç¹ûvmaÓĞ×Ô¼ºµÄfault·½·¨£¬ÈçÎÄ¼şÓ³Éä */
+	/* å¦‚æœvmaæœ‰è‡ªå·±çš„faultæ–¹æ³•ï¼Œå¦‚æ–‡ä»¶æ˜ å°„ */
 	if (likely(vma->vm_ops->fault)) {
-		/* µ÷ÓÃfault·½·¨¶ÁÈ¡ËùĞèÒªÊı¾İ£¬Ò»°ãÊÇ»Øµ÷filemap_fault */
+		/* è°ƒç”¨faultæ–¹æ³•è¯»å–æ‰€éœ€è¦æ•°æ®ï¼Œä¸€èˆ¬æ˜¯å›è°ƒfilemap_fault */
 		ret = vma->vm_ops->fault(vma, &vmf);
 		if (unlikely(ret & (VM_FAULT_ERROR | VM_FAULT_NOPAGE)))
 			return ret;
-	} else {/* ÀÏ°æ±¾µÄ´úÂë¿ÉÄÜÃ»ÓĞÊµÏÖfault»Øµ÷ */
+	} else {/* è€ç‰ˆæœ¬çš„ä»£ç å¯èƒ½æ²¡æœ‰å®ç°faultå›è°ƒ */
 		/* Legacy ->nopage path */
 		ret = 0;
-		/* ¼æÈİ¾É°æ±¾£¬Ê¹ÓÃnopageÀ´´¦ÀíÈ±Ò³ */
+		/* å…¼å®¹æ—§ç‰ˆæœ¬ï¼Œä½¿ç”¨nopageæ¥å¤„ç†ç¼ºé¡µ */
 		vmf.page = vma->vm_ops->nopage(vma, address & PAGE_MASK, &ret);
 		/* no page was available -- either SIGBUS or OOM */
 		if (unlikely(vmf.page == NOPAGE_SIGBUS))
@@ -2297,32 +2297,32 @@ static int __do_fault(struct mm_struct *mm, struct vm_area_struct *vma,
 	 * Should we do an early C-O-W break?
 	 */
 	page = vmf.page;
-	if (flags & FAULT_FLAG_WRITE) {/* ĞèÒª´¦ÀíĞ´Ê±¸´ÖÆ */
-		if (!(vma->vm_flags & VM_SHARED)) {/* ²»ÊÇ¹²ÏíÓ³Éä */
+	if (flags & FAULT_FLAG_WRITE) {/* éœ€è¦å¤„ç†å†™æ—¶å¤åˆ¶ */
+		if (!(vma->vm_flags & VM_SHARED)) {/* ä¸æ˜¯å…±äº«æ˜ å°„ */
 			anon = 1;
-			/* anon_vma_prepare½¨Á¢Ò»¸öĞÂµÄanon_vmaÇøÓò */
+			/* anon_vma_prepareå»ºç«‹ä¸€ä¸ªæ–°çš„anon_vmaåŒºåŸŸ */
 			if (unlikely(anon_vma_prepare(vma))) {
 				ret = VM_FAULT_OOM;
 				goto out;
 			}
-			/* ÔÚ¸ß¶ËÄÚ´æÇøÓò·ÖÅäÒ»¸öÒ³Ãæ¸ø½ø³Ì */
+			/* åœ¨é«˜ç«¯å†…å­˜åŒºåŸŸåˆ†é…ä¸€ä¸ªé¡µé¢ç»™è¿›ç¨‹ */
 			page = alloc_page_vma(GFP_HIGHUSER_MOVABLE,
 						vma, address);
-			if (!page) {/* ÄÚ´æ²»×ã */
+			if (!page) {/* å†…å­˜ä¸è¶³ */
 				ret = VM_FAULT_OOM;
 				goto out;
 			}
-			/* ½«Ò³Ãæ¸´ÖÆµ½ÄÚ´æÖĞ */
+			/* å°†é¡µé¢å¤åˆ¶åˆ°å†…å­˜ä¸­ */
 			copy_user_highpage(page, vmf.page, address, vma);
-		} else {/* ¹²ÏíÓ³Éä */
+		} else {/* å…±äº«æ˜ å°„ */
 			/*
 			 * If the page will be shareable, see if the backing
 			 * address space wants to know that the page is about
 			 * to become writable
 			 */
-			if (vma->vm_ops->page_mkwrite) {/* address_spaceĞèÒªÖªµÀ´Ë±ä»¯ */
+			if (vma->vm_ops->page_mkwrite) {/* address_spaceéœ€è¦çŸ¥é“æ­¤å˜åŒ– */
 				unlock_page(page);
-				if (vma->vm_ops->page_mkwrite(vma, page) < 0) {/* »Øµ÷Í¨Öªaddress_space */
+				if (vma->vm_ops->page_mkwrite(vma, page) < 0) {/* å›è°ƒé€šçŸ¥address_space */
 					ret = VM_FAULT_SIGBUS;
 					anon = 1; /* no anon but release vmf.page */
 					goto out_unlocked;
@@ -2359,9 +2359,9 @@ static int __do_fault(struct mm_struct *mm, struct vm_area_struct *vma,
 	 * handle that later.
 	 */
 	/* Only go through if we didn't race with anybody else... */
-	if (likely(pte_same(*page_table, orig_pte))) {/* ÔÚÊÍ·ÅËøµÄ¹ı³ÌÖĞ£¬Ò³±íÏîÃ»ÓĞ·¢Éú±ä»¯ */
-		flush_icache_page(vma, page);/* Ò³ÃæÄÚÈİÒÑ¾­±ä»¯£¬Ë¢ĞÂÖ¸Áî»º´æ */
-		/* ¹¹½¨Ò³±íÏî */
+	if (likely(pte_same(*page_table, orig_pte))) {/* åœ¨é‡Šæ”¾é”çš„è¿‡ç¨‹ä¸­ï¼Œé¡µè¡¨é¡¹æ²¡æœ‰å‘ç”Ÿå˜åŒ– */
+		flush_icache_page(vma, page);/* é¡µé¢å†…å®¹å·²ç»å˜åŒ–ï¼Œåˆ·æ–°æŒ‡ä»¤ç¼“å­˜ */
+		/* æ„å»ºé¡µè¡¨é¡¹ */
 		entry = mk_pte(page, vma->vm_page_prot);
 		if (flags & FAULT_FLAG_WRITE)
 			entry = maybe_mkwrite(pte_mkdirty(entry), vma);
@@ -2369,11 +2369,11 @@ static int __do_fault(struct mm_struct *mm, struct vm_area_struct *vma,
 		if (anon) {
                         inc_mm_counter(mm, anon_rss);
                         lru_cache_add_active(page);
-						/* ½«ÄäÃûÒ³Ìí¼Óµ½·´ÏòÓ³Éä½á¹¹ÖĞ */
+						/* å°†åŒ¿åé¡µæ·»åŠ åˆ°åå‘æ˜ å°„ç»“æ„ä¸­ */
                         page_add_new_anon_rmap(page, vma, address);
 		} else {
 			inc_mm_counter(mm, file_rss);
-			/* Ìí¼Óµ½·´ÏòÓ³ÉäÖĞ */
+			/* æ·»åŠ åˆ°åå‘æ˜ å°„ä¸­ */
 			page_add_file_rmap(page);
 			if (flags & FAULT_FLAG_WRITE) {
 				dirty_page = page;
@@ -2382,9 +2382,9 @@ static int __do_fault(struct mm_struct *mm, struct vm_area_struct *vma,
 		}
 
 		/* no need to invalidate: a not-present page won't be cached */
-		/* ¸üĞÂpte£¬Ê¹ÆäÔÚMMUÖĞÉúĞ§ */
+		/* æ›´æ–°pteï¼Œä½¿å…¶åœ¨MMUä¸­ç”Ÿæ•ˆ */
 		update_mmu_cache(vma, address, entry);
-	} else {/* pteÒÑ¾­·¢Éú±ä»¯£¬ĞèÒª»ØÍË */
+	} else {/* pteå·²ç»å‘ç”Ÿå˜åŒ–ï¼Œéœ€è¦å›é€€ */
 		if (anon)
 			page_cache_release(page);
 		else
@@ -2409,7 +2409,7 @@ out_unlocked:
 	return ret;
 }
 
-/* ´¦ÀíÎÄ¼şÓ³ÉäµÄÏßĞÔÓ³ÉäÈ±Ò³ */
+/* å¤„ç†æ–‡ä»¶æ˜ å°„çš„çº¿æ€§æ˜ å°„ç¼ºé¡µ */
 static int do_linear_fault(struct mm_struct *mm, struct vm_area_struct *vma,
 		unsigned long address, pte_t *page_table, pmd_t *pmd,
 		int write_access, pte_t orig_pte)
@@ -2482,7 +2482,7 @@ static noinline int do_no_pfn(struct mm_struct *mm, struct vm_area_struct *vma,
  * We return with mmap_sem still held, but pte unmapped and unlocked.
  */
 /**
- * ´¦Àí·ÇÏßĞÔÓ³Éä
+ * å¤„ç†éçº¿æ€§æ˜ å°„
  */
 static int do_nonlinear_fault(struct mm_struct *mm, struct vm_area_struct *vma,
 		unsigned long address, pte_t *page_table, pmd_t *pmd,
@@ -2495,18 +2495,18 @@ static int do_nonlinear_fault(struct mm_struct *mm, struct vm_area_struct *vma,
 	if (!pte_unmap_same(mm, pmd, page_table, orig_pte))
 		return 0;
 
-	if (unlikely(!(vma->vm_flags & VM_NONLINEAR) ||/* ËùÊôvma²¢²»ÊÇ·ÇÏßĞÔÓ³Éä */
+	if (unlikely(!(vma->vm_flags & VM_NONLINEAR) ||/* æ‰€å±vmaå¹¶ä¸æ˜¯éçº¿æ€§æ˜ å°„ */
 			!(vma->vm_flags & VM_CAN_NONLINEAR))) {
 		/*
 		 * Page table corrupted: show pte and kill process.
 		 */
-		print_bad_pte(vma, orig_pte, address);/* pte»òÕßvmaÊı¾İ½á¹¹±»ÆÆ»µ */
+		print_bad_pte(vma, orig_pte, address);/* pteæˆ–è€…vmaæ•°æ®ç»“æ„è¢«ç ´å */
 		return VM_FAULT_OOM;
 	}
 
-	/* »ñÈ¡¸Ã·ÇÏßĞÔÓ³ÉäµÄÒ³ºÅ */
+	/* è·å–è¯¥éçº¿æ€§æ˜ å°„çš„é¡µå· */
 	pgoff = pte_to_pgoff(orig_pte);
-	/* µ÷Ò³ */
+	/* è°ƒé¡µ */
 	return __do_fault(mm, vma, address, pmd, pgoff, flags, orig_pte);
 }
 
@@ -2531,9 +2531,9 @@ static inline int handle_pte_fault(struct mm_struct *mm,
 	spinlock_t *ptl;
 
 	entry = *pte;
-	if (!pte_present(entry)) {/* Ò³Ãæ²»ÔÚÄÚ´æÖĞ */
-		if (pte_none(entry)) {/* Ò³±íÏî¸ù±¾²»´æÔÚ */
-			if (vma->vm_ops) {/* ·ÇÄäÃûÒ³ */
+	if (!pte_present(entry)) {/* é¡µé¢ä¸åœ¨å†…å­˜ä¸­ */
+		if (pte_none(entry)) {/* é¡µè¡¨é¡¹æ ¹æœ¬ä¸å­˜åœ¨ */
+			if (vma->vm_ops) {/* éåŒ¿åé¡µ */
 				if (vma->vm_ops->fault || vma->vm_ops->nopage)
 					return do_linear_fault(mm, vma, address,
 						pte, pmd, write_access, entry);
@@ -2541,27 +2541,27 @@ static inline int handle_pte_fault(struct mm_struct *mm,
 					return do_no_pfn(mm, vma, address, pte,
 							 pmd, write_access);
 			}
-			/* ´¦ÀíÄäÃûÒ³ */
+			/* å¤„ç†åŒ¿åé¡µ */
 			return do_anonymous_page(mm, vma, address,
 						 pte, pmd, write_access);
 		}
-		/* Ò³±íÏî´æÔÚ£¬ËµÃ÷Ò³Ãæ±»»»³öÁË */
-		if (pte_file(entry))/* ·ÇÏßĞÔÓ³Éä */
+		/* é¡µè¡¨é¡¹å­˜åœ¨ï¼Œè¯´æ˜é¡µé¢è¢«æ¢å‡ºäº† */
+		if (pte_file(entry))/* éçº¿æ€§æ˜ å°„ */
 			return do_nonlinear_fault(mm, vma, address,
-					pte, pmd, write_access, entry);/* ´¦Àí·ÇÏßĞÔÓ³ÉäµÄ»»Èë */
-		/* ´¦ÀíÒ³Ãæ»»Èë */
+					pte, pmd, write_access, entry);/* å¤„ç†éçº¿æ€§æ˜ å°„çš„æ¢å…¥ */
+		/* å¤„ç†é¡µé¢æ¢å…¥ */
 		return do_swap_page(mm, vma, address,
 					pte, pmd, write_access, entry);
 	}
 
-	ptl = pte_lockptr(mm, pmd);/* »ñÈ¡Ò³±íÏîµÄËø */
+	ptl = pte_lockptr(mm, pmd);/* è·å–é¡µè¡¨é¡¹çš„é” */
 	spin_lock(ptl);
-	if (unlikely(!pte_same(*pte, entry)))/* pteÒ³±íÏîÒÑ¾­¸Ä±ä£¬¿ÉÄÜÊÇÆäËûÂ·¾¶ĞŞ¸ÄÁËpte */
+	if (unlikely(!pte_same(*pte, entry)))/* pteé¡µè¡¨é¡¹å·²ç»æ”¹å˜ï¼Œå¯èƒ½æ˜¯å…¶ä»–è·¯å¾„ä¿®æ”¹äº†pte */
 		goto unlock;
-	if (write_access) {/* Ğ´·ÃÎÊÊ±´¥·¢µÄÒì³£ */
-		if (!pte_write(entry))/* pteÃ»ÓĞĞ´È¨ÏŞ */
+	if (write_access) {/* å†™è®¿é—®æ—¶è§¦å‘çš„å¼‚å¸¸ */
+		if (!pte_write(entry))/* pteæ²¡æœ‰å†™æƒé™ */
 			return do_wp_page(mm, vma, address,
-					pte, pmd, ptl, entry);/* ´¦ÀíÒ³Ãæ±£»¤Òì³££¬ÈçĞ´Ê±¸´ÖÆ */
+					pte, pmd, ptl, entry);/* å¤„ç†é¡µé¢ä¿æŠ¤å¼‚å¸¸ï¼Œå¦‚å†™æ—¶å¤åˆ¶ */
 		entry = pte_mkdirty(entry);
 	}
 	entry = pte_mkyoung(entry);
@@ -2597,11 +2597,11 @@ int handle_mm_fault(struct mm_struct *mm, struct vm_area_struct *vma,
 
 	count_vm_event(PGFAULT);
 
-	if (unlikely(is_vm_hugetlb_page(vma)))/* ¾ŞÒ³vma£¬ÓÉ¾ŞÒ³Àı³Ì´¦Àí */
+	if (unlikely(is_vm_hugetlb_page(vma)))/* å·¨é¡µvmaï¼Œç”±å·¨é¡µä¾‹ç¨‹å¤„ç† */
 		return hugetlb_fault(mm, vma, address, write_access);
 
 	pgd = pgd_offset(mm, address);
-	/* ·ÖÅäÒ³ÖĞ¼äÄ¿Â¼ */
+	/* åˆ†é…é¡µä¸­é—´ç›®å½• */
 	pud = pud_alloc(mm, pgd, address);
 	if (!pud)
 		return VM_FAULT_OOM;
@@ -2612,7 +2612,7 @@ int handle_mm_fault(struct mm_struct *mm, struct vm_area_struct *vma,
 	if (!pte)
 		return VM_FAULT_OOM;
 
-	/* Ä¿Â¼ÏîÒÑ¾­·ÖÅäºÃ£¬´¦ÀíÈ±Ò³ */
+	/* ç›®å½•é¡¹å·²ç»åˆ†é…å¥½ï¼Œå¤„ç†ç¼ºé¡µ */
 	return handle_pte_fault(mm, vma, address, pte, pmd, write_access);
 }
 

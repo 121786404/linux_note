@@ -150,7 +150,7 @@ static void __init zone_sizes_init(unsigned long min, unsigned long max_low,
 	 * to do anything fancy with the allocation of this memory
 	 * to the zones, now is the time to do it.
 	 */
-	//µÚÒ»¸öºÍ¸ß¶ËÄÚ´æzoneµÄ´óĞ¡
+	//ç¬¬ä¸€ä¸ªå’Œé«˜ç«¯å†…å­˜zoneçš„å¤§å°
 	zone_size[0] = max_low - min;
 #ifdef CONFIG_HIGHMEM
 	zone_size[ZONE_HIGHMEM] = max_high - max_low;
@@ -160,17 +160,17 @@ static void __init zone_sizes_init(unsigned long min, unsigned long max_low,
 	 * Calculate the size of the holes.
 	 *  holes = node_size - sum(bank_sizes)
 	 */
-	memcpy(zhole_size, zone_size, sizeof(zhole_size));//¼ÆËã¿Õ¶´´óĞ¡£¬Ä¬ÈÏÕû¸özone¶¼ÊÇ¿Õ¶´
+	memcpy(zhole_size, zone_size, sizeof(zhole_size));//è®¡ç®—ç©ºæ´å¤§å°ï¼Œé»˜è®¤æ•´ä¸ªzoneéƒ½æ˜¯ç©ºæ´
 	for_each_memblock(memory, reg) {
 		unsigned long start = memblock_region_memory_base_pfn(reg);
 		unsigned long end = memblock_region_memory_end_pfn(reg);
 
-		if (start < max_low) {//´Ó¿Õ¶´ÖĞ¼õÈ¥¿ÉÓÃÄÚ´æÇøÓò
+		if (start < max_low) {//ä»ç©ºæ´ä¸­å‡å»å¯ç”¨å†…å­˜åŒºåŸŸ
 			unsigned long low_end = min(end, max_low);
 			zhole_size[0] -= low_end - start;
 		}
 #ifdef CONFIG_HIGHMEM
-		if (end > max_low) {//¼õÈ¥¿ÉÓÃÇøÓò
+		if (end > max_low) {//å‡å»å¯ç”¨åŒºåŸŸ
 			unsigned long high_start = max(start, max_low);
 			zhole_size[ZONE_HIGHMEM] -= end - high_start;
 		}
@@ -182,12 +182,12 @@ static void __init zone_sizes_init(unsigned long min, unsigned long max_low,
 	 * Adjust the sizes according to any special requirements for
 	 * this machine type.
 	 */
-	if (arm_dma_zone_size)//µ÷Õûdma zone
+	if (arm_dma_zone_size)//è°ƒæ•´dma zone
 		arm_adjust_dma_zone(zone_size, zhole_size,
 			arm_dma_zone_size >> PAGE_SHIFT);
 #endif
 
-	//¸ù¾İÆğÊ¼Î»ÖÃºÍ¿Õ¶´´óĞ¡£¬³õÊ¼»¯0ºÅÄÚ´æÇø¿é¡£³õÊ¼»¯ÄÚ´æ½Úµã
+	//æ ¹æ®èµ·å§‹ä½ç½®å’Œç©ºæ´å¤§å°ï¼Œåˆå§‹åŒ–0å·å†…å­˜åŒºå—ã€‚åˆå§‹åŒ–å†…å­˜èŠ‚ç‚¹
 	free_area_init_node(0, zone_size, min, zhole_size);
 }
 
@@ -230,7 +230,7 @@ phys_addr_t __init arm_memblock_steal(phys_addr_t size, phys_addr_t align)
 }
 
 /*
-³õÊ¼»¯memblockÄÚ´æ·ÖÅäÆ÷
+åˆå§‹åŒ–memblockå†…å­˜åˆ†é…å™¨
 */
 void __init arm_memblock_init(const struct machine_desc *mdesc)
 {
@@ -285,7 +285,7 @@ void __init arm_memblock_init(const struct machine_desc *mdesc)
 }
 
 /**
- * bootÄÚ´æ³õÊ¼»¯,³õÊ¼»¯ÄÚ´æÊı¾İ½á¹¹°üÀ¨ÄÚ´æ½ÚµãºÍÄÚ´æÓò
+ * bootå†…å­˜åˆå§‹åŒ–,åˆå§‹åŒ–å†…å­˜æ•°æ®ç»“æ„åŒ…æ‹¬å†…å­˜èŠ‚ç‚¹å’Œå†…å­˜åŸŸ
  */
 void __init bootmem_init(void)
 {
@@ -294,10 +294,10 @@ void __init bootmem_init(void)
 	memblock_allow_resize();
 	max_low = max_high = 0;
 
-	//¼ÆËãËùÓĞÄÚ´æ¿éµÄpfnÉÏÏÂÏŞ¡£
+	//è®¡ç®—æ‰€æœ‰å†…å­˜å—çš„pfnä¸Šä¸‹é™ã€‚
 	find_limits(&min, &max_low, &max_high);
 
-	//ÄÚ´æ²âÊÔ£¬Õâ¸ö¿ÉÒÔÓĞ
+	//å†…å­˜æµ‹è¯•ï¼Œè¿™ä¸ªå¯ä»¥æœ‰
 	early_memtest((phys_addr_t)min << PAGE_SHIFT,
 		      (phys_addr_t)max_low << PAGE_SHIFT);
 
@@ -306,7 +306,7 @@ void __init bootmem_init(void)
 	 * so must be done after the fixed reservations
 	 */
 	/**
-	 * Èç¹ûÖ§³Ö·ÖÉ¢ÄÚ´æ£¬Ôò¼ÇÂ¼ÏÂÃ¿¿é·ÖÉ¢ÄÚ´æµÄÆğÊ¼¡¢½áÊøÇøÓò
+	 * å¦‚æœæ”¯æŒåˆ†æ•£å†…å­˜ï¼Œåˆ™è®°å½•ä¸‹æ¯å—åˆ†æ•£å†…å­˜çš„èµ·å§‹ã€ç»“æŸåŒºåŸŸ
 	 */
 	arm_memory_present();
 
@@ -321,7 +321,7 @@ void __init bootmem_init(void)
 	 * for memmap_init_zone(), otherwise all PFNs are invalid.
 	 */
 	/**
-	 * ³õÊ¼»¯½ÚµãºÍ¹ÜÀíÇøµÄÒ»Ğ©Êı¾İÏî
+	 * åˆå§‹åŒ–èŠ‚ç‚¹å’Œç®¡ç†åŒºçš„ä¸€äº›æ•°æ®é¡¹
 	 */
 	zone_sizes_init(min, max_low, max_high);
 
@@ -355,7 +355,7 @@ free_memmap(unsigned long start_pfn, unsigned long end_pfn)
 	/*
 	 * Convert start_pfn/end_pfn to a struct page pointer.
 	 */
-	//ÒªÊÍ·ÅµÄÄÚ´æÒ³Ö¡ÃèÊö·ûµØÖ·¡£
+	//è¦é‡Šæ”¾çš„å†…å­˜é¡µå¸§æè¿°ç¬¦åœ°å€ã€‚
 	start_pg = pfn_to_page(start_pfn - 1) + 1;
 	end_pg = pfn_to_page(end_pfn - 1) + 1;
 
@@ -363,7 +363,7 @@ free_memmap(unsigned long start_pfn, unsigned long end_pfn)
 	 * Convert to physical addresses, and
 	 * round start upwards and end downwards.
 	 */
-	//½«Ò³Ö¡µØÖ·¶ÔÆëÒ³±ß½ç£¬ÒòÎª´ËÊ±Ö»ÄÜ°´Ò³ÊÍ·ÅÄÚ´æ
+	//å°†é¡µå¸§åœ°å€å¯¹é½é¡µè¾¹ç•Œï¼Œå› ä¸ºæ­¤æ—¶åªèƒ½æŒ‰é¡µé‡Šæ”¾å†…å­˜
 	pg = PAGE_ALIGN(__pa(start_pg));
 	pgend = __pa(end_pg) & PAGE_MASK;
 
@@ -371,7 +371,7 @@ free_memmap(unsigned long start_pfn, unsigned long end_pfn)
 	 * If there are free pages between these,
 	 * free the section of the memmap array.
 	 */
-	if (pg < pgend)//°´Ò³ÊÍ·Åmemmap¶ÔÓ¦µÄÄÚ´æ¡£
+	if (pg < pgend)//æŒ‰é¡µé‡Šæ”¾memmapå¯¹åº”çš„å†…å­˜ã€‚
 		memblock_free_early(pg, pgend - pg);
 }
 
@@ -379,8 +379,8 @@ free_memmap(unsigned long start_pfn, unsigned long end_pfn)
  * The mem_map array can get very big.  Free the unused area of the memory map.
  */
 /**
- * memmapÊı×éÊÇÒ»¸öÁ¬ĞøµÄÊı×é£¬¼ÇÂ¼ÄÚ´æ×´Ì¬¡£
- * ±¾º¯Êı½«²»ÄÚ´æ¿Õ¶´¶ÔÓ¦µÄmemmapÄÚ´æÊÍ·Å¡£»ıÉÙ³É¶àÒ²ÊÇ²»ÉÙµÄÄÚ´æ¿Õ¼ä¡£
+ * memmapæ•°ç»„æ˜¯ä¸€ä¸ªè¿ç»­çš„æ•°ç»„ï¼Œè®°å½•å†…å­˜çŠ¶æ€ã€‚
+ * æœ¬å‡½æ•°å°†ä¸å†…å­˜ç©ºæ´å¯¹åº”çš„memmapå†…å­˜é‡Šæ”¾ã€‚ç§¯å°‘æˆå¤šä¹Ÿæ˜¯ä¸å°‘çš„å†…å­˜ç©ºé—´ã€‚
  */
 static void __init free_unused_memmap(void)
 {
@@ -391,8 +391,8 @@ static void __init free_unused_memmap(void)
 	 * This relies on each bank being in address order.
 	 * The banks are sorted previously in bootmem_init().
 	 */
-	for_each_memblock(memory, reg) {//±éÀúÄÚ´æ¿é
-		//ÕÒµ½¸ÃÄÚ´æ¿éµÄÆğÊ¼Ò³Ö¡ºÅ
+	for_each_memblock(memory, reg) {//éå†å†…å­˜å—
+		//æ‰¾åˆ°è¯¥å†…å­˜å—çš„èµ·å§‹é¡µå¸§å·
 		start = memblock_region_memory_base_pfn(reg);
 
 #ifdef CONFIG_SPARSEMEM
@@ -414,7 +414,7 @@ static void __init free_unused_memmap(void)
 		 * If we had a previous bank, and there is a space
 		 * between the current bank and the previous, free it.
 		 */
-		if (prev_end && prev_end < start)//ÓëÉÏÒ»¸öÄÚ´æ¿é²»Á¬Ğø£¬ËµÃ÷ÓĞ¿Õ¶´£¬ÊÍ·Åmemmap¶ÔÓ¦µÄÄÚ´æ¡£
+		if (prev_end && prev_end < start)//ä¸ä¸Šä¸€ä¸ªå†…å­˜å—ä¸è¿ç»­ï¼Œè¯´æ˜æœ‰ç©ºæ´ï¼Œé‡Šæ”¾memmapå¯¹åº”çš„å†…å­˜ã€‚
 			free_memmap(prev_end, start);
 
 		/*
@@ -498,7 +498,7 @@ static void __init free_highpages(void)
  * claimed their memory after the kernel image.
  */
 /**
- * ÇĞ»»µ½»ï°éÏµÍ³ÁË¡£
+ * åˆ‡æ¢åˆ°ä¼™ä¼´ç³»ç»Ÿäº†ã€‚
  */
 void __init mem_init(void)
 {
@@ -511,9 +511,9 @@ void __init mem_init(void)
 	set_max_mapnr(pfn_to_page(max_pfn) - mem_map);
 
 	/* this will put all unused low memory onto the freelists */
-	//ÊÍ·ÅÄÚ´æ¿Õ¶´¶ÔÓ¦µÄmemmapÊı×é¿Õ¼ä¡£
+	//é‡Šæ”¾å†…å­˜ç©ºæ´å¯¹åº”çš„memmapæ•°ç»„ç©ºé—´ã€‚
 	free_unused_memmap();
-	//½«Î´ÓÃbootmemÊÍ·Å¸ø»ï°éÏµÍ³¡£
+	//å°†æœªç”¨bootmemé‡Šæ”¾ç»™ä¼™ä¼´ç³»ç»Ÿã€‚
 	free_all_bootmem();
 
 #ifdef CONFIG_SA1111
@@ -781,13 +781,13 @@ void free_tcmmem(void)
 #endif
 }
 
-/* ÊÍ·ÅLinux Kernel½éì¶init_beginµ½ init_endÊôÓÚinit SectionµÄº¯ÊıµÄËùÓĞÄÚ´æ.
-²¢»á°ÑPage¸öÊı¼Óµ½±äÁ¿totalram_pagesÖĞ,
-×÷ÎªºóĞøLinux KernelÔÚÅäÖÃ¼ÇÒäÌåÊ±¿ÉÒÔÊ¹ÓÃµÄPages. 
-(ÔÚÕâÒ²¿É°ÑTCM·¶Î§(tcm_startµ½tcm_end)ÊÍ·Å¼ÓÈëµ½×ÜPageÖĞ,
-µ«TCM±ÈÍâ²¿¼ÇÒäÌåÓĞĞ§ÂÊ,ÊÊºÏ¶àÃ½Ìå,ÖĞ¶Ï,
-¡­etcµÈ¶ÔĞ§ÄÜÒªÇó¸ßµÄÖ´ĞĞĞèÇó,·Åµ½×ÜPageÖĞ,
-³ÉÎª¿É¹©Ò»°ãÄ¿µÄÅäÖÃµÄ´æ´¢·¶Î§ */
+/* é‡Šæ”¾Linux Kernelä»‹æ–¼init_beginåˆ° init_endå±äºinit Sectionçš„å‡½æ•°çš„æ‰€æœ‰å†…å­˜.
+å¹¶ä¼šæŠŠPageä¸ªæ•°åŠ åˆ°å˜é‡totalram_pagesä¸­,
+ä½œä¸ºåç»­Linux Kernelåœ¨é…ç½®è®°å¿†ä½“æ—¶å¯ä»¥ä½¿ç”¨çš„Pages. 
+(åœ¨è¿™ä¹Ÿå¯æŠŠTCMèŒƒå›´(tcm_startåˆ°tcm_end)é‡Šæ”¾åŠ å…¥åˆ°æ€»Pageä¸­,
+ä½†TCMæ¯”å¤–éƒ¨è®°å¿†ä½“æœ‰æ•ˆç‡,é€‚åˆå¤šåª’ä½“,ä¸­æ–­,
+â€¦etcç­‰å¯¹æ•ˆèƒ½è¦æ±‚é«˜çš„æ‰§è¡Œéœ€æ±‚,æ”¾åˆ°æ€»Pageä¸­,
+æˆä¸ºå¯ä¾›ä¸€èˆ¬ç›®çš„é…ç½®çš„å­˜å‚¨èŒƒå›´ */
 void free_initmem(void)
 {
 	fix_kernmem_perms();

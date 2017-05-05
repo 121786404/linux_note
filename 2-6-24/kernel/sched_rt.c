@@ -7,7 +7,7 @@
  * Update the current task's runtime statistics. Skip current tasks that
  * are not in our scheduling class.
  */
-/* ¼ÆËãÊµÊ±¶ÓÁĞµ±Ç°ÈÎÎñµÄÔËĞĞÊ±¼ä£¬Ö»ĞèÒª¼ÆËãÊµ¼ÊÔËĞĞÊ±¼ä¼´¿É */
+/* è®¡ç®—å®æ—¶é˜Ÿåˆ—å½“å‰ä»»åŠ¡çš„è¿è¡Œæ—¶é—´ï¼Œåªéœ€è¦è®¡ç®—å®é™…è¿è¡Œæ—¶é—´å³å¯ */
 static void update_curr_rt(struct rq *rq)
 {
 	struct task_struct *curr = rq->curr;
@@ -75,7 +75,7 @@ static void check_preempt_curr_rt(struct rq *rq, struct task_struct *p)
 		resched_task(rq->curr);
 }
 
-/* ÔÚÊµÊ±ÈÎÎñ¶ÓÁĞÖĞÑ¡ÔñÒ»¸ö½ø³ÌÔËĞĞ */
+/* åœ¨å®æ—¶ä»»åŠ¡é˜Ÿåˆ—ä¸­é€‰æ‹©ä¸€ä¸ªè¿›ç¨‹è¿è¡Œ */
 static struct task_struct *pick_next_task_rt(struct rq *rq)
 {
 	struct rt_prio_array *array = &rq->rt.active;
@@ -83,16 +83,16 @@ static struct task_struct *pick_next_task_rt(struct rq *rq)
 	struct list_head *queue;
 	int idx;
 
-	/* ÕÒµ½µÚÒ»¸öÓÅÏÈ¼¶ */
+	/* æ‰¾åˆ°ç¬¬ä¸€ä¸ªä¼˜å…ˆçº§ */
 	idx = sched_find_first_bit(array->bitmap);
-	if (idx >= MAX_RT_PRIO)/* Ã»ÓĞÊµÊ±½ø³Ì */
+	if (idx >= MAX_RT_PRIO)/* æ²¡æœ‰å®æ—¶è¿›ç¨‹ */
 		return NULL;
 
-	/* È¡¶ÓÁĞÖĞµÚÒ»¸ö½ø³Ì */
+	/* å–é˜Ÿåˆ—ä¸­ç¬¬ä¸€ä¸ªè¿›ç¨‹ */
 	queue = array->queue + idx;
 	next = list_entry(queue->next, struct task_struct, run_list);
 
-	/* ¼ÇÂ¼½ø³Ì¿ªÊ¼Ö´ĞĞÊ±¼ä */
+	/* è®°å½•è¿›ç¨‹å¼€å§‹æ‰§è¡Œæ—¶é—´ */
 	next->se.exec_start = rq->clock;
 
 	return next;
@@ -211,7 +211,7 @@ move_one_task_rt(struct rq *this_rq, int this_cpu, struct rq *busiest,
 }
 #endif
 
-/* ÊµÊ±½ø³ÌµÄÖÜÆÚĞÔµ÷¶È */
+/* å®æ—¶è¿›ç¨‹çš„å‘¨æœŸæ€§è°ƒåº¦ */
 static void task_tick_rt(struct rq *rq, struct task_struct *p)
 {
 	update_curr_rt(rq);
@@ -220,23 +220,23 @@ static void task_tick_rt(struct rq *rq, struct task_struct *p)
 	 * RR tasks need a special form of timeslice management.
 	 * FIFO tasks have no timeslices.
 	 */
-	if (p->policy != SCHED_RR)/* ¶ÔFIFOÀ´Ëµ£¬²»²ÎÓëÖÜÆÚĞÔµ÷¶È */
+	if (p->policy != SCHED_RR)/* å¯¹FIFOæ¥è¯´ï¼Œä¸å‚ä¸å‘¨æœŸæ€§è°ƒåº¦ */
 		return;
 
-	/* µİ¼õRR½ø³ÌµÄÔËĞĞÖÜÆÚ£¬Èç¹û»¹ÓĞÊ±¼äÆ¬£¬ÔòÍË³ö */
+	/* é€’å‡RRè¿›ç¨‹çš„è¿è¡Œå‘¨æœŸï¼Œå¦‚æœè¿˜æœ‰æ—¶é—´ç‰‡ï¼Œåˆ™é€€å‡º */
 	if (--p->time_slice)
 		return;
 
-	/* RRÊ±¼äÆ¬ÓÃÍê£¬ÖØĞÂ³õÊ¼»¯Îª100ms */
+	/* RRæ—¶é—´ç‰‡ç”¨å®Œï¼Œé‡æ–°åˆå§‹åŒ–ä¸º100ms */
 	p->time_slice = DEF_TIMESLICE;
 
 	/*
 	 * Requeue to the end of queue if we are not the only element
 	 * on the queue:
 	 */
-	/* ½ø³Ì²»ÊÇÎ¨Ò»µÄÊµÊ±½ø³Ì */
+	/* è¿›ç¨‹ä¸æ˜¯å”¯ä¸€çš„å®æ—¶è¿›ç¨‹ */
 	if (p->run_list.prev != p->run_list.next) {
-		/* ½«½ø³Ì²åÈëµ½ÁĞ¶ÓÄ©Î²£¬²¢ÉèÖÃÖØĞÂµ÷¶È±êÖ¾ */
+		/* å°†è¿›ç¨‹æ’å…¥åˆ°åˆ—é˜Ÿæœ«å°¾ï¼Œå¹¶è®¾ç½®é‡æ–°è°ƒåº¦æ ‡å¿— */
 		requeue_task_rt(rq, p);
 		set_tsk_need_resched(p);
 	}

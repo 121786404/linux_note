@@ -31,8 +31,8 @@ static struct dentry_operations sysfs_dentry_ops = {
 /*
  * Allocates a new sysfs_dirent and links it to the parent sysfs_dirent
  */
-/* ÔÚsysfsÖĞ´´½¨Ò»¸öĞÂµÄÄ¿Â¼Ïî£¬¸¸Ä¿Â¼Îªparent_sd ,
-  * element´ú±íÄÚºË¶ÔÏóÖ¸Õë 
+/* åœ¨sysfsä¸­åˆ›å»ºä¸€ä¸ªæ–°çš„ç›®å½•é¡¹ï¼Œçˆ¶ç›®å½•ä¸ºparent_sd ,
+  * elementä»£è¡¨å†…æ ¸å¯¹è±¡æŒ‡é’ˆ 
   */
 static struct sysfs_dirent * sysfs_new_dirent(struct sysfs_dirent * parent_sd,
 						void * element)
@@ -52,7 +52,7 @@ static struct sysfs_dirent * sysfs_new_dirent(struct sysfs_dirent * parent_sd,
 	return sd;
 }
 
-/* sysfs´´½¨Ä¿Â¼ */
+/* sysfsåˆ›å»ºç›®å½• */
 int sysfs_make_dirent(struct sysfs_dirent * parent_sd, struct dentry * dentry,
 			void * element, umode_t mode, int type)
 {
@@ -67,14 +67,14 @@ int sysfs_make_dirent(struct sysfs_dirent * parent_sd, struct dentry * dentry,
 	sd->s_dentry = dentry;
 	if (dentry) {
 		dentry->d_fsdata = sysfs_get(sd);
-                /* ÉèÖÃÄ¿Â¼²Ù×÷º¯Êı¼¯ */
+                /* è®¾ç½®ç›®å½•æ“ä½œå‡½æ•°é›† */
 		dentry->d_op = &sysfs_dentry_ops;
 	}
 
 	return 0;
 }
 
-/* ³õÊ¼»¯inodeÎÄ¼ş²Ù×÷·û */
+/* åˆå§‹åŒ–inodeæ–‡ä»¶æ“ä½œç¬¦ */
 static int init_dir(struct inode * inode)
 {
 	inode->i_op = &sysfs_dir_inode_operations;
@@ -98,8 +98,8 @@ static int init_symlink(struct inode * inode)
 	return 0;
 }
 
-/* Í¨¹ıÄÚºË¶ÔÏók£¬ÔÚ¸¸Ä¿Â¼pÖĞ´´½¨Ò»¸öÃû³ÆÎªnµÄÄ¿Â¼£¬
-  * ²¢ÇÒ°Ñ½á¹û´æ·ÅÔÚdÖĞ·µ»Ø 
+/* é€šè¿‡å†…æ ¸å¯¹è±¡kï¼Œåœ¨çˆ¶ç›®å½•pä¸­åˆ›å»ºä¸€ä¸ªåç§°ä¸ºnçš„ç›®å½•ï¼Œ
+  * å¹¶ä¸”æŠŠç»“æœå­˜æ”¾åœ¨dä¸­è¿”å› 
   */
 static int create_dir(struct kobject * k, struct dentry * p,
 		      const char * n, struct dentry ** d)
@@ -141,7 +141,7 @@ int sysfs_create_subdir(struct kobject * k, const char * n, struct dentry ** d)
  *	@kobj:		object we're creating directory for. 
  */
 
-/* ¸ù¾İkobject´´½¨Ä¿Â¼ */
+/* æ ¹æ®kobjectåˆ›å»ºç›®å½• */
 int sysfs_create_dir(struct kobject * kobj)
 {
 	struct dentry * dentry = NULL;
@@ -150,9 +150,9 @@ int sysfs_create_dir(struct kobject * kobj)
 
 	BUG_ON(!kobj);
 
-        /* »ñÈ¡¸¸¶ÔÏóµÄÄ¿Â¼£¬Èç¹û¸¸¶ÔÏó²»ÎªNULL£¬
-          * Ôò»ñÈ¡¸¸¶ÔÏó¶ÔÓ¦µÄÄ¿Â¼£¬·ñÔòÊÇsysfsÎÄ¼şÏµÍ³µÄ 
-          * ¸ùÄ¿Â¼  
+        /* è·å–çˆ¶å¯¹è±¡çš„ç›®å½•ï¼Œå¦‚æœçˆ¶å¯¹è±¡ä¸ä¸ºNULLï¼Œ
+          * åˆ™è·å–çˆ¶å¯¹è±¡å¯¹åº”çš„ç›®å½•ï¼Œå¦åˆ™æ˜¯sysfsæ–‡ä»¶ç³»ç»Ÿçš„ 
+          * æ ¹ç›®å½•  
           */
 	if (kobj->parent)
 		parent = kobj->parent->dentry;

@@ -328,23 +328,23 @@ int copy_creds(struct task_struct *p, unsigned long clone_flags)
 #ifdef CONFIG_KEYS
 		!p->cred->thread_keyring &&
 #endif
-		clone_flags & CLONE_THREAD //´´½¨Ïß³ÌÏà¹ØµÄ´úÂë
+		clone_flags & CLONE_THREAD //åˆ›å»ºçº¿ç¨‹ç›¸å…³çš„ä»£ç 
 	    ) {
 		p->real_cred = get_cred(p->cred);
-		get_cred(p->cred);  //¶ÔcredentialÃèÊö·ûÔö¼ÓÁ½¸ö¼ÆÊı£¬ÒòÎªĞÂ´´½¨Ïß³ÌµÄcredºÍreal_cred¶¼Ö¸Ïò¸¸½ø³ÌµÄcredentialÃèÊö·û
+		get_cred(p->cred);  //å¯¹credentialæè¿°ç¬¦å¢åŠ ä¸¤ä¸ªè®¡æ•°ï¼Œå› ä¸ºæ–°åˆ›å»ºçº¿ç¨‹çš„credå’Œreal_credéƒ½æŒ‡å‘çˆ¶è¿›ç¨‹çš„credentialæè¿°ç¬¦
 		alter_cred_subscribers(p->cred, 2);
 		kdebug("share_creds(%p{%d,%d})",
 		       p->cred, atomic_read(&p->cred->usage),
 		       read_cred_subscribers(p->cred));
-		atomic_inc(&p->cred->user->processes); //ÊôÓÚ¸ÃuserµÄ½ø³Ì/Ïß³ÌÊıÄ¿Ôö¼Ó1 
+		atomic_inc(&p->cred->user->processes); //å±äºè¯¥userçš„è¿›ç¨‹/çº¿ç¨‹æ•°ç›®å¢åŠ 1 
 		return 0;
 	}
 
-	new = prepare_creds(); //ºó¶ÎµÄ´úÂëÊÇºÍfork½ø³ÌÏà¹Ø¡£prepare_credsÊÇ´´½¨Ò»¸öµ±Ç°taskµÄsubjective context£¨task->cred£©µÄ¸±±¾
+	new = prepare_creds(); //åæ®µçš„ä»£ç æ˜¯å’Œforkè¿›ç¨‹ç›¸å…³ã€‚prepare_credsæ˜¯åˆ›å»ºä¸€ä¸ªå½“å‰taskçš„subjective contextï¼ˆtask->credï¼‰çš„å‰¯æœ¬
 	if (!new)
 		return -ENOMEM;
 
-	if (clone_flags & CLONE_NEWUSER) { //Èç¹û¸¸×Ó½ø³Ì²»¹²Ïíuser namespace£¬ÄÇÃ´»¹ĞèÒª´´½¨Ò»¸öĞÂµÄuser namespace 
+	if (clone_flags & CLONE_NEWUSER) { //å¦‚æœçˆ¶å­è¿›ç¨‹ä¸å…±äº«user namespaceï¼Œé‚£ä¹ˆè¿˜éœ€è¦åˆ›å»ºä¸€ä¸ªæ–°çš„user namespace 
 		ret = create_user_ns(new);
 		if (ret < 0)
 			goto error_put;
@@ -370,7 +370,7 @@ int copy_creds(struct task_struct *p, unsigned long clone_flags)
 #endif
 
 	atomic_inc(&new->user->processes);
-	p->cred = p->real_cred = get_cred(new); //ºÍÏß³ÌµÄ´¦ÀíÀàËÆ£¬Ö»²»¹ı½ø³ÌĞèÒª´´½¨Ò»¸öcredentialµÄ¸±±¾ 
+	p->cred = p->real_cred = get_cred(new); //å’Œçº¿ç¨‹çš„å¤„ç†ç±»ä¼¼ï¼Œåªä¸è¿‡è¿›ç¨‹éœ€è¦åˆ›å»ºä¸€ä¸ªcredentialçš„å‰¯æœ¬ 
 	alter_cred_subscribers(new, 2);
 	validate_creds(new);
 	return 0;
@@ -567,12 +567,12 @@ EXPORT_SYMBOL(revert_creds);
  * initialise the credentials stuff
  */
 /**
- * Éó¼Æ×ÓÏµÍ³³õÊ¼»¯
+ * å®¡è®¡å­ç³»ç»Ÿåˆå§‹åŒ–
  */
 void __init cred_init(void)
 {
 	/* allocate a slab in which we can store credentials */
-	//·ÖÅäÒ»¸öslab¹ÜÀíÆ÷¶øÒÑ¡£
+	//åˆ†é…ä¸€ä¸ªslabç®¡ç†å™¨è€Œå·²ã€‚
 	cred_jar = kmem_cache_create("cred_jar", sizeof(struct cred), 0,
 			SLAB_HWCACHE_ALIGN|SLAB_PANIC|SLAB_ACCOUNT, NULL);
 }

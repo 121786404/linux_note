@@ -74,18 +74,18 @@ extern int register_refined_jiffies(long clock_tick_rate);
  * without sampling the sequence number in jiffies_lock.
  * get_jiffies_64() will do this for you as appropriate.
  */
-/*__jiffy_data±íÃ÷ÕâÁ½¸ö±äÁ¿½«³öÏÖÔÚÄÚºË×îÖÕÓ³ÏñµÄ.dataÇøÖĞ*/
+/*__jiffy_dataè¡¨æ˜è¿™ä¸¤ä¸ªå˜é‡å°†å‡ºç°åœ¨å†…æ ¸æœ€ç»ˆæ˜ åƒçš„.dataåŒºä¸­*/
 extern u64 __jiffy_data jiffies_64;
-/*Í¨³£jiffiesÔÚlinuxÏµÍ³Æô¶¯Òıµ¼½×¶Î±»³õÊ¼»¯Îª0,µ±ÏµÍ³Íê³ÉÁË¶ÔÊ±ÖÓÖĞ¶ÏµÄ³õÊ¼»¯Ö®ºó,ÔÚÃ¿¸ö
- *Ê±ÖÓÖĞ¶Ï´¦ÀíÀı³ÌÖĞ¸ÃÖµ¶¼»á±»¼Ó1,¸ÃÖµ´æ´¢ÁËÏµÍ³×Ô×î½üÒ»´ÎÆô¶¯ÒÔÀ´µÄÊ±ÖÓµÎ´ğ*/
+/*é€šå¸¸jiffiesåœ¨linuxç³»ç»Ÿå¯åŠ¨å¼•å¯¼é˜¶æ®µè¢«åˆå§‹åŒ–ä¸º0,å½“ç³»ç»Ÿå®Œæˆäº†å¯¹æ—¶é’Ÿä¸­æ–­çš„åˆå§‹åŒ–ä¹‹å,åœ¨æ¯ä¸ª
+ *æ—¶é’Ÿä¸­æ–­å¤„ç†ä¾‹ç¨‹ä¸­è¯¥å€¼éƒ½ä¼šè¢«åŠ 1,è¯¥å€¼å­˜å‚¨äº†ç³»ç»Ÿè‡ªæœ€è¿‘ä¸€æ¬¡å¯åŠ¨ä»¥æ¥çš„æ—¶é’Ÿæ»´ç­”*/
 extern unsigned long volatile __jiffy_data jiffies;
 
 #if (BITS_PER_LONG < 64)
 u64 get_jiffies_64(void);
 #else
-/*Èç¹ûÔÚ32ÏµÍ³ÉÏ¶ÁÈ¡jiffies_64µÄÖµ,±ØĞëÊ¹ÓÃget_jiffies_64º¯Êı,ÒòÎªÖ±½Ó¶ÁÈ¡jiffies_64µÄ
- *¸ß32Î»»òÕßµÍ32Î»Ê±,¶ÔÓ¦µÄµÍ32Î»»òÕß¸ß32Î»¿ÉÄÜÒÑ¾­·¢Éú¸üĞÂ,get_jiffies_64º¯ÊıÊ¹ÓÃË³ĞòËø
- *µÄ·½Ê½À´±£Ö¤¶Ôjiffies_64±äÁ¿¶ÁÈ¡²Ù×÷µÄÔ­×ÓĞÔ*/
+/*å¦‚æœåœ¨32ç³»ç»Ÿä¸Šè¯»å–jiffies_64çš„å€¼,å¿…é¡»ä½¿ç”¨get_jiffies_64å‡½æ•°,å› ä¸ºç›´æ¥è¯»å–jiffies_64çš„
+ *é«˜32ä½æˆ–è€…ä½32ä½æ—¶,å¯¹åº”çš„ä½32ä½æˆ–è€…é«˜32ä½å¯èƒ½å·²ç»å‘ç”Ÿæ›´æ–°,get_jiffies_64å‡½æ•°ä½¿ç”¨é¡ºåºé”
+ *çš„æ–¹å¼æ¥ä¿è¯å¯¹jiffies_64å˜é‡è¯»å–æ“ä½œçš„åŸå­æ€§*/
 static inline u64 get_jiffies_64(void)
 {
 	return (u64)jiffies;
@@ -101,20 +101,20 @@ static inline u64 get_jiffies_64(void)
  *
  * time_after(a,b) returns true if the time a is after time b.
  *
- *EXAMPLE:¼ÙÉèÇı¶¯³ÌĞòµÄÄ³¸öº¯Êıdemo_functionĞèÒªµ÷ÓÃ±ÈÈçdo_time_taskº¯ÊıÀ´Íê³É
- *Ò»¸öÈÎÎñ,µ«ÊÇ¶ÔÈÎÎñÍê³ÉµÄÊ±¼äÓĞÌØ¶¨µÄÒªÇó(±ÈÈçÒªÔÚ2ºÁÃëÄÚÍê³É),Èç¹ûÔÚ¹æ¶¨µÄÊ±¼äÄÚ
- *Ã»ÓĞÍê³É,¾ÍĞèÒªµ÷ÓÃtask_timeoutº¯ÊıÀ´´¦Àí,·ñÔòdemo_functionº¯Êı¾ÍËãË³ÀûÍê³É
- * ÏÂÃæµÄ´úÂë½«ÊÇ²»°²È«µÄ:
+ *EXAMPLE:å‡è®¾é©±åŠ¨ç¨‹åºçš„æŸä¸ªå‡½æ•°demo_functionéœ€è¦è°ƒç”¨æ¯”å¦‚do_time_taskå‡½æ•°æ¥å®Œæˆ
+ *ä¸€ä¸ªä»»åŠ¡,ä½†æ˜¯å¯¹ä»»åŠ¡å®Œæˆçš„æ—¶é—´æœ‰ç‰¹å®šçš„è¦æ±‚(æ¯”å¦‚è¦åœ¨2æ¯«ç§’å†…å®Œæˆ),å¦‚æœåœ¨è§„å®šçš„æ—¶é—´å†…
+ *æ²¡æœ‰å®Œæˆ,å°±éœ€è¦è°ƒç”¨task_timeoutå‡½æ•°æ¥å¤„ç†,å¦åˆ™demo_functionå‡½æ•°å°±ç®—é¡ºåˆ©å®Œæˆ
+ * ä¸‹é¢çš„ä»£ç å°†æ˜¯ä¸å®‰å…¨çš„:
    int demo_function()
    {
-   	unsigned long timeout = jiffies + 2*HZ/1000;  //Éè¶¨³¬Ê±µÄÊ±¼äÎª2ºÁÃë
-	do_time_task();	//µ÷ÓÃdo_time_taskÀ´Íê³ÉÄ³Ò»ÈÎÎñ
-	if(timeout < jiffies)	//¸ù¾İµ±Ç°×îĞÂµÄjiffiesÖµÀ´ÅĞ¶ÏÊÇ·ñ³¬Ê±
+   	unsigned long timeout = jiffies + 2*HZ/1000;  //è®¾å®šè¶…æ—¶çš„æ—¶é—´ä¸º2æ¯«ç§’
+	do_time_task();	//è°ƒç”¨do_time_taskæ¥å®ŒæˆæŸä¸€ä»»åŠ¡
+	if(timeout < jiffies)	//æ ¹æ®å½“å‰æœ€æ–°çš„jiffieså€¼æ¥åˆ¤æ–­æ˜¯å¦è¶…æ—¶
 		return task_timeout();
 	return 0;
    }
 
-   ÕıÈ·µÄÓÃ·¨:
+   æ­£ç¡®çš„ç”¨æ³•:
    int demo_function()
    {
    	unsigned long timeout = jiffies + 2*HZ/1000;
@@ -124,10 +124,10 @@ static inline u64 get_jiffies_64(void)
 	return 0;
    }
 
-   ÑÓ³Ù²Ù×÷:
-   write_command_reg(...); //CPUĞ´ÍâÉèµÄ¼Ä´æÆ÷ÒÔ·¢ÆğÒ»¸ö²Ù×÷Ö¸Áî
-   delay(...);  //µÈ´ıÉè±¸²Ù×÷Íê³É
-   read_status_reg(...);  //CPU¶ÁÈ¡ÍâÉèµÄ¼Ä´æÆ÷ÒÔ»ñµÃÉè±¸Ö´ĞĞ½á¹û
+   å»¶è¿Ÿæ“ä½œ:
+   write_command_reg(...); //CPUå†™å¤–è®¾çš„å¯„å­˜å™¨ä»¥å‘èµ·ä¸€ä¸ªæ“ä½œæŒ‡ä»¤
+   delay(...);  //ç­‰å¾…è®¾å¤‡æ“ä½œå®Œæˆ
+   read_status_reg(...);  //CPUè¯»å–å¤–è®¾çš„å¯„å­˜å™¨ä»¥è·å¾—è®¾å¤‡æ‰§è¡Œç»“æœ
 
 
 
@@ -135,27 +135,27 @@ static inline u64 get_jiffies_64(void)
  * good compiler would generate better code (and a really good compiler
  * wouldn't care). Gcc is currently neither.
  */
- /*ÅĞ¶¨Ê±¼äµãÏÈºóË³ĞòµÄºê,Èç¹ûÊ±¼äµãaÔÚÊ±¼äµãbÖ®ºó,¸Ãºê·µ»Øtrue*/
+ /*åˆ¤å®šæ—¶é—´ç‚¹å…ˆåé¡ºåºçš„å®,å¦‚æœæ—¶é—´ç‚¹aåœ¨æ—¶é—´ç‚¹bä¹‹å,è¯¥å®è¿”å›true*/
 #define time_after(a,b)		\
 	(typecheck(unsigned long, a) && \
 	 typecheck(unsigned long, b) && \
 	 ((long)((b) - (a)) < 0))
-/*ÅĞ¶¨Ê±¼äµãÏÈºóË³ĞòµÄºê,Èç¹ûÊ±¼äµãaÔÚÊ±¼äµãbÖ®Ç°,¸Ãºê·µ»Øtrue*/
+/*åˆ¤å®šæ—¶é—´ç‚¹å…ˆåé¡ºåºçš„å®,å¦‚æœæ—¶é—´ç‚¹aåœ¨æ—¶é—´ç‚¹bä¹‹å‰,è¯¥å®è¿”å›true*/
 #define time_before(a,b)	time_after(b,a)
 
-/*¸ÃºêÀàËÆÓÚtime_after,µ«ÊÇÔÚaºÍbÁ½¸öÊ±¼äµãÏàµÈÊ±,¸ÃºêÒ²·µ»Øtrue*/
+/*è¯¥å®ç±»ä¼¼äºtime_after,ä½†æ˜¯åœ¨aå’Œbä¸¤ä¸ªæ—¶é—´ç‚¹ç›¸ç­‰æ—¶,è¯¥å®ä¹Ÿè¿”å›true*/
 #define time_after_eq(a,b)	\
 	(typecheck(unsigned long, a) && \
 	 typecheck(unsigned long, b) && \
 	 ((long)((a) - (b)) >= 0))
-/*¸ÃºêÀàËÆÓÚtime_before,µ«ÊÇÔÚaºÍbÁ½¸öÊ±¼äµãÏàµÈÊ±,¸ÃºêÒ²·µ»Øtrue*/
+/*è¯¥å®ç±»ä¼¼äºtime_before,ä½†æ˜¯åœ¨aå’Œbä¸¤ä¸ªæ—¶é—´ç‚¹ç›¸ç­‰æ—¶,è¯¥å®ä¹Ÿè¿”å›true*/
 #define time_before_eq(a,b)	time_after_eq(b,a)
 
 /*
  * Calculate whether a is in the range of [b, c].
  */
-/*¸ÃºêÓÃÀ´¼ì²éÊ±¼äµãaÊÇ·ñ°üº¬ÔÚÊ±¼ä¼ä¸ô[b,c]ÄÚ,ÒòÎª¼ì²é°üº¬±ß½ç,ËùÒÔµ±aµÈÓÚb»òÕßcÊ±,¸Ã
- *ºêÒ²·µ»Øtrue*/
+/*è¯¥å®ç”¨æ¥æ£€æŸ¥æ—¶é—´ç‚¹aæ˜¯å¦åŒ…å«åœ¨æ—¶é—´é—´éš”[b,c]å†…,å› ä¸ºæ£€æŸ¥åŒ…å«è¾¹ç•Œ,æ‰€ä»¥å½“aç­‰äºbæˆ–è€…cæ—¶,è¯¥
+ *å®ä¹Ÿè¿”å›true*/
 #define time_in_range(a,b,c) \
 	(time_after_eq(a,b) && \
 	 time_before_eq(a,c))
@@ -327,9 +327,9 @@ extern unsigned long preset_lpj;
 /*
  * Convert various time units to each other:
  */
-/*×ª»»Ê±¼äµ¥Î»ÎªÎªms,Ò×ÓÚÈËÀàÀí½â*/
+/*è½¬æ¢æ—¶é—´å•ä½ä¸ºä¸ºms,æ˜“äºäººç±»ç†è§£*/
 extern unsigned int jiffies_to_msecs(const unsigned long j);
-/*»»Ëã³ÉÎ¢Ãîus*/
+/*æ¢ç®—æˆå¾®å¦™us*/
 extern unsigned int jiffies_to_usecs(const unsigned long j);
 
 static inline u64 jiffies_to_nsecs(const unsigned long j)
@@ -477,7 +477,7 @@ static inline void jiffies_to_timespec(const unsigned long jiffies,
 	jiffies_to_timespec64(jiffies, &ts);
 	*value = timespec64_to_timespec(ts);
 }
-/*jiffies±äÁ¿ºÍÊı¾İ½á¹¹Ö®¼äµÄ×ª»»*/
+/*jiffieså˜é‡å’Œæ•°æ®ç»“æ„ä¹‹é—´çš„è½¬æ¢*/
 extern unsigned long timeval_to_jiffies(const struct timeval *value);
 extern void jiffies_to_timeval(const unsigned long jiffies,
 			       struct timeval *value);

@@ -44,11 +44,11 @@
  * config switch CONFIG_KTIME_SCALAR.
  */
 /**
- * ͨ��ʱ�����е�ʱ��ֵ
+ * 通用时间框架中的时间值
  */
 union ktime {
 	s64	tv64;
-	/* CONFIG_KTIME_SCALAR���ʾ����ϵ�ṹ�ܹ���Ч����64λ�� */
+	/* CONFIG_KTIME_SCALAR宏表示该体系结构能够高效处理64位数 */
 #if BITS_PER_LONG != 64 && !defined(CONFIG_KTIME_SCALAR)
 	struct {
 # ifdef __BIG_ENDIAN

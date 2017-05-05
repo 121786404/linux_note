@@ -23,17 +23,17 @@
  */
 static void do_sync(unsigned long wait)
 {
-	/* »½ĞÑpdflush£¬ÒªÇóËüË¢ĞÂÈ«²¿ËùÓĞÊı¾İ */
+	/* å”¤é†’pdflushï¼Œè¦æ±‚å®ƒåˆ·æ–°å…¨éƒ¨æ‰€æœ‰æ•°æ® */
 	wakeup_pdflush(0);
-	/* Í¬²½inodeÔªÊı¾İ */
+	/* åŒæ­¥inodeå…ƒæ•°æ® */
 	sync_inodes(0);		/* All mappings, inodes and their blockdevs */
 	DQUOT_SYNC(NULL);
-	/* Í¬²½³¬¼¶¿é£¬½«³¬¼¶¿é»ØĞ´µ½´ÅÅÌ */
+	/* åŒæ­¥è¶…çº§å—ï¼Œå°†è¶…çº§å—å›å†™åˆ°ç£ç›˜ */
 	sync_supers();		/* Write the superblocks */
-	/* µ÷ÓÃ¸÷ÎÄ¼şÏµÍ³µÄsys_fs·½·¨£¬ÕâÑùÎÄ¼şÏµÍ³¾ÍÓĞ»ú»á²ÎÓëµ½syncµ÷ÓÃÖĞÀ´ */
+	/* è°ƒç”¨å„æ–‡ä»¶ç³»ç»Ÿçš„sys_fsæ–¹æ³•ï¼Œè¿™æ ·æ–‡ä»¶ç³»ç»Ÿå°±æœ‰æœºä¼šå‚ä¸åˆ°syncè°ƒç”¨ä¸­æ¥ */
 	sync_filesystems(0);	/* Start syncing the filesystems */
 	sync_filesystems(wait);	/* Waitingly sync the filesystems */
-	/* Í¬²½½Úµã£¬²¢µÈ´ıÆäÍê³É */
+	/* åŒæ­¥èŠ‚ç‚¹ï¼Œå¹¶ç­‰å¾…å…¶å®Œæˆ */
 	sync_inodes(wait);	/* Mappings, inodes and blockdevs, again. */
 	if (!wait)
 		printk("Emergency Sync complete\n");
@@ -42,7 +42,7 @@ static void do_sync(unsigned long wait)
 }
 
 /**
- * syncÏµÍ³µ÷ÓÃ
+ * syncç³»ç»Ÿè°ƒç”¨
  */
 asmlinkage long sys_sync(void)
 {
@@ -95,7 +95,7 @@ long do_fsync(struct file *file, int datasync)
 		goto out;
 	}
 
-	/* »ØĞ´µØÖ·¿Õ¼äÖĞµÄÒ³Ãæ */
+	/* å›å†™åœ°å€ç©ºé—´ä¸­çš„é¡µé¢ */
 	ret = filemap_fdatawrite(mapping);
 
 	/*
@@ -104,14 +104,14 @@ long do_fsync(struct file *file, int datasync)
 	 */
 	mutex_lock(&mapping->host->i_mutex);
 	/**
-	 * »Øµ÷ÎÄ¼şÏµÍ³µÄfsync£¬×öÒ»Ğ©ÎÄ¼şÏµÍ³Ïà¹ØµÄÍ¬²½´¦Àí
-	 * Ò»°ã¶¼»áµ÷ÓÃÍ¨ÓÃµÄsync_fileº¯Êı
+	 * å›è°ƒæ–‡ä»¶ç³»ç»Ÿçš„fsyncï¼Œåšä¸€äº›æ–‡ä»¶ç³»ç»Ÿç›¸å…³çš„åŒæ­¥å¤„ç†
+	 * ä¸€èˆ¬éƒ½ä¼šè°ƒç”¨é€šç”¨çš„sync_fileå‡½æ•°
 	 */
 	err = file->f_op->fsync(file, file->f_path.dentry, datasync);
 	if (!ret)
 		ret = err;
 	mutex_unlock(&mapping->host->i_mutex);
-	/* µÈ´ıfilemap_fdatawrite²Ù×÷Íê³É */
+	/* ç­‰å¾…filemap_fdatawriteæ“ä½œå®Œæˆ */
 	err = filemap_fdatawait(mapping);
 	if (!ret)
 		ret = err;
@@ -120,19 +120,19 @@ out:
 }
 
 /**
- * Í¬²½µ¥¸öÎÄ¼ş
+ * åŒæ­¥å•ä¸ªæ–‡ä»¶
  */
 static long __do_fsync(unsigned int fd, int datasync)
 {
 	struct file *file;
 	int ret = -EBADF;
 
-	/* ¸ù¾İfdÕÒµ½ÎÄ¼şÃèÊö·û */
+	/* æ ¹æ®fdæ‰¾åˆ°æ–‡ä»¶æè¿°ç¬¦ */
 	file = fget(fd);
 	if (file) {
-		/* Í¬²½Êı¾İ */
+		/* åŒæ­¥æ•°æ® */
 		ret = do_fsync(file, datasync);
-		/* ÊÍ·Å¶ÔÎÄ¼şµÄÒıÓÃ */
+		/* é‡Šæ”¾å¯¹æ–‡ä»¶çš„å¼•ç”¨ */
 		fput(file);
 	}
 	return ret;

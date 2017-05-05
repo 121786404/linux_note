@@ -7,11 +7,11 @@
 #include <linux/nsproxy.h>
 
 struct mnt_namespace {
-	/* Ê¹ÓÃ¸ÃÃüÃû¿Õ¼äµÄ¼ÆÊı */
+	/* ä½¿ç”¨è¯¥å‘½åç©ºé—´çš„è®¡æ•° */
 	atomic_t		count;
-	/* ¸ÃÃüÃû¿Õ¼äµÄ¸ùÄ¿Â¼ */
+	/* è¯¥å‘½åç©ºé—´çš„æ ¹ç›®å½• */
 	struct vfsmount *	root;
-	/* Á´±í±íÍ·£¬Ö¸Ïò¸ÃÃüÃû¿Õ¼äÖĞËùÓĞÎÄ¼şÏµÍ³µÄvfsmountÊµÀı */
+	/* é“¾è¡¨è¡¨å¤´ï¼ŒæŒ‡å‘è¯¥å‘½åç©ºé—´ä¸­æ‰€æœ‰æ–‡ä»¶ç³»ç»Ÿçš„vfsmountå®ä¾‹ */
 	struct list_head	list;
 	wait_queue_head_t poll;
 	int event;

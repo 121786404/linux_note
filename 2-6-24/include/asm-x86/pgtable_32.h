@@ -103,16 +103,16 @@ void paging_init(void);
 #define _PAGE_BIT_UNUSED3	11
 #define _PAGE_BIT_NX		63
 
-/* Ò³ÊÇ·ñ´æÔÚÓÚÄÚ´æÖĞ£¬×¢Òâ:Ò³ÓĞ¿ÉÄÜ±»½»»»³öÈ¥ */
+/* é¡µæ˜¯å¦å­˜åœ¨äºå†…å­˜ä¸­ï¼Œæ³¨æ„:é¡µæœ‰å¯èƒ½è¢«äº¤æ¢å‡ºå» */
 #define _PAGE_PRESENT	0x001
 #define _PAGE_RW	0x002
-/* ÓÃ»§¿ÉÒÔ·ÃÎÊ¸ÃÒ³£¬·ñÔòÖ»ÄÜÔÚÄÚºËÌ¬·ÃÎÊ */
+/* ç”¨æˆ·å¯ä»¥è®¿é—®è¯¥é¡µï¼Œå¦åˆ™åªèƒ½åœ¨å†…æ ¸æ€è®¿é—® */
 #define _PAGE_USER	0x004
 #define _PAGE_PWT	0x008
 #define _PAGE_PCD	0x010
-/* Ò³ÃæÊÇ·ñ±»·ÃÎÊ¹ı */
+/* é¡µé¢æ˜¯å¦è¢«è®¿é—®è¿‡ */
 #define _PAGE_ACCESSED	0x020
-/* Ò³ÃæÊÇ·ñÎªÔàµÄ */
+/* é¡µé¢æ˜¯å¦ä¸ºè„çš„ */
 #define _PAGE_DIRTY	0x040
 #define _PAGE_PSE	0x080	/* 4 MB (or 2MB) page, Pentium+, if present.. */
 #define _PAGE_GLOBAL	0x100	/* Global TLB entry PPro+ */
@@ -121,7 +121,7 @@ void paging_init(void);
 #define _PAGE_UNUSED3	0x800
 
 /* If _PAGE_PRESENT is clear, we use these: */
-/* Óë_PAGE_DIRTYÏàÍ¬£¬µ±Ò³²»ÔÚÄÚ´æÖĞÊ±£¬Èç¹û´ËÎ»±»ÉèÖÃ£¬±íÊ¾¸ÃÒ³ÊôÓÚ·ÇÏßĞÔÎÄ¼şÓ³Éä */
+/* ä¸_PAGE_DIRTYç›¸åŒï¼Œå½“é¡µä¸åœ¨å†…å­˜ä¸­æ—¶ï¼Œå¦‚æœæ­¤ä½è¢«è®¾ç½®ï¼Œè¡¨ç¤ºè¯¥é¡µå±äºéçº¿æ€§æ–‡ä»¶æ˜ å°„ */
 #define _PAGE_FILE	0x040	/* nonlinear file mapping, saved PTE; unset:swap */
 #define _PAGE_PROTNONE	0x080	/* if the user mapped it with PROT_NONE;
 				   pte_present gives true */
@@ -206,7 +206,7 @@ extern unsigned long long __PAGE_KERNEL, __PAGE_KERNEL_EXEC;
 /* The boot page tables (all created as a single array) */
 extern unsigned long pg0[];
 
-/* Ò³ÃæÊÇ·ñÔÚÄÚ´æÖĞ */
+/* é¡µé¢æ˜¯å¦åœ¨å†…å­˜ä¸­ */
 #define pte_present(x)	((x).pte_low & (_PAGE_PRESENT | _PAGE_PROTNONE))
 
 /* To avoid harmful races, pmd_none(x) should check only the lower when PAE */
@@ -221,17 +221,17 @@ extern unsigned long pg0[];
  * The following only work if pte_present() is true.
  * Undefined behaviour if not..
  */
-/* Ò³±íÏîÏà¹ØµÄÒ³ÊÇ·ñÎªÔàÒ³ */
+/* é¡µè¡¨é¡¹ç›¸å…³çš„é¡µæ˜¯å¦ä¸ºè„é¡µ */
 static inline int pte_dirty(pte_t pte)		{ return (pte).pte_low & _PAGE_DIRTY; }
 static inline int pte_young(pte_t pte)		{ return (pte).pte_low & _PAGE_ACCESSED; }
-/* ¼ì²éÄÚºËÊÇ·ñ¿ÉÒÔĞ´Èëµ½¸ÃÒ³ */
+/* æ£€æŸ¥å†…æ ¸æ˜¯å¦å¯ä»¥å†™å…¥åˆ°è¯¥é¡µ */
 static inline int pte_write(pte_t pte)		{ return (pte).pte_low & _PAGE_RW; }
 static inline int pte_huge(pte_t pte)		{ return (pte).pte_low & _PAGE_PSE; }
 
 /*
  * The following only works if pte_present() is not true.
  */
-/* ÓÃÓÚ·ÇÏßĞÔÓ³Éä£¬¼ì²é¸ø¶¨µÄÒ³±íÏîÊÇ·ñÓÃÓÚ·ÇÏßĞÔÓ³Éä */
+/* ç”¨äºéçº¿æ€§æ˜ å°„ï¼Œæ£€æŸ¥ç»™å®šçš„é¡µè¡¨é¡¹æ˜¯å¦ç”¨äºéçº¿æ€§æ˜ å°„ */
 static inline int pte_file(pte_t pte)		{ return (pte).pte_low & _PAGE_FILE; }
 
 static inline pte_t pte_mkclean(pte_t pte)	{ (pte).pte_low &= ~_PAGE_DIRTY; return pte; }
@@ -488,7 +488,7 @@ do {									\
  * tables contain all the necessary information.
  */
 /**
- * ÔÚÒ³Ê§Ğ§ºóµ÷ÓÃ¡£ÔÚ´¦ÀíÆ÷µÄMMUÖĞ¼ÓÈëĞÅÏ¢£¬Ê¹µÃĞéÄâµØÖ·ÓÉÏàÓ¦µÄPTEÃèÊö
+ * åœ¨é¡µå¤±æ•ˆåè°ƒç”¨ã€‚åœ¨å¤„ç†å™¨çš„MMUä¸­åŠ å…¥ä¿¡æ¯ï¼Œä½¿å¾—è™šæ‹Ÿåœ°å€ç”±ç›¸åº”çš„PTEæè¿°
  */
 #define update_mmu_cache(vma,address,pte) do { } while (0)
 

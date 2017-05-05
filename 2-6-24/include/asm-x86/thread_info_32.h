@@ -25,25 +25,25 @@
 #ifndef __ASSEMBLY__
 
 struct thread_info {
-	/* ÈÎÎñ½á¹¹ */
+	/* ä»»åŠ¡ç»“æ„ */
 	struct task_struct	*task;		/* main task structure */
-	/* Ö´ĞĞÓò£¬Ò»°ãÓÃÓÚ64Î»»úÆ÷ÉÏÔËĞĞ32Î»³ÌĞò */
+	/* æ‰§è¡ŒåŸŸï¼Œä¸€èˆ¬ç”¨äº64ä½æœºå™¨ä¸Šè¿è¡Œ32ä½ç¨‹åº */
 	struct exec_domain	*exec_domain;	/* execution domain */
-	/* ½ø³Ì±êÖ¾£¬ÈçTIF_SIGPENDING */
+	/* è¿›ç¨‹æ ‡å¿—ï¼Œå¦‚TIF_SIGPENDING */
 	unsigned long		flags;		/* low level flags */
 	unsigned long		status;		/* thread-synchronous flags */
-	/* µ±Ç°ÔËĞĞÔÚÄÄ¸öCPUÉÏ */
+	/* å½“å‰è¿è¡Œåœ¨å“ªä¸ªCPUä¸Š */
 	__u32			cpu;		/* current CPU */
-	/* ÇÀÕ¼¼ÆÊı */
+	/* æŠ¢å è®¡æ•° */
 	int			preempt_count;	/* 0 => preemptable, <0 => BUG */
 
-	/* ¿ÉÒÔÊ¹ÓÃµÄĞéÄâµØÖ·¿Õ¼äÉÏÏŞ */
+	/* å¯ä»¥ä½¿ç”¨çš„è™šæ‹Ÿåœ°å€ç©ºé—´ä¸Šé™ */
 	mm_segment_t		addr_limit;	/* thread address space:
 					 	   0-0xBFFFFFFF for user-thead
 						   0-0xFFFFFFFF for kernel-thread
 						*/
 	void			*sysenter_return;
-	/* ÓÃÓÚĞÅºÅ»úÖÆ£¬ĞÅºÅ´¦ÀíÍê±Ïºó£¬ÖØĞÂÖ´ĞĞÏµÍ³µÄ¶¯×÷ */
+	/* ç”¨äºä¿¡å·æœºåˆ¶ï¼Œä¿¡å·å¤„ç†å®Œæ¯•åï¼Œé‡æ–°æ‰§è¡Œç³»ç»Ÿçš„åŠ¨ä½œ */
 	struct restart_block    restart_block;
 
 	unsigned long           previous_esp;   /* ESP of the previous stack in case
@@ -130,9 +130,9 @@ static inline struct thread_info *current_thread_info(void)
  * - other flags in MSW
  */
 #define TIF_SYSCALL_TRACE	0	/* syscall trace active */
-/* ÓĞÎ´¾öĞÅºÅ */
+/* æœ‰æœªå†³ä¿¡å· */
 #define TIF_SIGPENDING		1	/* signal pending */
-/* ÓĞ±ØÒª½øĞĞÖØĞÂµ÷¶È£¬ÀıÈç:ÓĞĞÂµÄ¸ßÓÅÏÈ¼¶½ø³Ì¾ÍĞ÷ */
+/* æœ‰å¿…è¦è¿›è¡Œé‡æ–°è°ƒåº¦ï¼Œä¾‹å¦‚:æœ‰æ–°çš„é«˜ä¼˜å…ˆçº§è¿›ç¨‹å°±ç»ª */
 #define TIF_NEED_RESCHED	2	/* rescheduling necessary */
 #define TIF_SINGLESTEP		3	/* restore singlestep on return to user mode */
 #define TIF_IRET		4	/* return with iret */

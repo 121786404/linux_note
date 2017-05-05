@@ -11,36 +11,36 @@
 
 
 /*
-�����������ڼ�, �����ڴ������δ��ʼ��, 
-�����ں���Ȼ��Ҫ�����ڴ��Դ����������ݽṹ, 
-���ڵ��ں��и����ʼ���׶ε��ڴ��������Ϊ�����ڴ������(boot memory allocator��bootmem������), 
+在启动过程期间, 尽管内存管理尚未初始化, 
+但是内核仍然需要分配内存以创建各种数据结构, 
+早期的内核中负责初始化阶段的内存分配器称为引导内存分配器(boot memory allocator—bootmem分配器), 
 
-�ڶ�������Ļ��ϵͳ����ǰ�ڴ涼�����÷�����������ģ�
-���ϵͳ��ܽ���������bootmem����ȵ����ϵͳ. 
+在耳熟能详的伙伴系统建立前内存都是利用分配器来分配的，
+伙伴系统框架建立起来后，bootmem会过度到伙伴系统. 
 
-�����ڴ������(boot memory allocator��bootmem������)
-������������(first-first)��������ԭ��,ʹ��һ��λͼ������ҳ, 
-��λͼ����ԭ���Ŀ��������ṹ����ʾ�洢�ռ�, 
-λͼ�ı���λ����Ŀ��ϵͳ�������ڴ�ҳ����Ŀ��ͬ. 
-��λͼ��ĳһλ��1, ���ʶ��ҳ���Ѿ�������(����ҳ), 
-�����ʾδ��ռ��(δ��ҳ).
+引导内存分配器(boot memory allocator—bootmem分配器)
+基于最先适配(first-first)分配器的原理,使用一个位图来管理页, 
+以位图代替原来的空闲链表结构来表示存储空间, 
+位图的比特位的数目与系统中物理内存页面数目相同. 
+若位图中某一位是1, 则标识该页面已经被分配(已用页), 
+否则表示未被占有(未用页).
 
-����Ҫ�����ڴ�ʱ, ��������λ��ɨ��λͼ, 
-ֱ���ҵ�һ�����ṩ�㹻����ҳ��λ��, 
-����ν���������(first-best)����������λ��.
+在需要分配内存时, 分配器逐位的扫描位图, 
+直至找到一个能提供足够连续页的位置, 
+即所谓的最先最佳(first-best)或最先适配位置.
 
-�÷������ͨ����¼��һ�η����ҳ��֡��(PFN)����ʱ��ƫ������ʵ�ַ����СС��һҳ�Ŀռ�, 
-������С�Ŀ��пռ佫���ϲ��洢��һҳ��.
+该分配机制通过记录上一次分配的页面帧号(PFN)结束时的偏移量来实现分配大小小于一页的空间, 
+连续的小的空闲空间将被合并存储在一页上.
 
-��ʹ�ǳ�ʼ���õ��������������Ҳ����ʹ��һЩ���ݽṹ��, 
-�ں�Ϊϵͳ��ÿһ����㶼�ṩ��һ��struct bootmem_data�ṹ��ʵ��, 
-����bootmem���ڴ����. �����������ڴ���������������ڴ�ʱ�������Ϣ. 
+即使是初始化用的最先适配分配器也必须使用一些数据结构存, 
+内核为系统中每一个结点都提供了一个struct bootmem_data结构的实例, 
+用于bootmem的内存管理. 它含有引导内存分配器给结点分配内存时所需的信息. 
 
-��Ȼ, ��ʱ���ڴ������û�г�ʼ��, ����ýṹ������ڴ����޷���̬�����, 
-�����ڱ���ʱ������ں�.
+当然, 这时候内存管理还没有初始化, 因而该结构所需的内存是无法动态分配的, 
+必须在编译时分配给内核.
 
-��UMAϵͳ�ϸ÷����ʵ����CPU�޹�, ��NUMAϵͳ�ڴ�����CPU�����, 
-��˲������ض���ϵ�ṹ�Ľ������.
+在UMA系统上该分配的实现与CPU无关, 而NUMA系统内存结点与CPU相关联, 
+因此采用了特定体系结构的解决方法.
 */
 
 /*
@@ -65,11 +65,11 @@ extern unsigned long long max_possible_pfn;
  * memory pages (including holes) on the node.
  */
 typedef struct bootmem_data {
-	//�ڴ�����Сҳ֡��
+	//内存块的最小页帧号
 	unsigned long node_min_pfn;
-	//�ڴ��ĵͶ�ҳ֡�ţ����ڴ�ҳ֡�Ķ��������ˡ�
+	//内存块的低端页帧号，高于此页帧的都被分配了。
 	unsigned long node_low_pfn;
-	//�ڴ���ҳ��ӳ��λͼ
+	//内存块的页面映射位图
 	void *node_bootmem_map;
 	unsigned long last_end_off;
 	unsigned long hint_idx;
@@ -287,7 +287,7 @@ static inline void __init memblock_free_late(
 
 /* Fall back to all the existing bootmem APIs */
 /**
- * ��bootmem�з����ڴ�
+ * 在bootmem中分配内存
  */
 static inline void * __init memblock_virt_alloc(
 					phys_addr_t size,  phys_addr_t align)

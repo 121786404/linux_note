@@ -384,7 +384,7 @@ static void uhci_fixup_toggles(struct uhci_qh *qh, int skip_first)
 	/* Fixups for a short transfer start with the second URB in the
 	 * queue (the short URB is the first). */
 	/**
-	 * µÚÒ»¸öURBÒÑ¾­´¦Àí¹ıÁË£¬ÕâÀï´ÓµÚ¶ş¸öURB´¦Àí¡£
+	 * ç¬¬ä¸€ä¸ªURBå·²ç»å¤„ç†è¿‡äº†ï¼Œè¿™é‡Œä»ç¬¬äºŒä¸ªURBå¤„ç†ã€‚
 	 */
 	if (skip_first)
 		urbp = list_entry(qh->queue.next, struct urb_priv, node);
@@ -398,7 +398,7 @@ static void uhci_fixup_toggles(struct uhci_qh *qh, int skip_first)
 	 * loop won't run more than once: When an error or short transfer
 	 * occurs, the queue usually gets emptied. */
 	/**
-	 * ´ÓµÚ¶ş¸öurb¿ªÊ¼±éÀúQH¶ÓÁĞ¡£
+	 * ä»ç¬¬äºŒä¸ªurbå¼€å§‹éå†QHé˜Ÿåˆ—ã€‚
 	 */
 	urbp = list_prepare_entry(urbp, &qh->queue, node);
 	list_for_each_entry_continue(urbp, &qh->queue, node) {
@@ -406,19 +406,19 @@ static void uhci_fixup_toggles(struct uhci_qh *qh, int skip_first)
 		/* If the first TD has the right toggle value, we don't
 		 * need to change any toggles in this URB */
 		/**
-		 * »ñµÃURBµÄµÚÒ»¸öTD¡£
+		 * è·å¾—URBçš„ç¬¬ä¸€ä¸ªTDã€‚
 		 */
 		td = list_entry(urbp->td_list.next, struct uhci_td, list);
-		if (toggle > 1 || uhci_toggle(td_token(td)) == toggle) {/* TDµÄtoggleÎ»Óëinitial_toggleÏàµÈ£¬±íÊ¾TDÊÇÕıÈ·µÄ */
+		if (toggle > 1 || uhci_toggle(td_token(td)) == toggle) {/* TDçš„toggleä½ä¸initial_toggleç›¸ç­‰ï¼Œè¡¨ç¤ºTDæ˜¯æ­£ç¡®çš„ */
 			/**
-			 * È¡×îºóÒ»¸öTD¡£²¢½«toggleÈ¡·´¡£
+			 * å–æœ€åä¸€ä¸ªTDã€‚å¹¶å°†toggleå–åã€‚
 			 */
 			td = list_entry(urbp->td_list.prev, struct uhci_td,
 					list);
 			toggle = uhci_toggle(td_token(td)) ^ 1;
 
 		/* Otherwise all the toggles in the URB have to be switched */
-		} else {/* Õû¸öTDµÄtoggleÎ»¶¼·´ÁË£¬È«²¿ĞŞ¸ÄÒ»´Î */
+		} else {/* æ•´ä¸ªTDçš„toggleä½éƒ½åäº†ï¼Œå…¨éƒ¨ä¿®æ”¹ä¸€æ¬¡ */
 			list_for_each_entry(td, &urbp->td_list, list) {
 				td->token ^= __constant_cpu_to_le32(
 							TD_TOKEN_TOGGLE);
@@ -494,23 +494,23 @@ static void link_async(struct uhci_hcd *uhci, struct uhci_qh *qh)
  * Put a QH on the schedule in both hardware and software
  */
 /**
- * µ±ÏòQHÔö¼ÓÒ»¸öURBÊ±£¬Èç¹ûÊÇµÚÒ»¸öURB¾Í¼¤»îÓ²¼şºÍÈí¼ş¡£
+ * å½“å‘QHå¢åŠ ä¸€ä¸ªURBæ—¶ï¼Œå¦‚æœæ˜¯ç¬¬ä¸€ä¸ªURBå°±æ¿€æ´»ç¡¬ä»¶å’Œè½¯ä»¶ã€‚
  */
 static void uhci_activate_qh(struct uhci_hcd *uhci, struct uhci_qh *qh)
 {
 	/**
-	 * ²»Ó¦¸ÃÎª¿Õ£¬¾¯¸æÒ»ÏÂ¡£
+	 * ä¸åº”è¯¥ä¸ºç©ºï¼Œè­¦å‘Šä¸€ä¸‹ã€‚
 	 */
 	WARN_ON(list_empty(&qh->queue));
 
 	/* Set the element pointer if it isn't set already.
 	 * This isn't needed for Isochronous queues, but it doesn't hurt. */
 	/**
-	 * qh_element»ñµÃqhµÄelementÖ¸Õë¡£UHCI_PTR_TERM±íÊ¾Ö¸ÕëÎŞĞ§¡£
+	 * qh_elementè·å¾—qhçš„elementæŒ‡é’ˆã€‚UHCI_PTR_TERMè¡¨ç¤ºæŒ‡é’ˆæ— æ•ˆã€‚
 	 */
 	if (qh_element(qh) == UHCI_PTR_TERM) {
 		/**
-		 * ½«QH¶ÓÁĞÖĞµÚÒ»¸öURBµÄµÚÒ»¸öTDÖ¸Ïòelement
+		 * å°†QHé˜Ÿåˆ—ä¸­ç¬¬ä¸€ä¸ªURBçš„ç¬¬ä¸€ä¸ªTDæŒ‡å‘element
 		 */
 		struct urb_priv *urbp = list_entry(qh->queue.next,
 				struct urb_priv, node);
@@ -531,7 +531,7 @@ static void uhci_activate_qh(struct uhci_hcd *uhci, struct uhci_qh *qh)
 	/* Move the QH from its old list to the correct spot in the appropriate
 	 * skeleton's list */
 	/**
-	 * ½«next_qhÏòºóÒÆÒ»ÏÂ¡£
+	 * å°†next_qhå‘åç§»ä¸€ä¸‹ã€‚
 	 */
 	if (qh == uhci->next_qh)
 		uhci->next_qh = list_entry(qh->node.next, struct uhci_qh,
@@ -543,7 +543,7 @@ static void uhci_activate_qh(struct uhci_hcd *uhci, struct uhci_qh *qh)
 	else if (qh->skel < SKEL_ASYNC)
 		link_interrupt(uhci, qh);
 	else
-		link_async(uhci, qh);/* ½«¿ØÖÆ´«ÊäµÄQH¹ÒÈëµ½Õû¸öµ÷¶ÈµÄ¶ÓÁĞÖĞ¡£ */
+		link_async(uhci, qh);/* å°†æ§åˆ¶ä¼ è¾“çš„QHæŒ‚å…¥åˆ°æ•´ä¸ªè°ƒåº¦çš„é˜Ÿåˆ—ä¸­ã€‚ */
 }
 
 /*
@@ -643,12 +643,12 @@ static int uhci_highest_load(struct uhci_hcd *uhci, int phase, int period)
 	int highest_load = uhci->load[phase];
 
 	/**
-	 * 32¸öÖ¡ÄÚµÄ¸ºÔØ¡£
+	 * 32ä¸ªå¸§å†…çš„è´Ÿè½½ã€‚
 	 */
 	for (phase += period; phase < MAX_PHASE; phase += period)
 		highest_load = max_t(int, highest_load, uhci->load[phase]);
 	/**
-	 * ·µ»Ø×î´ó¸ºÔØµÄÖ¡¡£
+	 * è¿”å›æœ€å¤§è´Ÿè½½çš„å¸§ã€‚
 	 */
 	return highest_load;
 }
@@ -663,7 +663,7 @@ static int uhci_check_bandwidth(struct uhci_hcd *uhci, struct uhci_qh *qh)
 
 	/* Find the optimal phase (unless it is already set) and get
 	 * its load value. */
-	if (qh->phase >= 0)/* ¶ÔÖĞ¶Ï´«ÊäÀ´Ëµ£¬Õâ¸öÌõ¼şÒ»°ãÂú×ã¡£ */
+	if (qh->phase >= 0)/* å¯¹ä¸­æ–­ä¼ è¾“æ¥è¯´ï¼Œè¿™ä¸ªæ¡ä»¶ä¸€èˆ¬æ»¡è¶³ã€‚ */
 		minimax_load = uhci_highest_load(uhci, qh->phase, qh->period);
 	else {
 		int phase, load;
@@ -682,7 +682,7 @@ static int uhci_check_bandwidth(struct uhci_hcd *uhci, struct uhci_qh *qh)
 
 	/* Maximum allowable periodic bandwidth is 90%, or 900 us per frame */
 	/**
-	 * ×î´ó¸ºÔØ¼ÓÉÏµ±Ç°Ö¡³¬¹ı900US¡£
+	 * æœ€å¤§è´Ÿè½½åŠ ä¸Šå½“å‰å¸§è¶…è¿‡900USã€‚
 	 */
 	if (minimax_load + qh->load > 900) {
 		dev_dbg(uhci_dev(uhci), "bandwidth allocation failed: "
@@ -853,11 +853,11 @@ static int uhci_submit_control(struct uhci_hcd *uhci, struct urb *urb,
 	 */
 	td = qh->dummy_td;
 	/**
-	 * ½«±¾¿ØÖÆ´«ÊäµÄTD¼Óµ½URBÁ´±íÖĞ¡£
+	 * å°†æœ¬æ§åˆ¶ä¼ è¾“çš„TDåŠ åˆ°URBé“¾è¡¨ä¸­ã€‚
 	 */
 	uhci_add_td_to_urbp(td, urbp);
 	/**
-	 * Ìî³äTDµÄÄÚÈİ¡£
+	 * å¡«å……TDçš„å†…å®¹ã€‚
 	 */
 	uhci_fill_td(td, status, destination | uhci_explen(8),
 			urb->setup_dma);
@@ -882,7 +882,7 @@ static int uhci_submit_control(struct uhci_hcd *uhci, struct urb *urb,
 	 * Build the DATA TDs
 	 */
 	/**
-	 * Ç°ÃæÊÇ´¦Àísetup TD£¬ÏÖÔÚ¹¹½¨DATA TD¡£
+	 * å‰é¢æ˜¯å¤„ç†setup TDï¼Œç°åœ¨æ„å»ºDATA TDã€‚
 	 */
 	while (len > 0) {
 		int pktsze = maxsze;
@@ -899,12 +899,12 @@ static int uhci_submit_control(struct uhci_hcd *uhci, struct urb *urb,
 
 		/* Alternate Data0/1 (start with Data1) */
 		/**
-		 * ´¦ÀíDATA0/1Î»¡£
+		 * å¤„ç†DATA0/1ä½ã€‚
 		 */
 		destination ^= TD_TOKEN_TOGGLE;
 	
 		/**
-		 * ½«DATA TD¼ÓÈëµ½URBÁ´±íÖĞ¡£
+		 * å°†DATA TDåŠ å…¥åˆ°URBé“¾è¡¨ä¸­ã€‚
 		 */
 		uhci_add_td_to_urbp(td, urbp);
 		uhci_fill_td(td, status, destination | uhci_explen(pktsze),
@@ -919,7 +919,7 @@ static int uhci_submit_control(struct uhci_hcd *uhci, struct urb *urb,
 	 * Build the final TD for control status 
 	 */
 	/**
-	 * ¹¹½¨final TD
+	 * æ„å»ºfinal TD
 	 */
 	td = uhci_alloc_td(uhci);
 	if (!td)
@@ -953,7 +953,7 @@ static int uhci_submit_control(struct uhci_hcd *uhci, struct urb *urb,
 	 * to do that is to put URBs on the low-speed queue while the device
 	 * isn't in the CONFIGURED state. */
 	/**
-	 * ¸ù¾İÉè±¸ËÙ¶È£¬¾ö¶¨Ó¦¸Ã½«URB·Åµ½ÄÄ¸ö¶ÓÁĞÖĞ¡£
+	 * æ ¹æ®è®¾å¤‡é€Ÿåº¦ï¼Œå†³å®šåº”è¯¥å°†URBæ”¾åˆ°å“ªä¸ªé˜Ÿåˆ—ä¸­ã€‚
 	 */
 	if (urb->dev->speed == USB_SPEED_LOW ||
 			urb->dev->state != USB_STATE_CONFIGURED)
@@ -961,7 +961,7 @@ static int uhci_submit_control(struct uhci_hcd *uhci, struct urb *urb,
 	else {
 		skel = SKEL_FS_CONTROL;
 		/**
-		 * ¶ÔÓÚÈ«ËÙÉè±¸£¬ÉèÖÃfsbr±êÖ¾¡£
+		 * å¯¹äºå…¨é€Ÿè®¾å¤‡ï¼Œè®¾ç½®fsbræ ‡å¿—ã€‚
 		 */
 		uhci_add_fsbr(uhci, urb);
 	}
@@ -1005,7 +1005,7 @@ static int uhci_submit_common(struct uhci_hcd *uhci, struct urb *urb,
 	if (urb->dev->speed == USB_SPEED_LOW)
 		status |= TD_CTRL_LS;
 	/**
-	 * ¼ì²â¶Ì°ü£¬Èç¹û·¢Éú¶Ì°ü¾Í´¥·¢ÖĞ¶Ï£¬´¦Àítoggle±êÖ¾Ê±ĞèÒªÊ¹ÓÃ¡£
+	 * æ£€æµ‹çŸ­åŒ…ï¼Œå¦‚æœå‘ç”ŸçŸ­åŒ…å°±è§¦å‘ä¸­æ–­ï¼Œå¤„ç†toggleæ ‡å¿—æ—¶éœ€è¦ä½¿ç”¨ã€‚
 	 */
 	if (usb_pipein(urb->pipe))
 		status |= TD_CTRL_SPD;
@@ -1021,7 +1021,7 @@ static int uhci_submit_common(struct uhci_hcd *uhci, struct urb *urb,
 		if (len <= pktsze) {		/* The last packet */
 			pktsze = len;
 			/**
-			 * Êı¾İ°üÒÑ¾­´¦ÀíÍê£¬²»ÔÙĞèÒª¼à¿Ø¶Ì°ü´¦ÀítoggleÁË¡£Òò´Ë¹Ø±ÕSPD±êÖ¾¡£
+			 * æ•°æ®åŒ…å·²ç»å¤„ç†å®Œï¼Œä¸å†éœ€è¦ç›‘æ§çŸ­åŒ…å¤„ç†toggleäº†ã€‚å› æ­¤å…³é—­SPDæ ‡å¿—ã€‚
 			 */
 			if (!(urb->transfer_flags & URB_SHORT_NOT_OK))
 				status &= ~TD_CTRL_SPD;
@@ -1053,9 +1053,9 @@ static int uhci_submit_common(struct uhci_hcd *uhci, struct urb *urb,
 	 * however, if transfer_length == 0, the zero packet was already
 	 * prepared above.
 	 */
-	if ((urb->transfer_flags & URB_ZERO_PACKET) && /* ÔÊĞí´«ËÍ0°ü */
-			usb_pipeout(urb->pipe) && len == 0 && /* ³ö°ü²¢ÇÒµ±Ç°°üÎª0 */
-			urb->transfer_buffer_length > 0) {/* ²»ÊÇµÚÒ»¸ö°ü */
+	if ((urb->transfer_flags & URB_ZERO_PACKET) && /* å…è®¸ä¼ é€0åŒ… */
+			usb_pipeout(urb->pipe) && len == 0 && /* å‡ºåŒ…å¹¶ä¸”å½“å‰åŒ…ä¸º0 */
+			urb->transfer_buffer_length > 0) {/* ä¸æ˜¯ç¬¬ä¸€ä¸ªåŒ… */
 		td = uhci_alloc_td(uhci);
 		if (!td)
 			goto nomem;
@@ -1078,7 +1078,7 @@ static int uhci_submit_common(struct uhci_hcd *uhci, struct urb *urb,
 	 * more than 2 or 3 URBs, so we will ignore the URB_NO_INTERRUPT
 	 * flag setting. */
 	/**
-	 * ¶Ô×îºóÒ»¸ö°üÀ´Ëµ£¬Ö´ĞĞÍêºó²úÉúÒ»¸öÖĞ¶Ï¡£
+	 * å¯¹æœ€åä¸€ä¸ªåŒ…æ¥è¯´ï¼Œæ‰§è¡Œå®Œåäº§ç”Ÿä¸€ä¸ªä¸­æ–­ã€‚
 	 */
 	td->status |= __constant_cpu_to_le32(TD_CTRL_IOC);
 
@@ -1086,7 +1086,7 @@ static int uhci_submit_common(struct uhci_hcd *uhci, struct urb *urb,
 	 * Build the new dummy TD and activate the old one
 	 */
 	/**
-	 * dummy tdÓÃÓÚ±íÊ¾Ò»¸ö¶ÓÁĞ½áÊø
+	 * dummy tdç”¨äºè¡¨ç¤ºä¸€ä¸ªé˜Ÿåˆ—ç»“æŸ
 	 */
 	td = uhci_alloc_td(uhci);
 	if (!td)
@@ -1109,7 +1109,7 @@ nomem:
 }
 
 /**
- * Ìá½»ÅúÁ¿´«Êä¡£
+ * æäº¤æ‰¹é‡ä¼ è¾“ã€‚
  */
 static int uhci_submit_bulk(struct uhci_hcd *uhci, struct urb *urb,
 		struct uhci_qh *qh)
@@ -1123,7 +1123,7 @@ static int uhci_submit_bulk(struct uhci_hcd *uhci, struct urb *urb,
 	if (qh->state != QH_STATE_ACTIVE)
 		qh->skel = SKEL_BULK;
 	/**
-	 * ÅúÁ¿´«ÊäºÍÖĞ¶Ï´«Êä¶¼Ö»ÓĞÒ»¸ö½×¶Î£¬¶ø²»Ïó¿ØÖÆ´«ÊäÓĞ¶à¸ö½×¶Î£¬Òò´ËÖ±½Óµ÷ÓÃuhci_submit_common
+	 * æ‰¹é‡ä¼ è¾“å’Œä¸­æ–­ä¼ è¾“éƒ½åªæœ‰ä¸€ä¸ªé˜¶æ®µï¼Œè€Œä¸è±¡æ§åˆ¶ä¼ è¾“æœ‰å¤šä¸ªé˜¶æ®µï¼Œå› æ­¤ç›´æ¥è°ƒç”¨uhci_submit_common
 	 */
 	ret = uhci_submit_common(uhci, urb, qh);
 	if (ret == 0)
@@ -1141,14 +1141,14 @@ static int uhci_submit_interrupt(struct uhci_hcd *uhci, struct urb *urb,
 	 * multiple intervals to complete.
 	 */
 	/**
-	 * ÎªÖĞ¶Ï´«Êä±£ÁôµÄ´ø¿í(Ê±¼ä)
+	 * ä¸ºä¸­æ–­ä¼ è¾“ä¿ç•™çš„å¸¦å®½(æ—¶é—´)
 	 */
 	if (!qh->bandwidth_reserved) {
 		int exponent;
 
 		/* Figure out which power-of-two queue to use */
 		/**
-		 * UHCIÊÇUSB1.1¹æ·¶£¬intervalÖµÎª1µ½255ºÁÃëÖ®¼ä£¬Òò´ËÑ­»·7´Î¾ÍĞĞÁË¡£
+		 * UHCIæ˜¯USB1.1è§„èŒƒï¼Œintervalå€¼ä¸º1åˆ°255æ¯«ç§’ä¹‹é—´ï¼Œå› æ­¤å¾ªç¯7æ¬¡å°±è¡Œäº†ã€‚
 		 */
 		for (exponent = 7; exponent >= 0; --exponent) {
 			if ((1 << exponent) <= urb->interval)
@@ -1157,7 +1157,7 @@ static int uhci_submit_interrupt(struct uhci_hcd *uhci, struct urb *urb,
 		if (exponent < 0)
 			return -EINVAL;
 		/**
-		 * ÖÜÆÚÊıÎª2µÄN´Î·½£¬²¢ÇÒĞ¡ÓÚÉè±¸ÒªÇóµÄÖÜÆÚ¡£
+		 * å‘¨æœŸæ•°ä¸º2çš„Næ¬¡æ–¹ï¼Œå¹¶ä¸”å°äºè®¾å¤‡è¦æ±‚çš„å‘¨æœŸã€‚
 		 */
 		qh->period = 1 << exponent;
 		qh->skel = SKEL_INDEX(exponent);
@@ -1166,7 +1166,7 @@ static int uhci_submit_interrupt(struct uhci_hcd *uhci, struct urb *urb,
 		 * of the QH lists. */
 		qh->phase = (qh->period / 2) & (MAX_PHASE - 1);
 		/**
-		 * ¶ÔÖĞ¶ÏºÍµÈÊ±URBÀ´Ëµ£¬ĞèÒª¼ì²é´ø¿íÊÇ·ñ×ã¹»¡£
+		 * å¯¹ä¸­æ–­å’Œç­‰æ—¶URBæ¥è¯´ï¼Œéœ€è¦æ£€æŸ¥å¸¦å®½æ˜¯å¦è¶³å¤Ÿã€‚
 		 */
 		ret = uhci_check_bandwidth(uhci, qh);
 		if (ret)
@@ -1175,7 +1175,7 @@ static int uhci_submit_interrupt(struct uhci_hcd *uhci, struct urb *urb,
 		return -EINVAL;		/* Can't decrease the period */
 
 	/**
-	 * ´ø¿í¼ì²éÍê±Ï£¬µ÷ÓÃuhci_submit_common×¼±¸Ìá½»URB¡£
+	 * å¸¦å®½æ£€æŸ¥å®Œæ¯•ï¼Œè°ƒç”¨uhci_submit_commonå‡†å¤‡æäº¤URBã€‚
 	 */
 	ret = uhci_submit_common(uhci, urb, qh);
 	if (ret == 0) {
@@ -1197,7 +1197,7 @@ static int uhci_fixup_short_transfer(struct uhci_hcd *uhci,
 	int ret;
 
 	td = list_entry(urbp->td_list.prev, struct uhci_td, list);
-	if (qh->type == USB_ENDPOINT_XFER_CONTROL) {/* ¿ØÖÆ´«Êä¡£ */
+	if (qh->type == USB_ENDPOINT_XFER_CONTROL) {/* æ§åˆ¶ä¼ è¾“ã€‚ */
 
 		/* When a control transfer is short, we have to restart
 		 * the queue at the status stage transaction, which is
@@ -1205,7 +1205,7 @@ static int uhci_fixup_short_transfer(struct uhci_hcd *uhci,
 		WARN_ON(list_empty(&urbp->td_list));
 		qh->element = LINK_TO_TD(td);
 		/**
-		 * tmpÊÇ×îºóÒ»¸öÔªËØ£¬ºóÃæ»á´Óµ¹ÊıµÚ¶ş¸ö¿ªÊ¼É¾³ı¡£ÒòÎª×îºóÒ»¸ötdÊÇ×´Ì¬½×¶ÎµÄtd¡£
+		 * tmpæ˜¯æœ€åä¸€ä¸ªå…ƒç´ ï¼Œåé¢ä¼šä»å€’æ•°ç¬¬äºŒä¸ªå¼€å§‹åˆ é™¤ã€‚å› ä¸ºæœ€åä¸€ä¸ªtdæ˜¯çŠ¶æ€é˜¶æ®µçš„tdã€‚
 		 */
 		tmp = td->list.prev;
 		ret = -EINPROGRESS;
@@ -1248,7 +1248,7 @@ static int uhci_result_common(struct uhci_hcd *uhci, struct urb *urb)
 	int ret = 0;
 
 	/**
-	 * ±éÀú¶ÓÁĞÖĞµÄËùÓĞTD¡£
+	 * éå†é˜Ÿåˆ—ä¸­çš„æ‰€æœ‰TDã€‚
 	 */
 	list_for_each_entry_safe(td, tmp, &urbp->td_list, list) {
 		unsigned int ctrlstat;
@@ -1256,23 +1256,23 @@ static int uhci_result_common(struct uhci_hcd *uhci, struct urb *urb)
 
 		ctrlstat = td_status(td);
 		/**
-		 * »ñµÃTD×´Ì¬¡£
+		 * è·å¾—TDçŠ¶æ€ã€‚
 		 */
 		status = uhci_status_bits(ctrlstat);
 		/**
-		 * µ±Ç°TD»¹Ã»ÓĞ±»·¢ËÍ¡£ËµÃ÷Õû¸ö¶ÓÁĞ»¹ÔÚ´¦ÀíÖĞ¡£
+		 * å½“å‰TDè¿˜æ²¡æœ‰è¢«å‘é€ã€‚è¯´æ˜æ•´ä¸ªé˜Ÿåˆ—è¿˜åœ¨å¤„ç†ä¸­ã€‚
 		 */
 		if (status & TD_CTRL_ACTIVE)
 			return -EINPROGRESS;
 
 		/**
-		 * Ö÷»úÊµ¼Ê´«ËÍµÄ×Ö½ÚÊı¡£
+		 * ä¸»æœºå®é™…ä¼ é€çš„å­—èŠ‚æ•°ã€‚
 		 */
 		len = uhci_actual_length(ctrlstat);
 		urb->actual_length += len;
 
 		/**
-		 * Õı³£Çé¿öÏÂ£¬statusÓ¦¸ÃÎª0£¬²»Îª0Ôò´òÓ¡µ÷ÊÔĞÅÏ¢¡£
+		 * æ­£å¸¸æƒ…å†µä¸‹ï¼Œstatusåº”è¯¥ä¸º0ï¼Œä¸ä¸º0åˆ™æ‰“å°è°ƒè¯•ä¿¡æ¯ã€‚
 		 */
 		if (status) {
 			ret = uhci_map_status(status,
@@ -1291,7 +1291,7 @@ static int uhci_result_common(struct uhci_hcd *uhci, struct urb *urb)
 				}
 			}
 
-		} else if (len < uhci_expected_length(td_token(td))) {/* Êµ¼Ê´«ÊäµÄÖµĞ¡ÓÚÆÚÍûµÄÖµ¡£ */
+		} else if (len < uhci_expected_length(td_token(td))) {/* å®é™…ä¼ è¾“çš„å€¼å°äºæœŸæœ›çš„å€¼ã€‚ */
 
 			/* For control transfers, go to the status TD if
 			 * this isn't already the last data TD */
@@ -1306,14 +1306,14 @@ static int uhci_result_common(struct uhci_hcd *uhci, struct urb *urb)
 
 			/* Fixup needed only if this isn't the URB's last TD */
 			/**
-			 * ×îºóÒ»¸ö°üÔÊĞíÊÇĞ¡°ü£¬µ«ÊÇÈç¹û²»ÊÇ×îºóÒ»¸ö°ü£¬ÔòÒ²ÊÇÒ»ÖÖ´íÎóÇé¿ö¡£
+			 * æœ€åä¸€ä¸ªåŒ…å…è®¸æ˜¯å°åŒ…ï¼Œä½†æ˜¯å¦‚æœä¸æ˜¯æœ€åä¸€ä¸ªåŒ…ï¼Œåˆ™ä¹Ÿæ˜¯ä¸€ç§é”™è¯¯æƒ…å†µã€‚
 			 */
 			else if (&td->list != urbp->td_list.prev)
 				ret = 1;
 		}
 
 		/**
-		 * °üÒÑ¾­Õı³£Íê³É£¬¿ÉÒÔÏú»ÙËüÁË¡£
+		 * åŒ…å·²ç»æ­£å¸¸å®Œæˆï¼Œå¯ä»¥é”€æ¯å®ƒäº†ã€‚
 		 */
 		uhci_remove_td_from_urbp(td);
 		if (qh->post_td)
@@ -1336,7 +1336,7 @@ err:
 				(ret == -EREMOTEIO);
 
 	} else		/* Short packet received */
-		ret = uhci_fixup_short_transfer(uhci, qh, urbp);/* ´¦Àí¶Ì°ü´íÎó¡£ */
+		ret = uhci_fixup_short_transfer(uhci, qh, urbp);/* å¤„ç†çŸ­åŒ…é”™è¯¯ã€‚ */
 	return ret;
 }
 
@@ -1353,7 +1353,7 @@ static int uhci_submit_isochronous(struct uhci_hcd *uhci, struct urb *urb,
 
 	/* Values must not be too big (could overflow below) */
 	/**
-	 * ³¬ÔØÁË¡£
+	 * è¶…è½½äº†ã€‚
 	 */
 	if (urb->interval >= UHCI_NUMFRAMES ||
 			urb->number_of_packets >= UHCI_NUMFRAMES)
@@ -1362,9 +1362,9 @@ static int uhci_submit_isochronous(struct uhci_hcd *uhci, struct urb *urb,
 	/* Check the period and figure out the starting frame number */
 	if (!qh->bandwidth_reserved) {
 		qh->period = urb->interval;
-		if (urb->transfer_flags & URB_ISO_ASAP) {/* ×Ô¶¯Ö¸¶¨Ö¡ºÅ */
+		if (urb->transfer_flags & URB_ISO_ASAP) {/* è‡ªåŠ¨æŒ‡å®šå¸§å· */
 			/**
-			 * phaseÉèÖÃ³É£­1£¬Ôòuhci_check_bandwidth»áÑ¡Ôñ³öÒ»¸öºÏÊÊµÄphase¡£
+			 * phaseè®¾ç½®æˆï¼1ï¼Œåˆ™uhci_check_bandwidthä¼šé€‰æ‹©å‡ºä¸€ä¸ªåˆé€‚çš„phaseã€‚
 			 */
 			qh->phase = -1;		/* Find the best phase */
 			i = uhci_check_bandwidth(uhci, qh);
@@ -1373,7 +1373,7 @@ static int uhci_submit_isochronous(struct uhci_hcd *uhci, struct urb *urb,
 
 			/* Allow a little time to allocate the TDs */
 			/**
-			 * »ñµÃUHCIÖ÷»ú¿ØÖÆÆ÷µÄÖ¡¼ÆÊıÆ÷¡£²¢¸üĞÂframe_number¡£
+			 * è·å¾—UHCIä¸»æœºæ§åˆ¶å™¨çš„å¸§è®¡æ•°å™¨ã€‚å¹¶æ›´æ–°frame_numberã€‚
 			 */
 			uhci_get_current_frame_number(uhci);
 			frame = uhci->frame_number + 10;
@@ -1424,20 +1424,20 @@ static int uhci_submit_isochronous(struct uhci_hcd *uhci, struct urb *urb,
 
 	/* Make sure we won't have to go too far into the future */
 	/**
-	 * ±¾´Î´«ÊäµÄ°ü²»ÄÜÌ«´ó¡£
+	 * æœ¬æ¬¡ä¼ è¾“çš„åŒ…ä¸èƒ½å¤ªå¤§ã€‚
 	 */
 	if (uhci_frame_before_eq(uhci->last_iso_frame + UHCI_NUMFRAMES,
 			urb->start_frame + urb->number_of_packets *
 				urb->interval))
 		return -EFBIG;
 	/**
-	 * TD_CTRL_IOS±íÊ¾ÕâÊÇÒ»¸öµÈÊ±´«ÊäµÄÃèÊö·û¡£
+	 * TD_CTRL_IOSè¡¨ç¤ºè¿™æ˜¯ä¸€ä¸ªç­‰æ—¶ä¼ è¾“çš„æè¿°ç¬¦ã€‚
 	 */
 	status = TD_CTRL_ACTIVE | TD_CTRL_IOS;
 	destination = (urb->pipe & PIPE_DEVEP_MASK) | usb_packetid(urb->pipe);
 
 	/**
-	 * ¹¹½¨µÈÊ±´«ÊäµÄTD¡£
+	 * æ„å»ºç­‰æ—¶ä¼ è¾“çš„TDã€‚
 	 */
 	for (i = 0; i < urb->number_of_packets; i++) {
 		td = uhci_alloc_td(uhci);
@@ -1512,7 +1512,7 @@ static int uhci_result_isochronous(struct uhci_hcd *uhci, struct urb *urb)
 }
 
 /**
- * UHCIµÄURBÈë¶Óº¯Êı¡£
+ * UHCIçš„URBå…¥é˜Ÿå‡½æ•°ã€‚
  */
 static int uhci_urb_enqueue(struct usb_hcd *hcd,
 		struct urb *urb, gfp_t mem_flags)
@@ -1531,14 +1531,14 @@ static int uhci_urb_enqueue(struct usb_hcd *hcd,
 
 	ret = -ENOMEM;
 	/**
-	 * ÎªURB·ÖÅäUHCIË½ÓĞÊı¾İ½á¹¹¡£
+	 * ä¸ºURBåˆ†é…UHCIç§æœ‰æ•°æ®ç»“æ„ã€‚
 	 */
 	urbp = uhci_alloc_urb_priv(uhci, urb);
 	if (!urbp)
 		goto done;
 
 	/**
-	 * »ñµÃ±¾´Î²Ù×÷µÄQH¡£
+	 * è·å¾—æœ¬æ¬¡æ“ä½œçš„QHã€‚
 	 */
 	if (hep->hcpriv)
 		qh = (struct uhci_qh *) hep->hcpriv;
@@ -1552,7 +1552,7 @@ static int uhci_urb_enqueue(struct usb_hcd *hcd,
 	switch (qh->type) {
 	case USB_ENDPOINT_XFER_CONTROL:
 		/**
-		 * Ìá½»¿ØÖÆ´«Êä¡£
+		 * æäº¤æ§åˆ¶ä¼ è¾“ã€‚
 		 */
 		ret = uhci_submit_control(uhci, urb, qh);
 		break;
@@ -1561,14 +1561,14 @@ static int uhci_urb_enqueue(struct usb_hcd *hcd,
 		break;
 	case USB_ENDPOINT_XFER_INT:
 		/**
-		 * Ìá½»ÖĞ¶Ï´«Êä¡£
+		 * æäº¤ä¸­æ–­ä¼ è¾“ã€‚
 		 */
 		ret = uhci_submit_interrupt(uhci, urb, qh);
 		break;
 	case USB_ENDPOINT_XFER_ISOC:
 		urb->error_count = 0;
 		/**
-		 * Ìá½»µÈÊ±´«Êä¡£
+		 * æäº¤ç­‰æ—¶ä¼ è¾“ã€‚
 		 */
 		ret = uhci_submit_isochronous(uhci, urb, qh);
 		break;
@@ -1579,7 +1579,7 @@ static int uhci_urb_enqueue(struct usb_hcd *hcd,
 	/* Add this URB to the QH */
 	urbp->qh = qh;
 	/**
-	 * ½«URBÁ´½Óµ½QH¶ÓÁĞÖĞÈ¥¡£
+	 * å°†URBé“¾æ¥åˆ°QHé˜Ÿåˆ—ä¸­å»ã€‚
 	 */
 	list_add_tail(&urbp->node, &qh->queue);
 
@@ -1588,12 +1588,12 @@ static int uhci_urb_enqueue(struct usb_hcd *hcd,
 	 * become idle, so we can activate it right away.  But only if the
 	 * queue isn't stopped. */
 	/**
-	 * ¶ÓÁĞÀïÃæµÚÒ»¸öURBÊÇ±¾¿ØÖÆ°ü£¬²¢ÇÒ¶ÓÁĞÃ»ÓĞ±»Í£Ö¹£¬¾Í¼¤»î¶ÓÁĞ¡£
+	 * é˜Ÿåˆ—é‡Œé¢ç¬¬ä¸€ä¸ªURBæ˜¯æœ¬æ§åˆ¶åŒ…ï¼Œå¹¶ä¸”é˜Ÿåˆ—æ²¡æœ‰è¢«åœæ­¢ï¼Œå°±æ¿€æ´»é˜Ÿåˆ—ã€‚
 	 */
 	if (qh->queue.next == &urbp->node && !qh->is_stopped) {
 		uhci_activate_qh(uhci, qh);
 		/**
-		 * ´¦Àí´ø¿í»ØÊÕ¡£
+		 * å¤„ç†å¸¦å®½å›æ”¶ã€‚
 		 */
 		uhci_urbp_wants_fsbr(uhci, urbp);
 	}
@@ -1678,7 +1678,7 @@ __acquires(uhci->lock)
 	/* Take the URB off the QH's queue.  If the queue is now empty,
 	 * this is a perfect time for a toggle fixup. */
 	/**
-	 * ½«URB´ÓQHÖĞÉ¾³ı¡£
+	 * å°†URBä»QHä¸­åˆ é™¤ã€‚
 	 */
 	list_del_init(&urbp->node);
 	if (list_empty(&qh->queue) && qh->needs_fixup) {
@@ -1688,7 +1688,7 @@ __acquires(uhci->lock)
 	}
 
 	/**
-	 * É¾³ı¸÷¸öTD¡£°ÑTDµÄÄÚ´æÊÍ·Å£¬²¢ÊÍ·ÅURB¡£
+	 * åˆ é™¤å„ä¸ªTDã€‚æŠŠTDçš„å†…å­˜é‡Šæ”¾ï¼Œå¹¶é‡Šæ”¾URBã€‚
 	 */
 	uhci_free_urb_priv(uhci, urbp);
 	usb_hcd_unlink_urb_from_ep(uhci_to_hcd(uhci), urb);
@@ -1699,9 +1699,9 @@ __acquires(uhci->lock)
 
 	/* If the queue is now empty, we can unlink the QH and give up its
 	 * reserved bandwidth. */
-	if (list_empty(&qh->queue)) {/* QHÒÑ¾­¿ÕÁË */
+	if (list_empty(&qh->queue)) {/* QHå·²ç»ç©ºäº† */
 		/**
-		 * °ÑQH³·Ïúµô¡£
+		 * æŠŠQHæ’¤é”€æ‰ã€‚
 		 */
 		uhci_unlink_qh(uhci, qh);
 		if (qh->bandwidth_reserved)
@@ -1726,7 +1726,7 @@ static void uhci_scan_qh(struct uhci_hcd *uhci, struct uhci_qh *qh)
 		urbp = list_entry(qh->queue.next, struct urb_priv, node);
 		urb = urbp->urb;
 
-		if (qh->type == USB_ENDPOINT_XFER_ISOC)/* µÈÊ±´«Êä¶ÓÁĞ */
+		if (qh->type == USB_ENDPOINT_XFER_ISOC)/* ç­‰æ—¶ä¼ è¾“é˜Ÿåˆ— */
 			status = uhci_result_isochronous(uhci, urb);
 		else
 			status = uhci_result_common(uhci, urb);
@@ -1835,12 +1835,12 @@ static int uhci_advance_check(struct uhci_hcd *uhci, struct uhci_qh *qh)
 		urbp = list_entry(qh->queue.next, struct urb_priv, node);
 		td = list_entry(urbp->td_list.next, struct uhci_td, list);
 		status = td_status(td);
-		if (!(status & TD_CTRL_ACTIVE)) {/* Èë¶ÓÁĞÊ±£¬ÉèÖÃÁËTD_CTRL_ACTIVE±êÖ¾£¬Èç¹û´Ë±êÖ¾²»´æÔÚ£¬ËµÃ÷Ó²¼şÉèÖÃÖ´ĞĞÍê·¢ËÍ¡£ */
+		if (!(status & TD_CTRL_ACTIVE)) {/* å…¥é˜Ÿåˆ—æ—¶ï¼Œè®¾ç½®äº†TD_CTRL_ACTIVEæ ‡å¿—ï¼Œå¦‚æœæ­¤æ ‡å¿—ä¸å­˜åœ¨ï¼Œè¯´æ˜ç¡¬ä»¶è®¾ç½®æ‰§è¡Œå®Œå‘é€ã€‚ */
 
 			/* We're okay, the queue has advanced */
 			qh->wait_expired = 0;
 			qh->advance_jiffies = jiffies;
-			goto done;/* ÕâÖÖÇé¿ö·µ»Ø1£¬Õı³£Ö´ĞĞÍê·¢ËÍ¹ı³Ì¡£ */
+			goto done;/* è¿™ç§æƒ…å†µè¿”å›1ï¼Œæ­£å¸¸æ‰§è¡Œå®Œå‘é€è¿‡ç¨‹ã€‚ */
 		}
 		ret = 0;
 	}
@@ -1888,7 +1888,7 @@ static void uhci_scan_schedule(struct uhci_hcd *uhci)
 
 	/* Don't allow re-entrant calls */
 	/**
-	 * ÕâÀïÊÇÎªÁË±ÜÃâµİ¹é£¬¶ø²»ÊÇ±ÜÃâ²¢·¢¡£
+	 * è¿™é‡Œæ˜¯ä¸ºäº†é¿å…é€’å½’ï¼Œè€Œä¸æ˜¯é¿å…å¹¶å‘ã€‚
 	 */
 	if (uhci->scan_in_progress) {
 		uhci->need_rescan = 1;
@@ -1900,35 +1900,35 @@ rescan:
 	uhci->fsbr_is_wanted = 0;
 
 	/**
-	 * Çå³ıTD_CTRL_IOC±êÖ¾£¬±íÊ¾ÔÚÖ¡´«ÊäÍê³Éºó£¬²»ÏòÉè±¸·¢ËÍÖĞ¶Ï¡£ÒòÎª´ËÊ±ÔÚ´¦Àíµ÷¶È¶ÓÁĞ¡£
+	 * æ¸…é™¤TD_CTRL_IOCæ ‡å¿—ï¼Œè¡¨ç¤ºåœ¨å¸§ä¼ è¾“å®Œæˆåï¼Œä¸å‘è®¾å¤‡å‘é€ä¸­æ–­ã€‚å› ä¸ºæ­¤æ—¶åœ¨å¤„ç†è°ƒåº¦é˜Ÿåˆ—ã€‚
 	 */
 	uhci_clear_next_interrupt(uhci);
 	/**
-	 * ´Ó¿ØÖÆ¼Ä´æÆ÷ÖĞ¶ÁÈ¡µ±Ç°Ö¡ºÅ¡£
+	 * ä»æ§åˆ¶å¯„å­˜å™¨ä¸­è¯»å–å½“å‰å¸§å·ã€‚
 	 */
 	uhci_get_current_frame_number(uhci);
 	uhci->cur_iso_frame = uhci->frame_number;
 
 	/* Go through all the QH queues and process the URBs in each one */
 	/**
-	 * ±éÀú11¸öQH¶ÓÁĞÖĞµÄËùÓĞURBÇëÇó¡£
+	 * éå†11ä¸ªQHé˜Ÿåˆ—ä¸­çš„æ‰€æœ‰URBè¯·æ±‚ã€‚
 	 */
 	for (i = 0; i < UHCI_NUM_SKELQH - 1; ++i) {
 		uhci->next_qh = list_entry(uhci->skelqh[i]->node.next,
 				struct uhci_qh, node);
 		/**
-		 * ±éÀú¶ÓÁĞÖĞÁ´±íµÄÃ¿Ò»¸ö½Úµã¡£
+		 * éå†é˜Ÿåˆ—ä¸­é“¾è¡¨çš„æ¯ä¸€ä¸ªèŠ‚ç‚¹ã€‚
 		 */
 		while ((qh = uhci->next_qh) != uhci->skelqh[i]) {
 			uhci->next_qh = list_entry(qh->node.next,
 					struct uhci_qh, node);
 
 			/**
-			 * ¼ì²éTDÊÇ·ñÖ´ĞĞÍêÁË¡£
+			 * æ£€æŸ¥TDæ˜¯å¦æ‰§è¡Œå®Œäº†ã€‚
 			 */
-			if (uhci_advance_check(uhci, qh)) {/* Õı³£·¢ËÍÍêÒ»¸öTD */
+			if (uhci_advance_check(uhci, qh)) {/* æ­£å¸¸å‘é€å®Œä¸€ä¸ªTD */
 				/**
-				 * É¨ÃèQH£¬ÅĞ¶ÏÊÇ·ñ´¦ÀíÍêQH¡£
+				 * æ‰«æQHï¼Œåˆ¤æ–­æ˜¯å¦å¤„ç†å®ŒQHã€‚
 				 */
 				uhci_scan_qh(uhci, qh);
 				if (qh->state == QH_STATE_ACTIVE) {
@@ -1951,7 +1951,7 @@ rescan:
 	}
 
 	/**
-	 * Ã»ÓĞ¿ÕÏĞµÄQH¶ÔÏó
+	 * æ²¡æœ‰ç©ºé—²çš„QHå¯¹è±¡
 	 */
 	if (list_empty(&uhci->skel_unlink_qh->node))
 		uhci_clear_next_interrupt(uhci);

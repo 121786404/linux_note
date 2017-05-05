@@ -1481,12 +1481,12 @@ bool queue_work_on(int cpu, struct workqueue_struct *wq,
 	unsigned long flags;
 
 	local_irq_save(flags);
-	/* Ê×ÏÈ¼ì²âwork->dataµÄWORK_STRUCT_PENDINGÎ»ÓĞÃ»ÓĞ±»ÖÃ1,ÖÃ1ÒâÎ¶×Å´ËÇ°¸Ã
-	 * workÒÑ¾­±»Ìá½»»¹Ã»ÓĞ´¦Àí,ÄÚºË½ûÖ¹Çı¶¯³ÌĞòÔÚÒ»¸ö¹¤×÷½Úµã»¹Ã»´¦ÀíÍê¾Í
-	 * ÔÙ´ÎÌá½»¸Ã½Úµã,´Ë´¦µÄ¼ì²âÒ²¸æËßÇı¶¯³ÌĞò,ÔÚ¹¹Ôì¹¤×÷½Úµã¶ÔÏóworkÊ±,
-	 * Ó¦¸ÃÈ·±£work->dataµÍ2Î»Îª0,Èç¹ûwork->dataµÄWORK_STRUCT_PENDINGÎªÊÇ0
-	 * ,ÄÇÃ´¾Í°Ñ¸ÃÎ»ÖÃ1±íÃ÷¹¤×÷½Úµã´¦ÓÚµÈ´ı´¦ÀíµÄ×´Ì¬,È»ºóµ÷ÓÃ__queue_work
-	 * À´Ìá½»½Úµã*/
+	/* é¦–å…ˆæ£€æµ‹work->dataçš„WORK_STRUCT_PENDINGä½æœ‰æ²¡æœ‰è¢«ç½®1,ç½®1æ„å‘³ç€æ­¤å‰è¯¥
+	 * workå·²ç»è¢«æäº¤è¿˜æ²¡æœ‰å¤„ç†,å†…æ ¸ç¦æ­¢é©±åŠ¨ç¨‹åºåœ¨ä¸€ä¸ªå·¥ä½œèŠ‚ç‚¹è¿˜æ²¡å¤„ç†å®Œå°±
+	 * å†æ¬¡æäº¤è¯¥èŠ‚ç‚¹,æ­¤å¤„çš„æ£€æµ‹ä¹Ÿå‘Šè¯‰é©±åŠ¨ç¨‹åº,åœ¨æ„é€ å·¥ä½œèŠ‚ç‚¹å¯¹è±¡workæ—¶,
+	 * åº”è¯¥ç¡®ä¿work->dataä½2ä½ä¸º0,å¦‚æœwork->dataçš„WORK_STRUCT_PENDINGä¸ºæ˜¯0
+	 * ,é‚£ä¹ˆå°±æŠŠè¯¥ä½ç½®1è¡¨æ˜å·¥ä½œèŠ‚ç‚¹å¤„äºç­‰å¾…å¤„ç†çš„çŠ¶æ€,ç„¶åè°ƒç”¨__queue_work
+	 * æ¥æäº¤èŠ‚ç‚¹*/
 	if (!test_and_set_bit(WORK_STRUCT_PENDING_BIT, work_data_bits(work))) {
 		__queue_work(cpu, wq, work);
 		ret = true;
@@ -1550,10 +1550,10 @@ static void __queue_delayed_work(int cpu, struct workqueue_struct *wq,
  * execution.
  */
  /**
- * ÀûÓÃ¶¨Ê±Æ÷timerÀ´ÊµÏÖÑÓ³ÙÌá½»µÄ¹¤×÷,timer->expires = jiffies + delay,ÕâÑùµ±
- * delayÊµ¼Êµ½ÆÚºó,timer->function = delayed_work_timer_fn½«±»µ÷ÓÃ,
- * delayed_work_timer_fn»á°Ñqueue_delayed_work_onÒªÌá½»µÄ½ÚµãÌá½»µ½¹¤×÷¶ÓÁĞÖĞ,
- * ËùÓĞÇı¶¯³ÌĞòÒªÊ¹ÓÃqueue_delayed_work,ÒªÉú³ÉÒ»¸östruct delayed_work¶ÔÏó
+ * åˆ©ç”¨å®šæ—¶å™¨timeræ¥å®ç°å»¶è¿Ÿæäº¤çš„å·¥ä½œ,timer->expires = jiffies + delay,è¿™æ ·å½“
+ * delayå®é™…åˆ°æœŸå,timer->function = delayed_work_timer_fnå°†è¢«è°ƒç”¨,
+ * delayed_work_timer_fnä¼šæŠŠqueue_delayed_work_onè¦æäº¤çš„èŠ‚ç‚¹æäº¤åˆ°å·¥ä½œé˜Ÿåˆ—ä¸­,
+ * æ‰€æœ‰é©±åŠ¨ç¨‹åºè¦ä½¿ç”¨queue_delayed_work,è¦ç”Ÿæˆä¸€ä¸ªstruct delayed_workå¯¹è±¡
  */
 bool queue_delayed_work_on(int cpu, struct workqueue_struct *wq,
 			   struct delayed_work *dwork, unsigned long delay)
@@ -2180,7 +2180,7 @@ static void process_scheduled_works(struct worker *worker)
  *
  * Return: 0
  */
- /*¹¤ÈËÏß³Ì*/
+ /*å·¥äººçº¿ç¨‹*/
 static int worker_thread(void *__worker)
 {
 	struct worker *worker = __worker;

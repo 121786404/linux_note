@@ -22,7 +22,7 @@
 #define SLAB_RED_ZONE		0x00000400UL	/* DEBUG: Red zone objs in a cache */
 #define SLAB_POISON		0x00000800UL	/* DEBUG: Poison objects */
 /**
- * ʹ�ô˱�־������SLAB����������ǰ���Ӳ�������ж���ġ�
+ * 使用此标志创建的SLAB对象，其对象是按照硬件缓存行对齐的。
  */
 #define SLAB_HWCACHE_ALIGN	0x00002000UL	/* Align objs on cache lines */
 #define SLAB_CACHE_DMA		0x00004000UL	/* Use GFP_DMA memory */

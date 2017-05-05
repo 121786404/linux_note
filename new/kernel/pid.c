@@ -42,8 +42,8 @@
 #define pid_hashfn(nr, ns)	\
 	hash_long((unsigned long)nr + (unsigned long)ns, pidhash_shift)
 /*
-ÔÚÒ»Ğ©Çé¿öÏÂ£¬ÄÚºË±ØĞëÄÜ´Ó½ø³ÌµÄPIDµÃ³ö¶ÔÓ¦µÄ½ø³ÌÃèÊö·ûÖ¸Õë¡£
-ÀıÈçkillÏµÍ³µ÷ÓÃÎªÁË¼ÓËÙ²éÕÒ£¬ÒıÈëÁËpid_hashÉ¢ÁĞ±í
+åœ¨ä¸€äº›æƒ…å†µä¸‹ï¼Œå†…æ ¸å¿…é¡»èƒ½ä»è¿›ç¨‹çš„PIDå¾—å‡ºå¯¹åº”çš„è¿›ç¨‹æè¿°ç¬¦æŒ‡é’ˆã€‚
+ä¾‹å¦‚killç³»ç»Ÿè°ƒç”¨ä¸ºäº†åŠ é€ŸæŸ¥æ‰¾ï¼Œå¼•å…¥äº†pid_hashæ•£åˆ—è¡¨
 */
 static struct hlist_head *pid_hash;
 static unsigned int pidhash_shift = 4;
@@ -498,7 +498,7 @@ struct pid *find_get_pid(pid_t nr)
 	return pid;
 }
 EXPORT_SYMBOL_GPL(find_get_pid);
-/* pidÔÚÖ¸¶¨ÃüÃû¿Õ¼änsÏÂµÄpid */
+/* pidåœ¨æŒ‡å®šå‘½åç©ºé—´nsä¸‹çš„pid */
 pid_t pid_nr_ns(struct pid *pid, struct pid_namespace *ns)
 {
 	struct upid *upid;
@@ -575,21 +575,21 @@ struct pid *find_ge_pid(int nr, struct pid_namespace *ns)
  * more.
  */
 /**
- * ³õÊ¼»¯ÏµÍ³¹ÜÀíËùÓĞ½ø³ÌµÄÊı¾İ½á¹¹
- ¸ù¾İµÍ¶ËÄÚ´æÒ³ÊıºÍÉ¢ÁĞ¶È£¬·ÖÅähash¿Õ¼ä£¬²¢¸³Óèpid_hash
+ * åˆå§‹åŒ–ç³»ç»Ÿç®¡ç†æ‰€æœ‰è¿›ç¨‹çš„æ•°æ®ç»“æ„
+ æ ¹æ®ä½ç«¯å†…å­˜é¡µæ•°å’Œæ•£åˆ—åº¦ï¼Œåˆ†é…hashç©ºé—´ï¼Œå¹¶èµ‹äºˆpid_hash
  */
 void __init pidhash_init(void)
 {
 	unsigned int i, pidhash_size;
 /*
-¸ù¾İnr_kernel_pages(µÍ¶ËÄÚ´æµÄÒ³Êı)£¬·ÖÅä¹şÏ£Êı×é£¬ÒÔ¼°¸÷¸ö¹şÏ£
-    |     Êı×éÔªËØÏÂµÄ¹şÏ£Á´±íµÄ¿Õ¼ä£¬Ô­ÀíÈçÏÂ£º
+æ ¹æ®nr_kernel_pages(ä½ç«¯å†…å­˜çš„é¡µæ•°)ï¼Œåˆ†é…å“ˆå¸Œæ•°ç»„ï¼Œä»¥åŠå„ä¸ªå“ˆå¸Œ
+    |     æ•°ç»„å…ƒç´ ä¸‹çš„å“ˆå¸Œé“¾è¡¨çš„ç©ºé—´ï¼ŒåŸç†å¦‚ä¸‹ï¼š
     |     number = nr_kernel_pages; 
-    |     number >= (18 - PAGE_SHIFT) ¸ù¾İÉ¢ÁĞ¶È»ñµÃÊı×éÔªËØ¸öÊı
+    |     number >= (18 - PAGE_SHIFT) æ ¹æ®æ•£åˆ—åº¦è·å¾—æ•°ç»„å…ƒç´ ä¸ªæ•°
     |     number = roundup_pow_of_two(number);
     |     pidhash_shift = max{x | 2**x <= number}
     |     size = number * sizeof(*pid_hash);
-    |     Ê¹ÓÃÎ»Í¼·ÖÅäÆ÷·ÖÅäsize¿Õ¼ä£¬½«·µ»ØÖµ¸¶¸øpid_hash;
+    |     ä½¿ç”¨ä½å›¾åˆ†é…å™¨åˆ†é…sizeç©ºé—´ï¼Œå°†è¿”å›å€¼ä»˜ç»™pid_hash;
 */
 	pid_hash = alloc_large_system_hash("PID", sizeof(*pid_hash), 0, 18,
 					   HASH_EARLY | HASH_SMALL,
@@ -602,8 +602,8 @@ void __init pidhash_init(void)
 }
 
 /**
- * ³õÊ¼»¯½ø³ÌµØÖ·¿Õ¼ä
- * ÕâÀï³õÊ¼»¯init_pid_nsµØÖ·¿Õ¼ä¡£
+ * åˆå§‹åŒ–è¿›ç¨‹åœ°å€ç©ºé—´
+ * è¿™é‡Œåˆå§‹åŒ–init_pid_nsåœ°å€ç©ºé—´ã€‚
  */
 void __init pidmap_init(void)
 {

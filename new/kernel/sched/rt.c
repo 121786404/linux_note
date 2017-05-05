@@ -2326,8 +2326,8 @@ static unsigned int get_rr_interval_rt(struct rq *rq, struct task_struct *task)
 		return 0;
 }
 /*
-采用提供 Roound-Robin算法或者FIFO算法调度实时进程
-具体调度策略由进程的task_struct->policy指定
+閲囩敤鎻愪緵 Roound-Robin绠楁硶鎴栬�匜IFO绠楁硶璋冨害瀹炴椂杩涚▼
+鍏蜂綋璋冨害绛栫暐鐢辫繘绋嬬殑task_struct->policy鎸囧畾
 
 SCHED_FIFO, SCHED_RR
 */

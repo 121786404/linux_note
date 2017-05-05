@@ -47,7 +47,7 @@ static inline pgoff_t swp_offset(swp_entry_t entry)
  * arch-independent swp_entry_t.
  */
 /**
- * ´Ópte±íÏîÖĞÌáÈ¡³ö½»»»Ïî¡£
+ * ä»pteè¡¨é¡¹ä¸­æå–å‡ºäº¤æ¢é¡¹ã€‚
  */
 static inline swp_entry_t pte_to_swp_entry(pte_t pte)
 {

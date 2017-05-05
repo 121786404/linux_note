@@ -39,7 +39,7 @@ static void usb_api_blocking_completion(struct urb *urb)
  * own interruptible routines.
  */
 /**
- * µÈ´ıURBÍê³É¡£
+ * ç­‰å¾…URBå®Œæˆã€‚
  */
 static int usb_start_wait_urb(struct urb *urb, int timeout, int *actual_length)
 { 
@@ -48,24 +48,24 @@ static int usb_start_wait_urb(struct urb *urb, int timeout, int *actual_length)
 	int retval;
 
 	/**
-	 * ¶¨Òå²¢³õÊ¼»¯Ò»¸öÍê³ÉÔ­Óï¡£µ±URBÍê³ÉÊ±£¬µ÷ÓÃcomplete»½ĞÑ±¾Ïß³Ì¡£
+	 * å®šä¹‰å¹¶åˆå§‹åŒ–ä¸€ä¸ªå®ŒæˆåŸè¯­ã€‚å½“URBå®Œæˆæ—¶ï¼Œè°ƒç”¨completeå”¤é†’æœ¬çº¿ç¨‹ã€‚
 	 */
 	init_completion(&done); 	
 	urb->context = &done;
 	urb->actual_length = 0;
 	/**
-	 * Ìá½»Ò»¸öURBÇëÇó¡£
+	 * æäº¤ä¸€ä¸ªURBè¯·æ±‚ã€‚
 	 */
 	status = usb_submit_urb(urb, GFP_NOIO);
 	if (unlikely(status))
 		goto out;
 
 	/**
-	 * µÈ´ıÊ±¼äÊÇÒÔmsÎªµ¥Î»µÄ£¬×ª»»³Éjiffies¡£
+	 * ç­‰å¾…æ—¶é—´æ˜¯ä»¥msä¸ºå•ä½çš„ï¼Œè½¬æ¢æˆjiffiesã€‚
 	 */
 	expire = timeout ? msecs_to_jiffies(timeout) : MAX_SCHEDULE_TIMEOUT;
 	/**
-	 * µÈ´ıURBÖ´ĞĞ½áÊø¡£
+	 * ç­‰å¾…URBæ‰§è¡Œç»“æŸã€‚
 	 */
 	if (!wait_for_completion_timeout(&done, expire)) {
 
@@ -80,13 +80,13 @@ static int usb_start_wait_urb(struct urb *urb, int timeout, int *actual_length)
 		retval = ctx.status;
 out:
 	/**
-	 * ÏòÉÏ²ãº¯Êı·µ»Ø±¾´ÎÊµ¼Ê´«µİµÄÊı¾İ³¤¶È¡£
+	 * å‘ä¸Šå±‚å‡½æ•°è¿”å›æœ¬æ¬¡å®é™…ä¼ é€’çš„æ•°æ®é•¿åº¦ã€‚
 	 */
 	if (actual_length)
 		*actual_length = urb->actual_length;
 
 	/**
-	 * ÊÍ·ÅURB¡£
+	 * é‡Šæ”¾URBã€‚
 	 */
 	usb_free_urb(urb);
 	return retval;
@@ -95,7 +95,7 @@ out:
 /*-------------------------------------------------------------------*/
 // returns status (negative) or length (positive)
 /**
- * ÏòUSBÉè±¸·¢ËÍ¿ØÖÆÏûÏ¢¡£
+ * å‘USBè®¾å¤‡å‘é€æ§åˆ¶æ¶ˆæ¯ã€‚
  */
 static int usb_internal_control_msg(struct usb_device *usb_dev,
 				    unsigned int pipe, 
@@ -107,20 +107,20 @@ static int usb_internal_control_msg(struct usb_device *usb_dev,
 	int length;
 
 	/**
-	 * usb_alloc_urbº¯Êı£¬´´½¨Ò»¸öurb£¬struct urb½á¹¹ÌåÖ»ÄÜÊ¹ÓÃËüÀ´´´½¨
+	 * usb_alloc_urbå‡½æ•°ï¼Œåˆ›å»ºä¸€ä¸ªurbï¼Œstruct urbç»“æ„ä½“åªèƒ½ä½¿ç”¨å®ƒæ¥åˆ›å»º
 	 */
 	urb = usb_alloc_urb(0, GFP_NOIO);
 	if (!urb)
 		return -ENOMEM;
   
   	/**
-  	 * ³õÊ¼»¯Ò»¸ö¿ØÖÆurb£¬urb±»´´½¨Ö®ºó£¬Ê¹ÓÃÖ®Ç°±ØĞëÒªÕıÈ·µÄ³õÊ¼»¯¡£
+  	 * åˆå§‹åŒ–ä¸€ä¸ªæ§åˆ¶urbï¼Œurbè¢«åˆ›å»ºä¹‹åï¼Œä½¿ç”¨ä¹‹å‰å¿…é¡»è¦æ­£ç¡®çš„åˆå§‹åŒ–ã€‚
   	 */
 	usb_fill_control_urb(urb, usb_dev, pipe, (unsigned char *)cmd, data,
 			     len, usb_api_blocking_completion, NULL);
 
 	/**
-	 * ½«urbÌá½»¸øÔÛÃÇµÄusb core£¬ÒÔ±ã·ÖÅä¸øÌØ¶¨µÄÖ÷»ú¿ØÖÆÆ÷Çı¶¯½øĞĞ´¦Àí£¬È»ºóÄ¬Ä¬µÄµÈ´ı´¦Àí½á¹û£¬»òÕß³¬Ê±¡£
+	 * å°†urbæäº¤ç»™å’±ä»¬çš„usb coreï¼Œä»¥ä¾¿åˆ†é…ç»™ç‰¹å®šçš„ä¸»æœºæ§åˆ¶å™¨é©±åŠ¨è¿›è¡Œå¤„ç†ï¼Œç„¶åé»˜é»˜çš„ç­‰å¾…å¤„ç†ç»“æœï¼Œæˆ–è€…è¶…æ—¶ã€‚
 	 */
 	retv = usb_start_wait_urb(urb, timeout, &length);
 	if (retv < 0)
@@ -156,13 +156,13 @@ static int usb_internal_control_msg(struct usb_device *usb_dev,
  *      the URB used, you can't cancel the request.
  */
 /**
- * ´´½¨Ò»¸ö¿ØÖÆurb£¬²¢°ÑËü·¢ËÍ¸øusbÉè±¸£¬È»ºóµÈ´ıËüÍê³É¡£
+ * åˆ›å»ºä¸€ä¸ªæ§åˆ¶urbï¼Œå¹¶æŠŠå®ƒå‘é€ç»™usbè®¾å¤‡ï¼Œç„¶åç­‰å¾…å®ƒå®Œæˆã€‚
  */
 int usb_control_msg(struct usb_device *dev, unsigned int pipe, __u8 request, __u8 requesttype,
 			 __u16 value, __u16 index, void *data, __u16 size, int timeout)
 {
 	/**
-	 * ÎªÒ»¸östruct usb_ctrlrequest ½á¹¹ÌåÉêÇëÄÚ´æ£¬Õâ¸ö½á¹¹ÌåÃèÊöÁËÖ÷»úÍ¨¹ı¿ØÖÆ´«Êä·¢ËÍ¸øÉè±¸µÄÇëÇó
+	 * ä¸ºä¸€ä¸ªstruct usb_ctrlrequest ç»“æ„ä½“ç”³è¯·å†…å­˜ï¼Œè¿™ä¸ªç»“æ„ä½“æè¿°äº†ä¸»æœºé€šè¿‡æ§åˆ¶ä¼ è¾“å‘é€ç»™è®¾å¤‡çš„è¯·æ±‚
 	 */
 	struct usb_ctrlrequest *dr = kmalloc(sizeof(struct usb_ctrlrequest), GFP_NOIO);
 	int ret;
@@ -171,11 +171,11 @@ int usb_control_msg(struct usb_device *dev, unsigned int pipe, __u8 request, __u
 		return -ENOMEM;
 
 	/**
-	 * Ê¹ÓÃ´«µİ¹ıÀ´µÄ²ÎÊıÌî³äÇëÇó°ü¡£
+	 * ä½¿ç”¨ä¼ é€’è¿‡æ¥çš„å‚æ•°å¡«å……è¯·æ±‚åŒ…ã€‚
 	 */
 	dr->bRequestType= requesttype;
 	/**
-	 * ¶ÔÓÚSET_ADDRESS À´Ëµ£¬bRequest µÄÖµ¾ÍÊÇUSB_REQ_SET_ADDRESS£¬±ê×¼ÇëÇóÖ®Ò».
+	 * å¯¹äºSET_ADDRESS æ¥è¯´ï¼ŒbRequest çš„å€¼å°±æ˜¯USB_REQ_SET_ADDRESSï¼Œæ ‡å‡†è¯·æ±‚ä¹‹ä¸€.
 	 */
 	dr->bRequest = request;
 	dr->wValue = cpu_to_le16p(&value);
@@ -185,7 +185,7 @@ int usb_control_msg(struct usb_device *dev, unsigned int pipe, __u8 request, __u
 	//dbg("usb_control_msg");	
 
 	/**
-	 * ·¢ËÍ¿ØÖÆÏûÏ¢¡£
+	 * å‘é€æ§åˆ¶æ¶ˆæ¯ã€‚
 	 */
 	ret = usb_internal_control_msg(dev, pipe, dr, data, size, timeout);
 
@@ -220,7 +220,7 @@ int usb_control_msg(struct usb_device *dev, unsigned int pipe, __u8 request, __u
  * the request.
  */
 /**
- * ´´½¨²¢´«ÊäÒ»¸öÖĞ¶ÏÏûÏ¢¡£
+ * åˆ›å»ºå¹¶ä¼ è¾“ä¸€ä¸ªä¸­æ–­æ¶ˆæ¯ã€‚
  */
 int usb_interrupt_msg(struct usb_device *usb_dev, unsigned int pipe,
 		      void *data, int len, int *actual_length, int timeout)
@@ -261,7 +261,7 @@ EXPORT_SYMBOL_GPL(usb_interrupt_msg);
  *	interrupt endpoint.
  */
 /**
- * ´´½¨²¢Ìá½»Ò»¸öÅúÁ¿ÏûÏ¢¡£
+ * åˆ›å»ºå¹¶æäº¤ä¸€ä¸ªæ‰¹é‡æ¶ˆæ¯ã€‚
  */
 int usb_bulk_msg(struct usb_device *usb_dev, unsigned int pipe, 
 			void *data, int len, int *actual_length, int timeout)
@@ -270,7 +270,7 @@ int usb_bulk_msg(struct usb_device *usb_dev, unsigned int pipe,
 	struct usb_host_endpoint *ep;
 
 	/**
-	 * ¸ù¾İ¹ÜµÀÀàĞÍºÍ¶ËµãºÅ£¬»ñµÃ¶Ëµã½á¹¹¡£
+	 * æ ¹æ®ç®¡é“ç±»å‹å’Œç«¯ç‚¹å·ï¼Œè·å¾—ç«¯ç‚¹ç»“æ„ã€‚
 	 */
 	ep = (usb_pipein(pipe) ? usb_dev->ep_in : usb_dev->ep_out)
 			[usb_pipeendpoint(pipe)];
@@ -278,19 +278,19 @@ int usb_bulk_msg(struct usb_device *usb_dev, unsigned int pipe,
 		return -EINVAL;
 
 	/**
-	 * ·ÖÅä²¢³õÊ¼»¯Ò»¸öURB¡£
+	 * åˆ†é…å¹¶åˆå§‹åŒ–ä¸€ä¸ªURBã€‚
 	 */
 	urb = usb_alloc_urb(0, GFP_KERNEL);
 	if (!urb)
 		return -ENOMEM;
 
 	/**
-	 * ¸ù¾İ¶ËµãÃèÊö·ûÀ´È·¶¨ÊÇÖĞ¶Ï´«Êä»¹ÊÇÅúÁ¿´«Êä
+	 * æ ¹æ®ç«¯ç‚¹æè¿°ç¬¦æ¥ç¡®å®šæ˜¯ä¸­æ–­ä¼ è¾“è¿˜æ˜¯æ‰¹é‡ä¼ è¾“
 	 */
 	if ((ep->desc.bmAttributes & USB_ENDPOINT_XFERTYPE_MASK) ==
 			USB_ENDPOINT_XFER_INT) {
 		/**
-		 * Èç¹ûÊÇÖĞ¶Ï´«Êä£¬ĞèÒªĞŞ¸Ä¹ÜµÀÀàĞÍ¡£
+		 * å¦‚æœæ˜¯ä¸­æ–­ä¼ è¾“ï¼Œéœ€è¦ä¿®æ”¹ç®¡é“ç±»å‹ã€‚
 		 */
 		pipe = (pipe & ~(3 << 30)) | (PIPE_INTERRUPT << 30);
 		usb_fill_int_urb(urb, usb_dev, pipe, data, len,
@@ -301,7 +301,7 @@ int usb_bulk_msg(struct usb_device *usb_dev, unsigned int pipe,
 				usb_api_blocking_completion, NULL);
 
 	/**
-	 * µÈ´ıURB·µ»Ø¡£
+	 * ç­‰å¾…URBè¿”å›ã€‚
 	 */
 	return usb_start_wait_urb(urb, timeout, actual_length);
 }
@@ -697,10 +697,10 @@ void usb_sg_cancel (struct usb_sg_request *io)
  * returned by the underlying usb_control_msg() call.
  */
 /**
- * »ñµÃÉè±¸ÃèÊö·û¡£
- *		type:		Òª»ñµÃµÄÃèÊö·ûÀàĞÍ:Éè±¸ÃèÊö·û£¬ÅäÖÃÃèÊö·ûºÍ×Ö·û´®ÃèÊö·û
- *		index:		¶ÔÓÚÅäÖÃÃèÊö·û£¬¿ÉÄÜÓĞ¶à¸ö£¬ÕâÀïÖ¸¶¨ÃèÊö·ûµÄĞòºÅ¡£
- *		buf,size:	ÓÃÓÚ´æ·Å·µ»Ø½á¹û¡£
+ * è·å¾—è®¾å¤‡æè¿°ç¬¦ã€‚
+ *		type:		è¦è·å¾—çš„æè¿°ç¬¦ç±»å‹:è®¾å¤‡æè¿°ç¬¦ï¼Œé…ç½®æè¿°ç¬¦å’Œå­—ç¬¦ä¸²æè¿°ç¬¦
+ *		index:		å¯¹äºé…ç½®æè¿°ç¬¦ï¼Œå¯èƒ½æœ‰å¤šä¸ªï¼Œè¿™é‡ŒæŒ‡å®šæè¿°ç¬¦çš„åºå·ã€‚
+ *		buf,size:	ç”¨äºå­˜æ”¾è¿”å›ç»“æœã€‚
  */
 int usb_get_descriptor(struct usb_device *dev, unsigned char type, unsigned char index, void *buf, int size)
 {
@@ -710,24 +710,24 @@ int usb_get_descriptor(struct usb_device *dev, unsigned char type, unsigned char
 	memset(buf,0,size);	// Make sure we parse really received data
 
 	/**
-	 * Ä³Ğ©Éè±¸ÊµÏÖÉÏÓĞÎÊÌâ£¬Ò»´Î¶ÁÈ¡¿ÉÄÜ²»³É¹¦£¬ÕâÀï¶àÊÔ¼¸´Î¡£
+	 * æŸäº›è®¾å¤‡å®ç°ä¸Šæœ‰é—®é¢˜ï¼Œä¸€æ¬¡è¯»å–å¯èƒ½ä¸æˆåŠŸï¼Œè¿™é‡Œå¤šè¯•å‡ æ¬¡ã€‚
 	 */
 	for (i = 0; i < 3; ++i) {
 		/* retry on length 0 or error; some devices are flakey */
 		/**
-		 * Í¨¹ıÏòÉè±¸·¢ËÍÒ»¸öUSB_REQ_GET_DESCRIPTOR¿ØÖÆÏûÏ¢À´»ñÈ¡Éè±¸ÃèÊö·û¡£
+		 * é€šè¿‡å‘è®¾å¤‡å‘é€ä¸€ä¸ªUSB_REQ_GET_DESCRIPTORæ§åˆ¶æ¶ˆæ¯æ¥è·å–è®¾å¤‡æè¿°ç¬¦ã€‚
 		 */
 		result = usb_control_msg(dev, usb_rcvctrlpipe(dev, 0),
 				USB_REQ_GET_DESCRIPTOR, USB_DIR_IN,
 				(type << 8) + index, 0, buf, size,
-				USB_CTRL_GET_TIMEOUT);/* USB_CTRL_GET_TIMEOUT±íÊ¾³¬Ê±Ê±¼äÎª5S */
+				USB_CTRL_GET_TIMEOUT);/* USB_CTRL_GET_TIMEOUTè¡¨ç¤ºè¶…æ—¶æ—¶é—´ä¸º5S */
 		/**
-		 * ¿ØÖÆÏûÏ¢·¢ËÍ²»³É¹¦£¬ĞèÒªÖØÊÔ¡£
+		 * æ§åˆ¶æ¶ˆæ¯å‘é€ä¸æˆåŠŸï¼Œéœ€è¦é‡è¯•ã€‚
 		 */
 		if (result == 0 || result == -EPIPE)
 			continue;
 		/**
-		 * ·µ»ØµÄÃèÊö·ûÀàĞÍÓëÇëÇóµÄ²»Ò»ÖÂ¡£
+		 * è¿”å›çš„æè¿°ç¬¦ç±»å‹ä¸è¯·æ±‚çš„ä¸ä¸€è‡´ã€‚
 		 */
 		if (result > 1 && ((u8 *)buf)[1] != type) {
 			result = -EPROTO;
@@ -767,12 +767,12 @@ static int usb_get_string(struct usb_device *dev, unsigned short langid,
 	int result;
 
 	/**
-	 * Ä³Ğ©ÓĞÎÊÌâµÄÉè±¸ĞèÒª¶ÁÈ¡¶à´Î¡£
+	 * æŸäº›æœ‰é—®é¢˜çš„è®¾å¤‡éœ€è¦è¯»å–å¤šæ¬¡ã€‚
 	 */
 	for (i = 0; i < 3; ++i) {
 		/* retry on length 0 or stall; some devices are flakey */
 		/**
-		 * ÏòÉè±¸·¢ËÍ¿ØÖÆÏûÏ¢£¬¶ÁÈ¡ÆäÃèÊö·û¡£
+		 * å‘è®¾å¤‡å‘é€æ§åˆ¶æ¶ˆæ¯ï¼Œè¯»å–å…¶æè¿°ç¬¦ã€‚
 		 */
 		result = usb_control_msg(dev, usb_rcvctrlpipe(dev, 0),
 			USB_REQ_GET_DESCRIPTOR, USB_DIR_IN,
@@ -789,7 +789,7 @@ static void usb_try_string_workarounds(unsigned char *buf, int *length)
 	int newlength, oldlength = *length;
 
 	/**
-	 * ±éÀú´¦Àíunicode±àÂë¡£µÃµ½×Ö·ûÊı¡£
+	 * éå†å¤„ç†unicodeç¼–ç ã€‚å¾—åˆ°å­—ç¬¦æ•°ã€‚
 	 */
 	for (newlength = 2; newlength + 1 < oldlength; newlength += 2)
 		if (!isprint(buf[newlength]) || buf[newlength + 1])
@@ -802,7 +802,7 @@ static void usb_try_string_workarounds(unsigned char *buf, int *length)
 }
 
 /**
- * »ñÈ¡×Ö·û´®ÃèÊö·û¡£
+ * è·å–å­—ç¬¦ä¸²æè¿°ç¬¦ã€‚
  */
 static int usb_string_sub(struct usb_device *dev, unsigned int langid,
 		unsigned int index, unsigned char *buf)
@@ -812,43 +812,43 @@ static int usb_string_sub(struct usb_device *dev, unsigned int langid,
 	/* Try to read the string descriptor by asking for the maximum
 	 * possible number of bytes */
 	/**
-	 * Éè±¸ÔÚ¶ÁÈ¡×Ö·û´®ÃèÊö·ûÊ±»áÓĞÎÊÌâ¡£
+	 * è®¾å¤‡åœ¨è¯»å–å­—ç¬¦ä¸²æè¿°ç¬¦æ—¶ä¼šæœ‰é—®é¢˜ã€‚
 	 */
 	if (dev->quirks & USB_QUIRK_STRING_FETCH_255)
 		rc = -EIO;
 	else
 		/**
-		 * usb_get_stringÕæÕı´ÓÉè±¸¶ÁÈ¡×Ö·û´®ÃèÊö·û¡£
+		 * usb_get_stringçœŸæ­£ä»è®¾å¤‡è¯»å–å­—ç¬¦ä¸²æè¿°ç¬¦ã€‚
 		 */
 		rc = usb_get_string(dev, langid, index, buf, 255);
 
 	/* If that failed try to read the descriptor length, then
 	 * ask for just that many bytes */
-	if (rc < 2) {/* ¶ÁÈ¡Ê§°ÜÁË */
+	if (rc < 2) {/* è¯»å–å¤±è´¥äº† */
 		/**
-		 * ÏÈ¶ÁÈ¡ÃèÊö·û³¤¶È¡£
+		 * å…ˆè¯»å–æè¿°ç¬¦é•¿åº¦ã€‚
 		 */
 		rc = usb_get_string(dev, langid, index, buf, 2);
 		/**
-		 * ¸ù¾İ³¤¶È¶ÁÈ¡ÃèÊö·û¡£
+		 * æ ¹æ®é•¿åº¦è¯»å–æè¿°ç¬¦ã€‚
 		 */
 		if (rc == 2)
 			rc = usb_get_string(dev, langid, index, buf, buf[0]);
 	}
 
-	if (rc >= 2) {/* ³ıÈ¥³¤¶ÈºÍÀàĞÍ×Ö¶Î£¬»¹¶Áµ½ÁË×Ö·û´®Êı¾İ¡£ */
-		if (!buf[0] && !buf[1])/* Ç°Á½¸ö×Ö½ÚÖĞÓĞÒ»¸öÊÇ0£¬ĞèÒªÍ¨¹ıusb_try_string_workarounds¼ÆËãÓĞĞ§µÄÊı¾İ³¤¶È¡£ */
+	if (rc >= 2) {/* é™¤å»é•¿åº¦å’Œç±»å‹å­—æ®µï¼Œè¿˜è¯»åˆ°äº†å­—ç¬¦ä¸²æ•°æ®ã€‚ */
+		if (!buf[0] && !buf[1])/* å‰ä¸¤ä¸ªå­—èŠ‚ä¸­æœ‰ä¸€ä¸ªæ˜¯0ï¼Œéœ€è¦é€šè¿‡usb_try_string_workaroundsè®¡ç®—æœ‰æ•ˆçš„æ•°æ®é•¿åº¦ã€‚ */
 			usb_try_string_workarounds(buf, &rc);
 
 		/* There might be extra junk at the end of the descriptor */
 		/**
-		 * ·µ»Ø½á¹ûÖĞÓĞÒ»Ğ©À¬»øÊı¾İ¡£
+		 * è¿”å›ç»“æœä¸­æœ‰ä¸€äº›åƒåœ¾æ•°æ®ã€‚
 		 */
 		if (buf[0] < rc)
 			rc = buf[0];
 
 		/**
-		 * unicode×Ö·ûÊÇÁ½¸ö×Ö½Ú¶ÔÆëµÄ£¬Ç¿ÖÆ½øĞĞ¶ÔÆë´¦Àí¡£
+		 * unicodeå­—ç¬¦æ˜¯ä¸¤ä¸ªå­—èŠ‚å¯¹é½çš„ï¼Œå¼ºåˆ¶è¿›è¡Œå¯¹é½å¤„ç†ã€‚
 		 */
 		rc = rc - (rc & 1); /* force a multiple of two */
 	}
@@ -890,7 +890,7 @@ int usb_string(struct usb_device *dev, int index, char *buf, size_t size)
 	unsigned int u, idx;
 
 	/**
-	 * Éè±¸²»ÄÜÊÇ¹ÒÆğ×´Ì¬¡£
+	 * è®¾å¤‡ä¸èƒ½æ˜¯æŒ‚èµ·çŠ¶æ€ã€‚
 	 */
 	if (dev->state == USB_STATE_SUSPENDED)
 		return -EHOSTUNREACH;
@@ -902,24 +902,24 @@ int usb_string(struct usb_device *dev, int index, char *buf, size_t size)
 		return -ENOMEM;
 
 	/* get langid for strings if it's not yet known */
-	if (!dev->have_langid) {/* Éè±¸Ã»ÓĞÖ¸¶¨ÓïÑÔID¡£ */
+	if (!dev->have_langid) {/* è®¾å¤‡æ²¡æœ‰æŒ‡å®šè¯­è¨€IDã€‚ */
 		/**
-		 * Ë÷ÒıºÅÎª0£¬ÊÇÎªÁË»ñµÃÉè±¸ËùÖ§³ÖµÄËùÓĞÓïÑÔID¡£
+		 * ç´¢å¼•å·ä¸º0ï¼Œæ˜¯ä¸ºäº†è·å¾—è®¾å¤‡æ‰€æ”¯æŒçš„æ‰€æœ‰è¯­è¨€IDã€‚
 		 */
 		err = usb_string_sub(dev, 0, 0, tbuf);
-		if (err < 0) {/* »ñÈ¡ÓïÑÔIDÊ§°Ü¡£ */
+		if (err < 0) {/* è·å–è¯­è¨€IDå¤±è´¥ã€‚ */
 			dev_err (&dev->dev,
 				"string descriptor 0 read error: %d\n",
 				err);
 			goto errout;
-		} else if (err < 4) {/* ×îĞ¡³¤¶ÈÒ²Ó¦¸ÃÊÇ4£¬Ê§°ÜÁË¡£ */
+		} else if (err < 4) {/* æœ€å°é•¿åº¦ä¹Ÿåº”è¯¥æ˜¯4ï¼Œå¤±è´¥äº†ã€‚ */
 			dev_err (&dev->dev, "string descriptor 0 too short\n");
 			err = -EINVAL;
 			goto errout;
 		} else {
 			dev->have_langid = 1;
 			/**
-			 * µÚÈı¡¢ËÄ×Ö½ÚÊÇ¿ÉÓÃID¡£
+			 * ç¬¬ä¸‰ã€å››å­—èŠ‚æ˜¯å¯ç”¨IDã€‚
 			 */
 			dev->string_langid = tbuf[2] | (tbuf[3]<< 8);
 				/* always use the first langid listed */
@@ -929,7 +929,7 @@ int usb_string(struct usb_device *dev, int index, char *buf, size_t size)
 	}
 	
 	/**
-	 * Ê¹ÓÃÓïÑÔIDÈ¥»ñÈ¡×Ö·û´®ÃèÊö·û¡£
+	 * ä½¿ç”¨è¯­è¨€IDå»è·å–å­—ç¬¦ä¸²æè¿°ç¬¦ã€‚
 	 */
 	err = usb_string_sub(dev, dev->string_langid, index, tbuf);
 	if (err < 0)
@@ -937,7 +937,7 @@ int usb_string(struct usb_device *dev, int index, char *buf, size_t size)
 
 	size--;		/* leave room for trailing NULL char in output buffer */
 	/**
-	 * ½«unicode×ª»»ÎªISO8859£­1
+	 * å°†unicodeè½¬æ¢ä¸ºISO8859ï¼1
 	 */
 	for (idx = 0, u = 2; u < err; u += 2) {
 		if (idx >= size)
@@ -967,7 +967,7 @@ int usb_string(struct usb_device *dev, int index, char *buf, size_t size)
  * or NULL if the index is 0 or the string could not be read.
  */
 /**
- * »ñµÃ½Ó¿ÚµÄ×Ö·û´®ÃèÊö·û¡£
+ * è·å¾—æ¥å£çš„å­—ç¬¦ä¸²æè¿°ç¬¦ã€‚
  */
 char *usb_cache_string(struct usb_device *udev, int index)
 {
@@ -976,11 +976,11 @@ char *usb_cache_string(struct usb_device *udev, int index)
 	int len;
 
 	/**
-	 * Ë÷ÒıºÅ²»ÄÜÎª0£¬ÕâÊÇ¹æ·¶ÀïÃæ¹æ¶¨ÁËµÄ¡£
+	 * ç´¢å¼•å·ä¸èƒ½ä¸º0ï¼Œè¿™æ˜¯è§„èŒƒé‡Œé¢è§„å®šäº†çš„ã€‚
 	 */
 	if (index > 0 && (buf = kmalloc(256, GFP_KERNEL)) != NULL) {
 		/**
-		 * usb_stringÍê³ÉÊµ¼ÊµÄ¹¤×÷¡£
+		 * usb_stringå®Œæˆå®é™…çš„å·¥ä½œã€‚
 		 */
 		if ((len = usb_string(udev, index, buf, 256)) > 0) {
 			if ((smallbuf = kmalloc(++len, GFP_KERNEL)) == NULL)
@@ -1011,7 +1011,7 @@ char *usb_cache_string(struct usb_device *udev, int index)
  * returned by the underlying usb_control_msg() call.
  */
 /**
- * »ñµÃÉè±¸µÄÃèÊö·û¡£
+ * è·å¾—è®¾å¤‡çš„æè¿°ç¬¦ã€‚
  */
 int usb_get_device_descriptor(struct usb_device *dev, unsigned int size)
 {
@@ -1021,18 +1021,18 @@ int usb_get_device_descriptor(struct usb_device *dev, unsigned int size)
 	if (size > sizeof(*desc))
 		return -EINVAL;
 	/**
-	 * ×¼±¸Ò»¸öÉè±¸ÃèÊö·û½á¹¹¡£
+	 * å‡†å¤‡ä¸€ä¸ªè®¾å¤‡æè¿°ç¬¦ç»“æ„ã€‚
 	 */
 	desc = kmalloc(sizeof(*desc), GFP_NOIO);
 	if (!desc)
 		return -ENOMEM;
 
 	/**
-	 * µ÷ÓÃusb_get_descriptor()»ñµÃÉè±¸ÃèÊö·û
+	 * è°ƒç”¨usb_get_descriptor()è·å¾—è®¾å¤‡æè¿°ç¬¦
 	 */
 	ret = usb_get_descriptor(dev, USB_DT_DEVICE, 0, desc, size);
 	/**
-	 * ½«»ñµÃµÄÉè±¸ÃèÊö·û¸´ÖÆµ½Éè±¸½á¹¹ÖĞ¡£
+	 * å°†è·å¾—çš„è®¾å¤‡æè¿°ç¬¦å¤åˆ¶åˆ°è®¾å¤‡ç»“æ„ä¸­ã€‚
 	 */
 	if (ret >= 0) 
 		memcpy(&dev->descriptor, desc, size);
@@ -1150,7 +1150,7 @@ int usb_clear_halt(struct usb_device *dev, int pipe)
  * endpoint's maxpacket size to 0 to prevent further submissions.
  */
 /**
- * ½ûÖ¹¶Ëµã¡£
+ * ç¦æ­¢ç«¯ç‚¹ã€‚
  */
 void usb_disable_endpoint(struct usb_device *dev, unsigned int epaddr)
 {
@@ -1161,7 +1161,7 @@ void usb_disable_endpoint(struct usb_device *dev, unsigned int epaddr)
 		return;
 
 	/**
-	 * ¸ù¾İ¶ËµãµÄ·½ÏòÈ¡µÃ¶ËµãÃèÊö·û¡£
+	 * æ ¹æ®ç«¯ç‚¹çš„æ–¹å‘å–å¾—ç«¯ç‚¹æè¿°ç¬¦ã€‚
 	 */
 	if (usb_endpoint_out(epaddr)) {
 		ep = dev->ep_out[epnum];
@@ -1171,7 +1171,7 @@ void usb_disable_endpoint(struct usb_device *dev, unsigned int epaddr)
 		dev->ep_in[epnum] = NULL;
 	}
 	/**
-	 * ½ûÖ¹¶Ëµã¡£
+	 * ç¦æ­¢ç«¯ç‚¹ã€‚
 	 */
 	if (ep && dev->bus)
 		usb_hcd_endpoint_disable(dev, ep);
@@ -1206,7 +1206,7 @@ void usb_disable_interface(struct usb_device *dev, struct usb_interface *intf)
  * must usb_set_configuration() before any interfaces could be used.
  */
 /**
- * ½ûÖ¹USBÉè±¸£¬Ê¹Æä»Øµ½USB_STATE_ADDRESS×´Ì¬¡£
+ * ç¦æ­¢USBè®¾å¤‡ï¼Œä½¿å…¶å›åˆ°USB_STATE_ADDRESSçŠ¶æ€ã€‚
  */
 void usb_disable_device(struct usb_device *dev, int skip_ep0)
 {
@@ -1215,7 +1215,7 @@ void usb_disable_device(struct usb_device *dev, int skip_ep0)
 	dev_dbg(&dev->dev, "%s nuking %s URBs\n", __FUNCTION__,
 			skip_ep0 ? "non-ep0" : "all");
 	/**
-	 * Ê×ÏÈ½ûÖ¹µôËùÓĞ¶Ëµã¡£
+	 * é¦–å…ˆç¦æ­¢æ‰æ‰€æœ‰ç«¯ç‚¹ã€‚
 	 */
 	for (i = skip_ep0; i < 16; ++i) {
 		usb_disable_endpoint(dev, i);
@@ -1227,11 +1227,11 @@ void usb_disable_device(struct usb_device *dev, int skip_ep0)
 	 * any drivers bound to them (a key side effect)
 	 */
 	/**
-	 * Éè±¸µ±Ç°¼¤»îÁËÅäÖÃ¡£
+	 * è®¾å¤‡å½“å‰æ¿€æ´»äº†é…ç½®ã€‚
 	 */
 	if (dev->actconfig) {
 		/**
-		 * ½«ËùÓĞ½Ó¿Ú´ÓÉè±¸Ä£ĞÍÖĞÉ¾³ıµô¡£
+		 * å°†æ‰€æœ‰æ¥å£ä»è®¾å¤‡æ¨¡å‹ä¸­åˆ é™¤æ‰ã€‚
 		 */
 		for (i = 0; i < dev->actconfig->desc.bNumInterfaces; i++) {
 			struct usb_interface	*interface;
@@ -1250,7 +1250,7 @@ void usb_disable_device(struct usb_device *dev, int skip_ep0)
 		 * try to access them.
 		 */
 		/**
-		 * ½«»î¶¯ÅäÖÃµÄ½Ó¿ÚÊı×éÇå¿Õ¡£
+		 * å°†æ´»åŠ¨é…ç½®çš„æ¥å£æ•°ç»„æ¸…ç©ºã€‚
 		 */
 		for (i = 0; i < dev->actconfig->desc.bNumInterfaces; i++) {
 			put_device (&dev->actconfig->interface[i]->dev);
@@ -1258,7 +1258,7 @@ void usb_disable_device(struct usb_device *dev, int skip_ep0)
 		}
 		dev->actconfig = NULL;
 		/**
-		 * Èç¹ûµ±Ç°ÊÇÅäÖÃ×´Ì¬£¬Ôò»Øµ½USB_STATE_ADDRESS×´Ì¬¡£
+		 * å¦‚æœå½“å‰æ˜¯é…ç½®çŠ¶æ€ï¼Œåˆ™å›åˆ°USB_STATE_ADDRESSçŠ¶æ€ã€‚
 		 */
 		if (dev->state == USB_STATE_CONFIGURED)
 			usb_set_device_state(dev, USB_STATE_ADDRESS);
@@ -1275,7 +1275,7 @@ void usb_disable_device(struct usb_device *dev, int skip_ep0)
  * For control endpoints, both the input and output sides are handled.
  */
 /**
- * ¼¤»î¶Ëµã¡£
+ * æ¿€æ´»ç«¯ç‚¹ã€‚
  */
 static void
 usb_enable_endpoint(struct usb_device *dev, struct usb_host_endpoint *ep)
@@ -1303,7 +1303,7 @@ usb_enable_endpoint(struct usb_device *dev, struct usb_host_endpoint *ep)
  * Enables all the endpoints for the interface's current altsetting.
  */
 /**
- * ¼¤»î½Ó¿ÚÉèÖÃ¡£
+ * æ¿€æ´»æ¥å£è®¾ç½®ã€‚
  */
 static void usb_enable_interface(struct usb_device *dev,
 				 struct usb_interface *intf)
@@ -1312,7 +1312,7 @@ static void usb_enable_interface(struct usb_device *dev,
 	int i;
 
 	/**
-	 * ÂÖÑ¯½Ó¿ÚµÄÃ¿¸ö¶Ëµã²¢¼¤»îËü¡£
+	 * è½®è¯¢æ¥å£çš„æ¯ä¸ªç«¯ç‚¹å¹¶æ¿€æ´»å®ƒã€‚
 	 */
 	for (i = 0; i < alt->desc.bNumEndpoints; ++i)
 		usb_enable_endpoint(dev, &alt->endpoint[i]);
@@ -1647,7 +1647,7 @@ static struct usb_interface_assoc_descriptor *find_iad(struct usb_device *dev,
  * drivers currently known to the kernel.
  */
 /**
- * ½«ÅäÖÃÉèÖÃÎªÉè±¸µÄµ±Ç°ÅäÖÃ¡£
+ * å°†é…ç½®è®¾ç½®ä¸ºè®¾å¤‡çš„å½“å‰é…ç½®ã€‚
  */
 int usb_set_configuration(struct usb_device *dev, int configuration)
 {
@@ -1657,14 +1657,14 @@ int usb_set_configuration(struct usb_device *dev, int configuration)
 	int n, nintf;
 
 	/**
-	 * Èç¹ûÃ»ÓĞÕÒµ½ºÏÊÊµÄÅäÖÃ£¬choose_configuration»á·µ»Ø£­1£¬Ôò½«ÅäÖÃºÅÉèÖÃÎª0.ÕâÑùSET_CONFIGURATIONÅäÖÃÇëÇó²»»áÊ¹Éè±¸½øÈëÅäÖÃ×´Ì¬¡£
-	 * ¶øÊÇ±£³ÖÔÚAddress×´Ì¬¡£±íÊ¾Ã»ÓĞºÏÊÊµÄÅäÖÃ¡£ÕâÀï²»Ö±½Ó·µ»Ø£¬ÊÇÒòÎªÓĞĞ©Ææ¹ÖµÄÉè±¸ÔÊĞí´«ÅäÖÃ0.
+	 * å¦‚æœæ²¡æœ‰æ‰¾åˆ°åˆé€‚çš„é…ç½®ï¼Œchoose_configurationä¼šè¿”å›ï¼1ï¼Œåˆ™å°†é…ç½®å·è®¾ç½®ä¸º0.è¿™æ ·SET_CONFIGURATIONé…ç½®è¯·æ±‚ä¸ä¼šä½¿è®¾å¤‡è¿›å…¥é…ç½®çŠ¶æ€ã€‚
+	 * è€Œæ˜¯ä¿æŒåœ¨AddressçŠ¶æ€ã€‚è¡¨ç¤ºæ²¡æœ‰åˆé€‚çš„é…ç½®ã€‚è¿™é‡Œä¸ç›´æ¥è¿”å›ï¼Œæ˜¯å› ä¸ºæœ‰äº›å¥‡æ€ªçš„è®¾å¤‡å…è®¸ä¼ é…ç½®0.
 	 */
 	if (configuration == -1)
 		configuration = 0;
 	else {
 		/**
-		 * ´ÓÅäÖÃÊı×éÀïÃæÕÒµ½¶ÔÓ¦µÄÅäÖÃ½á¹¹Ìå¡£
+		 * ä»é…ç½®æ•°ç»„é‡Œé¢æ‰¾åˆ°å¯¹åº”çš„é…ç½®ç»“æ„ä½“ã€‚
 		 */
 		for (i = 0; i < dev->descriptor.bNumConfigurations; i++) {
 			if (dev->config[i].desc.bConfigurationValue ==
@@ -1675,7 +1675,7 @@ int usb_set_configuration(struct usb_device *dev, int configuration)
 		}
 	}
 	/**
-	 * Èç¹ûÃ»ÓĞºÏÊÊµÄÅäÖÃ£¬ÄÇÃ´ÅäÖÃºÅ¾Í±ØĞëÎª0.
+	 * å¦‚æœæ²¡æœ‰åˆé€‚çš„é…ç½®ï¼Œé‚£ä¹ˆé…ç½®å·å°±å¿…é¡»ä¸º0.
 	 */
 	if ((!cp && configuration != 0))
 		return -EINVAL;
@@ -1686,7 +1686,7 @@ int usb_set_configuration(struct usb_device *dev, int configuration)
 	 * Use -1 if you really want to unconfigure the device.
 	 */
 	/**
-	 * Èç¹û´«ÁËconfigurationÎª0£¬Í¬Ê±ÕÒµ½ÁË¶ÔÓ¦µÄÅäÖÃÃèÊö·û£¬Ôò´òÓ¡¾¯¸æ¡£ÕâÖÖÉè±¸±È½ÏÆæ¹Ö¡£
+	 * å¦‚æœä¼ äº†configurationä¸º0ï¼ŒåŒæ—¶æ‰¾åˆ°äº†å¯¹åº”çš„é…ç½®æè¿°ç¬¦ï¼Œåˆ™æ‰“å°è­¦å‘Šã€‚è¿™ç§è®¾å¤‡æ¯”è¾ƒå¥‡æ€ªã€‚
 	 */
 	if (cp && configuration == 0)
 		dev_warn(&dev->dev, "config 0 descriptor??\n");
@@ -1696,7 +1696,7 @@ int usb_set_configuration(struct usb_device *dev, int configuration)
 	n = nintf = 0;
 	if (cp) {
 		/**
-		 * ¸ù¾İÅäÖÃµÄ½Ó¿ÚÊıÄ¿£¬ÎªÆä·ÖÅäÖ¸ÕëÊı×é¡£
+		 * æ ¹æ®é…ç½®çš„æ¥å£æ•°ç›®ï¼Œä¸ºå…¶åˆ†é…æŒ‡é’ˆæ•°ç»„ã€‚
 		 */
 		nintf = cp->desc.bNumInterfaces;
 		new_interfaces = kmalloc(nintf * sizeof(*new_interfaces),
@@ -1707,7 +1707,7 @@ int usb_set_configuration(struct usb_device *dev, int configuration)
 		}
 
 		/**
-		 * ÔÙÎªÃ¿Ò»¸ö½Ó¿Ú·ÖÅäÄÚ´æ¡£
+		 * å†ä¸ºæ¯ä¸€ä¸ªæ¥å£åˆ†é…å†…å­˜ã€‚
 		 */
 		for (; n < nintf; ++n) {
 			new_interfaces[n] = kzalloc(
@@ -1725,7 +1725,7 @@ free_interfaces:
 		}
 
 		/**
-		 * ÅäÖÃĞèÒªµÄµçÁ÷½Ï´ó£¬¾¯¸æÒ»ÏÂ¡£
+		 * é…ç½®éœ€è¦çš„ç”µæµè¾ƒå¤§ï¼Œè­¦å‘Šä¸€ä¸‹ã€‚
 		 */
 		i = dev->bus_mA - cp->desc.bMaxPower * 2;
 		if (i < 0)
@@ -1743,17 +1743,17 @@ free_interfaces:
 	 * getting rid of old interfaces means unbinding their drivers.
 	 */
 	/**
-	 * ´ó¶àÊıÇé¿öÏÂÊÇ´ÓUSB_STATE_ADDRESS×´Ì¬½øÈëÅäÖÃ×´Ì¬µÄ¡£Èç¹û²»ÊÇ£¬ËµÃ÷Éè±¸¿ÉÄÜÒÑ¾­ÅäÖÃ¹ıÁË¡£
-	 * µ÷ÓÃusb_disable_deviceÊ¹Æä»Øµ½USB_STATE_ADDRESS×´Ì¬¡£
+	 * å¤§å¤šæ•°æƒ…å†µä¸‹æ˜¯ä»USB_STATE_ADDRESSçŠ¶æ€è¿›å…¥é…ç½®çŠ¶æ€çš„ã€‚å¦‚æœä¸æ˜¯ï¼Œè¯´æ˜è®¾å¤‡å¯èƒ½å·²ç»é…ç½®è¿‡äº†ã€‚
+	 * è°ƒç”¨usb_disable_deviceä½¿å…¶å›åˆ°USB_STATE_ADDRESSçŠ¶æ€ã€‚
 	 */
 	if (dev->state != USB_STATE_ADDRESS)
 		/**
-		 * ²»ÓÃ½ûÖ¹µô¶Ëµã0.ÔÚÁ½ÖÖ×´Ì¬¶¼ĞèÒªÓÃµ½Ëü¡£
+		 * ä¸ç”¨ç¦æ­¢æ‰ç«¯ç‚¹0.åœ¨ä¸¤ç§çŠ¶æ€éƒ½éœ€è¦ç”¨åˆ°å®ƒã€‚
 		 */
 		usb_disable_device (dev, 1);	// Skip ep0
 
 	/**
-	 * ÏòÉè±¸·¢ËÍUSB_REQ_SET_CONFIGURATIONÏûÏ¢£¬Ê¹Æä½øÈëÅäÖÃ×´Ì¬¡£
+	 * å‘è®¾å¤‡å‘é€USB_REQ_SET_CONFIGURATIONæ¶ˆæ¯ï¼Œä½¿å…¶è¿›å…¥é…ç½®çŠ¶æ€ã€‚
 	 */
 	if ((ret = usb_control_msg(dev, usb_sndctrlpipe(dev, 0),
 			USB_REQ_SET_CONFIGURATION, 0, configuration, 0,
@@ -1766,22 +1766,22 @@ free_interfaces:
 	}
 
 	/**
-	 * ½«¼¤»îµÄÅäÖÃ¸³¸øactconfig
+	 * å°†æ¿€æ´»çš„é…ç½®èµ‹ç»™actconfig
 	 */
 	dev->actconfig = cp;
 	/**
-	 * ÅäÖÃÎª¿Õ£¬ËµÃ÷ÅäÖÃ²ÎÊıÎª£­1£¬»òÕßÅäÖÃ²ÎÊıÎª0£¬µ«ÊÇÅäÖÃÊı×éÀïÃæµÚ0Ïî¾ÍÊÇÎª¿Õ£¬»òÕßËµÊÇÉè±¸½øÈëÅäÖÃ×´Ì¬Ê§°Ü¡£
+	 * é…ç½®ä¸ºç©ºï¼Œè¯´æ˜é…ç½®å‚æ•°ä¸ºï¼1ï¼Œæˆ–è€…é…ç½®å‚æ•°ä¸º0ï¼Œä½†æ˜¯é…ç½®æ•°ç»„é‡Œé¢ç¬¬0é¡¹å°±æ˜¯ä¸ºç©ºï¼Œæˆ–è€…è¯´æ˜¯è®¾å¤‡è¿›å…¥é…ç½®çŠ¶æ€å¤±è´¥ã€‚
 	 */
 	if (!cp) {
 		/**
-		 * ½øÈëÅäÖÃ×´Ì¬Ê§°Ü£¬·µ»Øµ½USB_STATE_ADDRESS×´Ì¬£¬ÍË³öº¯Êı¡£
+		 * è¿›å…¥é…ç½®çŠ¶æ€å¤±è´¥ï¼Œè¿”å›åˆ°USB_STATE_ADDRESSçŠ¶æ€ï¼Œé€€å‡ºå‡½æ•°ã€‚
 		 */
 		usb_set_device_state(dev, USB_STATE_ADDRESS);
 		usb_autosuspend_device(dev);
 		goto free_interfaces;
 	}
 	/**
-	 * Éè±¸ÒÑ¾­Õı³£½øÈëÅäÖÃ×´Ì¬¡£
+	 * è®¾å¤‡å·²ç»æ­£å¸¸è¿›å…¥é…ç½®çŠ¶æ€ã€‚
 	 */
 	usb_set_device_state(dev, USB_STATE_CONFIGURED);
 
@@ -1789,7 +1789,7 @@ free_interfaces:
 	 * hc/hcd/usbcore interface/endpoint state.
 	 */
 	/**
-	 * ¶ÔÅäÖÃÀïÃæµÄËùÓĞ½Ó¿Ú½øĞĞ´¦Àí¡£
+	 * å¯¹é…ç½®é‡Œé¢çš„æ‰€æœ‰æ¥å£è¿›è¡Œå¤„ç†ã€‚
 	 */
 	for (i = 0; i < nintf; ++i) {
 		struct usb_interface_cache *intfc;
@@ -1804,7 +1804,7 @@ free_interfaces:
 		kref_get(&intfc->ref);
 
 		/**
-		 * »ñµÃ½Ó¿ÚµÄµÚ1¸öÉèÖÃ¡£Õâ¸öÉèÖÃÊÇ½Ó¿ÚµÄÄ¬ÈÏÉèÖÃ¡£
+		 * è·å¾—æ¥å£çš„ç¬¬1ä¸ªè®¾ç½®ã€‚è¿™ä¸ªè®¾ç½®æ˜¯æ¥å£çš„é»˜è®¤è®¾ç½®ã€‚
 		 */
 		alt = usb_altnum_to_altsetting(intf, 0);
 
@@ -1814,13 +1814,13 @@ free_interfaces:
 		 * then I wouldn't trust its reply anyway.
 		 */
 		/**
-		 * Ã»ÓĞµÚÒ»¸öÉèÖÃ£¬ÓÃÊı×éÖĞµÄµÚÒ»¸öÉèÖÃ¡£
+		 * æ²¡æœ‰ç¬¬ä¸€ä¸ªè®¾ç½®ï¼Œç”¨æ•°ç»„ä¸­çš„ç¬¬ä¸€ä¸ªè®¾ç½®ã€‚
 		 */
 		if (!alt)
 			alt = &intf->altsetting[0];
 
 		/**
-		 * Ê¹ÓÃÄ¬ÈÏÉèÖÃ×÷Îªµ±Ç°ÉèÖÃ¡£
+		 * ä½¿ç”¨é»˜è®¤è®¾ç½®ä½œä¸ºå½“å‰è®¾ç½®ã€‚
 		 */
 		intf->cur_altsetting = alt;
 		usb_enable_interface(dev, intf);
@@ -1830,11 +1830,11 @@ free_interfaces:
 		intf->dev.type = &usb_if_device_type;
 		intf->dev.dma_mask = dev->dev.dma_mask;
 		/**
-		 * ³õÊ¼»¯½Ó¿ÚµÄÉè±¸Ä£ĞÍ£¬×¼±¸¼ÓÈëµ½Éè±¸Ä£ĞÍÖĞÈ¥¡£
+		 * åˆå§‹åŒ–æ¥å£çš„è®¾å¤‡æ¨¡å‹ï¼Œå‡†å¤‡åŠ å…¥åˆ°è®¾å¤‡æ¨¡å‹ä¸­å»ã€‚
 		 */
 		device_initialize (&intf->dev);
 		/**
-		 * is_active ±êÖ¾³õÊ¼»¯Îª0£¬±íÊ¾Ëü»¹Ã»ÓĞÓëÈÎºÎÇı¶¯°ó¶¨¡£
+		 * is_active æ ‡å¿—åˆå§‹åŒ–ä¸º0ï¼Œè¡¨ç¤ºå®ƒè¿˜æ²¡æœ‰ä¸ä»»ä½•é©±åŠ¨ç»‘å®šã€‚
 		 */
 		mark_quiesced(intf);
 		sprintf (&intf->dev.bus_id[0], "%d-%s:%d.%d",
@@ -1844,7 +1844,7 @@ free_interfaces:
 	kfree(new_interfaces);
 
 	/**
-	 * »ñµÃÉè±¸×Ö·û´®ÃèÊö·û¡£
+	 * è·å¾—è®¾å¤‡å­—ç¬¦ä¸²æè¿°ç¬¦ã€‚
 	 */
 	if (cp->string == NULL)
 		cp->string = usb_cache_string(dev, cp->desc.iConfiguration);
@@ -1856,7 +1856,7 @@ free_interfaces:
 	 * need that: CDC, audio, video, etc.
 	 */
 	/**
-	 * ½«ËùÓĞ½Ó¿ÚÓëÉè±¸Ä£ĞÍ°ó¶¨ÆğÀ´£¬²¢ÎªÆä²éÕÒÇı¶¯¡£
+	 * å°†æ‰€æœ‰æ¥å£ä¸è®¾å¤‡æ¨¡å‹ç»‘å®šèµ·æ¥ï¼Œå¹¶ä¸ºå…¶æŸ¥æ‰¾é©±åŠ¨ã€‚
 	 */
 	for (i = 0; i < nintf; ++i) {
 		struct usb_interface *intf = cp->interface[i];

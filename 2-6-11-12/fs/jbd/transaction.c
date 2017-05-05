@@ -260,7 +260,7 @@ static handle_t *new_handle(int nblocks)
  * Return a pointer to a newly allocated handle, or NULL on failure
  */
 /**
- * ¿ªÊ¼Ò»¸öÈÕÖ¾²Ù×÷
+ * å¼€å§‹ä¸€ä¸ªæ—¥å¿—æ“ä½œ
  */
 handle_t *journal_start(journal_t *journal, int nblocks)
 {
@@ -1301,7 +1301,7 @@ not_jbd:
  * transaction began.
  */
 /**
- * Ò»¸öÈÕÖ¾²Ù×÷µÄÔ­×Ó²Ù×÷ÒÑ¾­Íê³É¡£
+ * ä¸€ä¸ªæ—¥å¿—æ“ä½œçš„åŸå­æ“ä½œå·²ç»å®Œæˆã€‚
  */
 int journal_stop(handle_t *handle)
 {

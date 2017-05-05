@@ -613,7 +613,7 @@ static void device_links_purge(struct device *dev)
 int (*platform_notify)(struct device *dev) = NULL;
 int (*platform_notify_remove)(struct device *dev) = NULL;
 static struct kobject *dev_kobj;
-/*ÄÚºË½«ÏµÍ³ÖĞµÄÉè±¸·ÖÎªÁ½´óÀà:blockºÍchar,Ã¿Àà¶ÔÓ¦Ò»¸öÄÚºË¶ÔÏó*/
+/*å†…æ ¸å°†ç³»ç»Ÿä¸­çš„è®¾å¤‡åˆ†ä¸ºä¸¤å¤§ç±»:blockå’Œchar,æ¯ç±»å¯¹åº”ä¸€ä¸ªå†…æ ¸å¯¹è±¡*/
 struct kobject *sysfs_dev_char_kobj;
 struct kobject *sysfs_dev_block_kobj;
 
@@ -935,7 +935,7 @@ static const struct kset_uevent_ops device_uevent_ops = {
 	.uevent =	dev_uevent,
 };
 
-/*ÏµÍ³Ìá¹©µÄÏÔÊ¾Éè±¸ÊôĞÔµÄÄ¬ÈÏº¯Êı*/
+/*ç³»ç»Ÿæä¾›çš„æ˜¾ç¤ºè®¾å¤‡å±æ€§çš„é»˜è®¤å‡½æ•°*/
 static ssize_t uevent_show(struct device *dev, struct device_attribute *attr,
 			   char *buf)
 {
@@ -979,7 +979,7 @@ out:
 	return count;
 }
 
-/*ÏµÍ³Ìá¹©µÄĞŞ¸ÄÉè±¸ÊôĞÔÖµµÄÄ¬ÈÏ·½·¨*/
+/*ç³»ç»Ÿæä¾›çš„ä¿®æ”¹è®¾å¤‡å±æ€§å€¼çš„é»˜è®¤æ–¹æ³•*/
 static ssize_t uevent_store(struct device *dev, struct device_attribute *attr,
 			    const char *buf, size_t count)
 {
@@ -1266,10 +1266,10 @@ static void klist_children_put(struct klist_node *n)
  * NOTE: Use put_device() to give up your reference instead of freeing
  * @dev directly once you have called this function.
  */
- /*Õë¶ÔÉè±¸µÄ²Ù×÷,ÓÃÓÚÉè±¸µÄ³õÊ¼»¯*/
+ /*é’ˆå¯¹è®¾å¤‡çš„æ“ä½œ,ç”¨äºè®¾å¤‡çš„åˆå§‹åŒ–*/
 void device_initialize(struct device *dev)
 {
-	/*±íÃ÷ÁËdevËùÊôµÄkset¶ÔÏóÎªdevices_kset*/
+	/*è¡¨æ˜äº†devæ‰€å±çš„ksetå¯¹è±¡ä¸ºdevices_kset*/
 	dev->kobj.kset = devices_kset;
 	kobject_init(&dev->kobj, &device_ktype);
 	INIT_LIST_HEAD(&dev->dma_pools);
@@ -1277,7 +1277,7 @@ void device_initialize(struct device *dev)
 	lockdep_set_novalidate_class(&dev->mutex);
 	spin_lock_init(&dev->devres_lock);
 	INIT_LIST_HEAD(&dev->devres_head);
-	/*dev_pm_initÓÃÀ´³õÊ¼»¯devÓëµçÔ´¹ÜÀíÏà¹ØµÄ²¿·Ö*/
+	/*dev_pm_initç”¨æ¥åˆå§‹åŒ–devä¸ç”µæºç®¡ç†ç›¸å…³çš„éƒ¨åˆ†*/
 	device_pm_init(dev);
 	set_dev_node(dev, -1);
 #ifdef CONFIG_GENERIC_MSI_IRQ
@@ -1539,10 +1539,10 @@ EXPORT_SYMBOL_GPL(dev_set_name);
  * device_remove_sys_dev_entry() will disagree about the presence of
  * the link.
  */
-/*Á´½ÓµÄ²úÉú;¼ÙÉèdev¶ÔÏóµÄÉè±¸ºÅmajor=251,minor=0,Éè±¸Ãû³ÆÎªdev->init_name,ÄÇÃ´
- *Èç¹ûdev->classÎª¿Õ,ÔòĞÂÁ´½ÓÎª/sys/dev/char/251:0 /sys/devices/dev->init_name
- *Èç¹ûdev->class²»Îª¿Õ,ÄÇÃ´Á´½ÓÎÄ¼şµÄÔ´Í·½«ÔÚ/dev->class->dev_kobjËù¶ÔÓ¦µÄÄ¿Â¼²úÉú
- *Ä¿µÄÁ´½ÓÔòÎª/sys/devices/virtual/dev->init_name*/
+/*é“¾æ¥çš„äº§ç”Ÿ;å‡è®¾devå¯¹è±¡çš„è®¾å¤‡å·major=251,minor=0,è®¾å¤‡åç§°ä¸ºdev->init_name,é‚£ä¹ˆ
+ *å¦‚æœdev->classä¸ºç©º,åˆ™æ–°é“¾æ¥ä¸º/sys/dev/char/251:0 /sys/devices/dev->init_name
+ *å¦‚æœdev->classä¸ä¸ºç©º,é‚£ä¹ˆé“¾æ¥æ–‡ä»¶çš„æºå¤´å°†åœ¨/dev->class->dev_kobjæ‰€å¯¹åº”çš„ç›®å½•äº§ç”Ÿ
+ *ç›®çš„é“¾æ¥åˆ™ä¸º/sys/devices/virtual/dev->init_name*/
 static struct kobject *device_to_dev_kobj(struct device *dev)
 {
 	struct kobject *kobj;
@@ -1555,10 +1555,10 @@ static struct kobject *device_to_dev_kobj(struct device *dev)
 	return kobj;
 }
 
-/*½¨Á¢Ò»¸öĞÂµÄÁ´½Ó,¸ÃÁ´½ÓµÄÄ¿µÄºÍÔ´È¡¾öÓÚdev->class*/
+/*å»ºç«‹ä¸€ä¸ªæ–°çš„é“¾æ¥,è¯¥é“¾æ¥çš„ç›®çš„å’Œæºå–å†³äºdev->class*/
 static int device_create_sys_dev_entry(struct device *dev)
 {
-	/*Á´½ÓµÄ²úÉú*/
+	/*é“¾æ¥çš„äº§ç”Ÿ*/
 	struct kobject *kobj = device_to_dev_kobj(dev);
 	int error = 0;
 	char devt_str[15];
@@ -1655,7 +1655,7 @@ int device_add(struct device *dev)
 
 	pr_debug("device: '%s': %s\n", dev_name(dev), __func__);
 
-	/*»ñµÃ¸¸Éè±¸*/
+	/*è·å¾—çˆ¶è®¾å¤‡*/
 	parent = get_device(dev->parent);
 	kobj = get_device_parent(dev, parent);
 	if (kobj)
@@ -1667,7 +1667,7 @@ int device_add(struct device *dev)
 
 	/* first, register with generic layer. */
 	/* we require the name to be set before, and pass NULL */
-	/*ÔÚsysÄ¿Â¼Éú³ÉÉè±¸Ä¿Â¼*/
+	/*åœ¨sysç›®å½•ç”Ÿæˆè®¾å¤‡ç›®å½•*/
 	error = kobject_add(&dev->kobj, dev->kobj.parent, NULL);
 	if (error) {
 		glue_dir = get_glue_dir(dev);
@@ -1682,14 +1682,14 @@ int device_add(struct device *dev)
 	if (error)
 		goto attrError;
 
-	/*Éè±¸µÄ·ûºÅÁ´½Ó*/
+	/*è®¾å¤‡çš„ç¬¦å·é“¾æ¥*/
 	error = device_add_class_symlinks(dev);
 	if (error)
 		goto SymlinkError;
 	error = device_add_attrs(dev);
 	if (error)
 		goto AttrsError;
-	/*ÔÚ/sys/bus/devicesÄ¿Â¼ÏÂ´´½¨Ò»¸öÁ´½ÓÎÄ¼şÖ¸Ïò/sys/devices/dev->init_name*/
+	/*åœ¨/sys/bus/devicesç›®å½•ä¸‹åˆ›å»ºä¸€ä¸ªé“¾æ¥æ–‡ä»¶æŒ‡å‘/sys/devices/dev->init_name*/
 	error = bus_add_device(dev);
 	if (error)
 		goto BusError;
@@ -1718,7 +1718,7 @@ int device_add(struct device *dev)
 					     BUS_NOTIFY_ADD_DEVICE, dev);
 
 	kobject_uevent(&dev->kobj, KOBJ_ADD);
-	/*Ò»¸öÌåÏÖÉè±¸Çı¶¯Ä£ĞÍÖĞ×ÜÏß Éè±¸ÓëÇı¶¯Ïà»¥¹µÍ¨µÄÖØÒªº¯Êı*/
+	/*ä¸€ä¸ªä½“ç°è®¾å¤‡é©±åŠ¨æ¨¡å‹ä¸­æ€»çº¿ è®¾å¤‡ä¸é©±åŠ¨ç›¸äº’æ²Ÿé€šçš„é‡è¦å‡½æ•°*/
 	bus_probe_device(dev);
 	if (parent)
 		klist_add_tail(&dev->p->knode_parent,
@@ -1786,11 +1786,11 @@ EXPORT_SYMBOL_GPL(device_add);
  * if it returned an error! Always use put_device() to give up the
  * reference initialized in this function instead.
  */
-/*ÓÃÀ´ÏòÏµÍ³×¢²áÒ»¸öÉè±¸*/
+/*ç”¨æ¥å‘ç³»ç»Ÿæ³¨å†Œä¸€ä¸ªè®¾å¤‡*/
 int device_register(struct device *dev)
 {
 	device_initialize(dev);
-	/*½«Éè±¸¶ÔÏódev¼ÓÈëµ½ÏµÍ³ÖĞ*/
+	/*å°†è®¾å¤‡å¯¹è±¡devåŠ å…¥åˆ°ç³»ç»Ÿä¸­*/
 	return device_add(dev);
 }
 EXPORT_SYMBOL_GPL(device_register);
@@ -1846,18 +1846,18 @@ void device_del(struct device *dev)
 	if (dev->bus)
 		blocking_notifier_call_chain(&dev->bus->p->bus_notifier,
 					     BUS_NOTIFY_DEL_DEVICE, dev);
-	/*Éè±¸µçÔ´¹ÜÀíº¯Êı,¹Ø±Õ±¾Éè±¸µçÔ´Í¬Ê±Í¨ÖªÆä¸¸Éè±¸*/
+	/*è®¾å¤‡ç”µæºç®¡ç†å‡½æ•°,å…³é—­æœ¬è®¾å¤‡ç”µæºåŒæ—¶é€šçŸ¥å…¶çˆ¶è®¾å¤‡*/
 	device_links_purge(dev);
 	dpm_sysfs_remove(dev);
-	/*ÓĞ¸¸Éè±¸*/
+	/*æœ‰çˆ¶è®¾å¤‡*/
 	if (parent)
 		klist_del(&dev->p->knode_parent);
-	/*Èç¹ûdevÉè±¸¶ÔÏóµÄÖ÷Éè±¸ºÅ²»Îª0*/
+	/*å¦‚æœdevè®¾å¤‡å¯¹è±¡çš„ä¸»è®¾å¤‡å·ä¸ä¸º0*/
 	if (MAJOR(dev->devt)) {
-		/*¶¯Ì¬É¾³ıÉè±¸½ÚµãÎÄ¼ş*/
+		/*åŠ¨æ€åˆ é™¤è®¾å¤‡èŠ‚ç‚¹æ–‡ä»¶*/
 		devtmpfs_delete_node(dev);
 		device_remove_sys_dev_entry(dev);
-		/*É¾³ıÉè±¸µÄÊôĞÔÎÄ¼ş*/
+		/*åˆ é™¤è®¾å¤‡çš„å±æ€§æ–‡ä»¶*/
 		device_remove_file(dev, &dev_attr_dev);
 	}
 	if (dev->class) {
@@ -1907,7 +1907,7 @@ EXPORT_SYMBOL_GPL(device_del);
  * via device_release() above. Otherwise, the structure will
  * stick around until the final reference to the device is dropped.
  */
-/*½«Ò»¸öÉè±¸´ÓÏµÍ³ÖĞ×¢Ïúµô*/
+/*å°†ä¸€ä¸ªè®¾å¤‡ä»ç³»ç»Ÿä¸­æ³¨é”€æ‰*/
 void device_unregister(struct device *dev)
 {
 	pr_debug("device: '%s': %s\n", dev_name(dev), __func__);
@@ -2081,10 +2081,10 @@ struct device *device_find_child(struct device *parent, void *data,
 	return child;
 }
 EXPORT_SYMBOL_GPL(device_find_child);
-/*ÄÚºË½«ÏµÍ³ÖĞµÄÉè±¸·ÖÎªÁ½´óÀà,blockºÍchar,Ã¿Àà¶ÔÓ¦Ò»¸öÄÚºË¶ÔÏó,·Ö±ğÎªsysfs_dev_block_kobjºÍsysfs_dev_char_kobj,×ÔÈ»µÄÕâĞ©ÄÚºË¶ÔÏóÒ²ÔÚsysfsÎÄ¼şÊ÷ÖĞÕ¼ÓĞ¶ÔÓ¦µÄÈë¿Úµã,blockºÍcharÄÚºË¶ÔÏóµÄÉÏ¼¶ÄÚºË¶ÔÏóÎªdev_kobj,Éè±¸Ïà¹ØµÄÊÂ·¢ÉúµÄ±È½ÏÔç,ÔÚÏµÍ³³õÊ¼»¯Ê±·¢Éú,ÓÉ¸Ãº¯ÊıÍê³É*/
+/*å†…æ ¸å°†ç³»ç»Ÿä¸­çš„è®¾å¤‡åˆ†ä¸ºä¸¤å¤§ç±»,blockå’Œchar,æ¯ç±»å¯¹åº”ä¸€ä¸ªå†…æ ¸å¯¹è±¡,åˆ†åˆ«ä¸ºsysfs_dev_block_kobjå’Œsysfs_dev_char_kobj,è‡ªç„¶çš„è¿™äº›å†…æ ¸å¯¹è±¡ä¹Ÿåœ¨sysfsæ–‡ä»¶æ ‘ä¸­å æœ‰å¯¹åº”çš„å…¥å£ç‚¹,blockå’Œcharå†…æ ¸å¯¹è±¡çš„ä¸Šçº§å†…æ ¸å¯¹è±¡ä¸ºdev_kobj,è®¾å¤‡ç›¸å…³çš„äº‹å‘ç”Ÿçš„æ¯”è¾ƒæ—©,åœ¨ç³»ç»Ÿåˆå§‹åŒ–æ—¶å‘ç”Ÿ,ç”±è¯¥å‡½æ•°å®Œæˆ*/
 int __init devices_init(void)
 {
-	/*ÒÔÏÂ²Ù×÷·´Ó¦µ½/sysÄ¿Â¼ÏÂ,¾ÍÉú³ÉÁË/sys/devices, /sys/dev, /sys/dev/blockºÍ/sys/dev/char*/
+	/*ä»¥ä¸‹æ“ä½œååº”åˆ°/sysç›®å½•ä¸‹,å°±ç”Ÿæˆäº†/sys/devices, /sys/dev, /sys/dev/blockå’Œ/sys/dev/char*/
 	devices_kset = kset_create_and_add("devices", &device_uevent_ops, NULL);
 	if (!devices_kset)
 		return -ENOMEM;

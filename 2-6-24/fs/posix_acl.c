@@ -207,14 +207,14 @@ posix_acl_from_mode(mode_t mode, gfp_t flags)
  * Return 0 if current is granted want access to the inode
  * by the acl. Returns -E... otherwise.
  */
-/* ¼ì²éaclÈ¨ÏÞ */
+/* æ£€æŸ¥aclæƒé™ */
 int
 posix_acl_permission(struct inode *inode, const struct posix_acl *acl, int want)
 {
 	const struct posix_acl_entry *pa, *pe, *mask_obj;
 	int found = 0;
 
-	FOREACH_ACL_ENTRY(pa, acl, pe) {/* ±éÀúËùÓÐaclÏî */
+	FOREACH_ACL_ENTRY(pa, acl, pe) {/* éåŽ†æ‰€æœ‰aclé¡¹ */
                 switch(pa->e_tag) {
                         case ACL_USER_OBJ:
 				/* (May have been checked already) */

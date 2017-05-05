@@ -25,7 +25,7 @@
 static struct kmem_cache *nsproxy_cachep;
 
 /**
- * 默认全局命名空间
+ * 榛樿鍏ㄥ眬鍛藉悕绌洪棿
  */
 struct nsproxy init_nsproxy = INIT_NSPROXY(init_nsproxy);
 

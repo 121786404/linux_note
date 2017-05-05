@@ -506,8 +506,8 @@ void net_tx(struct net_device *dev)
  * Handle the network interface interrupts.
  */
 /**
- * ´«Í³·½·¨½ÓÊÕ±¨ÎÄ
- * ÕâÊÇÆäÖĞ¶Ï´¦Àí³ÌĞò
+ * ä¼ ç»Ÿæ–¹æ³•æ¥æ”¶æŠ¥æ–‡
+ * è¿™æ˜¯å…¶ä¸­æ–­å¤„ç†ç¨‹åº
  */
 static irqreturn_t net_interrupt(int irq, void *dev_id)
 {
@@ -525,9 +525,9 @@ static irqreturn_t net_interrupt(int irq, void *dev_id)
 		goto out;
 	handled = 1;
 
-	if (status & RX_INTR) {/* ½ÓÊÕµ½ĞÂ±¨ÎÄ */
+	if (status & RX_INTR) {/* æ¥æ”¶åˆ°æ–°æŠ¥æ–‡ */
 		/* Got a packet(s). */
-		net_rx(dev);/* ½ÓÊÕĞÂ±¨ÎÄ */
+		net_rx(dev);/* æ¥æ”¶æ–°æŠ¥æ–‡ */
 	}
 #if TX_RING
 	if (status & TX_INTR) {
@@ -572,9 +572,9 @@ net_rx(struct net_device *dev)
 
 			lp->stats.rx_bytes+=pkt_len;
 
-			/* ·ÖÅäÒ»¸öÌ×½Ó×Ö»º³åÇø */
+			/* åˆ†é…ä¸€ä¸ªå¥—æ¥å­—ç¼“å†²åŒº */
 			skb = dev_alloc_skb(pkt_len);
-			if (skb == NULL) {/* ·ÖÅäÊ§°Ü£¬¶ªÆú±¨ÎÄ */
+			if (skb == NULL) {/* åˆ†é…å¤±è´¥ï¼Œä¸¢å¼ƒæŠ¥æ–‡ */
 				printk(KERN_NOTICE "%s: Memory squeeze, dropping packet.\n",
 					   dev->name);
 				lp->stats.rx_dropped++;
@@ -583,13 +583,13 @@ net_rx(struct net_device *dev)
 			skb->dev = dev;
 
 			/* 'skb->data' points to the start of sk_buff data area. */
-			/* ½«±¨ÎÄ´ÓÉè±¸´«Êäµ½±¨ÎÄ»º³åÇø */
+			/* å°†æŠ¥æ–‡ä»è®¾å¤‡ä¼ è¾“åˆ°æŠ¥æ–‡ç¼“å†²åŒº */
 			memcpy(skb_put(skb,pkt_len), (void*)dev->rmem_start,
 				   pkt_len);
 			/* or */
 			insw(ioaddr, skb->data, (pkt_len + 1) >> 1);
 
-			/* ½«±¨ÎÄ´«Êäµ½ÍøÂç²ã */
+			/* å°†æŠ¥æ–‡ä¼ è¾“åˆ°ç½‘ç»œå±‚ */
 			netif_rx(skb);
 			dev->last_rx = jiffies;
 			lp->stats.rx_packets++;

@@ -2252,7 +2252,7 @@ static struct elv_fs_entry cfq_attrs[] = {
 };
 
 /**
- * ÍêÈ«¹«Æ½ÅÅ¶Óµ÷¶ÈÆ÷¡£
+ * å®Œå…¨å…¬å¹³æŽ’é˜Ÿè°ƒåº¦å™¨ã€‚
  */
 static struct elevator_type iosched_cfq = {
 	.ops = {

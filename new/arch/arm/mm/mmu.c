@@ -426,7 +426,7 @@ void __set_fixmap(enum fixed_addresses idx, phys_addr_t phys, pgprot_t prot)
  * Adjust the PMD section entries according to the CPU in use.
  */
 /**
- * ¸ù¾İCPUÀàĞÍ£¬ÉèÖÃ²»Í¬ÀàĞÍµÄPMDÊôĞÔ
+ * æ ¹æ®CPUç±»å‹ï¼Œè®¾ç½®ä¸åŒç±»å‹çš„PMDå±æ€§
  */
 static void __init build_mem_type_table(void)
 {
@@ -905,7 +905,7 @@ static void __init create_36bit_mapping(struct mm_struct *mm,
 #endif	/* !CONFIG_ARM_LPAE */
 
 /**
- * ´´½¨Ò³ÃæÓ³Éä
+ * åˆ›å»ºé¡µé¢æ˜ å°„
  */
 static void __init __create_mapping(struct mm_struct *mm, struct map_desc *md,
 				    void *(*alloc)(unsigned long sz),
@@ -922,7 +922,7 @@ static void __init __create_mapping(struct mm_struct *mm, struct map_desc *md,
 	/*
 	 * Catch 36-bit addresses
 	 */
-	if (md->pfn >= 0x100000) {//ĞèÒª´´½¨36Î»Ó³Éä
+	if (md->pfn >= 0x100000) {//éœ€è¦åˆ›å»º36ä½æ˜ å°„
 		create_36bit_mapping(mm, md, type, ng);
 		return;
 	}
@@ -932,7 +932,7 @@ static void __init __create_mapping(struct mm_struct *mm, struct map_desc *md,
 	phys = __pfn_to_phys(md->pfn);
 	length = PAGE_ALIGN(md->length + (md->virtual & ~PAGE_MASK));
 
-	//²ÎÊı²»´óºÏ·¨
+	//å‚æ•°ä¸å¤§åˆæ³•
 	if (type->prot_l1 == 0 && ((addr | phys | length) & ~SECTION_MASK)) {
 		pr_warn("BUG: map for 0x%08llx at 0x%08lx can not be mapped using pages, ignoring.\n",
 			(long long)__pfn_to_phys(md->pfn), addr);
@@ -941,7 +941,7 @@ static void __init __create_mapping(struct mm_struct *mm, struct map_desc *md,
 
 	pgd = pgd_offset(mm, addr);
 	end = addr + length;
-	do {//ÒÔ2mÎªµ¥Î»½øĞĞÓ³Éä
+	do {//ä»¥2mä¸ºå•ä½è¿›è¡Œæ˜ å°„
 		unsigned long next = pgd_addr_end(addr, end);
 
 		alloc_init_pud(pgd, addr, next, phys, type, alloc, ng);
@@ -1160,7 +1160,7 @@ early_param("vmalloc", early_vmalloc);
 phys_addr_t arm_lowmem_limit __initdata = 0;
 
 /*
-¶ÔmeminfoÖĞËùÓĞµÄmembank½øĞĞ·¶Î§¼ì²é£¬²»ÄÜ¸²¸Ç×îĞ¡µÄvmallocÇøÓò
+å¯¹meminfoä¸­æ‰€æœ‰çš„membankè¿›è¡ŒèŒƒå›´æ£€æŸ¥ï¼Œä¸èƒ½è¦†ç›–æœ€å°çš„vmallocåŒºåŸŸ
 */
 void __init sanity_check_meminfo(void)
 {
@@ -1178,22 +1178,22 @@ void __init sanity_check_meminfo(void)
 	 * and therefore __pa() is defined.
 	 */
 	vmalloc_limit = (u64)(uintptr_t)vmalloc_min - PAGE_OFFSET + PHYS_OFFSET;
-	//±éÀúÄÚ´æ¿é
+	//éå†å†…å­˜å—
 	for_each_memblock(memory, reg) {
 		phys_addr_t block_start = reg->base;
 		phys_addr_t block_end = reg->base + reg->size;
 		phys_addr_t size_limit = reg->size;
 
-		if (reg->base >= vmalloc_limit)//¸ß¶ËÄÚ´æ
+		if (reg->base >= vmalloc_limit)//é«˜ç«¯å†…å­˜
 			highmem = 1;
 		else
 			size_limit = vmalloc_limit - reg->base;
 
 
-		//²»ÔÊĞí¸ß¶ËÄÚ´æ£¬»òÕßÓĞ±ğÃûÎÊÌâ
+		//ä¸å…è®¸é«˜ç«¯å†…å­˜ï¼Œæˆ–è€…æœ‰åˆ«åé—®é¢˜
 		if (!IS_ENABLED(CONFIG_HIGHMEM) || cache_is_vipt_aliasing()) {
 
-			if (highmem) {//ÕâÖÖÇé¿öÏÂĞèÒªºöÂÔ¸ß¶ËÄÚ´æ£¬²»È»Ó³Éäºó¿ÉÄÜµ¼ÖÂ±ğÃû¡£
+			if (highmem) {//è¿™ç§æƒ…å†µä¸‹éœ€è¦å¿½ç•¥é«˜ç«¯å†…å­˜ï¼Œä¸ç„¶æ˜ å°„åå¯èƒ½å¯¼è‡´åˆ«åã€‚
 				pr_notice("Ignoring RAM at %pa-%pa (!CONFIG_HIGHMEM)\n",
 					  &block_start, &block_end);
 				memblock_remove(reg->base, reg->size);
@@ -1201,7 +1201,7 @@ void __init sanity_check_meminfo(void)
 				continue;
 			}
 
-			if (reg->size > size_limit) {//¿çÔ½vmallocÇøÁË£¬Òª½Ø¶ÏÇøÓò½«Ëü¿´×÷Á½¿éÄÚ´æ¡£
+			if (reg->size > size_limit) {//è·¨è¶ŠvmallocåŒºäº†ï¼Œè¦æˆªæ–­åŒºåŸŸå°†å®ƒçœ‹ä½œä¸¤å—å†…å­˜ã€‚
 				phys_addr_t overlap_size = reg->size - size_limit;
 
 				pr_notice("Truncating RAM at %pa-%pa",
@@ -1271,7 +1271,7 @@ static inline void prepare_page_table(void)
 	 * Clear out all the mappings below the kernel image.
 	 */
 	/**
-	 * ½«ÄÚºËÓ³ÏñÏÂÃæµÄËùÓĞPMDÇå¿Õ¡£
+	 * å°†å†…æ ¸æ˜ åƒä¸‹é¢çš„æ‰€æœ‰PMDæ¸…ç©ºã€‚
 	 */
 	for (addr = 0; addr < MODULES_VADDR; addr += PMD_SIZE)
 		pmd_clear(pmd_off_k(addr));
@@ -1281,8 +1281,8 @@ static inline void prepare_page_table(void)
 	addr = ((unsigned long)_exiprom + PMD_SIZE - 1) & PMD_MASK;
 #endif
 	/**
-	 * ½«ÄÚºË¿Õ¼äÒÔÇ°µÄËùÓĞPMDÇå¿Õ¡£
-	 * Ò»°ãÊÇ0xc000000ÒÔÇ°µÄËùÓĞµØÖ·¡£
+	 * å°†å†…æ ¸ç©ºé—´ä»¥å‰çš„æ‰€æœ‰PMDæ¸…ç©ºã€‚
+	 * ä¸€èˆ¬æ˜¯0xc000000ä»¥å‰çš„æ‰€æœ‰åœ°å€ã€‚
 	 */
 	for ( ; addr < PAGE_OFFSET; addr += PMD_SIZE)
 		pmd_clear(pmd_off_k(addr));
@@ -1299,9 +1299,9 @@ static inline void prepare_page_table(void)
 	 * memory bank, up to the vmalloc region.
 	 */
 	/**
-	 * ´ÓµÚÒ»¸öÄÚ´æÌõµÄ½áÊøµØÖ·£¬µ½vmalloc¿ªÊ¼µØÖ·´¦µÄPMDÈ«²¿Çå¿Õ¡£
-	 * ÔÚARM¼Ü¹¹ÖĞ£¬Èç¹û²»Ğ¡ĞÄÓ³ÉäÁË²»´æÔÚµÄÎïÀíµØÖ·£¬È«½«ÏµÍ³¹ÒËÀ¡£
-	 * ÕâÀï½«PMDÇå¿Õ£¬¿ÉÒÔÈ·±£½øÈëÒì³£¶ø²»ÊÇ¹ÒËÀ¡£
+	 * ä»ç¬¬ä¸€ä¸ªå†…å­˜æ¡çš„ç»“æŸåœ°å€ï¼Œåˆ°vmallocå¼€å§‹åœ°å€å¤„çš„PMDå…¨éƒ¨æ¸…ç©ºã€‚
+	 * åœ¨ARMæ¶æ„ä¸­ï¼Œå¦‚æœä¸å°å¿ƒæ˜ å°„äº†ä¸å­˜åœ¨çš„ç‰©ç†åœ°å€ï¼Œå…¨å°†ç³»ç»ŸæŒ‚æ­»ã€‚
+	 * è¿™é‡Œå°†PMDæ¸…ç©ºï¼Œå¯ä»¥ç¡®ä¿è¿›å…¥å¼‚å¸¸è€Œä¸æ˜¯æŒ‚æ­»ã€‚
 	 */
 	for (addr = __phys_to_virt(end);
 	     addr < VMALLOC_START; addr += PMD_SIZE)
@@ -1352,18 +1352,18 @@ static void __init devicemaps_init(const struct machine_desc *mdesc)
 	/*
 	 * Allocate the vector page early.
 	 */
-	//·ÖÅäÏòÁ¿±íÄÚ´æ
+	//åˆ†é…å‘é‡è¡¨å†…å­˜
 	vectors = early_alloc(PAGE_SIZE * 2);
 
 	/**
-	 * ½«ÖĞ¶ÏºÍÒì³£´¦Àí´úÂëÈë¿Ú¸´ÖÆµ½ÏòÁ¿±íÖĞ¡£
+	 * å°†ä¸­æ–­å’Œå¼‚å¸¸å¤„ç†ä»£ç å…¥å£å¤åˆ¶åˆ°å‘é‡è¡¨ä¸­ã€‚
 	 */
 	early_trap_init(vectors);
 
 	/*
 	 * Clear page table except top pmd used by early fixmaps
 	 */
-	//Çå¿Õvmalloc¿ªÊ¼ÇøÓòµ½kmapÇøÓòµÄPMD
+	//æ¸…ç©ºvmallocå¼€å§‹åŒºåŸŸåˆ°kmapåŒºåŸŸçš„PMD
 	for (addr = VMALLOC_START; addr < (FIXADDR_TOP & PMD_MASK); addr += PMD_SIZE)
 		pmd_clear(pmd_off_k(addr));
 
@@ -1402,7 +1402,7 @@ static void __init devicemaps_init(const struct machine_desc *mdesc)
 	 * location (0xffff0000).  If we aren't using high-vectors, also
 	 * create a mapping at the low-vectors virtual address.
 	 */
-	//´´½¨Ò»¸öÓ³ÉäÏî£¬½«ÏòÁ¿±íÓ³Éäµ½0xffff0000(Êµ¼ÊÉÏ¿ÉÄÜÊ¹ÓÃ0x00000000)
+	//åˆ›å»ºä¸€ä¸ªæ˜ å°„é¡¹ï¼Œå°†å‘é‡è¡¨æ˜ å°„åˆ°0xffff0000(å®é™…ä¸Šå¯èƒ½ä½¿ç”¨0x00000000)
 	map.pfn = __phys_to_pfn(virt_to_phys(vectors));
 	map.virtual = 0xffff0000;
 	map.length = PAGE_SIZE;
@@ -1413,9 +1413,9 @@ static void __init devicemaps_init(const struct machine_desc *mdesc)
 #endif
 	create_mapping(&map);
 
-	//Ê¹ÓÃµÍ¶ËÏòÁ¿±í
+	//ä½¿ç”¨ä½ç«¯å‘é‡è¡¨
 	if (!vectors_high()) {
-		//½«ÏòÁ¿±íÓ³Éäµ½µØÖ·0x00000000
+		//å°†å‘é‡è¡¨æ˜ å°„åˆ°åœ°å€0x00000000
 		map.virtual = 0;
 		map.length = PAGE_SIZE * 2;
 		map.type = MT_LOW_VECTORS;
@@ -1432,7 +1432,7 @@ static void __init devicemaps_init(const struct machine_desc *mdesc)
 	/*
 	 * Ask the machine support to map in the statically mapped devices.
 	 */
-	if (mdesc->map_io)//ÌåÏµ½á¹¹ÒªÇóµÄ»Øµ÷
+	if (mdesc->map_io)//ä½“ç³»ç»“æ„è¦æ±‚çš„å›è°ƒ
 		mdesc->map_io();
 	else
 		debug_ll_io_init();
@@ -1447,7 +1447,7 @@ static void __init devicemaps_init(const struct machine_desc *mdesc)
 	 * any write-allocated cache lines in the vector page are written
 	 * back.  After this point, we can start to touch devices again.
 	 */
-	//Çå³ıtlbºÍ»º´æ¡£
+	//æ¸…é™¤tlbå’Œç¼“å­˜ã€‚
 	local_flush_tlb_all();
 	flush_cache_all();
 
@@ -1664,29 +1664,29 @@ static void __init early_fixmap_shutdown(void)
  * maps, and sets up the zero page, bad page and bad page tables.
  */
 /**
- * ³õÊ¼»¯·ÖÒ³
+ * åˆå§‹åŒ–åˆ†é¡µ
  */
 void __init paging_init(const struct machine_desc *mdesc)
 {
 	void *zero_page;
 
 	/**
-	 * ¸ù¾İARM CPU°æ±¾¼°ÄÚ´æÀàĞÍ¶Ômem_type½á¹¹Ìå½øĞĞ³õÊ¼»¯¡£
+	 * æ ¹æ®ARM CPUç‰ˆæœ¬åŠå†…å­˜ç±»å‹å¯¹mem_typeç»“æ„ä½“è¿›è¡Œåˆå§‹åŒ–ã€‚
 	 */
 	build_mem_type_table();
-	//×¼±¸Ò³±í
+	//å‡†å¤‡é¡µè¡¨
 	prepare_page_table();
 	map_lowmem();
 	memblock_set_current_limit(arm_lowmem_limit);
 	dma_contiguous_remap();
 	early_fixmap_shutdown();
 	/**
-	 * ¶ÔÉè±¸ĞèÒªµÄÄÚ´æÇøºÍÏòÁ¿±í½øĞĞ³õÊ¼»¯¡£
+	 * å¯¹è®¾å¤‡éœ€è¦çš„å†…å­˜åŒºå’Œå‘é‡è¡¨è¿›è¡Œåˆå§‹åŒ–ã€‚
 	 */
 	devicemaps_init(mdesc);
 	/**
-	 * ¶ÔkmapÇøÓò½øĞĞ³õÊ¼»¯¡£
-	 * ·ÖÅäkmapĞèÒªµÄÒ³±íÏî¡£
+	 * å¯¹kmapåŒºåŸŸè¿›è¡Œåˆå§‹åŒ–ã€‚
+	 * åˆ†é…kmapéœ€è¦çš„é¡µè¡¨é¡¹ã€‚
 	 */
 	kmap_init();
 	tcm_init();
@@ -1694,14 +1694,14 @@ void __init paging_init(const struct machine_desc *mdesc)
 	top_pmd = pmd_off_k(0xffff0000);
 
 	/* allocate the zero page. */
-	//·ÖÅäÁãÒ³
+	//åˆ†é…é›¶é¡µ
 	zero_page = early_alloc(PAGE_SIZE);
 
-	//³õÊ¼»¯bootÄÚ´æ·ÖÅäÆ÷¡£
+	//åˆå§‹åŒ–bootå†…å­˜åˆ†é…å™¨ã€‚
 	bootmem_init();
 
-	//»ñµÃ0Ò³µÄÒ³¿ò
+	//è·å¾—0é¡µçš„é¡µæ¡†
 	empty_zero_page = virt_to_page(zero_page);
-	//Çå³ı0Ò³Êı¾İ»º´æ¡£
+	//æ¸…é™¤0é¡µæ•°æ®ç¼“å­˜ã€‚
 	__flush_dcache_page(NULL, empty_zero_page);
 }

@@ -841,14 +841,14 @@ struct file {
 	 * Must not be taken from IRQ context.
 	 */
 	spinlock_t		f_lock;  /* f_ep_links, f_flags, no IRQ */
-	atomic_long_t		f_count; /* ÓÃÓÚ¼ÇÂ¼¶Ôstruct file¶ÔÏóµÄÊ¹ÓÃ¼ÆÊı
-					  * µ±closeÎÄ¼şÊ±Ö»ÓĞf_countÎª0Ê±²ÅÕæÕı
-					  * Ö´ĞĞ¹Ø±Õ²Ù×÷*/
-	unsigned int 		f_flags; /* ¼ÇÂ¼µ±Ç°ÎÄ¼ş±»openÊ±ÖÆ¶¨µÄ´ò¿ªÄ£Ê½*/
+	atomic_long_t		f_count; /* ç”¨äºè®°å½•å¯¹struct fileå¯¹è±¡çš„ä½¿ç”¨è®¡æ•°
+					  * å½“closeæ–‡ä»¶æ—¶åªæœ‰f_countä¸º0æ—¶æ‰çœŸæ­£
+					  * æ‰§è¡Œå…³é—­æ“ä½œ*/
+	unsigned int 		f_flags; /* è®°å½•å½“å‰æ–‡ä»¶è¢«openæ—¶åˆ¶å®šçš„æ‰“å¼€æ¨¡å¼*/
 	fmode_t			f_mode;
 	struct mutex		f_pos_lock;
-	loff_t			f_pos;	 /*±íÊ¾½ø³Ì¶ÔÎÄ¼ş²Ù×÷µÄÎ»ÖÃ,ÀıÈç¶ÔÎÄ¼ş
-					¶ÁÈ¡Ç°10¸ö×Ö½Ú£¬f_ops¾ÍÖ¸Ê¾µÚ11×Ö½ÚÎ»ÖÃ*/
+	loff_t			f_pos;	 /*è¡¨ç¤ºè¿›ç¨‹å¯¹æ–‡ä»¶æ“ä½œçš„ä½ç½®,ä¾‹å¦‚å¯¹æ–‡ä»¶
+					è¯»å–å‰10ä¸ªå­—èŠ‚ï¼Œf_opså°±æŒ‡ç¤ºç¬¬11å­—èŠ‚ä½ç½®*/
 	struct fown_struct	f_owner;
 	const struct cred	*f_cred;
 	struct file_ra_state	f_ra;
@@ -858,7 +858,7 @@ struct file {
 	void			*f_security;
 #endif
 	/* needed for tty driver, and maybe others */
-	/*³£±»ÓÃÀ´¼ÇÂ¼Éè±¸Çı¶¯³ÌĞò×ÔÉí¶¨ÒåµÄÊı¾İ£¬ÒòÎªfilpÖ¸Õë»áÔÚÇı¶¯³ÌĞòÊµÏÖµÄfile_operations¶ÔÏóÆäËû³ÉÔ±º¯ÊıÖ®¼ä´«µİ£¬ËùÒÔ¿ÉÒÔÍ¨¹ıfilpÖĞµÄprivate_data³ÉÔ±ÔÚÄ³Ò»¸öÌØ¶¨ÎÄ¼şÊÓÍ¼µÄ»ù´¡ÉÏ¹²ÏíÊı¾İ*/
+	/*å¸¸è¢«ç”¨æ¥è®°å½•è®¾å¤‡é©±åŠ¨ç¨‹åºè‡ªèº«å®šä¹‰çš„æ•°æ®ï¼Œå› ä¸ºfilpæŒ‡é’ˆä¼šåœ¨é©±åŠ¨ç¨‹åºå®ç°çš„file_operationså¯¹è±¡å…¶ä»–æˆå‘˜å‡½æ•°ä¹‹é—´ä¼ é€’ï¼Œæ‰€ä»¥å¯ä»¥é€šè¿‡filpä¸­çš„private_dataæˆå‘˜åœ¨æŸä¸€ä¸ªç‰¹å®šæ–‡ä»¶è§†å›¾çš„åŸºç¡€ä¸Šå…±äº«æ•°æ®*/
 	void			*private_data;
 
 #ifdef CONFIG_EPOLL
@@ -866,7 +866,7 @@ struct file {
 	struct list_head	f_ep_links;
 	struct list_head	f_tfile_llink;
 #endif /* #ifdef CONFIG_EPOLL */
-	struct address_space	*f_mapping;	/*Ö¸ÏòÒ»¸öaddres_space½á¹¹£¬Õâ¸ö½á¹¹·â×°ÁËÎÄ¼şµÄ¶ÁĞ´»º´æÒ³Ãæ*/
+	struct address_space	*f_mapping;	/*æŒ‡å‘ä¸€ä¸ªaddres_spaceç»“æ„ï¼Œè¿™ä¸ªç»“æ„å°è£…äº†æ–‡ä»¶çš„è¯»å†™ç¼“å­˜é¡µé¢*/
 } __attribute__((aligned(4)));	/* lest something weird decides that 2 is OK */
 
 struct file_handle {
@@ -1294,16 +1294,16 @@ struct super_block {
 	dev_t			s_dev;		/* search index; _not_ kdev_t */
 	unsigned char		s_blocksize_bits;
 	unsigned long		s_blocksize;
-	loff_t			s_maxbytes;	/*Ö¸¶¨ÎÄ¼şÏµÍ³ÖĞ×î´óÎÄ¼ş³ß´ç Max file size */
-	struct file_system_type	*s_type;	/*ÊÇÖ¸Ïòfile_system_type½á¹¹µÄÖ¸Õë*/
+	loff_t			s_maxbytes;	/*æŒ‡å®šæ–‡ä»¶ç³»ç»Ÿä¸­æœ€å¤§æ–‡ä»¶å°ºå¯¸ Max file size */
+	struct file_system_type	*s_type;	/*æ˜¯æŒ‡å‘file_system_typeç»“æ„çš„æŒ‡é’ˆ*/
 	const struct super_operations	*s_op;
 	const struct dquot_operations	*dq_op;
 	const struct quotactl_ops	*s_qcop;
 	const struct export_operations *s_export_op;
 	unsigned long		s_flags;
 	unsigned long		s_iflags;	/* internal SB_I_* flags */
-	unsigned long		s_magic;	/*ÊÇÄ§ÊõÊı×Ö£¬Ã¿¸öÎÄ¼şÏµÍ³¶¼ÓĞÒ»¸öÄ§ÊõÊı×Ö*/
-	struct dentry		*s_root;	/*ÊÇÖ¸ÏòÎÄ¼şÏµÍ³¸ùµÄÖ¸Õë*/
+	unsigned long		s_magic;	/*æ˜¯é­”æœ¯æ•°å­—ï¼Œæ¯ä¸ªæ–‡ä»¶ç³»ç»Ÿéƒ½æœ‰ä¸€ä¸ªé­”æœ¯æ•°å­—*/
+	struct dentry		*s_root;	/*æ˜¯æŒ‡å‘æ–‡ä»¶ç³»ç»Ÿæ ¹çš„æŒ‡é’ˆ*/
 	struct rw_semaphore	s_umount;
 	int			s_count;
 	atomic_t		s_active;
@@ -1316,7 +1316,7 @@ struct super_block {
 
 	struct hlist_bl_head	s_anon;		/* anonymous dentries for (nfs) exporting */
 	struct list_head	s_mounts;	/* list of mounts; _not_ for fs use */
-	struct block_device	*s_bdev;	/*Ö¸ÏòÎÄ¼şÏµÍ³´æÔÚµÄ¿éÉè±¸Ö¸Õë*/
+	struct block_device	*s_bdev;	/*æŒ‡å‘æ–‡ä»¶ç³»ç»Ÿå­˜åœ¨çš„å—è®¾å¤‡æŒ‡é’ˆ*/
 	struct backing_dev_info *s_bdi;
 	struct mtd_info		*s_mtd;
 	struct hlist_node	s_instances;
@@ -1649,34 +1649,34 @@ struct iov_iter;
 
 struct file_operations {
 	/** 
-	 * ±íÊ¾µ±Ç°struct file_operations¶ÔÏóËùÊôµÄÄÚºËÄ£¿é,¿ÉÒÔ±ÜÃâµ±
-	 * file_operationsÖĞµÄº¯ÊıÕıÔÚ±»µ÷ÓÃÊ±£¬ÆäËùÊôµÄÄ£¿é±»´ÓÏµÍ³ÖĞĞ¶ÔØµô,
-	 * Èç¹ûÉè±¸Çı¶¯³ÌĞò²»ÊÇÒÔÄ£¿éµÄĞÎÊ½´æÔÚ£¬¶øÊÇ±»±àÒë½øÄÚºË£¬ÄÇÃ´,
-	 * THIS_MODULE½«±»¸³ÖµÎª¿ÕÖ¸Õë£¬Ã»ÓĞÈÎºÎ×÷ÓÃ*/
+	 * è¡¨ç¤ºå½“å‰struct file_operationså¯¹è±¡æ‰€å±çš„å†…æ ¸æ¨¡å—,å¯ä»¥é¿å…å½“
+	 * file_operationsä¸­çš„å‡½æ•°æ­£åœ¨è¢«è°ƒç”¨æ—¶ï¼Œå…¶æ‰€å±çš„æ¨¡å—è¢«ä»ç³»ç»Ÿä¸­å¸è½½æ‰,
+	 * å¦‚æœè®¾å¤‡é©±åŠ¨ç¨‹åºä¸æ˜¯ä»¥æ¨¡å—çš„å½¢å¼å­˜åœ¨ï¼Œè€Œæ˜¯è¢«ç¼–è¯‘è¿›å†…æ ¸ï¼Œé‚£ä¹ˆ,
+	 * THIS_MODULEå°†è¢«èµ‹å€¼ä¸ºç©ºæŒ‡é’ˆï¼Œæ²¡æœ‰ä»»ä½•ä½œç”¨*/
 	struct module *owner;	
 	loff_t (*llseek) (struct file *, loff_t, int);
-	ssize_t (*read) (struct file *, char __user *, size_t, loff_t *);/*Í¬²½×èÈû/·Ç×èÈû*/
-	ssize_t (*write) (struct file *, const char __user *, size_t, loff_t *);/*Í¬²½×èÈû/·Ç×èÈû*/
+	ssize_t (*read) (struct file *, char __user *, size_t, loff_t *);/*åŒæ­¥é˜»å¡/éé˜»å¡*/
+	ssize_t (*write) (struct file *, const char __user *, size_t, loff_t *);/*åŒæ­¥é˜»å¡/éé˜»å¡*/
 	ssize_t (*read_iter) (struct kiocb *, struct iov_iter *);
 	ssize_t (*write_iter) (struct kiocb *, struct iov_iter *);
 	int (*iterate) (struct file *, struct dir_context *);
 	int (*iterate_shared) (struct file *, struct dir_context *);
-	unsigned int (*poll) (struct file *, struct poll_table_struct *);/*Òì²½×èÈû/·Ç×èÈûI/O*/
+	unsigned int (*poll) (struct file *, struct poll_table_struct *);/*å¼‚æ­¥é˜»å¡/éé˜»å¡I/O*/
 	/**
-	 * Éè±¸ÎÄ¼şµÄioctl²Ù×÷³£ÓÃÀ´¶ÔÉè±¸µÄĞĞÎª½øĞĞÄ³ÖÖ¿ØÖÆ,Ò»°ãÓÃÀ´ÔÚÓÃ»§¿Õ¼äµÄ
-	 * Ó¦ÓÃ³ÌĞòºÍÇı¶¯³ÌĞòÄ£¿éÖ±½Ó´«µİ¿ØÖÆ²ÎÊı,ºÜÉÙÓÃÓÚ´óÊı¾İÁ¿µÄ´«µİ,¶ÔÓÚ
-	 * Éè±¸Çı¶¯³ÌĞò¶øÑÔ,ÊµÏÖµÄioctlÔ­ĞÎÓĞÁ½¸ö,µ±ÓÃ»§¿Õ¼ä³ÌĞòµ÷ÓÃioctlº¯ÊıÊ±,
-	 * ÏµÍ³»á¾­¹ısys_ioctl½øÈëµ½ÄÚºË¿Õ¼ä*/
-	/* Çı¶¯³ÌĞòÓ¦¸ÃÊµÏÖunlocked_ioctl,ioctlÔÚÄÚºËÖĞÊôÓÚ±È½Ï³Â¾ÉµÄ´úÂë*/
+	 * è®¾å¤‡æ–‡ä»¶çš„ioctlæ“ä½œå¸¸ç”¨æ¥å¯¹è®¾å¤‡çš„è¡Œä¸ºè¿›è¡ŒæŸç§æ§åˆ¶,ä¸€èˆ¬ç”¨æ¥åœ¨ç”¨æˆ·ç©ºé—´çš„
+	 * åº”ç”¨ç¨‹åºå’Œé©±åŠ¨ç¨‹åºæ¨¡å—ç›´æ¥ä¼ é€’æ§åˆ¶å‚æ•°,å¾ˆå°‘ç”¨äºå¤§æ•°æ®é‡çš„ä¼ é€’,å¯¹äº
+	 * è®¾å¤‡é©±åŠ¨ç¨‹åºè€Œè¨€,å®ç°çš„ioctlåŸå½¢æœ‰ä¸¤ä¸ª,å½“ç”¨æˆ·ç©ºé—´ç¨‹åºè°ƒç”¨ioctlå‡½æ•°æ—¶,
+	 * ç³»ç»Ÿä¼šç»è¿‡sys_ioctlè¿›å…¥åˆ°å†…æ ¸ç©ºé—´*/
+	/* é©±åŠ¨ç¨‹åºåº”è¯¥å®ç°unlocked_ioctl,ioctlåœ¨å†…æ ¸ä¸­å±äºæ¯”è¾ƒé™ˆæ—§çš„ä»£ç */
 	long (*unlocked_ioctl) (struct file *, unsigned int, unsigned long);
 	long (*compat_ioctl) (struct file *, unsigned int, unsigned long);
-	/*½«ÓÃ»§¿Õ¼äµÄÒ»¶ÎĞéÄâµØÖ·Ó³Éäµ½Éè±¸µÄI/O¿Õ¼äÖĞ*/
+	/*å°†ç”¨æˆ·ç©ºé—´çš„ä¸€æ®µè™šæ‹Ÿåœ°å€æ˜ å°„åˆ°è®¾å¤‡çš„I/Oç©ºé—´ä¸­*/
 	int (*mmap) (struct file *, struct vm_area_struct *);
 	int (*open) (struct inode *, struct file *);
 	int (*flush) (struct file *, fl_owner_t id);
 	int (*release) (struct inode *, struct file *);
 	int (*fsync) (struct file *, loff_t, loff_t, int datasync);
-	/*Òì²½Í¨Öª»úÖÆ*/
+	/*å¼‚æ­¥é€šçŸ¥æœºåˆ¶*/
 	int (*fasync) (int, struct file *, int);
 	int (*lock) (struct file *, int, struct file_lock *);
 	ssize_t (*sendpage) (struct file *, struct page *, int, size_t, loff_t *, int);
@@ -2099,11 +2099,11 @@ mount_pseudo(struct file_system_type *fs_type, char *name,
 		fops_put(__file->f_op); \
 		BUG_ON(!(__file->f_op = (fops))); \
 	} while(0)
-/*°ÑÎÄ¼şÏµÍ³×¢²áµ½ÄÚºË*/
+/*æŠŠæ–‡ä»¶ç³»ç»Ÿæ³¨å†Œåˆ°å†…æ ¸*/
 extern int register_filesystem(struct file_system_type *);
 extern int unregister_filesystem(struct file_system_type *);
 extern struct vfsmount *kern_mount_data(struct file_system_type *, void *data);
-/*ÎªÎÄ¼şÏµÍ³ÉêÇë±Ø±¸µÄÊı¾İ½á¹¹*/
+/*ä¸ºæ–‡ä»¶ç³»ç»Ÿç”³è¯·å¿…å¤‡çš„æ•°æ®ç»“æ„*/
 #define kern_mount(type) kern_mount_data(type, NULL)
 extern void kern_unmount(struct vfsmount *mnt);
 extern int may_umount_tree(struct vfsmount *);
@@ -2444,7 +2444,7 @@ static inline void bd_unlink_disk_holder(struct block_device *bdev,
 #define CHRDEV_MAJOR_HASH_SIZE	255
 /* Marks the bottom of the first segment of free char majors */
 #define CHRDEV_MAJOR_DYN_END 234
-/*¸Ãº¯ÊıĞèÒª´«µİ¸øËüÖ¸¶¨µÄµÚÒ»¸ö´ÎÉè±¸ºÅfirstminor(Ò»°ãÎª0)ºÍÒª·ÖÅäµÄÉè±¸Êıcount£¬ÒÔ¼°Éè±¸Ãû£¬µ÷ÓÃ¸Ãº¯Êıºó×Ô¶¯·ÖÅäµÃµ½µÄÉè±¸ºÅ±£´æÔÚdevÖĞ*/
+/*è¯¥å‡½æ•°éœ€è¦ä¼ é€’ç»™å®ƒæŒ‡å®šçš„ç¬¬ä¸€ä¸ªæ¬¡è®¾å¤‡å·firstminor(ä¸€èˆ¬ä¸º0)å’Œè¦åˆ†é…çš„è®¾å¤‡æ•°countï¼Œä»¥åŠè®¾å¤‡åï¼Œè°ƒç”¨è¯¥å‡½æ•°åè‡ªåŠ¨åˆ†é…å¾—åˆ°çš„è®¾å¤‡å·ä¿å­˜åœ¨devä¸­*/
 extern int alloc_chrdev_region(dev_t *, unsigned, unsigned, const char *);
 extern int register_chrdev_region(dev_t, unsigned, const char *);
 extern int __register_chrdev(unsigned int major, unsigned int baseminor,

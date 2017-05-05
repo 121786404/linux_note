@@ -159,10 +159,10 @@ extern void arch_refresh_nodedata(int nid, pg_data_t *pgdat);
  */
 #define generic_free_nodedata(pgdat)	kfree(pgdat)
 /*
-ÔÚNUMAÄ£ĞÍÖĞ£¬±Ø¶¨´æÔÚ¶à¸önode½Úµã£¬
-Òò´ËÎªÁË¿ìËÙ·ÃÎÊ¸÷¸ö½ÚµãµÄÄÚÈİ£¬
-ÄÚºËÎ¬»¤ÁËÒ»¸öÈ«¾ÖµÄpg_data_tµÄÖ¸ÕëÊı×énode_data[]£¬
-Ö»Òª¸ù¾İnode id¼´¿É¿ìËÙÕÒµ½¶ÔÓ¦µÄpg_data_t
+åœ¨NUMAæ¨¡å‹ä¸­ï¼Œå¿…å®šå­˜åœ¨å¤šä¸ªnodeèŠ‚ç‚¹ï¼Œ
+å› æ­¤ä¸ºäº†å¿«é€Ÿè®¿é—®å„ä¸ªèŠ‚ç‚¹çš„å†…å®¹ï¼Œ
+å†…æ ¸ç»´æŠ¤äº†ä¸€ä¸ªå…¨å±€çš„pg_data_tçš„æŒ‡é’ˆæ•°ç»„node_data[]ï¼Œ
+åªè¦æ ¹æ®node idå³å¯å¿«é€Ÿæ‰¾åˆ°å¯¹åº”çš„pg_data_t
 */
 extern pg_data_t *node_data[];
 static inline void arch_refresh_nodedata(int nid, pg_data_t *pgdat)

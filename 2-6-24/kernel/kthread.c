@@ -122,7 +122,7 @@ static void create_kthread(struct kthread_create_info *create)
  * Returns a task_struct or ERR_PTR(-ENOMEM).
  */
 /**
- * ´´½¨ÄÚºËÏß³Ì£¬Ò»°ã²»ÔÙÖ±½ÓÊ¹ÓÃkernel_thread¡£
+ * åˆ›å»ºå†…æ ¸çº¿ç¨‹ï¼Œä¸€èˆ¬ä¸å†ç›´æ¥ä½¿ç”¨kernel_threadã€‚
  */
 struct task_struct *kthread_create(int (*threadfn)(void *data),
 				   void *data,

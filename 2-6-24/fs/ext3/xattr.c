@@ -195,14 +195,14 @@ ext3_xattr_find_entry(struct ext3_xattr_entry **pentry, int name_index,
 		return -EINVAL;
 	name_len = strlen(name);
 	entry = *pentry;
-	/* ±éÀúËùÓÐÊôÐÔ */
+	/* éåŽ†æ‰€æœ‰å±žæ€§ */
 	for (; !IS_LAST_ENTRY(entry); entry = EXT3_XATTR_NEXT(entry)) {
 		cmp = name_index - entry->e_name_index;
-		if (!cmp)/* ÀàÐÍÆ¥Åä */
+		if (!cmp)/* ç±»åž‹åŒ¹é… */
 			cmp = name_len - entry->e_name_len;
-		if (!cmp)/* ³¤¶ÈÆ¥Åä */
+		if (!cmp)/* é•¿åº¦åŒ¹é… */
 			cmp = memcmp(name, entry->e_name, name_len);
-		if (cmp <= 0 && (sorted || cmp == 0))/* ²»Æ¥Åä£¬ÍË³ö */
+		if (cmp <= 0 && (sorted || cmp == 0))/* ä¸åŒ¹é…ï¼Œé€€å‡º */
 			break;
 	}
 	*pentry = entry;
@@ -224,11 +224,11 @@ ext3_xattr_block_get(struct inode *inode, int name_index, const char *name,
 		  name_index, name, buffer, (long)buffer_size);
 
 	error = -ENODATA;
-	/* ¸Ã½ÚµãÃ»ÓÐaclÀ©Õ¹ÊôÐÔ¿é */
+	/* è¯¥èŠ‚ç‚¹æ²¡æœ‰aclæ‰©å±•å±žæ€§å— */
 	if (!EXT3_I(inode)->i_file_acl)
 		goto cleanup;
 	ea_idebug(inode, "reading block %u", EXT3_I(inode)->i_file_acl);
-	/* ¶ÁÈ¡À©Õ¹ÊôÐÔ¿éµ½ÄÚ´æÖÐ */
+	/* è¯»å–æ‰©å±•å±žæ€§å—åˆ°å†…å­˜ä¸­ */
 	bh = sb_bread(inode->i_sb, EXT3_I(inode)->i_file_acl);
 	if (!bh)
 		goto cleanup;
@@ -280,26 +280,26 @@ ext3_xattr_ibody_get(struct inode *inode, int name_index, const char *name,
 	error = ext3_get_inode_loc(inode, &iloc);
 	if (error)
 		return error;
-	/* ´ÓinodeÖÐµÃµ½µÚÒ»¸öÊôÐÔÃèÊö·û */
+	/* ä»Žinodeä¸­å¾—åˆ°ç¬¬ä¸€ä¸ªå±žæ€§æè¿°ç¬¦ */
 	raw_inode = ext3_raw_inode(&iloc);
 	header = IHDR(inode, raw_inode);
 	entry = IFIRST(header);
 	end = (void *)raw_inode + EXT3_SB(inode->i_sb)->s_inode_size;
-	/* È·±£inodeÖÐÈ·ÊµÓÐÊôÐÔ */
+	/* ç¡®ä¿inodeä¸­ç¡®å®žæœ‰å±žæ€§ */
 	error = ext3_xattr_check_names(entry, end);
 	if (error)
 		goto cleanup;
-	/* ±éÀú²éÕÒÊôÐÔ */
+	/* éåŽ†æŸ¥æ‰¾å±žæ€§ */
 	error = ext3_xattr_find_entry(&entry, name_index, name,
 				      end - (void *)entry, 0);
 	if (error)
 		goto cleanup;
 	size = le32_to_cpu(entry->e_value_size);
-	if (buffer) {/* µ÷ÓÃÕßÏ£Íû»ñµÃÊôÐÔÖµ£¬¶ø²»½ö½öÊÇÊôÐÔ³¤¶È */
+	if (buffer) {/* è°ƒç”¨è€…å¸Œæœ›èŽ·å¾—å±žæ€§å€¼ï¼Œè€Œä¸ä»…ä»…æ˜¯å±žæ€§é•¿åº¦ */
 		error = -ERANGE;
-		if (size > buffer_size)/* »º³åÇø²»×ã£¬ÎÞ·¨¸´ÖÆÊý¾Ý¸øÓÃ»§ */
+		if (size > buffer_size)/* ç¼“å†²åŒºä¸è¶³ï¼Œæ— æ³•å¤åˆ¶æ•°æ®ç»™ç”¨æˆ· */
 			goto cleanup;
-		/* ¸´ÖÆÊôÐÔÖµ¸øµ÷ÓÃÕß */
+		/* å¤åˆ¶å±žæ€§å€¼ç»™è°ƒç”¨è€… */
 		memcpy(buffer, (void *)IFIRST(header) +
 		       le16_to_cpu(entry->e_value_offs), size);
 	}
@@ -326,16 +326,16 @@ ext3_xattr_get(struct inode *inode, int name_index, const char *name,
 {
 	int error;
 
-	/* »ñÈ¡¶ÁÐÅºÅÁ¿ */
+	/* èŽ·å–è¯»ä¿¡å·é‡ */
 	down_read(&EXT3_I(inode)->xattr_sem);
-	/* ´ÓinodeÖÐ»ñµÃÊôÐÔ */
+	/* ä»Žinodeä¸­èŽ·å¾—å±žæ€§ */
 	error = ext3_xattr_ibody_get(inode, name_index, name, buffer,
 				     buffer_size);
 	if (error == -ENODATA)
-		/* Èç¹ûinodeÖÐÃ»ÓÐÊôÐÔ£¬³¢ÊÔ´ÓblockÖÐ¶ÁÈ¡ÊôÐÔ */
+		/* å¦‚æžœinodeä¸­æ²¡æœ‰å±žæ€§ï¼Œå°è¯•ä»Žblockä¸­è¯»å–å±žæ€§ */
 		error = ext3_xattr_block_get(inode, name_index, name, buffer,
 					     buffer_size);
-	/* ÊÍ·ÅËø */
+	/* é‡Šæ”¾é” */
 	up_read(&EXT3_I(inode)->xattr_sem);
 	return error;
 }
@@ -965,14 +965,14 @@ ext3_xattr_set_handle(handle_t *handle, struct inode *inode, int name_index,
 	};
 	int error;
 
-	/* ºÏ·¨ÐÔ¼ì²é */
+	/* åˆæ³•æ€§æ£€æŸ¥ */
 	if (!name)
 		return -EINVAL;
 	if (strlen(name) > 255)
 		return -ERANGE;
-	/* »ñÈ¡ÐÅºÅÁ¿ */
+	/* èŽ·å–ä¿¡å·é‡ */
 	down_write(&EXT3_I(inode)->xattr_sem);
-	/* ²éÕÒinodeµÄÎ»ÖÃ */
+	/* æŸ¥æ‰¾inodeçš„ä½ç½® */
 	error = ext3_get_inode_loc(inode, &is.iloc);
 	if (error)
 		goto cleanup;
@@ -983,35 +983,35 @@ ext3_xattr_set_handle(handle_t *handle, struct inode *inode, int name_index,
 		EXT3_I(inode)->i_state &= ~EXT3_STATE_NEW;
 	}
 
-	/* ÔÚinodeÖÐ²éÕÒÊôÐÔµÄÎ»ÖÃ */
+	/* åœ¨inodeä¸­æŸ¥æ‰¾å±žæ€§çš„ä½ç½® */
 	error = ext3_xattr_ibody_find(inode, &i, &is);
 	if (error)
 		goto cleanup;
-	if (is.s.not_found)/* Èç¹ûÔÚinodeÖÐÃ»ÓÐ²éÕÒµ½ÊôÐÔ£¬ÔòÔÚblockÖÐ²éÕÒ */
+	if (is.s.not_found)/* å¦‚æžœåœ¨inodeä¸­æ²¡æœ‰æŸ¥æ‰¾åˆ°å±žæ€§ï¼Œåˆ™åœ¨blockä¸­æŸ¥æ‰¾ */
 		error = ext3_xattr_block_find(inode, &i, &bs);
 	if (error)
 		goto cleanup;
-	if (is.s.not_found && bs.s.not_found) {/* ÊôÐÔ²»´æÔÚ */
+	if (is.s.not_found && bs.s.not_found) {/* å±žæ€§ä¸å­˜åœ¨ */
 		error = -ENODATA;
-		if (flags & XATTR_REPLACE)/* µ÷ÓÃÕßÏ£ÍûÌæ»»ÊôÐÔ£¬Ê§°Ü */
+		if (flags & XATTR_REPLACE)/* è°ƒç”¨è€…å¸Œæœ›æ›¿æ¢å±žæ€§ï¼Œå¤±è´¥ */
 			goto cleanup;
 		error = 0;
 		if (!value)
 			goto cleanup;
 	} else {
 		error = -EEXIST;
-		if (flags & XATTR_CREATE)/* ÊôÐÔÒÑ¾­´æÔÚ£¬µ«ÊÇµ÷ÓÃÕßÏ£ÍûÐÂ½¨ÊôÐÔ£¬Ê§°Ü */
+		if (flags & XATTR_CREATE)/* å±žæ€§å·²ç»å­˜åœ¨ï¼Œä½†æ˜¯è°ƒç”¨è€…å¸Œæœ›æ–°å»ºå±žæ€§ï¼Œå¤±è´¥ */
 			goto cleanup;
 	}
 	error = ext3_journal_get_write_access(handle, is.iloc.bh);
 	if (error)
 		goto cleanup;
-	if (!value) {/* Ã»ÓÐ¸ø³öÊôÐÔÖµ£¬±íÊ¾É¾³ýÊôÐÔ */
-		if (!is.s.not_found)/* ÔÚinode»òÕßblockÖÐÉ¾³ýÊôÐÔ */
+	if (!value) {/* æ²¡æœ‰ç»™å‡ºå±žæ€§å€¼ï¼Œè¡¨ç¤ºåˆ é™¤å±žæ€§ */
+		if (!is.s.not_found)/* åœ¨inodeæˆ–è€…blockä¸­åˆ é™¤å±žæ€§ */
 			error = ext3_xattr_ibody_set(handle, inode, &i, &is);
 		else if (!bs.s.not_found)
 			error = ext3_xattr_block_set(handle, inode, &i, &bs);
-	} else {/* ´´½¨»òÕßÐÞ¸ÄÊôÐÔÖµ */
+	} else {/* åˆ›å»ºæˆ–è€…ä¿®æ”¹å±žæ€§å€¼ */
 		error = ext3_xattr_ibody_set(handle, inode, &i, &is);
 		if (!error && !bs.s.not_found) {
 			i.value = NULL;
@@ -1028,10 +1028,10 @@ ext3_xattr_set_handle(handle_t *handle, struct inode *inode, int name_index,
 		}
 	}
 	if (!error) {
-		/* ¸üÐÂ³¬¼¶¿é±êÖ¾ */
+		/* æ›´æ–°è¶…çº§å—æ ‡å¿— */
 		ext3_xattr_update_super_block(handle, inode->i_sb);
 		inode->i_ctime = CURRENT_TIME_SEC;
-		/* ÐÞ¸ÄinodeÔªÊý¾Ý£¬ÒòÎªÎÒÃÇÒÑ¾­ÐÞ¸ÄÁËÊôÐÔ */
+		/* ä¿®æ”¹inodeå…ƒæ•°æ®ï¼Œå› ä¸ºæˆ‘ä»¬å·²ç»ä¿®æ”¹äº†å±žæ€§ */
 		error = ext3_mark_iloc_dirty(handle, inode, &is.iloc);
 		/*
 		 * The bh is consumed by ext3_mark_iloc_dirty, even with
@@ -1065,17 +1065,17 @@ ext3_xattr_set(struct inode *inode, int name_index, const char *name,
 	int error, retries = 0;
 
 retry:
-	/* Æô¶¯ÈÕÖ¾ */
+	/* å¯åŠ¨æ—¥å¿— */
 	handle = ext3_journal_start(inode, EXT3_DATA_TRANS_BLOCKS(inode->i_sb));
-	if (IS_ERR(handle)) {/* ÈÕÖ¾³öÏÖÎÊÌâ£¬ÍË³ö */
+	if (IS_ERR(handle)) {/* æ—¥å¿—å‡ºçŽ°é—®é¢˜ï¼Œé€€å‡º */
 		error = PTR_ERR(handle);
 	} else {
 		int error2;
 
-		/* ÐÞ¸ÄÊôÐÔ */
+		/* ä¿®æ”¹å±žæ€§ */
 		error = ext3_xattr_set_handle(handle, inode, name_index, name,
 					      value, value_len, flags);
-		/* ½áÊøÈÕÖ¾ */
+		/* ç»“æŸæ—¥å¿— */
 		error2 = ext3_journal_stop(handle);
 		if (error == -ENOSPC &&
 		    ext3_should_retry_alloc(inode->i_sb, &retries))

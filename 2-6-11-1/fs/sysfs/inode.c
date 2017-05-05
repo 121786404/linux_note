@@ -26,7 +26,7 @@ static struct backing_dev_info sysfs_backing_dev_info = {
 	.memory_backed	= 1,	/* Does not contribute to dirty memory */
 };
 
-/* ´´½¨sysfsµÄinode */
+/* åˆ›å»ºsysfsçš„inode */
 struct inode * sysfs_new_inode(mode_t mode)
 {
 	struct inode * inode = new_inode(sysfs_sb);
@@ -43,7 +43,7 @@ struct inode * sysfs_new_inode(mode_t mode)
 	return inode;
 }
 
-/* ´´½¨Ä¿Â¼¶ÔÓ¦µÄinode */
+/* åˆ›å»ºç›®å½•å¯¹åº”çš„inode */
 int sysfs_create(struct dentry * dentry, int mode, int (*init)(struct inode *))
 {
 	int error = 0;
@@ -78,7 +78,7 @@ int sysfs_create(struct dentry * dentry, int mode, int (*init)(struct inode *))
 	return error;
 }
 
-/* ÔÚ¸¸Ä¿Â¼ÖĞ´´½¨Ò»¸öÃû³ÆÎªnameµÄÄ¿Â¼£¬²¢·µ»Ø */
+/* åœ¨çˆ¶ç›®å½•ä¸­åˆ›å»ºä¸€ä¸ªåç§°ä¸ºnameçš„ç›®å½•ï¼Œå¹¶è¿”å› */
 struct dentry * sysfs_get_dentry(struct dentry * parent, const char * name)
 {
 	struct qstr qstr;

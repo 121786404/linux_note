@@ -741,7 +741,7 @@ asmlinkage long sys_fork(struct pt_regs *regs)
 }
 
 /**
- * cloneÏµÍ³µ÷ÓÃ£¬Ò»°ãÓÃÓÚ´´½¨Ïß³Ì
+ * cloneç³»ç»Ÿè°ƒç”¨ï¼Œä¸€èˆ¬ç”¨äºåˆ›å»ºçº¿ç¨‹
  */
 asmlinkage long
 sys_clone(unsigned long clone_flags, unsigned long newsp,
@@ -763,8 +763,8 @@ sys_clone(unsigned long clone_flags, unsigned long newsp,
  * the information you need.
  */
 /**
- * vforkÏµÍ³µ÷ÓÃ£¬ÓÉÓÚĞ´Ê±¸´ÖÆ¼¼ÊõµÄ´æÔÚ£¬Ó¦¸Ã±ÜÃâ´Ëµ÷ÓÃ¡£
- * ÔÚ×Ó½ø³ÌÍË³ö»ò¿ªÊ¼ĞÂ³ÌĞòÖ®Ç°£¬ÄÚºË±£Ö¤¸¸½ø³Ì´¦ÓÚ×èÈû×´Ì¬¡£
+ * vforkç³»ç»Ÿè°ƒç”¨ï¼Œç”±äºå†™æ—¶å¤åˆ¶æŠ€æœ¯çš„å­˜åœ¨ï¼Œåº”è¯¥é¿å…æ­¤è°ƒç”¨ã€‚
+ * åœ¨å­è¿›ç¨‹é€€å‡ºæˆ–å¼€å§‹æ–°ç¨‹åºä¹‹å‰ï¼Œå†…æ ¸ä¿è¯çˆ¶è¿›ç¨‹å¤„äºé˜»å¡çŠ¶æ€ã€‚
  */
 asmlinkage long sys_vfork(struct pt_regs *regs)
 {

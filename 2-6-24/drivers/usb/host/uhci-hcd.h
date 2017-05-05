@@ -385,7 +385,7 @@ struct uhci_hcd {
 	spinlock_t lock;
 
 	/**
-	 * Frame ListÔÚÄÚ´æÖĞµÄÎ»ÖÃ¡£
+	 * Frame Liståœ¨å†…å­˜ä¸­çš„ä½ç½®ã€‚
 	 */
 	dma_addr_t frame_dma_handle;	/* Hardware frame list */
 	__le32 *frame;
@@ -420,7 +420,7 @@ struct uhci_hcd {
 	struct list_head idle_qh_list;		/* Where the idle QHs live */
 
 	/**
-	 * UHCIµÄ¶Ë¿ÚÊı¡£
+	 * UHCIçš„ç«¯å£æ•°ã€‚
 	 */
 	int rh_numports;			/* Number of root-hub ports */
 

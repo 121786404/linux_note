@@ -10,7 +10,7 @@
 #ifndef __LINUX_MUTEX_H
 #define __LINUX_MUTEX_H
 
-/*»¥³âËøµÄ¸ÅÄîÀ´×Ôsemaphore*/
+/*äº’æ–¥é”çš„æ¦‚å¿µæ¥è‡ªsemaphore*/
 #include <asm/current.h>
 #include <linux/list.h>
 #include <linux/spinlock_types.h>
@@ -51,7 +51,7 @@ struct ww_acquire_ctx;
  * - detects multi-task circular deadlocks and prints out all affected
  *   locks and tasks (and only those tasks)
  */
- /*»¥³âËø¶¨Òå,¶Ô½á¹¹ÌåµÄ³õÊ¼»¯²»ÄÜÖ±½ÓÍ¨¹ı²Ù×÷Æä³ÉÔ±±äÁ¿µÄ·½Ê½*/
+ /*äº’æ–¥é”å®šä¹‰,å¯¹ç»“æ„ä½“çš„åˆå§‹åŒ–ä¸èƒ½ç›´æ¥é€šè¿‡æ“ä½œå…¶æˆå‘˜å˜é‡çš„æ–¹å¼*/
 struct mutex {
 	atomic_long_t		owner;
 	spinlock_t		wait_lock;
@@ -108,7 +108,7 @@ static inline void mutex_destroy(struct mutex *lock) {}
  *
  * It is not allowed to initialize an already locked mutex.
  */
- /*¶¨Òå²¢³õÊ¼»¯Ò»¸ö»¥³âËø*/
+ /*å®šä¹‰å¹¶åˆå§‹åŒ–ä¸€ä¸ªäº’æ–¥é”*/
 #define mutex_init(mutex)						\
 do {									\
 	static struct lock_class_key __key;				\
@@ -130,7 +130,7 @@ do {									\
 		__DEBUG_MUTEX_INITIALIZER(lockname) \
 		__DEP_MAP_MUTEX_INITIALIZER(lockname) }
 
-/*¶¨ÒåÒ»¸ö¾²Ì¬µÄstruct mutex±äÁ¿Í¬Ê±³õÊ¼»¯*/
+/*å®šä¹‰ä¸€ä¸ªé™æ€çš„struct mutexå˜é‡åŒæ—¶åˆå§‹åŒ–*/
 #define DEFINE_MUTEX(mutexname) \
 	struct mutex mutexname = __MUTEX_INITIALIZER(mutexname)
 
@@ -143,7 +143,7 @@ extern void __mutex_init(struct mutex *lock, const char *name,
  *
  * Returns 1 if the mutex is locked, 0 if unlocked.
  */
- /*ÅĞ¶Ï»¥³âËøµÄ×´Ì¬*/
+ /*åˆ¤æ–­äº’æ–¥é”çš„çŠ¶æ€*/
 static inline int mutex_is_locked(struct mutex *lock)
 {
 	/*
@@ -178,9 +178,9 @@ do {									\
 } while (0)
 
 #else
-/*»¥³âËøµÄdown²Ù×÷*/
+/*äº’æ–¥é”çš„downæ“ä½œ*/
 extern void mutex_lock(struct mutex *lock);
-/*»¥³âËøµÄdown²Ù×÷,¿ÉÖĞ¶ÏµÄ*/
+/*äº’æ–¥é”çš„downæ“ä½œ,å¯ä¸­æ–­çš„*/
 extern int __must_check mutex_lock_interruptible(struct mutex *lock);
 extern int __must_check mutex_lock_killable(struct mutex *lock);
 extern void mutex_lock_io(struct mutex *lock);
@@ -198,9 +198,9 @@ extern void mutex_lock_io(struct mutex *lock);
  *
  * Returns 1 if the mutex has been acquired successfully, and 0 on contention.
  */
- /*»¥³âËøµÄdown²Ù×÷*/
+ /*äº’æ–¥é”çš„downæ“ä½œ*/
 extern int mutex_trylock(struct mutex *lock);
-/*»¥³âËøµÄUP²Ù×÷*/
+/*äº’æ–¥é”çš„UPæ“ä½œ*/
 extern void mutex_unlock(struct mutex *lock);
 
 extern int atomic_dec_and_mutex_lock(atomic_t *cnt, struct mutex *lock);

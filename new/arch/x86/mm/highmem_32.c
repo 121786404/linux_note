@@ -2,7 +2,7 @@
 #include <linux/export.h>
 #include <linux/swap.h> /* for totalram_pages */
 #include <linux/bootmem.h>
-/*ÔÚÄÚºËµÄ¶¯Ì¬Ó³ÉäÇø·ÖÅäÒ»¸öKVA£»Í¨¹ı²Ù×÷Ò³±í½«1ÖĞµÄKVAÓ³Éäµ½¸ÃÎïÀíÒ³ÃæÉÏ*/
+/*åœ¨å†…æ ¸çš„åŠ¨æ€æ˜ å°„åŒºåˆ†é…ä¸€ä¸ªKVAï¼›é€šè¿‡æ“ä½œé¡µè¡¨å°†1ä¸­çš„KVAæ˜ å°„åˆ°è¯¥ç‰©ç†é¡µé¢ä¸Š*/
 void *kmap(struct page *page)
 {
 	might_sleep();
@@ -11,7 +11,7 @@ void *kmap(struct page *page)
 	return kmap_high(page);
 }
 EXPORT_SYMBOL(kmap);
-/*ÓëkmapĞĞÎªÏà·´µÄº¯Êı*/
+/*ä¸kmapè¡Œä¸ºç›¸åçš„å‡½æ•°*/
 void kunmap(struct page *page)
 {
 	if (in_interrupt())
@@ -51,7 +51,7 @@ void *kmap_atomic_prot(struct page *page, pgprot_t prot)
 	return (void *)vaddr;
 }
 EXPORT_SYMBOL(kmap_atomic_prot);
-/*Õë¶Ôº¯Êı¿ÉÄÜË¯ÃßµÄÇéĞÎÄÚºËÌá¹©µÄ±¸Ñ¡º¯Êı*/
+/*é’ˆå¯¹å‡½æ•°å¯èƒ½ç¡çœ çš„æƒ…å½¢å†…æ ¸æä¾›çš„å¤‡é€‰å‡½æ•°*/
 void *kmap_atomic(struct page *page)
 {
 	return kmap_atomic_prot(page, kmap_prot);
@@ -67,7 +67,7 @@ void *kmap_atomic_pfn(unsigned long pfn)
 	return kmap_atomic_prot_pfn(pfn, kmap_prot);
 }
 EXPORT_SYMBOL_GPL(kmap_atomic_pfn);
-/*ÄÚºËÕë¶Ôkunmap¿ÉÄÜË¯ÃßµÄÇéĞÎÌá¹©µÄ±¸Ñ¡º¯Êı*/
+/*å†…æ ¸é’ˆå¯¹kunmapå¯èƒ½ç¡çœ çš„æƒ…å½¢æä¾›çš„å¤‡é€‰å‡½æ•°*/
 void __kunmap_atomic(void *kvaddr)
 {
 	unsigned long vaddr = (unsigned long) kvaddr & PAGE_MASK;

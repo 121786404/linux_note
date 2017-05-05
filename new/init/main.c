@@ -362,12 +362,12 @@ static inline void smp_prepare_cpus(unsigned int maxcpus) { }
  */
 static void __init setup_command_line(char *command_line)
 {
-	//Ô­Ê¼ÃüÁîĞĞ
+	//åŸå§‹å‘½ä»¤è¡Œ
 	saved_command_line =
 		memblock_virt_alloc(strlen(boot_command_line) + 1, 0);
 	initcall_command_line =
 		memblock_virt_alloc(strlen(boot_command_line) + 1, 0);
-	//ÓÃÓÚ²ÎÊı½âÎöµÄÃüÁîĞĞ¡£
+	//ç”¨äºå‚æ•°è§£æçš„å‘½ä»¤è¡Œã€‚
 	static_command_line = memblock_virt_alloc(strlen(command_line) + 1, 0);
 	strcpy(saved_command_line, boot_command_line);
 	strcpy(static_command_line, command_line);
@@ -388,10 +388,10 @@ static noinline void __ref rest_init(void)
 {
 	int pid;
 /*
-×îºó¾ÍÊÇÉè¶¨rcu_scheduler_active=1Æô¶¯RCU»úÖÆ. 
-RCUÔÚ¶àºËĞÄ¼Ü¹¹ÏÂ,²»Í¬µÄĞĞ³ÌÒª¶ÁÈ¡Í¬Ò»±Ê×ÊÁÏÄÚÈİ/½á¹¹,
-¿ÉÒÔÌá¹©¸ßĞ§ÂÊµÄÍ¬²½ÓëÕıÈ·ĞÔ. 
-ÔÚÕâÖ®ºó¾Í¿ÉÒÔÊ¹ÓÃ rcu_read_lock/rcu_read_unlockÁË
+æœ€åå°±æ˜¯è®¾å®šrcu_scheduler_active=1å¯åŠ¨RCUæœºåˆ¶. 
+RCUåœ¨å¤šæ ¸å¿ƒæ¶æ„ä¸‹,ä¸åŒçš„è¡Œç¨‹è¦è¯»å–åŒä¸€ç¬”èµ„æ–™å†…å®¹/ç»“æ„,
+å¯ä»¥æä¾›é«˜æ•ˆç‡çš„åŒæ­¥ä¸æ­£ç¡®æ€§. 
+åœ¨è¿™ä¹‹åå°±å¯ä»¥ä½¿ç”¨ rcu_read_lock/rcu_read_unlockäº†
 */
 	rcu_scheduler_starting();
 	/*
@@ -399,21 +399,21 @@ RCUÔÚ¶àºËĞÄ¼Ü¹¹ÏÂ,²»Í¬µÄĞĞ³ÌÒª¶ÁÈ¡Í¬Ò»±Ê×ÊÁÏÄÚÈİ/½á¹¹,
 	 * the init task will end up wanting to create kthreads, which, if
 	 * we schedule it before we create kthreadd, will OOPS.
 	 */
-	//Éú³Éinit½ø³Ì£¬kernel_init½ø³ÌÖ´ĞĞÁËºÜ¶à³õÊ¼»¯¹¤×÷¡£
-    // ´´½¨1ºÅÄÚºËÏß³Ì, ¸ÃÏß³ÌËæºó×ªÏòÓÃ»§¿Õ¼ä, Ñİ±äÎªinit½ø³Ì
+	//ç”Ÿæˆinitè¿›ç¨‹ï¼Œkernel_initè¿›ç¨‹æ‰§è¡Œäº†å¾ˆå¤šåˆå§‹åŒ–å·¥ä½œã€‚
+    // åˆ›å»º1å·å†…æ ¸çº¿ç¨‹, è¯¥çº¿ç¨‹éšåè½¬å‘ç”¨æˆ·ç©ºé—´, æ¼”å˜ä¸ºinitè¿›ç¨‹
 	kernel_thread(kernel_init, NULL, CLONE_FS);
-	//³õÊ¼»¯µ±Ç°½ø³ÌµÄÄÚ´æ²ßÂÔ¡£
+	//åˆå§‹åŒ–å½“å‰è¿›ç¨‹çš„å†…å­˜ç­–ç•¥ã€‚
 	numa_default_policy();
-	//Éú³ÉkthreaddÊØ»¤½ø³Ì,ÓÃÓÚÉú³ÉÄÚºËÏß³ÌµÄÏß³Ì¡£
+	//ç”Ÿæˆkthreaddå®ˆæŠ¤è¿›ç¨‹,ç”¨äºç”Ÿæˆå†…æ ¸çº¿ç¨‹çš„çº¿ç¨‹ã€‚
 	pid = kernel_thread(kthreadd, NULL, CLONE_FS | CLONE_FILES);
-	//ÔÚ²éÕÒÈÎÎñÇ°£¬»ñµÃrcu¶ÁËø
+	//åœ¨æŸ¥æ‰¾ä»»åŠ¡å‰ï¼Œè·å¾—rcuè¯»é”
 	rcu_read_lock();
-	//Í¨¹ıpid²éÕÒkthreaddÏß³Ì½á¹¹¡£
-    /* ´«Èë²ÎÊıkthreaddµÄPID 2ÓëPID NameSpace (struct pid_namespace init_pid_ns)È¡»ØPID 2µÄTask Struct.*/
+	//é€šè¿‡pidæŸ¥æ‰¾kthreaddçº¿ç¨‹ç»“æ„ã€‚
+    /* ä¼ å…¥å‚æ•°kthreaddçš„PID 2ä¸PID NameSpace (struct pid_namespace init_pid_ns)å–å›PID 2çš„Task Struct.*/
 	kthreadd_task = find_task_by_pid_ns(pid, &init_pid_ns);
 	rcu_read_unlock();
-	//»½ĞÑµÈ´ıkthreaddÏß³Ì´´½¨ÏûÏ¢µÄ½ø³Ì¡£
-    /* »á·¢ËÍkthreadd_done Signal,ÈÃ kernel_init(Ò²¾ÍÊÇ init task)¿ÉÒÔÍùºó¼ÌĞøÖ´ĞĞ */
+	//å”¤é†’ç­‰å¾…kthreaddçº¿ç¨‹åˆ›å»ºæ¶ˆæ¯çš„è¿›ç¨‹ã€‚
+    /* ä¼šå‘é€kthreadd_done Signal,è®© kernel_init(ä¹Ÿå°±æ˜¯ init task)å¯ä»¥å¾€åç»§ç»­æ‰§è¡Œ */
 	complete(&kthreadd_done);
 
 	/*
@@ -421,47 +421,47 @@ RCUÔÚ¶àºËĞÄ¼Ü¹¹ÏÂ,²»Í¬µÄĞĞ³ÌÒª¶ÁÈ¡Í¬Ò»±Ê×ÊÁÏÄÚÈİ/½á¹¹,
 	 * at least once to get things moving:
 	 */
 	/*
-     ÉèÖÃµ±Ç°Ïß³ÌµÄidleÀàÏß³Ì
-     µ±Ç°0ºÅ½ø³Ìinit_task×îÖÕ»áÍË»¯³Éidle½ø³Ì£¬
-     ËùÒÔÕâÀïµ÷ÓÃinit_idle_bootup_task()º¯Êı£¬ÈÃinit_task½ø³ÌÁ¥Êôµ½idleµ÷¶ÈÀàÖĞ¡£
-     ¼´Ñ¡ÔñidleµÄµ÷¶ÈÏà¹Øº¯Êı¡£
-     Ã¿¸ö´¦ÀíÆ÷¶¼»áÓĞÕâÑóµÄIDLE Task,ÓÃÀ´ÔÚÃ»ÓĞĞĞ³ÌÅÅ³ÉÊ±,
-     ÈÃ´¦ÀíÆ÷µôÈëÖ´ĞĞµÄ.¶ø×î»ù´¡µÄÊ¡µç»úÖÆ,
-     Ò²¿ÉÍ¸¹ıIDLE TaskÀ´½øĞĞ. (°üÀ¨ÈÃÏµÍ³¿ÉÒÔ¹Ø±Õ±ØÒªµÄÖÜ±ßµçÔ´ÓëClock Gating).
+     è®¾ç½®å½“å‰çº¿ç¨‹çš„idleç±»çº¿ç¨‹
+     å½“å‰0å·è¿›ç¨‹init_taskæœ€ç»ˆä¼šé€€åŒ–æˆidleè¿›ç¨‹ï¼Œ
+     æ‰€ä»¥è¿™é‡Œè°ƒç”¨init_idle_bootup_task()å‡½æ•°ï¼Œè®©init_taskè¿›ç¨‹éš¶å±åˆ°idleè°ƒåº¦ç±»ä¸­ã€‚
+     å³é€‰æ‹©idleçš„è°ƒåº¦ç›¸å…³å‡½æ•°ã€‚
+     æ¯ä¸ªå¤„ç†å™¨éƒ½ä¼šæœ‰è¿™æ´‹çš„IDLE Task,ç”¨æ¥åœ¨æ²¡æœ‰è¡Œç¨‹æ’æˆæ—¶,
+     è®©å¤„ç†å™¨æ‰å…¥æ‰§è¡Œçš„.è€Œæœ€åŸºç¡€çš„çœç”µæœºåˆ¶,
+     ä¹Ÿå¯é€è¿‡IDLE Taskæ¥è¿›è¡Œ. (åŒ…æ‹¬è®©ç³»ç»Ÿå¯ä»¥å…³é—­å¿…è¦çš„å‘¨è¾¹ç”µæºä¸Clock Gating).
     */
 	init_idle_bootup_task(current);
 
 
 	/* 
-      µ÷ÓÃschedule()º¯ÊıÇĞ»»µ±Ç°½ø³Ì£¬ÔÚµ÷ÓÃ¸Ãº¯ÊıÖ®Ç°£¬
-      LinuxÏµÍ³ÖĞÖ»ÓĞÁ½¸ö½ø³Ì£¬¼´0ºÅ½ø³Ìinit_taskºÍ1ºÅ½ø³Ìkernel_init£¬
-      ÆäÖĞkernel_init½ø³ÌÒ²ÊÇ¸Õ¸Õ±»´´½¨µÄ¡£µ÷ÓÃ¸Ãº¯Êıºó£¬
-      1ºÅ½ø³Ìkernel_init½«»áÔËĞĞ£¡
+      è°ƒç”¨schedule()å‡½æ•°åˆ‡æ¢å½“å‰è¿›ç¨‹ï¼Œåœ¨è°ƒç”¨è¯¥å‡½æ•°ä¹‹å‰ï¼Œ
+      Linuxç³»ç»Ÿä¸­åªæœ‰ä¸¤ä¸ªè¿›ç¨‹ï¼Œå³0å·è¿›ç¨‹init_taskå’Œ1å·è¿›ç¨‹kernel_initï¼Œ
+      å…¶ä¸­kernel_initè¿›ç¨‹ä¹Ÿæ˜¯åˆšåˆšè¢«åˆ›å»ºçš„ã€‚è°ƒç”¨è¯¥å‡½æ•°åï¼Œ
+      1å·è¿›ç¨‹kernel_initå°†ä¼šè¿è¡Œï¼
      */
 	schedule_preempt_disabled();
 	/* Call into cpu_idle with preempt disabled */
 /*
-    Íê³É¹¤×÷ºó, µ÷ÓÃcpu_idle_loop()Ê¹µÃidle½ø³Ì½øÈë×Ô¼ºµÄÊÂ¼ş´¦ÀíÑ­»·
+    å®Œæˆå·¥ä½œå, è°ƒç”¨cpu_idle_loop()ä½¿å¾—idleè¿›ç¨‹è¿›å…¥è‡ªå·±çš„äº‹ä»¶å¤„ç†å¾ªç¯
 */
 	cpu_startup_entry(CPUHP_ONLINE);
 }
 
 /* Check for early params. */
 /**
- * ¶ÔÎ´ĞŞÕıµÄ²ÎÊıĞĞÖĞ£¬Ä³Ò»Ïî²ÎÊı½øĞĞ½âÎö
+ * å¯¹æœªä¿®æ­£çš„å‚æ•°è¡Œä¸­ï¼ŒæŸä¸€é¡¹å‚æ•°è¿›è¡Œè§£æ
  */
 static int __init do_early_param(char *param, char *val,
 				 const char *unused, void *arg)
 {
 	const struct obs_kernel_param *p;
 
-	//__setup_start,__setup_end±£´æÁË__setup£¬early_paramºê¶¨ÒåµÄ³õÊ¼»¯º¯Êı
+	//__setup_start,__setup_endä¿å­˜äº†__setupï¼Œearly_paramå®å®šä¹‰çš„åˆå§‹åŒ–å‡½æ•°
 	for (p = __setup_start; p < __setup_end; p++) {
 		if ((p->early && parameq(param, p->str)) ||
 		    (strcmp(param, "console") == 0 &&
 		     strcmp(p->str, "earlycon") == 0)
 		) {
-			if (p->setup_func(val) != 0)//µ÷ÓÃ×¢²áµÄ»Øµ÷
+			if (p->setup_func(val) != 0)//è°ƒç”¨æ³¨å†Œçš„å›è°ƒ
 				pr_warn("Malformed early option '%s'\n", param);
 		}
 	}
@@ -469,7 +469,7 @@ static int __init do_early_param(char *param, char *val,
 	return 0;
 }
 
-//½âÎö²ÎÊıĞĞ£¬²¢µ÷ÓÃdo_early_param¶ÔËü½øĞĞ´¦Àí
+//è§£æå‚æ•°è¡Œï¼Œå¹¶è°ƒç”¨do_early_paramå¯¹å®ƒè¿›è¡Œå¤„ç†
 void __init parse_early_options(char *cmdline)
 {
 	parse_args("early options", cmdline, NULL, 0, 0, 0, NULL,
@@ -478,21 +478,21 @@ void __init parse_early_options(char *cmdline)
 
 /* Arch code calls this early on, or if not, just before other parsing. */
 /**
- * ÓÃÎ´ĞŞÕıµÄÔ­Ê¼²ÎÊı½øĞĞ½âÎö
- * ¶Ôboot_command_line½øĞĞÔçÆÚµÄ½âÎö
- * ÓĞĞ©…¢”µÓĞİ^¸ßµÄƒÏÈ™à£¬ĞèÒªÏÈ±»ÌÀí£¬ß@îµÄ…¢”µ±»·Qé early_param
- * ÅeÀıíÕf£¬Ïñ log level µÄÔO¶¨•şÓ°í‘ÓÏ¢µÄİ”³ö£¬ÈôÌ«ÍíÉúĞ§µÄÔ’£¬ÓĞĞ©³ıåeÓÏ¢¿ÉÄÜ¾Í²»•ş±»¿´µ½
+ * ç”¨æœªä¿®æ­£çš„åŸå§‹å‚æ•°è¿›è¡Œè§£æ
+ * å¯¹boot_command_lineè¿›è¡Œæ—©æœŸçš„è§£æ
+ * æœ‰äº›åƒæ•¸æœ‰è¼ƒé«˜çš„å„ªå…ˆæ¬Šï¼Œéœ€è¦å…ˆè¢«è™•ç†ï¼Œé€™é¡çš„åƒæ•¸è¢«ç¨±ç‚º early_param
+ * èˆ‰ä¾‹ä¾†èªªï¼Œåƒ log level çš„è¨­å®šæœƒå½±éŸ¿è¨Šæ¯çš„è¼¸å‡ºï¼Œè‹¥å¤ªæ™šç”Ÿæ•ˆçš„è©±ï¼Œæœ‰äº›é™¤éŒ¯è¨Šæ¯å¯èƒ½å°±ä¸æœƒè¢«çœ‹åˆ°
  */
 void __init parse_early_param(void)
 {
 	static int done __initdata;
 	static char tmp_cmdline[COMMAND_LINE_SIZE] __initdata;
 
-	if (done) //Ä³Ğ©¼Ü¹¹¿ÉÄÜÔÚ¼Ü¹¹Ïà¹Ø´úÂëÖĞµ÷ÓÃÁË£¬ÕâÀï·ÀÖ¹¶à´Î³õÊ¼»¯¡£
+	if (done) //æŸäº›æ¶æ„å¯èƒ½åœ¨æ¶æ„ç›¸å…³ä»£ç ä¸­è°ƒç”¨äº†ï¼Œè¿™é‡Œé˜²æ­¢å¤šæ¬¡åˆå§‹åŒ–ã€‚
 		return;
 
 	/* All fall through to do_early_param. */
-	//¸´ÖÆÎ´ĞŞÕıµÄ²ÎÊıĞĞ£¬²¢¶ÔËü½øĞĞ½âÎö¡£
+	//å¤åˆ¶æœªä¿®æ­£çš„å‚æ•°è¡Œï¼Œå¹¶å¯¹å®ƒè¿›è¡Œè§£æã€‚
 	strlcpy(tmp_cmdline, boot_command_line, COMMAND_LINE_SIZE);
 	parse_early_options(tmp_cmdline);
 	done = 1;
@@ -514,9 +514,9 @@ void __init __weak thread_stack_cache_init(void)
  * Set up kernel memory allocators
  */
 /*
-½¨Á¢ÁËÄÚºËµÄÄÚ´æ·ÖÅäÆ÷, 
-ÆäÖĞÍ¨¹ımem_initÍ£ÓÃbootmem·ÖÅäÆ÷²¢Ç¨ÒÆµ½Êµ¼ÊµÄÄÚ´æ¹ÜÀíÆ÷(±ÈÈç»ï°éÏµÍ³)
-È»ºóµ÷ÓÃkmem_cache_initº¯Êı³õÊ¼»¯ÄÚºËÄÚ²¿ÓÃÓÚĞ¡¿éÄÚ´æÇøµÄ·ÖÅäÆ÷
+å»ºç«‹äº†å†…æ ¸çš„å†…å­˜åˆ†é…å™¨, 
+å…¶ä¸­é€šè¿‡mem_initåœç”¨bootmemåˆ†é…å™¨å¹¶è¿ç§»åˆ°å®é™…çš„å†…å­˜ç®¡ç†å™¨(æ¯”å¦‚ä¼™ä¼´ç³»ç»Ÿ)
+ç„¶åè°ƒç”¨kmem_cache_initå‡½æ•°åˆå§‹åŒ–å†…æ ¸å†…éƒ¨ç”¨äºå°å—å†…å­˜åŒºçš„åˆ†é…å™¨
 */
 static void __init mm_init(void)
 {
@@ -525,35 +525,35 @@ static void __init mm_init(void)
 	 * bigger than MAX_ORDER unless SPARSEMEM.
 	 */
 	page_ext_init_flatmem();
-	//½«bootÄÚ´æ¹ÜÀí×ª»»Îª»ï°éÄÚ´æ¹ÜÀí
+	//å°†bootå†…å­˜ç®¡ç†è½¬æ¢ä¸ºä¼™ä¼´å†…å­˜ç®¡ç†
 	mem_init();
 	/**
-	 * ³õÊ¼»¯slabÄÚ´æ·ÖÅäÆ÷
+	 * åˆå§‹åŒ–slabå†…å­˜åˆ†é…å™¨
 	 */
 	kmem_cache_init();
 	percpu_init_late();
-	//Ò³±íÏà¹ØµÄ³õÊ¼»¯£¬ÆäÊµ¾ÍÊÇ´´½¨Ò»¸öslab·ÖÅäÆ÷£¬ÓÃÓÚÒ³±íËøµÄ·ÖÅä¡£
+	//é¡µè¡¨ç›¸å…³çš„åˆå§‹åŒ–ï¼Œå…¶å®å°±æ˜¯åˆ›å»ºä¸€ä¸ªslabåˆ†é…å™¨ï¼Œç”¨äºé¡µè¡¨é”çš„åˆ†é…ã€‚
 	pgtable_init();
-	//³õÊ¼»¯vmallocÓÃµ½µÄÊı¾İ½á¹¹
+	//åˆå§‹åŒ–vmallocç”¨åˆ°çš„æ•°æ®ç»“æ„
 	vmalloc_init();
 	ioremap_huge_init();
 }
 
 /**
- * ÄÚºË³õÊ¼»¯£¬ÔÚARM¼Ü¹¹ÖĞ£¬´Ó__mmap_switched»ã±àº¯ÊıÖĞµ÷ÓÃ´Ëº¯Êı¡£
- * asmlinkageÖ§³Ö´Ó»ã±àµ÷ÓÃ´Ëº¯Êı
+ * å†…æ ¸åˆå§‹åŒ–ï¼Œåœ¨ARMæ¶æ„ä¸­ï¼Œä»__mmap_switchedæ±‡ç¼–å‡½æ•°ä¸­è°ƒç”¨æ­¤å‡½æ•°ã€‚
+ * asmlinkageæ”¯æŒä»æ±‡ç¼–è°ƒç”¨æ­¤å‡½æ•°
  */
 asmlinkage __visible void __init start_kernel(void)
 {
 	char *command_line; // a pointer to the kernel command line
 	char *after_dashes; // a pointer to the kernel command line after "--", which will be passed to the init process
 
-	//ÉèÖÃinitÈÎÎñµÄ¶ÑÕ»Ä§·¨Êı£¬ÓÃÓÚ¹ÊÕÏÕï¶Ï
+	//è®¾ç½®initä»»åŠ¡çš„å †æ ˆé­”æ³•æ•°ï¼Œç”¨äºæ•…éšœè¯Šæ–­
 	set_task_stack_end_magic(&init_task);
-	//ÉèÖÃÆô¶¯CPU£¬ARM¼Ü¹¹Ò²Ö§³Ö´Ó·Ç0 CPUÆô¶¯ÁË
+	//è®¾ç½®å¯åŠ¨CPUï¼ŒARMæ¶æ„ä¹Ÿæ”¯æŒä»é0 CPUå¯åŠ¨äº†
 	smp_setup_processor_id();
 	/**
-	 * ³õÊ¼»¯ÄÚºË¶ÔÏó¸ú×ÙÄ£¿éÓÃµ½µÄ¹şÏ£±í¼°×ÔĞıËø
+	 * åˆå§‹åŒ–å†…æ ¸å¯¹è±¡è·Ÿè¸ªæ¨¡å—ç”¨åˆ°çš„å“ˆå¸Œè¡¨åŠè‡ªæ—‹é”
 	 */
 	debug_objects_early_init();
 
@@ -561,26 +561,26 @@ asmlinkage __visible void __init start_kernel(void)
 	 * Set up the the initial canary ASAP:
 	 */
 	/**
-	 * ÔÚ¶ÑÕ»ÖĞ·ÅÈë"½ğË¿È¸"£¬ÕâÖÖĞ¡¶¯Îï¶Ô¿óÉ½ÉÏµÄÓĞ¶¾ÎïÖÊºÜÃô¸Ğ
-	 * ÓÃÓÚÕì²â¶ÑÕ»¹¥»÷£¬·ÀÖ¹¹¥»÷´úÂëĞŞ¸Ä·µ»ØµØÖ·¡£
-	 * ß@ß…µÄ stack canary (½ğ½zÈ¸) ºÍÉÏÃæ stack end magic ÊÇÍ¬˜Ó×÷ÓÃ£¬
-	 * ¶¼ÊÇ·ÅÔÚ stack ááÃæÓÃí™z²éÊÇ·ñ°lÉú stack overflow¡£ 
-	 * ƒÈºËß@ß…µÄ boot_init_stack_canary() º¯Ê½µÄ¹¦ÓÃÊÇÔO¶¨Ò»‚€²»¹Ì¶¨µÄ stack canary Öµ£¬
-	 * ÓÃÒÔ·ÀÖ¹ stack overflow µÄ¹¥“ô£¬²»ß^ƒÈºËß@ß…Ò²ƒHƒHÊÇÔO¶¨Ò»‚€²»¹Ì¶¨µÄ canary Öµ£¬
-	 * ÕæÕıµÄ™z²é stack overflow µÄ™CÖÆÊÇÓÉ gcc Œ¬F¡£ 
-	 * gcc Ìá¹© -fstack-protector ¾×gßxí—£¬Ëü•ş…¢¿¼ß@‚€ canary Öµ£¬ 
-	 * ¼ÓÈëÓÃí™z²éµÄ³ÌÊ½´a£¬ÔÚº¯Ê½·µ»ØÇ°™z²éß@‚€ÖµÊÇ·ñ±»¸²Œ‘¡£ 
+	 * åœ¨å †æ ˆä¸­æ”¾å…¥"é‡‘ä¸é›€"ï¼Œè¿™ç§å°åŠ¨ç‰©å¯¹çŸ¿å±±ä¸Šçš„æœ‰æ¯’ç‰©è´¨å¾ˆæ•æ„Ÿ
+	 * ç”¨äºä¾¦æµ‹å †æ ˆæ”»å‡»ï¼Œé˜²æ­¢æ”»å‡»ä»£ç ä¿®æ”¹è¿”å›åœ°å€ã€‚
+	 * é€™é‚Šçš„ stack canary (é‡‘çµ²é›€) å’Œä¸Šé¢ stack end magic æ˜¯åŒæ¨£ä½œç”¨ï¼Œ
+	 * éƒ½æ˜¯æ”¾åœ¨ stack å¾Œé¢ç”¨ä¾†æª¢æŸ¥æ˜¯å¦ç™¼ç”Ÿ stack overflowã€‚ 
+	 * å…§æ ¸é€™é‚Šçš„ boot_init_stack_canary() å‡½å¼çš„åŠŸç”¨æ˜¯è¨­å®šä¸€å€‹ä¸å›ºå®šçš„ stack canary å€¼ï¼Œ
+	 * ç”¨ä»¥é˜²æ­¢ stack overflow çš„æ”»æ“Šï¼Œä¸éå…§æ ¸é€™é‚Šä¹Ÿåƒ…åƒ…æ˜¯è¨­å®šä¸€å€‹ä¸å›ºå®šçš„ canary å€¼ï¼Œ
+	 * çœŸæ­£çš„æª¢æŸ¥ stack overflow çš„æ©Ÿåˆ¶æ˜¯ç”± gcc å¯¦ç¾ã€‚ 
+	 * gcc æä¾› -fstack-protector ç·¨è­¯é¸é …ï¼Œå®ƒæœƒåƒè€ƒé€™å€‹ canary å€¼ï¼Œ 
+	 * åŠ å…¥ç”¨ä¾†æª¢æŸ¥çš„ç¨‹å¼ç¢¼ï¼Œåœ¨å‡½å¼è¿”å›å‰æª¢æŸ¥é€™å€‹å€¼æ˜¯å¦è¢«è¦†å¯«ã€‚ 
 	 */
 	boot_init_stack_canary();
 
 	/**
-	 * ³õÊ¼»¯cgroup×ÓÏµÍ³
+	 * åˆå§‹åŒ–cgroupå­ç³»ç»Ÿ
 	 */
 	cgroup_init_early();
 
-	//¹ØÖĞ¶Ï£¬
+	//å…³ä¸­æ–­ï¼Œ
 	local_irq_disable();
-	//Õï¶ÏÓÃ£¬±íÊ¾Ä¿Ç°µ±Ç°´¦ÓÚboot½×¶Î£¬²¢ÇÒÖĞ¶Ï±»¹Ø±ÕÁË¡£
+	//è¯Šæ–­ç”¨ï¼Œè¡¨ç¤ºç›®å‰å½“å‰å¤„äºbooté˜¶æ®µï¼Œå¹¶ä¸”ä¸­æ–­è¢«å…³é—­äº†ã€‚
 	early_boot_irqs_disabled = true;
 
 /*
@@ -588,43 +588,43 @@ asmlinkage __visible void __init start_kernel(void)
  * enable them
  */
  	/**
- 	 * ÔÚCPU×´Ì¬Î»Í¼ÖĞ×¢²áµ±Ç°CPU
+ 	 * åœ¨CPUçŠ¶æ€ä½å›¾ä¸­æ³¨å†Œå½“å‰CPU
  	 */
 	boot_cpu_init();
 	/**
-	 * µ±¿ªÆô¸ß¶ËÄÚ´æÑ¡ÏîÊ±£¬³õÊ¼»¯vmallocÓÃµ½µÄĞéÄâµØÖ·¿Õ¼äÊı¾İ½á¹¹¡£
+	 * å½“å¼€å¯é«˜ç«¯å†…å­˜é€‰é¡¹æ—¶ï¼Œåˆå§‹åŒ–vmallocç”¨åˆ°çš„è™šæ‹Ÿåœ°å€ç©ºé—´æ•°æ®ç»“æ„ã€‚
 	 */
 	page_address_init();
 	pr_notice("%s", linux_banner);
-	//´¦ÀíCPUÌåÏµ¼Ü¹¹Ïà¹ØµÄÊÂÎñ¡£
+	//å¤„ç†CPUä½“ç³»æ¶æ„ç›¸å…³çš„äº‹åŠ¡ã€‚
 	setup_arch(&command_line);
 /*
 init=/linuxrc earlyprintk console=ttyAMA0,115200 root=/dev/mmcblk0 rw rootwait
 */
 /*
-    ³õÊ¼»¯CPUÆÁ±Î×Ö
+    åˆå§‹åŒ–CPUå±è”½å­—
 */
 	mm_init_cpumask(&init_mm);
-	//±£´æÃüÁîĞĞ²ÎÊı
+	//ä¿å­˜å‘½ä»¤è¡Œå‚æ•°
 	setup_command_line(command_line);
 	// set "nr_cpu_ids" according to the last bit in possible mask
 	setup_nr_cpu_ids();
     // per cpu memory allocator
-	/* Íê³Éper_CPU±äÁ¿¸±±¾µÄÉú³É£¬
-	 * ¶øÇÒ»á¶Ôper-CPU±äÁ¿µÄ¶¯Ì¬·ÖÅä»úÖÆ½øĞĞ³õÊ¼»¯*/
+	/* å®Œæˆper_CPUå˜é‡å‰¯æœ¬çš„ç”Ÿæˆï¼Œ
+	 * è€Œä¸”ä¼šå¯¹per-CPUå˜é‡çš„åŠ¨æ€åˆ†é…æœºåˆ¶è¿›è¡Œåˆå§‹åŒ–*/
 	setup_per_cpu_areas();
 	boot_cpu_state_init();
 	smp_prepare_boot_cpu();	/* arch-specific boot-cpu hooks */
 
-	//¼ÌĞø³õÊ¼»¯»ï°éÏµÍ³ÖĞµÄpglist_data£¬ÖØµãÊÇ³õÊ¼»¯ËüµÄnode_zonelist³ÉÔ±
+	//ç»§ç»­åˆå§‹åŒ–ä¼™ä¼´ç³»ç»Ÿä¸­çš„pglist_dataï¼Œé‡ç‚¹æ˜¯åˆå§‹åŒ–å®ƒçš„node_zonelistæˆå‘˜
 	build_all_zonelists(NULL, NULL);
-	//ÎªCPUÈÈ²å²¦×¢²áÄÚ´æÍ¨ÖªÁ´
+	//ä¸ºCPUçƒ­æ’æ‹¨æ³¨å†Œå†…å­˜é€šçŸ¥é“¾
 	page_alloc_init();
 
 	pr_notice("Kernel command line: %s\n", boot_command_line);
-	//½âÎöÄÚºË²ÎÊı£¬µÚÒ»´Î½âÎö
+	//è§£æå†…æ ¸å‚æ•°ï¼Œç¬¬ä¸€æ¬¡è§£æ
 	parse_early_param();
-	//µÚ¶ş´Î½âÎö,static_command_lineÖĞÊÇÔÚµÚÒ»½×¶ÎÖĞÎ´´¦ÀíµÄ²ÎÊı
+	//ç¬¬äºŒæ¬¡è§£æ,static_command_lineä¸­æ˜¯åœ¨ç¬¬ä¸€é˜¶æ®µä¸­æœªå¤„ç†çš„å‚æ•°
 	after_dashes = parse_args("Booting kernel",
 				  static_command_line, __start___param,
 				  __stop___param - __start___param,
@@ -642,12 +642,12 @@ init=/linuxrc earlyprintk console=ttyAMA0,115200 root=/dev/mmcblk0 rw rootwait
 	 */
 	// buf for printk
 	setup_log_buf(0);
-	//½ø³Ìpid¹ÜÀíÓÃµ½µÄÊı¾İ½á¹¹³õÊ¼»¯¡£
+	//è¿›ç¨‹pidç®¡ç†ç”¨åˆ°çš„æ•°æ®ç»“æ„åˆå§‹åŒ–ã€‚
 	pidhash_init();
-	//³õÊ¼»¯Ä¿Â¼ÏîºÍË÷Òı½Úµã»º´æ
+	//åˆå§‹åŒ–ç›®å½•é¡¹å’Œç´¢å¼•èŠ‚ç‚¹ç¼“å­˜
 	// allocate and caches initialize for hash tables of dcache and inode
 	vfs_caches_init_early();
-	//¶ÔÒì³£±í½øĞĞÅÅĞò£¬ÒÔ¼õÉÙÒì³£ĞŞ¸´Èë¿ÚµÄ²éÕÒÊ±¼ä
+	//å¯¹å¼‚å¸¸è¡¨è¿›è¡Œæ’åºï¼Œä»¥å‡å°‘å¼‚å¸¸ä¿®å¤å…¥å£çš„æŸ¥æ‰¾æ—¶é—´
 	// sort the kernel's built-in exception table (for page faults)
 	sort_main_extable();
 	// architecture-specific, interrupt vector table, handle hardware traps, exceptions and faults.
@@ -660,7 +660,7 @@ init=/linuxrc earlyprintk console=ttyAMA0,115200 root=/dev/mmcblk0 rw rootwait
 	 * timer interrupt). Full topology setup happens at smp_init()
 	 * time - but meanwhile we still have a functioning scheduler.
 	 */
-	//³õÊ¼»¯µ÷¶ÈÆ÷
+	//åˆå§‹åŒ–è°ƒåº¦å™¨
 	sched_init();
 	/*
 	 * Disable preemption - early bootup scheduling is extremely
@@ -670,9 +670,9 @@ init=/linuxrc earlyprintk console=ttyAMA0,115200 root=/dev/mmcblk0 rw rootwait
 	if (WARN(!irqs_disabled(),
 		 "Interrupts were enabled *very* early, fixing it\n"))
 		local_irq_disable();
-	//idrÓÃÓÚ¹ÜÀíÕûÊıID£¬ÎªPOSIX¼ÆÊ±Æ÷Ïà¹ØÏµÍ³ËùÓÃ£¬Éú³ÉÌØ¶¨¼ÆÊ±Æ÷¶ÔÏóµÄID.
+	//idrç”¨äºç®¡ç†æ•´æ•°IDï¼Œä¸ºPOSIXè®¡æ—¶å™¨ç›¸å…³ç³»ç»Ÿæ‰€ç”¨ï¼Œç”Ÿæˆç‰¹å®šè®¡æ—¶å™¨å¯¹è±¡çš„ID.
 	idr_init_cache();
-	//³õÊ¼»¯cpuÏà¹ØµÄrcuÊı¾İ½á¹¹¡£×¢²árcu»Øµ÷¡£
+	//åˆå§‹åŒ–cpuç›¸å…³çš„rcuæ•°æ®ç»“æ„ã€‚æ³¨å†Œrcuå›è°ƒã€‚
 	/*
 	 * Allow workqueue creation and work item queueing/cancelling
 	 * early.  Work item execution depends on kthreads and starts after
@@ -688,39 +688,39 @@ init=/linuxrc earlyprintk console=ttyAMA0,115200 root=/dev/mmcblk0 rw rootwait
     // prepare for using a static key in the context tracking subsystem
 	context_tracking_init();
 	/**
-	 * ³õÊ¼»¯ÎÄ¼şÏµÍ³ÖĞÊ¹ÓÃµÄ»ùÊı
+	 * åˆå§‹åŒ–æ–‡ä»¶ç³»ç»Ÿä¸­ä½¿ç”¨çš„åŸºæ•°
 	 * allocate a cache for radix_tree. [LWN] radix_tree: https://lwn.net/Articles/175432/
 	 */
 	radix_tree_init();
 	/* init some links before init_ISA_irqs() */
-	//ÖĞ¶ÏÇ×ºÍĞÔÏà¹ØµÄ³õÊ¼»¯¡£
+	//ä¸­æ–­äº²å’Œæ€§ç›¸å…³çš„åˆå§‹åŒ–ã€‚
 	// allocate caches for irq_desc, interrupt descriptor
 	early_irq_init();
-	//ÖĞ¶Ï³õÊ¼»¯£¬×¢²ábad_irq_desc
+	//ä¸­æ–­åˆå§‹åŒ–ï¼Œæ³¨å†Œbad_irq_desc
 	// architecture-specific, initialize kernel's interrupt subsystem and the interrupt controllers.
 	init_IRQ();
 	/**
-	 * ³õÊ¼»¯Ê±ÖÓ
+	 * åˆå§‹åŒ–æ—¶é’Ÿ
 	 * initialize the tick control
 	 */
 	tick_init();
 	rcu_init_nohz();
-	//³õÊ¼»¯¼ÆÊ±Æ÷
+	//åˆå§‹åŒ–è®¡æ—¶å™¨
 	// init timer stats, register cpu notifier, and open softirq for timer
 	init_timers();
-	//¸ß·Ö±æÂÊÊ±ÖÓ³õÊ¼»¯¡£
+	//é«˜åˆ†è¾¨ç‡æ—¶é’Ÿåˆå§‹åŒ–ã€‚
 	// high-resolution timer, https://www.kernel.org/doc/Documentation/timers/hrtimers.txt
 	hrtimers_init();
-	//ÈíÖĞ¶Ï³õÊ¼»¯
+	//è½¯ä¸­æ–­åˆå§‹åŒ–
 	// initialize tasklet_vec and open softirq for tasklet
 	softirq_init();
-	//³õÊ¼»¯xtime
+	//åˆå§‹åŒ–xtime
 	// https://www.kernel.org/doc/Documentation/timers/timekeeping.txt
 	timekeeping_init();
-	//³õÊ¼»¯Ó²¼şÊ±ÖÓ²¢ÉèÖÃ¼ÆÊ±Æ÷£¬×¢²á´¦Àíº¯Êı
+	//åˆå§‹åŒ–ç¡¬ä»¶æ—¶é’Ÿå¹¶è®¾ç½®è®¡æ—¶å™¨ï¼Œæ³¨å†Œå¤„ç†å‡½æ•°
 	// architecture-specific, timer initialization
 	time_init();
-	//µ÷¶ÈÆ÷Ê¹ÓÃµÄÊ±¼äÏµÍ³³õÊ¼»¯¡£
+	//è°ƒåº¦å™¨ä½¿ç”¨çš„æ—¶é—´ç³»ç»Ÿåˆå§‹åŒ–ã€‚
 	// start the high-resolution timer to keep sched_clock() properly updated and sets the initial epoch
 	sched_clock_postinit();
 	printk_safe_init();
@@ -728,12 +728,12 @@ init=/linuxrc earlyprintk console=ttyAMA0,115200 root=/dev/mmcblk0 rw rootwait
 	perf_event_init();
 	// initializes basic kernel profiler
 	profile_init();
-	//smpÖĞ£¬Îª¹ÜÀíºË¼ä»Øµ÷º¯ÊıµÄ³õÊ¼»¯¡£
+	//smpä¸­ï¼Œä¸ºç®¡ç†æ ¸é—´å›è°ƒå‡½æ•°çš„åˆå§‹åŒ–ã€‚
 	// SMP initializes call_single_queue and register notifier
 	call_function_init();
 	WARN(!irqs_disabled(), "Interrupts were enabled early\n");
 	early_boot_irqs_disabled = false;
-	//ÖĞ¶ÏÒÑ¾­³õÊ¼»¯Íê±Ï£¬ÏÖÔÚÒª¿ªÆô¿ØÖÆÌ¨ÁË£¬´ò¿ªÖĞ¶Ï¡£
+	//ä¸­æ–­å·²ç»åˆå§‹åŒ–å®Œæ¯•ï¼Œç°åœ¨è¦å¼€å¯æ§åˆ¶å°äº†ï¼Œæ‰“å¼€ä¸­æ–­ã€‚
 	local_irq_enable();
     // post-initialization of cache (slab)
 	kmem_cache_init_late();
@@ -743,14 +743,14 @@ init=/linuxrc earlyprintk console=ttyAMA0,115200 root=/dev/mmcblk0 rw rootwait
 	 * we've done PCI setups etc, and console_init() must be aware of
 	 * this. But we do want output early, in case something goes wrong.
 	 */
-	//³õÊ¼»¯¿ØÖÆÌ¨¡£
+	//åˆå§‹åŒ–æ§åˆ¶å°ã€‚
 	// call console initcalls to initialize the console device, usually it's tty device.
 	console_init();
 	if (panic_later)
 		panic("Too many boot %s vars at `%s'", panic_later,
 		      panic_param);
 
-	//Êä³öËøÒÀÀµĞÅÏ¢
+	//è¾“å‡ºé”ä¾èµ–ä¿¡æ¯
 	lockdep_info();
 
 	/*
@@ -758,7 +758,7 @@ init=/linuxrc earlyprintk console=ttyAMA0,115200 root=/dev/mmcblk0 rw rootwait
 	 * to self-test [hard/soft]-irqs on/off lock inversion bugs
 	 * too:
 	 */
-	locking_selftest();//²âÊÔËøÒÀÀµÄ£¿é
+	locking_selftest();//æµ‹è¯•é”ä¾èµ–æ¨¡å—
 
 #ifdef CONFIG_BLK_DEV_INITRD
 	if (initrd_start && !initrd_below_start_ok &&
@@ -771,29 +771,29 @@ init=/linuxrc earlyprintk console=ttyAMA0,115200 root=/dev/mmcblk0 rw rootwait
 #endif
     // memory page extension, allocates memory for extended data per page
 	page_ext_init();
-	//ÄÚºË¶ÔÏó¸ú×Ù
+	//å†…æ ¸å¯¹è±¡è·Ÿè¸ª
 	// allocate a dedicated cache pool for debug objects
 	debug_objects_mem_init();
-	//ÄÚ´æĞ¹Â©¼ì²â³õÊ¼»¯
+	//å†…å­˜æ³„æ¼æ£€æµ‹åˆå§‹åŒ–
 	// initialize kmemleak (memory leak check facility)
 	kmemleak_init();
-	//ÉèÖÃpageset£¬¼´Ã¿¸özoneÉÏÃæµÄÃ¿cpuÒ³Ãæ»º´æ
+	//è®¾ç½®pagesetï¼Œå³æ¯ä¸ªzoneä¸Šé¢çš„æ¯cpué¡µé¢ç¼“å­˜
 	// allocate and initialize per cpu pagesets
 	setup_per_cpu_pageset();
-	//½«16MÒÔÉÏµÄÄÚ´æ½ÚµãÖ¸¶¨Îª½»²æ½Úµã£¬²¢ÉèÖÃµ±Ç°½ø³ÌµÄÄ£Ê½
+	//å°†16Mä»¥ä¸Šçš„å†…å­˜èŠ‚ç‚¹æŒ‡å®šä¸ºäº¤å‰èŠ‚ç‚¹ï¼Œå¹¶è®¾ç½®å½“å‰è¿›ç¨‹çš„æ¨¡å¼
     // allocate caches and do initialization for NUMA memory policy
 	numa_policy_init();
-	//ÑÓºóµÄÊ±ÖÓ³õÊ¼»¯²Ù×÷
+	//å»¶åçš„æ—¶é’Ÿåˆå§‹åŒ–æ“ä½œ
 	// default late_time_init is NULL. archs can override it
 	if (late_time_init)
 		late_time_init(); // architecture-specific
-	//²âÊÔBogoMIPSÖµ£¬¼ÆËãÃ¿¸öjiffyÄÚÏûºÄµô¶àÉÙCPUÖÜÆÚ¡£
+	//æµ‹è¯•BogoMIPSå€¼ï¼Œè®¡ç®—æ¯ä¸ªjiffyå†…æ¶ˆè€—æ‰å¤šå°‘CPUå‘¨æœŸã€‚
 	// calibrate the delay loop
 	calibrate_delay();
-	//¿ìËÙÖ´ĞĞpid·ÖÅä£¬·ÖÅäpidÎ»Í¼²¢Éú³Éslab»º´æ.
+	//å¿«é€Ÿæ‰§è¡Œpidåˆ†é…ï¼Œåˆ†é…pidä½å›¾å¹¶ç”Ÿæˆslabç¼“å­˜.
 	// initialize PID map for initial PID namespace
 	pidmap_init();
-	//Îªanon_vmaÉú³Éslab·ÖÅäÆ÷¡£
+	//ä¸ºanon_vmaç”Ÿæˆslabåˆ†é…å™¨ã€‚
 	// allocate a cache for "anon_vma" (anonymous memory), http://lwn.net/Kernel/Index/#anon_vma
 	anon_vma_init();
 	// initialize ACPI subsystem and populate the ACPI namespace
@@ -809,18 +809,18 @@ init=/linuxrc earlyprintk console=ttyAMA0,115200 root=/dev/mmcblk0 rw rootwait
 #endif
 	// allocate cache for thread_info if THREAD_SIZE < PAGE_SIZE
 	thread_stack_cache_init();
-	//Éó¼Æ³õÊ¼»¯£¬ÓÃÓÚÈ·¶¨¶ÔÏóÊÇ·ñÓĞÖ´ĞĞÄ³ÖÖ²Ù×÷µÄ×Ê¸ñ¡£
+	//å®¡è®¡åˆå§‹åŒ–ï¼Œç”¨äºç¡®å®šå¯¹è±¡æ˜¯å¦æœ‰æ‰§è¡ŒæŸç§æ“ä½œçš„èµ„æ ¼ã€‚
 	cred_init();
-	//³õÊ¼»¯forkÖĞÊ¹ÓÃµÄ×ÊÔ´Ïà¹ØÊı¾İ½á¹¹¡£
+	//åˆå§‹åŒ–forkä¸­ä½¿ç”¨çš„èµ„æºç›¸å…³æ•°æ®ç»“æ„ã€‚
 	fork_init();
-	//ÓÃÓÚÉú³É½ø³Ì¹ÜÀíËùĞèÒªµÄslab¹ÜÀíÆ÷
+	//ç”¨äºç”Ÿæˆè¿›ç¨‹ç®¡ç†æ‰€éœ€è¦çš„slabç®¡ç†å™¨
 	proc_caches_init();
-	//³õÊ¼»¯buffer,ÓÃÓÚ»º´æ´Ó¿éÉè±¸ÖĞ¶ÁÈ¡µÄ¿é¡£ÎªÆä¹¹½¨slab»º´æ¹ÜÀíÆ÷¡£
+	//åˆå§‹åŒ–buffer,ç”¨äºç¼“å­˜ä»å—è®¾å¤‡ä¸­è¯»å–çš„å—ã€‚ä¸ºå…¶æ„å»ºslabç¼“å­˜ç®¡ç†å™¨ã€‚
 	buffer_init();
-	//ÃÜÔ¿·şÎñ³õÊ¼»¯¡£
+	//å¯†é’¥æœåŠ¡åˆå§‹åŒ–ã€‚
 	// initialize the authentication token and access key management
 	key_init();
-	//°²È«×ÓÏµÍ³³õÊ¼»¯¡£
+	//å®‰å…¨å­ç³»ç»Ÿåˆå§‹åŒ–ã€‚
 	security_init();
 	// late init for kgdb
 	dbg_late_init();
@@ -829,28 +829,28 @@ init=/linuxrc earlyprintk console=ttyAMA0,115200 root=/dev/mmcblk0 rw rootwait
 	pagecache_init();
 	signals_init();
 	/* rootfs populating might need page-writeback */
-	//³õÊ¼»¯Ò³»ØĞ´»úÖÆ¡£
+	//åˆå§‹åŒ–é¡µå›å†™æœºåˆ¶ã€‚
 	// set the ratio limits for the dirty pages
-	//×¢²áprocÎÄ¼şÏµÍ³²¢Éú³ÉÒ»Ğ©Ä¬ÈÏµÄprocÎÄ¼ş
+	//æ³¨å†Œprocæ–‡ä»¶ç³»ç»Ÿå¹¶ç”Ÿæˆä¸€äº›é»˜è®¤çš„procæ–‡ä»¶
 	proc_root_init();
 	// mount pseudo-filesystem: nsfs
 	nsfs_init();
-	//³õÊ¼»¯cpuset×ÓÏµÍ³¡£ÉèÖÃtop_cpuset²¢½«cpuset×¢²áµ½ÎÄ¼şÏµÍ³¡£
+	//åˆå§‹åŒ–cpusetå­ç³»ç»Ÿã€‚è®¾ç½®top_cpusetå¹¶å°†cpusetæ³¨å†Œåˆ°æ–‡ä»¶ç³»ç»Ÿã€‚
 	cpuset_init();
-	//¼ÌĞø³õÊ¼»¯cgroup£¬ÔÚprocÖĞ×¢²ácgroup
+	//ç»§ç»­åˆå§‹åŒ–cgroupï¼Œåœ¨procä¸­æ³¨å†Œcgroup
 	cgroup_init();
-	//taskstatsÊÇÏòÓÃ»§¿Õ¼ä´«µİÈÎÎñÓë½ø³ÌµÄ×´Ì¬ĞÅÏ¢£¬³õÊ¼»¯ËüµÄnetlink½Ó¿Ú¡£
+	//taskstatsæ˜¯å‘ç”¨æˆ·ç©ºé—´ä¼ é€’ä»»åŠ¡ä¸è¿›ç¨‹çš„çŠ¶æ€ä¿¡æ¯ï¼Œåˆå§‹åŒ–å®ƒçš„netlinkæ¥å£ã€‚
 	taskstats_init_early();
-	//delayacctÄ£¿é¶ÔÈÎÎñµÄioÑÓ³Ù½øĞĞÍ³¼Æ£¬ÓÃÓÚ·ÖÎö¡£ÕâÀï¶ÔÆä³õÊ¼»¯¡£
+	//delayacctæ¨¡å—å¯¹ä»»åŠ¡çš„ioå»¶è¿Ÿè¿›è¡Œç»Ÿè®¡ï¼Œç”¨äºåˆ†æã€‚è¿™é‡Œå¯¹å…¶åˆå§‹åŒ–ã€‚
 	delayacct_init();
 
 	/**
-	 * CPUÈ±Ïİ¼ì²é¡£
-	 * ¶Ôarm¼Ü¹¹À´Ëµ£¬Ö÷ÒªÊÇ²âÊÔĞ´»º´æ±ğÃû¡£
+	 * CPUç¼ºé™·æ£€æŸ¥ã€‚
+	 * å¯¹armæ¶æ„æ¥è¯´ï¼Œä¸»è¦æ˜¯æµ‹è¯•å†™ç¼“å­˜åˆ«åã€‚
 	 */
 	check_bugs();
 
-    // enable ACPI subsystem ,arm²»Ö§³Ö
+    // enable ACPI subsystem ,armä¸æ”¯æŒ
 	acpi_subsystem_init();
 	arch_post_acpi_subsys_init();
 	sfi_init_late();
@@ -860,12 +860,12 @@ init=/linuxrc earlyprintk console=ttyAMA0,115200 root=/dev/mmcblk0 rw rootwait
 		efi_free_boot_services();
 	}
 
-	//³õÊ¼»¯ftrace£¬Ò»¸öÓĞÓÃµÄÄÚºËµ÷²â¹¦ÄÜ¡£
+	//åˆå§‹åŒ–ftraceï¼Œä¸€ä¸ªæœ‰ç”¨çš„å†…æ ¸è°ƒæµ‹åŠŸèƒ½ã€‚
 	// https://www.kernel.org/doc/Documentation/trace/ftrace.txt
 	ftrace_init();
 
 	/* Do the rest non-__init'ed, we're now alive */
-	//Éú³Éinit½ø³ÌºÍÄÚºËÏß³Ì¡£
+	//ç”Ÿæˆinitè¿›ç¨‹å’Œå†…æ ¸çº¿ç¨‹ã€‚
 	rest_init();
 }
 
@@ -1054,7 +1054,7 @@ static void __init do_initcall_level(int level)
 static void __init do_initcalls(void)
 {
 	int level;
-    /* Ö´ĞĞ½éì¶Symbol early_initcall_endÓëinitcall_endÖ®¼äµÄº¯Ê½ºô½Ğ */
+    /* æ‰§è¡Œä»‹æ–¼Symbol early_initcall_endä¸initcall_endä¹‹é—´çš„å‡½å¼å‘¼å« */
 	for (level = 0; level < ARRAY_SIZE(initcall_levels) - 1; level++)
 		do_initcall_level(level);
 }
@@ -1068,23 +1068,23 @@ static void __init do_initcalls(void)
  */
 static void __init do_basic_setup(void)
 {
-	//³õÊ¼»¯cpuset×ÓÏµÍ³µÄtop_cpuset
+	//åˆå§‹åŒ–cpusetå­ç³»ç»Ÿçš„top_cpuset
 	cpuset_init_smp();
 	shmem_init();
     // init driver model. (kobject, kset)
 	driver_init();
-	//³õÊ¼»¯ ¡°/proc/irq¡±ÓëÆäÏÂµÄFile Nodes. 
+	//åˆå§‹åŒ– â€œ/proc/irqâ€ä¸å…¶ä¸‹çš„File Nodes. 
 	init_irq_proc();
-    /* Ö´ĞĞÎ»ì¶Symbol ctors_start µ½ ctors_end¼äÊôì¶Section ¡°.ctors¡± µÄConstructorº¯Ê½ */
+    /* æ‰§è¡Œä½æ–¼Symbol ctors_start åˆ° ctors_endé—´å±æ–¼Section â€œ.ctorsâ€ çš„Constructorå‡½å¼ */
 	do_ctors();
-	//ÔÊĞíkhelper workqueueÉúĞ§£¬Õâ¸ö¶ÓÁĞÔÊĞíÓÃ»§Ì¬ÎªÄÚºËÌ¬Ö´ĞĞÒ»Ğ©¸¨Öú¹¤×÷¡£
+	//å…è®¸khelper workqueueç”Ÿæ•ˆï¼Œè¿™ä¸ªé˜Ÿåˆ—å…è®¸ç”¨æˆ·æ€ä¸ºå†…æ ¸æ€æ‰§è¡Œä¸€äº›è¾…åŠ©å·¥ä½œã€‚
 	usermodehelper_enable();
-	//Ö´ĞĞ½éì¶Symbol __early_initcall_endÓë__initcall_endÖ®¼äµÄº¯Ê½ºô½Ğ
+	//æ‰§è¡Œä»‹æ–¼Symbol __early_initcall_endä¸__initcall_endä¹‹é—´çš„å‡½å¼å‘¼å«
 	// call init functions in .initcall[0~9].init sections
 	do_initcalls();
 	random_int_secret_init();
 }
-/* Ö´ĞĞSymbolÖĞ initcall_startÓëearly_initcall_endÖ®¼äµÄº¯Êı */
+/* æ‰§è¡ŒSymbolä¸­ initcall_startä¸early_initcall_endä¹‹é—´çš„å‡½æ•° */
 static void __init do_pre_smp_initcalls(void)
 {
 	initcall_t *fn;
@@ -1108,10 +1108,10 @@ static int run_init_process(const char *init_filename)
 {
 	argv_init[0] = init_filename;
 /*
-	1ºÅ½ø³Ìµ÷ÓÃdo_execveÔËĞĞ¿ÉÖ´ĞĞ³ÌĞòinit£¬
-	²¢Ñİ±ä³ÉÓÃ»§Ì¬1ºÅ½ø³Ì£¬¼´init½ø³Ì
-	Ò»ºÅÄÚºË½ø³Ìµ÷ÓÃexecve()´ÓÎÄ¼ş/etc/inittabÖĞ¼ÓÔØ¿ÉÖ´ĞĞ³ÌĞòinit²¢Ö´ĞĞ£¬
-	Õâ¸ö¹ı³Ì²¢Ã»ÓĞÊ¹ÓÃµ÷ÓÃdo_fork()£¬Òò´ËÁ½¸ö½ø³Ì¶¼ÊÇ1ºÅ½ø³Ì
+	1å·è¿›ç¨‹è°ƒç”¨do_execveè¿è¡Œå¯æ‰§è¡Œç¨‹åºinitï¼Œ
+	å¹¶æ¼”å˜æˆç”¨æˆ·æ€1å·è¿›ç¨‹ï¼Œå³initè¿›ç¨‹
+	ä¸€å·å†…æ ¸è¿›ç¨‹è°ƒç”¨execve()ä»æ–‡ä»¶/etc/inittabä¸­åŠ è½½å¯æ‰§è¡Œç¨‹åºinitå¹¶æ‰§è¡Œï¼Œ
+	è¿™ä¸ªè¿‡ç¨‹å¹¶æ²¡æœ‰ä½¿ç”¨è°ƒç”¨do_fork()ï¼Œå› æ­¤ä¸¤ä¸ªè¿›ç¨‹éƒ½æ˜¯1å·è¿›ç¨‹
 */
 	return do_execve(getname_kernel(init_filename),
 		(const char __user *const __user *)argv_init,
@@ -1159,44 +1159,44 @@ static inline void mark_readonly(void)
 #endif
 
 /**
-init½ø³ÌÓ¦¸ÃÊÇÒ»¸öÓÃ»§¿Õ¼äµÄ½ø³Ì, µ«ÊÇÕâÀïÈ´ÊÇÍ¨¹ı
-kernel_threadµÄ·½Ê½´´½¨µÄ, ÄÄÆñ²»ÊÇÊ½Ò»¸öÓÀÔ¶ÔËĞĞÔÚÄÚºËÌ¬µÄ
-ÄÚºËÏß³ÌÃ´, ËüÊÇÔõÃ´Ñİ±äÎªÕæÕıÒâÒåÉÏÓÃ»§¿Õ¼äµÄinit½ø³ÌµÄ£¿
+initè¿›ç¨‹åº”è¯¥æ˜¯ä¸€ä¸ªç”¨æˆ·ç©ºé—´çš„è¿›ç¨‹, ä½†æ˜¯è¿™é‡Œå´æ˜¯é€šè¿‡
+kernel_threadçš„æ–¹å¼åˆ›å»ºçš„, å“ªå²‚ä¸æ˜¯å¼ä¸€ä¸ªæ°¸è¿œè¿è¡Œåœ¨å†…æ ¸æ€çš„
+å†…æ ¸çº¿ç¨‹ä¹ˆ, å®ƒæ˜¯æ€ä¹ˆæ¼”å˜ä¸ºçœŸæ­£æ„ä¹‰ä¸Šç”¨æˆ·ç©ºé—´çš„initè¿›ç¨‹çš„ï¼Ÿ
  
- 1ºÅkernel_init½ø³ÌÍê³ÉlinuxµÄ¸÷ÏîÅäÖÃ(°üÀ¨Æô¶¯AP)ºó£¬
-¾Í»áÔÚ/sbin,/etc,/binÑ°ÕÒinit³ÌĞòÀ´ÔËĞĞ¡£
-¸Ãinit³ÌĞò»áÌæ»»kernel_init½ø³Ì£¨×¢Òâ£º²¢²»ÊÇ´´½¨Ò»¸öĞÂµÄ½ø³ÌÀ´ÔËĞĞinit³ÌĞò£¬
-¶øÊÇÒ»´Î±äÉí£¬Ê¹ÓÃsys_execveº¯Êı¸Ä±äºËĞÄ½ø³ÌµÄÕıÎÄ¶Î£¬
-½«ºËĞÄ½ø³Ìkernel_init×ª»»³ÉÓÃ»§½ø³Ìinit£©£¬
-´ËÊ±´¦ÓÚÄÚºËÌ¬µÄ1ºÅkernel_init½ø³Ì½«»á×ª»»ÎªÓÃ»§¿Õ¼äÄÚµÄ1ºÅ½ø³Ìinit¡£
-»§½ø³Ìinit½«¸ù¾İ/etc/inittabÖĞÌá¹©µÄĞÅÏ¢Íê³ÉÓ¦ÓÃ³ÌĞòµÄ³õÊ¼»¯µ÷ÓÃ¡£
-È»ºóinit½ø³Ì»áÖ´ĞĞ/bin/sh²úÉúshell½çÃæÌá¹©¸øÓÃ»§À´ÓëLinuxÏµÍ³½øĞĞ½»»¥
-µ÷ÓÃinit_post()´´½¨ÓÃ»§Ä£Ê½1ºÅ½ø³Ì
+ 1å·kernel_initè¿›ç¨‹å®Œæˆlinuxçš„å„é¡¹é…ç½®(åŒ…æ‹¬å¯åŠ¨AP)åï¼Œ
+å°±ä¼šåœ¨/sbin,/etc,/binå¯»æ‰¾initç¨‹åºæ¥è¿è¡Œã€‚
+è¯¥initç¨‹åºä¼šæ›¿æ¢kernel_initè¿›ç¨‹ï¼ˆæ³¨æ„ï¼šå¹¶ä¸æ˜¯åˆ›å»ºä¸€ä¸ªæ–°çš„è¿›ç¨‹æ¥è¿è¡Œinitç¨‹åºï¼Œ
+è€Œæ˜¯ä¸€æ¬¡å˜èº«ï¼Œä½¿ç”¨sys_execveå‡½æ•°æ”¹å˜æ ¸å¿ƒè¿›ç¨‹çš„æ­£æ–‡æ®µï¼Œ
+å°†æ ¸å¿ƒè¿›ç¨‹kernel_initè½¬æ¢æˆç”¨æˆ·è¿›ç¨‹initï¼‰ï¼Œ
+æ­¤æ—¶å¤„äºå†…æ ¸æ€çš„1å·kernel_initè¿›ç¨‹å°†ä¼šè½¬æ¢ä¸ºç”¨æˆ·ç©ºé—´å†…çš„1å·è¿›ç¨‹initã€‚
+æˆ·è¿›ç¨‹initå°†æ ¹æ®/etc/inittabä¸­æä¾›çš„ä¿¡æ¯å®Œæˆåº”ç”¨ç¨‹åºçš„åˆå§‹åŒ–è°ƒç”¨ã€‚
+ç„¶åinitè¿›ç¨‹ä¼šæ‰§è¡Œ/bin/shäº§ç”Ÿshellç•Œé¢æä¾›ç»™ç”¨æˆ·æ¥ä¸Linuxç³»ç»Ÿè¿›è¡Œäº¤äº’
+è°ƒç”¨init_post()åˆ›å»ºç”¨æˆ·æ¨¡å¼1å·è¿›ç¨‹
 
-Ö÷´¦ÀíÆ÷ÉÏµÄidleÓÉÔ­Ê¼½ø³Ì(pid=0)Ñİ±ä¶øÀ´¡£
-´Ó´¦ÀíÆ÷ÉÏµÄidleÓÉinit½ø³ÌforkµÃµ½£¬µ«ÊÇËüÃÇµÄpid¶¼Îª0
-init½ø³ÌÎªÃ¿¸ö´Ó´¦ÀíÆ÷(ÔËĞĞ¶ÓÁĞ)´´½¨³öÒ»¸öidle½ø³Ì(pid=0)£¬
-È»ºóÑİ»¯³É/sbin/init¡£
+ä¸»å¤„ç†å™¨ä¸Šçš„idleç”±åŸå§‹è¿›ç¨‹(pid=0)æ¼”å˜è€Œæ¥ã€‚
+ä»å¤„ç†å™¨ä¸Šçš„idleç”±initè¿›ç¨‹forkå¾—åˆ°ï¼Œä½†æ˜¯å®ƒä»¬çš„pidéƒ½ä¸º0
+initè¿›ç¨‹ä¸ºæ¯ä¸ªä»å¤„ç†å™¨(è¿è¡Œé˜Ÿåˆ—)åˆ›å»ºå‡ºä¸€ä¸ªidleè¿›ç¨‹(pid=0)ï¼Œ
+ç„¶åæ¼”åŒ–æˆ/sbin/initã€‚
 */
 static int __ref kernel_init(void *unused)
 {
 	int ret;
 
-	// ³õÊ¼»¯ device, driver, rootfs, ’ìİd /dev, /sys µÈÌ“”M™n°¸Ïµ½yÄ¿ä›£¬é_†¢ /dev/console ×öéÓÏ¢İ”³ö
-	// ²»±ØÔÚÖ÷ºËÉÏÔËĞĞ¡£
+	// åˆå§‹åŒ– device, driver, rootfs, æ›è¼‰ /dev, /sys ç­‰è™›æ“¬æª”æ¡ˆç³»çµ±ç›®éŒ„ï¼Œé–‹å•Ÿ /dev/console åšç‚ºè¨Šæ¯è¼¸å‡º
+	// ä¸å¿…åœ¨ä¸»æ ¸ä¸Šè¿è¡Œã€‚
 	kernel_init_freeable();
 	/* need to finish all async __init code before freeing the memory */
-    /* ÓÃÒÔÍ¬²½ËùÓĞ·ÇÍ¬²½º¯Ê½ºô½ĞµÄÖ´ĞĞ,ÔÚÕâº¯ÊıÖĞ»áµÈ´ı
-          List async_runningÓëasync_pending¶¼Çå¿Õºó,²Å»á·µ»Ø. 
-          Asynchronously called functionsÖ÷ÒªÉè¼ÆÓÃÀ´¼ÓËÙLinux Kernel¿ª»úµÄĞ§ÂÊ,
-          ±ÜÃâÔÚ¿ª»úÁ÷³ÌÖĞµÈ´ıÓ²Ìå·´Ó¦ÑÓ³Ù,Ó°Ïìµ½¿ª»úÍê³ÉµÄÊ±¼ä */
+    /* ç”¨ä»¥åŒæ­¥æ‰€æœ‰éåŒæ­¥å‡½å¼å‘¼å«çš„æ‰§è¡Œ,åœ¨è¿™å‡½æ•°ä¸­ä¼šç­‰å¾…
+          List async_runningä¸async_pendingéƒ½æ¸…ç©ºå,æ‰ä¼šè¿”å›. 
+          Asynchronously called functionsä¸»è¦è®¾è®¡ç”¨æ¥åŠ é€ŸLinux Kernelå¼€æœºçš„æ•ˆç‡,
+          é¿å…åœ¨å¼€æœºæµç¨‹ä¸­ç­‰å¾…ç¡¬ä½“ååº”å»¶è¿Ÿ,å½±å“åˆ°å¼€æœºå®Œæˆçš„æ—¶é—´ */
     // waits until all asynchronous function calls have been done
 	async_synchronize_full();
 	// free .init section from memory
 	free_initmem();
 	// mark rodata read-only
 	mark_readonly();
-    /* ÉèÖÃÔËĞĞ×´Ì¬SYSTEM_RUNNING */
+    /* è®¾ç½®è¿è¡ŒçŠ¶æ€SYSTEM_RUNNING */
 	system_state = SYSTEM_RUNNING;
 	numa_default_policy();
 
@@ -1204,7 +1204,7 @@ static int __ref kernel_init(void *unused)
 
 	rcu_end_inkernel_boot();
 	
-	//¸ù¾İboot²ÎÊı£¬È·¶¨init½ø³ÌÊÇË­£¬²¢Æô¶¯Ëü¡£
+	//æ ¹æ®bootå‚æ•°ï¼Œç¡®å®šinitè¿›ç¨‹æ˜¯è°ï¼Œå¹¶å¯åŠ¨å®ƒã€‚
 	if (ramdisk_execute_command) {
 		ret = run_init_process(ramdisk_execute_command);
 		if (!ret)
@@ -1241,64 +1241,64 @@ static noinline void __init kernel_init_freeable(void)
 	/*
 	 * Wait until kthreadd is all set-up.
 	 */
-	//µÈ´ıKernel Thread kthreadd (PID=2)´´½¨Íê±Ïkthreadd_done Signal¡£
+	//ç­‰å¾…Kernel Thread kthreadd (PID=2)åˆ›å»ºå®Œæ¯•kthreadd_done Signalã€‚
 	wait_for_completion(&kthreadd_done);
 
 	/* Now the scheduler is fully set up and can do blocking allocations */
     /*
-    __GFP_BITS_MASK;ÉèÖÃbitmask, Ê¹µÃinit½ø³Ì¿ÉÒÔÊ¹ÓÃPM²¢ÇÒÔÊĞíI/O×èÈû²Ù×÷ 
+    __GFP_BITS_MASK;è®¾ç½®bitmask, ä½¿å¾—initè¿›ç¨‹å¯ä»¥ä½¿ç”¨PMå¹¶ä¸”å…è®¸I/Oé˜»å¡æ“ä½œ 
     */
 	gfp_allowed_mask = __GFP_BITS_MASK;
 
 	/*
 	 * init can allocate pages on any node
 	 */
-	//ÔÊĞíµ±Ç°½ø³ÌÔÚÈÎºÎ½Úµã·ÖÅäÄÚ´æ
-    // init½ø³Ì¿ÉÒÔ·ÖÅäÎïÀíÒ³Ãæ
+	//å…è®¸å½“å‰è¿›ç¨‹åœ¨ä»»ä½•èŠ‚ç‚¹åˆ†é…å†…å­˜
+    // initè¿›ç¨‹å¯ä»¥åˆ†é…ç‰©ç†é¡µé¢
 	set_mems_allowed(node_states[N_MEMORY]);
 	/*
 	 * init can run on any cpu.
 	 */
-	//ÔÊĞí½ø³ÌÔËĞĞÔÚÈÎºÎcpuÖĞ¡£
-    /* Í¨¹ıÉèÖÃcpu_bit_mask, ¿ÉÒÔÏŞ¶¨taskÖ»ÄÜÔÚÌØ¶¨µÄ´¦ÀíÆ÷ÉÏÔËĞĞ, 
-          ¶øinitcurrent½ø³Ì´ËÊ±±ØÈ»ÊÇinit½ø³Ì£¬
-          ÉèÖÃÆäcpu_all_mask¼´Ê¹µÃinit½ø³Ì¿ÉÒÔÔÚÈÎÒâµÄcpuÉÏÔËĞĞ */
+	//å…è®¸è¿›ç¨‹è¿è¡Œåœ¨ä»»ä½•cpuä¸­ã€‚
+    /* é€šè¿‡è®¾ç½®cpu_bit_mask, å¯ä»¥é™å®štaskåªèƒ½åœ¨ç‰¹å®šçš„å¤„ç†å™¨ä¸Šè¿è¡Œ, 
+          è€Œinitcurrentè¿›ç¨‹æ­¤æ—¶å¿…ç„¶æ˜¯initè¿›ç¨‹ï¼Œ
+          è®¾ç½®å…¶cpu_all_maskå³ä½¿å¾—initè¿›ç¨‹å¯ä»¥åœ¨ä»»æ„çš„cpuä¸Šè¿è¡Œ */
 	set_cpus_allowed_ptr(current, cpu_all_mask);
 
-	//±£´æÄÜÖ´ĞĞcadµÄ½ø³Ìid,°²È«·½ÃæµÄ¿¼ÂÇ¡£
-    /* ÉèÖÃµ½Ä¿Ç°ÔËĞĞ½ø³ÌinitµÄpidºÅ¸øcad_pid
-        (cad_pidÊÇÓÃÀ´½ÓÊÕctrl-alt-del reboot signalµÄ½ø³Ì, 
-        Èç¹ûÉèÖÃC_A_D=1¾Í±íÊ¾¿ÉÒÔ´¦ÀíÀ´×Ôctl-alt-delµÄ¶¯×÷)£¬ 
-        ×îºó»áµ÷ÓÃ ctrl_alt_del(void)²¢È·ÈÏC_A_DÊÇ·ñÎª1,
-        È·ÈÏÍê³Éºó½«Ö´ĞĞcad_work=deferred_cad,Ö´ĞĞkernel_restart */
+	//ä¿å­˜èƒ½æ‰§è¡Œcadçš„è¿›ç¨‹id,å®‰å…¨æ–¹é¢çš„è€ƒè™‘ã€‚
+    /* è®¾ç½®åˆ°ç›®å‰è¿è¡Œè¿›ç¨‹initçš„pidå·ç»™cad_pid
+        (cad_pidæ˜¯ç”¨æ¥æ¥æ”¶ctrl-alt-del reboot signalçš„è¿›ç¨‹, 
+        å¦‚æœè®¾ç½®C_A_D=1å°±è¡¨ç¤ºå¯ä»¥å¤„ç†æ¥è‡ªctl-alt-delçš„åŠ¨ä½œ)ï¼Œ 
+        æœ€åä¼šè°ƒç”¨ ctrl_alt_del(void)å¹¶ç¡®è®¤C_A_Dæ˜¯å¦ä¸º1,
+        ç¡®è®¤å®Œæˆåå°†æ‰§è¡Œcad_work=deferred_cad,æ‰§è¡Œkernel_restart */
 	cad_pid = task_pid(current);
 
-	//×¼±¸¼¤»î²¢Ê¹ÓÃÆäËûCPU  Éè¶¨Ö§Ô®µÄ×î´óCPUÊıÁ¿
+	//å‡†å¤‡æ¿€æ´»å¹¶ä½¿ç”¨å…¶ä»–CPU  è®¾å®šæ”¯æ´çš„æœ€å¤§CPUæ•°é‡
 	smp_prepare_cpus(setup_max_cpus);
 
 	workqueue_init();
 /*
-    »áÍ¸¹ıº¯Ê½do_one_initcall,Ö´ĞĞSymbolÖĞ __initcall_startÓë__early_initcall_endÖ®¼äµÄº¯Êı
+    ä¼šé€è¿‡å‡½å¼do_one_initcall,æ‰§è¡ŒSymbolä¸­ __initcall_startä¸__early_initcall_endä¹‹é—´çš„å‡½æ•°
 */
 	do_pre_smp_initcalls();
 	lockup_detector_init();
 /*
-    ÓÉBootstrap´¦ÀíÆ÷,½øĞĞActive¶àºËĞÄ¼Ü¹¹ÏÂÆäËüµÄ´¦ÀíÆ÷
+    ç”±Bootstrapå¤„ç†å™¨,è¿›è¡ŒActiveå¤šæ ¸å¿ƒæ¶æ„ä¸‹å…¶å®ƒçš„å¤„ç†å™¨
 */
 	smp_init();
-	//SMPµ÷¶È³õÊ¼»¯º¯Êı¡£
+	//SMPè°ƒåº¦åˆå§‹åŒ–å‡½æ•°ã€‚
 	sched_init_smp();
 
 	page_alloc_init_late();
 
-	//¼¸¸ö×ÓÏµÍ³µÄ³õÊ¼»¯¡£
+	//å‡ ä¸ªå­ç³»ç»Ÿçš„åˆå§‹åŒ–ã€‚
 	do_basic_setup();
 
 	/* Open the /dev/console on the rootfs, this should never fail */
     /* 
-    ÊµÀıÔÚfs/fcntl.cÖĞ,¡±SYSCALL_DEFINE1(dup, unsigned int, fildes)¡±,
-    ÔÚÕâ»áÁ¬ĞøÖ´ĞĞÁ½´Îsys_dup,¸´ÖÆÁ½¸ösys_open¿ª†¢/dev/consoleËù®aÉúµÄµµ°¸ÃèÊö0 (Ò²¾ÍÊÇ»á¶àÉú³öÁ½¸ö1Óë2),
-    Ö»ÊÇ¶¼¶ÔÓ¦µ½¡±/dev/console¡±,ÎÒÃÇÔÚSystem V streamsÏÂµÄStandard StreamÒ»°ã¶øÑÔ»áÓĞÈçÏÂµÄ¶ÔÓ¦
+    å®ä¾‹åœ¨fs/fcntl.cä¸­,â€SYSCALL_DEFINE1(dup, unsigned int, fildes)â€,
+    åœ¨è¿™ä¼šè¿ç»­æ‰§è¡Œä¸¤æ¬¡sys_dup,å¤åˆ¶ä¸¤ä¸ªsys_openå¼€å•Ÿ/dev/consoleæ‰€ç”¢ç”Ÿçš„æ¡£æ¡ˆæè¿°0 (ä¹Ÿå°±æ˜¯ä¼šå¤šç”Ÿå‡ºä¸¤ä¸ª1ä¸2),
+    åªæ˜¯éƒ½å¯¹åº”åˆ°â€/dev/consoleâ€,æˆ‘ä»¬åœ¨System V streamsä¸‹çš„Standard Streamä¸€èˆ¬è€Œè¨€ä¼šæœ‰å¦‚ä¸‹çš„å¯¹åº”
     0:Standard input (stdin)
     1:Standard output (stdout)
     2:Standard error (stderr) 
@@ -1312,12 +1312,12 @@ static noinline void __init kernel_init_freeable(void)
 	 * check if there is an early userspace init.  If yes, let it do all
 	 * the work
 	 */
-	//È·¶¨³õÊ¼»¯½ø³ÌÃû³Æ
+	//ç¡®å®šåˆå§‹åŒ–è¿›ç¨‹åç§°
 	if (!ramdisk_execute_command)
 		ramdisk_execute_command = "/init";
 
-    /* Èç¹ûsys_accessÈ·ÈÏµµ°¸ramdisk_execute_command Ê§°Ü,
-          ¾Í°Ñramdisk_execute_command Éè¶¨é0,È»ºóºô½Ğprepare_namespaceÈ¥mount root FileSystem. */
+    /* å¦‚æœsys_accessç¡®è®¤æ¡£æ¡ˆramdisk_execute_command å¤±è´¥,
+          å°±æŠŠramdisk_execute_command è®¾å®šç‚º0,ç„¶åå‘¼å«prepare_namespaceå»mount root FileSystem. */
 	if (sys_access((const char __user *) ramdisk_execute_command, 0) != 0) {
 		ramdisk_execute_command = NULL;
 		prepare_namespace();
@@ -1331,10 +1331,10 @@ static noinline void __init kernel_init_freeable(void)
 	 * rootfs is available now, try loading the public keys
 	 * and default modules
 	 */
-    /* ÖÁ´ËÎÒÃÇ³õÊ¼»¯¹¤×÷Íê³É, ÎÄ¼şÏµÍ³Ò²ÒÑ¾­×¼±¸ºÃÁË£¬
-          ÄÇÃ´½ÓÏÂÀ´¼ÓÔØ load integrity keys hook*/
+    /* è‡³æ­¤æˆ‘ä»¬åˆå§‹åŒ–å·¥ä½œå®Œæˆ, æ–‡ä»¶ç³»ç»Ÿä¹Ÿå·²ç»å‡†å¤‡å¥½äº†ï¼Œ
+          é‚£ä¹ˆæ¥ä¸‹æ¥åŠ è½½ load integrity keys hook*/
 	integrity_load_keys();
 
-    /* ¼ÓÔØ»ù±¾µÄÄ£¿é */
+    /* åŠ è½½åŸºæœ¬çš„æ¨¡å— */
 	load_default_modules();
 }

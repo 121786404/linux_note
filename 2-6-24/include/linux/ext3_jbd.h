@@ -155,7 +155,7 @@ handle_t *ext3_journal_start_sb(struct super_block *sb, int nblocks);
 int __ext3_journal_stop(const char *where, handle_t *handle);
 
 /**
- * ÎªinodeÆô¶¯Ò»¸öÈÕÖ¾
+ * ä¸ºinodeå¯åŠ¨ä¸€ä¸ªæ—¥å¿—
  */
 static inline handle_t *ext3_journal_start(struct inode *inode, int nblocks)
 {

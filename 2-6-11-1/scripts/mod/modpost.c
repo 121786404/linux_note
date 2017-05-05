@@ -520,7 +520,7 @@ buf_write(struct buffer *buf, const char *s, int len)
 
 /* Header for the generated file */
 
-/* linuxÄÚºËÄ£¿é¿ª·¢Ê±£¬×Ô¶¯Ìí¼ÓµÄÄ£¿éÍ·²¿ */
+/* linuxå†…æ ¸æ¨¡å—å¼€å‘æ—¶ï¼Œè‡ªåŠ¨æ·»åŠ çš„æ¨¡å—å¤´éƒ¨ */
 void
 add_header(struct buffer *b, struct module *mod)
 {
@@ -533,7 +533,7 @@ add_header(struct buffer *b, struct module *mod)
 	buf_printf(b, "#undef unix\n"); /* We have a module called "unix" */
 	buf_printf(b, "struct module __this_module\n");
 	buf_printf(b, "__attribute__((section(\".gnu.linkonce.this_module\"))) = {\n");
-	buf_printf(b, " .name = __stringify(KBUILD_MODNAME),\n");    /* KBUILD_MODNAMEÊÇkbuildÔÚ±àÒëÊ±×Ô¶¯Éú³É  */
+	buf_printf(b, " .name = __stringify(KBUILD_MODNAME),\n");    /* KBUILD_MODNAMEæ˜¯kbuildåœ¨ç¼–è¯‘æ—¶è‡ªåŠ¨ç”Ÿæˆ  */
 	if (mod->has_init)
 		buf_printf(b, " .init = init_module,\n");
 	if (mod->has_cleanup)
@@ -740,7 +740,7 @@ write_dump(const char *fname)
 	write_if_changed(&buf, fname);
 }
 
-/* modpost³ÌĞòÉú³ÉÄ£¿éµÄ*.mod.cÎÄ¼ş */
+/* modpostç¨‹åºç”Ÿæˆæ¨¡å—çš„*.mod.cæ–‡ä»¶ */
 int
 main(int argc, char **argv)
 {

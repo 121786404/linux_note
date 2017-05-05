@@ -131,18 +131,18 @@ struct usb_hub_descriptor {
 	__u8  bDescLength;
 	__u8  bDescriptorType;
 	/**
-	 * HUBËùÖ§³ÖµÄÏÂĞĞ¶Ë¿Ú¡£
+	 * HUBæ‰€æ”¯æŒçš„ä¸‹è¡Œç«¯å£ã€‚
 	 */
 	__u8  bNbrPorts;
 	__le16 wHubCharacteristics;
 	__u8  bPwrOn2PwrGood;
 	/**
-	 * HUB¿ØÖÆÆ÷µÄ×î´óµçÁ÷ĞèÇó¡£
+	 * HUBæ§åˆ¶å™¨çš„æœ€å¤§ç”µæµéœ€æ±‚ã€‚
 	 */
 	__u8  bHubContrCurrent;
 	    	/* add 1 bit for hub status change; round to bytes */
 	/**
-	 * ¶Ë¿ÚÁ¬½ÓµÄÉè±¸ÊÇ·ñÊÇ¿ÉÒÔÒÆ³ıµÄ¡£Ã¿¸öÎ»´ú±íÒ»¸ö¶Ë¿Ú¡£
+	 * ç«¯å£è¿æ¥çš„è®¾å¤‡æ˜¯å¦æ˜¯å¯ä»¥ç§»é™¤çš„ã€‚æ¯ä¸ªä½ä»£è¡¨ä¸€ä¸ªç«¯å£ã€‚
 	 */
 	__u8  DeviceRemovable[(USB_MAXCHILDREN + 1 + 7) / 8];
 	__u8  PortPwrCtrlMask[(USB_MAXCHILDREN + 1 + 7) / 8];

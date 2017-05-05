@@ -5,21 +5,21 @@
 #include <linux/mm.h>
 
 /* Caches aren't brain-dead on the intel. */
-/* ½«Õû¸ö¸ßËÙ»º´æË¢³ö */
+/* å°†æ•´ä¸ªé«˜é€Ÿç¼“å­˜åˆ·å‡º */
 #define flush_cache_all()			do { } while (0)
-/* ½«Ä³¸öµØÖ·¿Õ¼äµÄ¸ßËÙ»º´æË¢³ö */
+/* å°†æŸä¸ªåœ°å€ç©ºé—´çš„é«˜é€Ÿç¼“å­˜åˆ·å‡º */
 #define flush_cache_mm(mm)			do { } while (0)
 #define flush_cache_dup_mm(mm)			do { } while (0)
 #define flush_cache_range(vma, start, end)	do { } while (0)
 #define flush_cache_page(vma, vmaddr, pfn)	do { } while (0)
-/* Ë¢ĞÂÊı¾İ»º´æ£¬·ÀÖ¹Ò³Ãæ±ğÃû */
+/* åˆ·æ–°æ•°æ®ç¼“å­˜ï¼Œé˜²æ­¢é¡µé¢åˆ«å */
 #define flush_dcache_page(page)			do { } while (0)
 #define flush_dcache_mmap_lock(mapping)		do { } while (0)
 #define flush_dcache_mmap_unlock(mapping)	do { } while (0)
-/* Ë¢ĞÂÖ¸Áî»º´æ£¬×ÔĞŞ¸Ä´úÂë¡¢Ä£¿é¾ùÊ¹ÓÃËü */
+/* åˆ·æ–°æŒ‡ä»¤ç¼“å­˜ï¼Œè‡ªä¿®æ”¹ä»£ç ã€æ¨¡å—å‡ä½¿ç”¨å®ƒ */
 #define flush_icache_range(start, end)		do { } while (0)
 #define flush_icache_page(vma,pg)		do { } while (0)
-/* Ë¢ĞÂÓÃ»§Ì¬µÄÖ¸Áî»º´æ£¬ÓÃÓÚptrace */
+/* åˆ·æ–°ç”¨æˆ·æ€çš„æŒ‡ä»¤ç¼“å­˜ï¼Œç”¨äºptrace */
 #define flush_icache_user_range(vma,pg,adr,len)	do { } while (0)
 #define flush_cache_vmap(start, end)		do { } while (0)
 #define flush_cache_vunmap(start, end)		do { } while (0)

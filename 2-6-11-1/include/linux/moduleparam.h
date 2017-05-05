@@ -20,7 +20,7 @@ typedef int (*param_set_fn)(const char *val, struct kernel_param *kp);
 /* Returns length written or -errno.  Buffer is 4k (ie. be short!) */
 typedef int (*param_get_fn)(char *buffer, struct kernel_param *kp);
 
-/* 内核参数结构 */
+/* 鍐呮牳鍙傛暟缁撴瀯 */
 struct kernel_param {
 	const char *name;
 	unsigned int perm;

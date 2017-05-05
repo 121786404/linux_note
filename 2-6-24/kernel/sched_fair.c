@@ -32,14 +32,14 @@
  * (to see the precise effective timeslice length of your workload,
  *  run vmstat and monitor the context-switches (cs) field)
  */
-/* µ÷¶ÈÑÓ³Ù£¬CFS½ø³ÌÔÚ´Ëµ÷¶ÈÖÜÆÚÄÚ·ÖÅäÊ±¼ä */
+/* è°ƒåº¦å»¶è¿Ÿï¼ŒCFSè¿›ç¨‹åœ¨æ­¤è°ƒåº¦å‘¨æœŸå†…åˆ†é…æ—¶é—´ */
 unsigned int sysctl_sched_latency = 20000000ULL;
 
 /*
  * Minimal preemption granularity for CPU-bound tasks:
  * (default: 4 msec * (1 + ilog(ncpus)), units: nanoseconds)
  */
-/* ×îÐ¡ÔËÐÐÖÜÆÚ£¬Èç¹û¶ÓÁÐÖÐ¿ÉÔËÐÐ½ø³ÌÊýÁ¿½Ï¶à£¬Ôò¿ÉÄÜÀ©´óµ÷¶ÈÑÓ³ÙÖÜÆÚ */
+/* æœ€å°è¿è¡Œå‘¨æœŸï¼Œå¦‚æžœé˜Ÿåˆ—ä¸­å¯è¿è¡Œè¿›ç¨‹æ•°é‡è¾ƒå¤šï¼Œåˆ™å¯èƒ½æ‰©å¤§è°ƒåº¦å»¶è¿Ÿå‘¨æœŸ */
 unsigned int sysctl_sched_min_granularity = 4000000ULL;
 
 /*
@@ -51,7 +51,7 @@ static unsigned int sched_nr_latency = 5;
  * After fork, child runs first. (default) If set to 0 then
  * parent will (try to) run first.
  */
-/* ÐÂ´´½¨µÄ½ø³ÌÊÇ·ñÓ¦µ±ÔÚ¸¸½ø³ÌÖ®Ç°ÔËÐÐ */
+/* æ–°åˆ›å»ºçš„è¿›ç¨‹æ˜¯å¦åº”å½“åœ¨çˆ¶è¿›ç¨‹ä¹‹å‰è¿è¡Œ */
 const_debug unsigned int sysctl_sched_child_runs_first = 1;
 
 /*
@@ -138,7 +138,7 @@ static inline u64 min_vruntime(u64 min_vruntime, u64 vruntime)
 	return min_vruntime;
 }
 
-/* ½ø³ÌÔÚºìºÚÊ÷ÖÐÅÅÐòµÄ±ê×¼ */
+/* è¿›ç¨‹åœ¨çº¢é»‘æ ‘ä¸­æŽ’åºçš„æ ‡å‡† */
 static inline s64 entity_key(struct cfs_rq *cfs_rq, struct sched_entity *se)
 {
 	return se->vruntime - cfs_rq->min_vruntime;
@@ -246,13 +246,13 @@ int sched_nr_latency_handler(struct ctl_table *table, int write,
  *
  * p = (nr <= nl) ? l : l*nr/nl
  */
-/* È·¶¨CFSµ÷¶ÈÆ÷µÄÑÓ³ÙÖÜÆÚ³¤¶È£¬Í¨³£ÊÇsysctl_sched_latency */
+/* ç¡®å®šCFSè°ƒåº¦å™¨çš„å»¶è¿Ÿå‘¨æœŸé•¿åº¦ï¼Œé€šå¸¸æ˜¯sysctl_sched_latency */
 static u64 __sched_period(unsigned long nr_running)
 {
 	u64 period = sysctl_sched_latency;
 	unsigned long nr_latency = sched_nr_latency;
 
-	if (unlikely(nr_running > nr_latency)) {/* Èç¹û½ø³ÌÊýÁ¿³¬¹ýnr_latency£¬ÔòÍ¬±ÈÀýÀ©´óÑÓ³ÙÖÜÆÚ */
+	if (unlikely(nr_running > nr_latency)) {/* å¦‚æžœè¿›ç¨‹æ•°é‡è¶…è¿‡nr_latencyï¼Œåˆ™åŒæ¯”ä¾‹æ‰©å¤§å»¶è¿Ÿå‘¨æœŸ */
 		period *= nr_running;
 		do_div(period, nr_latency);
 	}
@@ -267,15 +267,15 @@ static u64 __sched_period(unsigned long nr_running)
  * s = p*w/rw
  */
 /**
- * ½«ÑÓ³ÙÖÜÆÚÄÚµÄÊ±¼ä·ÖÅäµ½Ä³¸ö»î¶¯½ø³Ì¡£
- * ×¢:Êµ¼ÊÔËÐÐÊ±¼ä
+ * å°†å»¶è¿Ÿå‘¨æœŸå†…çš„æ—¶é—´åˆ†é…åˆ°æŸä¸ªæ´»åŠ¨è¿›ç¨‹ã€‚
+ * æ³¨:å®žé™…è¿è¡Œæ—¶é—´
  */
 static u64 sched_slice(struct cfs_rq *cfs_rq, struct sched_entity *se)
 {
-	/* ¼ÆËãÑÓ³ÙÖÜÆÚ */
+	/* è®¡ç®—å»¶è¿Ÿå‘¨æœŸ */
 	u64 slice = __sched_period(cfs_rq->nr_running);
 
-	/* ¸ù¾Ý½ø³ÌÔÚ¶ÓÁÐÖÐµÄÈ¨ÖØ±ÈÀý£¬È·¶¨·ÖÅä¸ø¸Ã½ø³ÌµÄÊ±¼ä */
+	/* æ ¹æ®è¿›ç¨‹åœ¨é˜Ÿåˆ—ä¸­çš„æƒé‡æ¯”ä¾‹ï¼Œç¡®å®šåˆ†é…ç»™è¯¥è¿›ç¨‹çš„æ—¶é—´ */
 	slice *= se->load.weight;
 	do_div(slice, cfs_rq->load.weight);
 
@@ -297,7 +297,7 @@ static u64 __sched_vslice(unsigned long rq_weight, unsigned long nr_running)
 	return vslice;
 }
 
-/* ¼ÆËã¶ÓÁÐµÄÐéÄâµ÷¶ÈÑÓ³ÙÊ±¼ä */
+/* è®¡ç®—é˜Ÿåˆ—çš„è™šæ‹Ÿè°ƒåº¦å»¶è¿Ÿæ—¶é—´ */
 static u64 sched_vslice(struct cfs_rq *cfs_rq)
 {
 	return __sched_vslice(cfs_rq->load.weight, cfs_rq->nr_running);
@@ -322,45 +322,45 @@ __update_curr(struct cfs_rq *cfs_rq, struct sched_entity *curr,
 
 	schedstat_set(curr->exec_max, max((u64)delta_exec, curr->exec_max));
 
-	/* ¸üÐÂ½ø³ÌµÄÖ´ÐÐÊ±¼ä */
+	/* æ›´æ–°è¿›ç¨‹çš„æ‰§è¡Œæ—¶é—´ */
 	curr->sum_exec_runtime += delta_exec;
 	schedstat_add(cfs_rq, exec_clock, delta_exec);
-	/* ¿ªÊ¼¼ÆËãÈ¨ÖØÊ±¼ä */
+	/* å¼€å§‹è®¡ç®—æƒé‡æ—¶é—´ */
 	delta_exec_weighted = delta_exec;
-	/* ¶ÔÓÚnice==0µÄ½ø³ÌÀ´Ëµ£¬ÐéÄâÈ¨ÖØÊ±¼äÓëÊµ¼ÊÔËÐÐÊ±¼äÏàµÈ */
+	/* å¯¹äºŽnice==0çš„è¿›ç¨‹æ¥è¯´ï¼Œè™šæ‹Ÿæƒé‡æ—¶é—´ä¸Žå®žé™…è¿è¡Œæ—¶é—´ç›¸ç­‰ */
 	if (unlikely(curr->load.weight != NICE_0_LOAD)) {
-		/* ¶ÔÆäËûÓÅÏÈ¼¶À´Ëµ£¬¸ù¾Ý½ø³ÌµÄ¸ººÉÈ¨ÖØÖØÐÂÈ·¶¨Ê±¼ä */
+		/* å¯¹å…¶ä»–ä¼˜å…ˆçº§æ¥è¯´ï¼Œæ ¹æ®è¿›ç¨‹çš„è´Ÿè·æƒé‡é‡æ–°ç¡®å®šæ—¶é—´ */
 		delta_exec_weighted = calc_delta_fair(delta_exec_weighted,
 							&curr->load);
 	}
-	/* µÝÔö½ø³ÌÐéÄâÔËÐÐÊ±¼ä */
+	/* é€’å¢žè¿›ç¨‹è™šæ‹Ÿè¿è¡Œæ—¶é—´ */
 	curr->vruntime += delta_exec_weighted;
 
 	/*
 	 * maintain cfs_rq->min_vruntime to be a monotonic increasing
 	 * value tracking the leftmost vruntime in the tree.
 	 */
-	if (first_fair(cfs_rq)) {/* ÓÐµÈ´ýµ÷¶ÈµÄ½ø³Ì */
-		/* È¡µ±Ç°½ø³ÌµÄÐéÄâÔËÐÐÊ±¼äºÍÊ÷ÖÐ×îÐ¡ÐéÄâÔËÐÐÊ±¼äµÄ×îÐ¡Öµ */
+	if (first_fair(cfs_rq)) {/* æœ‰ç­‰å¾…è°ƒåº¦çš„è¿›ç¨‹ */
+		/* å–å½“å‰è¿›ç¨‹çš„è™šæ‹Ÿè¿è¡Œæ—¶é—´å’Œæ ‘ä¸­æœ€å°è™šæ‹Ÿè¿è¡Œæ—¶é—´çš„æœ€å°å€¼ */
 		vruntime = min_vruntime(curr->vruntime,
 				__pick_next_entity(cfs_rq)->vruntime);
 	} else
 		vruntime = curr->vruntime;
 
-	/* È·±£min_vruntimeÊÇµ¥µ÷µÝÔöµÄ */
+	/* ç¡®ä¿min_vruntimeæ˜¯å•è°ƒé€’å¢žçš„ */
 	cfs_rq->min_vruntime =
 		max_vruntime(cfs_rq->min_vruntime, vruntime);
 }
 
-/* ¸üÐÂCFS½ø³ÌÔËÐÐÊ±¼ä£¬ÔÚÖÜÆÚÐÔµ÷¶ÈÆ÷¼°ÆäËûµØ·½µ÷ÓÃ */
+/* æ›´æ–°CFSè¿›ç¨‹è¿è¡Œæ—¶é—´ï¼Œåœ¨å‘¨æœŸæ€§è°ƒåº¦å™¨åŠå…¶ä»–åœ°æ–¹è°ƒç”¨ */
 static void update_curr(struct cfs_rq *cfs_rq)
 {
-	/* »ñµÃµ±Ç°ÈÎÎñºÍ¾ÍÐ÷¶ÓÁÐÊ±ÖÓ */
+	/* èŽ·å¾—å½“å‰ä»»åŠ¡å’Œå°±ç»ªé˜Ÿåˆ—æ—¶é’Ÿ */
 	struct sched_entity *curr = cfs_rq->curr;
 	u64 now = rq_of(cfs_rq)->clock;
 	unsigned long delta_exec;
 
-	if (unlikely(!curr))/* Ã»ÓÐCFS½ø³ÌÔÚÔËÐÐ£¬Ö±½ÓÍË³ö */
+	if (unlikely(!curr))/* æ²¡æœ‰CFSè¿›ç¨‹åœ¨è¿è¡Œï¼Œç›´æŽ¥é€€å‡º */
 		return;
 
 	/*
@@ -368,10 +368,10 @@ static void update_curr(struct cfs_rq *cfs_rq)
 	 * since the last time we changed load (this cannot
 	 * overflow on 32 bits):
 	 */
-	/* ¼ÆËãµ±Ç°Ê±¼äºÍÉÏÒ»´Î¸üÐÂ¸ººÉÍ³¼ÆÁ¿µÄÊ±¼ä²î */
+	/* è®¡ç®—å½“å‰æ—¶é—´å’Œä¸Šä¸€æ¬¡æ›´æ–°è´Ÿè·ç»Ÿè®¡é‡çš„æ—¶é—´å·® */
 	delta_exec = (unsigned long)(now - curr->exec_start);
 
-	/* ¸üÐÂÍ³¼ÆÊ±¼ä */
+	/* æ›´æ–°ç»Ÿè®¡æ—¶é—´ */
 	__update_curr(cfs_rq, curr, delta_exec);
 	curr->exec_start = now;
 
@@ -508,14 +508,14 @@ static void check_spread(struct cfs_rq *cfs_rq, struct sched_entity *se)
 }
 
 /**
- * initial±íÊ¾ÊÇ·ñÎªÐÂ´´½¨µÄ½ø³Ì¡£
+ * initialè¡¨ç¤ºæ˜¯å¦ä¸ºæ–°åˆ›å»ºçš„è¿›ç¨‹ã€‚
  */
 static void
 place_entity(struct cfs_rq *cfs_rq, struct sched_entity *se, int initial)
 {
 	u64 vruntime;
 
-	/* ½«¶ÓÁÐµÄmin_vruntime×÷Îª»ù×¼ÐéÄâÊ±¼ä£¬ÒÔ±£Ö¤ËùÓÐ½ø³ÌÔÚÑÓ³ÙÖÜÆÚÄÚÔËÐÐÒ»´Î */
+	/* å°†é˜Ÿåˆ—çš„min_vruntimeä½œä¸ºåŸºå‡†è™šæ‹Ÿæ—¶é—´ï¼Œä»¥ä¿è¯æ‰€æœ‰è¿›ç¨‹åœ¨å»¶è¿Ÿå‘¨æœŸå†…è¿è¡Œä¸€æ¬¡ */
 	vruntime = cfs_rq->min_vruntime;
 
 	if (sched_feat(TREE_AVG)) {
@@ -539,7 +539,7 @@ place_entity(struct cfs_rq *cfs_rq, struct sched_entity *se, int initial)
 	if (!initial) {
 		/* sleeps upto a single latency don't count. */
 		if (sched_feat(NEW_FAIR_SLEEPERS) && entity_is_task(se))
-			/* ½«»ù×¼Ê±¼ä¼õÈ¥ÑÓ³ÙÖÜÆÚ£¬ÒÔÈ·±£ÐÂ´´½¨µÄ½ø³ÌÖ»ÓÐÔÚµ±Ç°ÑÓ³ÙÖÜÆÚ½áÊøºóÔÙÔËÐÐ */
+			/* å°†åŸºå‡†æ—¶é—´å‡åŽ»å»¶è¿Ÿå‘¨æœŸï¼Œä»¥ç¡®ä¿æ–°åˆ›å»ºçš„è¿›ç¨‹åªæœ‰åœ¨å½“å‰å»¶è¿Ÿå‘¨æœŸç»“æŸåŽå†è¿è¡Œ */
 			vruntime -= sysctl_sched_latency;
 
 		/* ensure we never gain time by being placed backwards. */
@@ -555,18 +555,18 @@ enqueue_entity(struct cfs_rq *cfs_rq, struct sched_entity *se, int wakeup)
 	/*
 	 * Update run-time statistics of the 'current'.
 	 */
-	/* ¸üÐÂµ±Ç°½ø³ÌµÄÔËÐÐÊ±¼ä */
+	/* æ›´æ–°å½“å‰è¿›ç¨‹çš„è¿è¡Œæ—¶é—´ */
 	update_curr(cfs_rq);
 
-	if (wakeup) {/* ½ø³Ì±»»½ÐÑ£¬ÖØÐÂÈë¶Ó */
-		/* È·¶¨½ø³ÌÕýÈ·µÄÐéÄâÔËÐÐÊ±¼ä */
+	if (wakeup) {/* è¿›ç¨‹è¢«å”¤é†’ï¼Œé‡æ–°å…¥é˜Ÿ */
+		/* ç¡®å®šè¿›ç¨‹æ­£ç¡®çš„è™šæ‹Ÿè¿è¡Œæ—¶é—´ */
 		place_entity(cfs_rq, se, 0);
 		enqueue_sleeper(cfs_rq, se);
 	}
 
 	update_stats_enqueue(cfs_rq, se);
 	check_spread(cfs_rq, se);
-	if (se != cfs_rq->curr)/* ¸ù¾Ý½ø³ÌµÄÐéÄâÔËÐÐÊ±¼ä£¬½«½ø³Ì·ÅÖÃµ½ºìºÚÊ÷ÖÐ */
+	if (se != cfs_rq->curr)/* æ ¹æ®è¿›ç¨‹çš„è™šæ‹Ÿè¿è¡Œæ—¶é—´ï¼Œå°†è¿›ç¨‹æ”¾ç½®åˆ°çº¢é»‘æ ‘ä¸­ */
 		__enqueue_entity(cfs_rq, se);
 	account_entity_enqueue(cfs_rq, se);
 }
@@ -602,20 +602,20 @@ dequeue_entity(struct cfs_rq *cfs_rq, struct sched_entity *se, int sleep)
  * Preempt the current task with a newly woken task if needed:
  */
 /**
- * ´¦ÀíCFS½ø³ÌÇÀÕ¼£¬È·±£Ã»ÓÐÈÎºÎÒ»¸ö½ø³Ì¿ÉÒÔ±ÈÑÓ³ÙÖÜÆÚÖÐÈ·¶¨µÄ·Ý¶îÔËÐÐµÃ¸ü³¤
+ * å¤„ç†CFSè¿›ç¨‹æŠ¢å ï¼Œç¡®ä¿æ²¡æœ‰ä»»ä½•ä¸€ä¸ªè¿›ç¨‹å¯ä»¥æ¯”å»¶è¿Ÿå‘¨æœŸä¸­ç¡®å®šçš„ä»½é¢è¿è¡Œå¾—æ›´é•¿
  */
 static void
 check_preempt_tick(struct cfs_rq *cfs_rq, struct sched_entity *curr)
 {
 	unsigned long ideal_runtime, delta_exec;
 
-	/* ¼ÆËã½ø³ÌµÄ·Ý¶î */
+	/* è®¡ç®—è¿›ç¨‹çš„ä»½é¢ */
 	ideal_runtime = sched_slice(cfs_rq, curr);
-	/* ¼ÆËãÒÑ¾­ÔËÐÐµÄÊ±¼ä */
+	/* è®¡ç®—å·²ç»è¿è¡Œçš„æ—¶é—´ */
 	delta_exec = curr->sum_exec_runtime - curr->prev_sum_exec_runtime;
-	/* ½ø³ÌÔËÐÐµÄÊ±¼ä±ÈÆÚÍûµÄ·Ý¶î¸ü³¤ */
+	/* è¿›ç¨‹è¿è¡Œçš„æ—¶é—´æ¯”æœŸæœ›çš„ä»½é¢æ›´é•¿ */
 	if (delta_exec > ideal_runtime)
-		/* ·¢³öÖØÐÂµ÷¶ÈÇëÇó */
+		/* å‘å‡ºé‡æ–°è°ƒåº¦è¯·æ±‚ */
 		resched_task(rq_of(cfs_rq)->curr);
 }
 
@@ -623,19 +623,19 @@ static void
 set_next_entity(struct cfs_rq *cfs_rq, struct sched_entity *se)
 {
 	/* 'current' is not kept within the tree. */
-	if (se->on_rq) {/* ½ø³ÌÔÚ¾ÍÐ÷¶ÓÁÐÖÐ£¬²»ÊÇµ±Ç°ÔËÐÐ½ø³Ì */
+	if (se->on_rq) {/* è¿›ç¨‹åœ¨å°±ç»ªé˜Ÿåˆ—ä¸­ï¼Œä¸æ˜¯å½“å‰è¿è¡Œè¿›ç¨‹ */
 		/*
 		 * Any task has to be enqueued before it get to execute on
 		 * a CPU. So account for the time it spent waiting on the
 		 * runqueue.
 		 */
 		update_stats_wait_end(cfs_rq, se);
-		/* ´Ó¾ÍÐ÷¶ÓÁÐÖÐÒÆ³ý£¬Èç¹ûÒÆ³ýµÄ½ø³ÌÊÇ×î×ó±ßµÄ½ø³Ì£¬»¹ÐèÒªÐÞ¸Ä×î×ó±ß½Úµã */
+		/* ä»Žå°±ç»ªé˜Ÿåˆ—ä¸­ç§»é™¤ï¼Œå¦‚æžœç§»é™¤çš„è¿›ç¨‹æ˜¯æœ€å·¦è¾¹çš„è¿›ç¨‹ï¼Œè¿˜éœ€è¦ä¿®æ”¹æœ€å·¦è¾¹èŠ‚ç‚¹ */
 		__dequeue_entity(cfs_rq, se);
 	}
 
 	update_stats_curr_start(cfs_rq, se);
-	/* ¼ÇÂ¼CFS¶ÓÁÐÖÐµÄµ±Ç°½ø³Ì */
+	/* è®°å½•CFSé˜Ÿåˆ—ä¸­çš„å½“å‰è¿›ç¨‹ */
 	cfs_rq->curr = se;
 #ifdef CONFIG_SCHEDSTATS
 	/*
@@ -655,10 +655,10 @@ static struct sched_entity *pick_next_entity(struct cfs_rq *cfs_rq)
 {
 	struct sched_entity *se = NULL;
 
-	if (first_fair(cfs_rq)) {/* ºìºÚÊ÷ÖÐÓÐ½áµã */
-		/* ´ÓºìºÚÊ÷ÖÐÈ¡³ö×î×ó±ß½áµãµÄsched_entity */
+	if (first_fair(cfs_rq)) {/* çº¢é»‘æ ‘ä¸­æœ‰ç»“ç‚¹ */
+		/* ä»Žçº¢é»‘æ ‘ä¸­å–å‡ºæœ€å·¦è¾¹ç»“ç‚¹çš„sched_entity */
 		se = __pick_next_entity(cfs_rq);
-		/* ½«Ñ¡ÔñµÄ½ø³Ì±ê¼ÇÎªÔËÐÐ½ø³Ì  */
+		/* å°†é€‰æ‹©çš„è¿›ç¨‹æ ‡è®°ä¸ºè¿è¡Œè¿›ç¨‹  */
 		set_next_entity(cfs_rq, se);
 	}
 
@@ -688,12 +688,12 @@ static void entity_tick(struct cfs_rq *cfs_rq, struct sched_entity *curr)
 	/*
 	 * Update run-time statistics of the 'current'.
 	 */
-	/* ¸üÐÂµ±Ç°½ø³ÌµÄÔËÐÐÊ±¼ä */
+	/* æ›´æ–°å½“å‰è¿›ç¨‹çš„è¿è¡Œæ—¶é—´ */
 	update_curr(cfs_rq);
 
-	/* Èç¹û¶ÓÁÐÉÏ¿ÉÓÃ½ø³ÌÊýÁ¿²»×ãÁ½¸ö£¬Ôò²»±Ø½øÐÐÇÐ»» */
+	/* å¦‚æžœé˜Ÿåˆ—ä¸Šå¯ç”¨è¿›ç¨‹æ•°é‡ä¸è¶³ä¸¤ä¸ªï¼Œåˆ™ä¸å¿…è¿›è¡Œåˆ‡æ¢ */
 	if (cfs_rq->nr_running > 1 || !sched_feat(WAKEUP_PREEMPT))
-		/* ·ñÔò£¬´¦ÀíCFS½ø³ÌÇÀÕ¼ */
+		/* å¦åˆ™ï¼Œå¤„ç†CFSè¿›ç¨‹æŠ¢å  */
 		check_preempt_tick(cfs_rq, curr);
 }
 
@@ -802,20 +802,20 @@ static inline struct sched_entity *parent_entity(struct sched_entity *se)
  * then put the task into the rbtree:
  */
 /**
- * ½«½ø³Ì¼ÓÈëµ½CFS¶ÓÁÐÖÐ
- * wakeup±íÊ¾ÊÇ·ñµÚÒ»´Î½øÈë¶ÓÁÐ
+ * å°†è¿›ç¨‹åŠ å…¥åˆ°CFSé˜Ÿåˆ—ä¸­
+ * wakeupè¡¨ç¤ºæ˜¯å¦ç¬¬ä¸€æ¬¡è¿›å…¥é˜Ÿåˆ—
  */
 static void enqueue_task_fair(struct rq *rq, struct task_struct *p, int wakeup)
 {
 	struct cfs_rq *cfs_rq;
 	struct sched_entity *se = &p->se;
 
-	/* ±éÀúµ÷¶ÈÊµÌåµÄcgroups²ã´Î½á¹¹£¬½«Ã¿Ò»¸ö²ã´ÎÖÐµÄ¶ÔÏó¶¼¼ÓÈëµ½¶ÓÁÐÖÐ */
+	/* éåŽ†è°ƒåº¦å®žä½“çš„cgroupså±‚æ¬¡ç»“æž„ï¼Œå°†æ¯ä¸€ä¸ªå±‚æ¬¡ä¸­çš„å¯¹è±¡éƒ½åŠ å…¥åˆ°é˜Ÿåˆ—ä¸­ */
 	for_each_sched_entity(se) {
-		if (se->on_rq)/* µ÷¶ÈÊµÌåÒÑ¾­ÔÚ¶ÓÁÐÖÐ£¬Ö±½ÓÍË³ö */
+		if (se->on_rq)/* è°ƒåº¦å®žä½“å·²ç»åœ¨é˜Ÿåˆ—ä¸­ï¼Œç›´æŽ¥é€€å‡º */
 			break;
 		cfs_rq = cfs_rq_of(se);
-		/* ½«½ø³ÌÌí¼Óµ½¶ÓÁÐÖÐ */
+		/* å°†è¿›ç¨‹æ·»åŠ åˆ°é˜Ÿåˆ—ä¸­ */
 		enqueue_entity(cfs_rq, se, wakeup);
 		wakeup = 1;
 	}
@@ -889,7 +889,7 @@ static void yield_task_fair(struct rq *rq)
  * Preempt the current task with a newly woken task if needed:
  */
 /**
- * µ±½ø³Ì±»try_to_wake_upºÍwake_up_new_task»½ÐÑÊ±£¬µ÷ÓÃ´Ëº¯Êý¼ì²éÊÇ·ñ¿ÉÒÔÇÀÕ¼µ±Ç°½ø³Ì
+ * å½“è¿›ç¨‹è¢«try_to_wake_upå’Œwake_up_new_taskå”¤é†’æ—¶ï¼Œè°ƒç”¨æ­¤å‡½æ•°æ£€æŸ¥æ˜¯å¦å¯ä»¥æŠ¢å å½“å‰è¿›ç¨‹
  */
 static void check_preempt_wakeup(struct rq *rq, struct task_struct *p)
 {
@@ -898,11 +898,11 @@ static void check_preempt_wakeup(struct rq *rq, struct task_struct *p)
 	struct sched_entity *se = &curr->se, *pse = &p->se;
 	unsigned long gran;
 
-	/* ÐÂ»½ÐÑµÄ½ø³ÌÊÇÊµÊ±½ø³Ì */
+	/* æ–°å”¤é†’çš„è¿›ç¨‹æ˜¯å®žæ—¶è¿›ç¨‹ */
 	if (unlikely(rt_prio(p->prio))) {
 		update_rq_clock(rq);
 		update_curr(cfs_rq);
-		/* ÊµÊ±½ø³Ì×ÜÊÇÇÀÕ¼CFS½ø³Ì */
+		/* å®žæ—¶è¿›ç¨‹æ€»æ˜¯æŠ¢å CFSè¿›ç¨‹ */
 		resched_task(curr);
 		return;
 	}
@@ -910,11 +910,11 @@ static void check_preempt_wakeup(struct rq *rq, struct task_struct *p)
 	 * Batch tasks do not preempt (their preemption is driven by
 	 * the tick):
 	 */
-	/* ÐÂ½ø³ÌÊÇBATCH½ø³Ì£¬Ëü²»ÇÀÕ¼ÆäËû½ø³Ì */
+	/* æ–°è¿›ç¨‹æ˜¯BATCHè¿›ç¨‹ï¼Œå®ƒä¸æŠ¢å å…¶ä»–è¿›ç¨‹ */
 	if (unlikely(p->policy == SCHED_BATCH))
 		return;
 
-	/* Ã»ÓÐÅäÖÃ»½ÐÑÇÀÕ¼¹¦ÄÜ */
+	/* æ²¡æœ‰é…ç½®å”¤é†’æŠ¢å åŠŸèƒ½ */
 	if (!sched_feat(WAKEUP_PREEMPT))
 		return;
 
@@ -923,33 +923,33 @@ static void check_preempt_wakeup(struct rq *rq, struct task_struct *p)
 		pse = parent_entity(pse);
 	}
 
-	/* ¼ÆËã×îÐ¡ÔËÐÐÊ±¼ä£¬Ä¬ÈÏÊÇ4ms */
+	/* è®¡ç®—æœ€å°è¿è¡Œæ—¶é—´ï¼Œé»˜è®¤æ˜¯4ms */
 	gran = sysctl_sched_wakeup_granularity;
-	/* ¼ÆËã×îÐ¡ÔËÐÐÊ±¼ä¶ÔÓ¦µÄÐéÄâÊ±¼ä */
+	/* è®¡ç®—æœ€å°è¿è¡Œæ—¶é—´å¯¹åº”çš„è™šæ‹Ÿæ—¶é—´ */
 	if (unlikely(se->load.weight != NICE_0_LOAD))
 		gran = calc_delta_fair(gran, &se->load);
 
 	/* 
-	 * ÐÂ½ø³ÌµÄÐéÄâÔËÐÐÊ±¼ä¼ÓÉÏ×îÐ¡ÔËÐÐÊ±¼äÈÔÈ»Ð¡ÓÚµ±Ç°½ø³ÌµÄÅä¶î
-	 * ËµÃ÷ÐÂ½ø³ÌÓÅÏÈ¼¶½Ï¸ß£¬ÇÀÕ¼µ±Ç°½ø³Ì 
+	 * æ–°è¿›ç¨‹çš„è™šæ‹Ÿè¿è¡Œæ—¶é—´åŠ ä¸Šæœ€å°è¿è¡Œæ—¶é—´ä»ç„¶å°äºŽå½“å‰è¿›ç¨‹çš„é…é¢
+	 * è¯´æ˜Žæ–°è¿›ç¨‹ä¼˜å…ˆçº§è¾ƒé«˜ï¼ŒæŠ¢å å½“å‰è¿›ç¨‹ 
 	 */
 	if (pse->vruntime + gran < se->vruntime)
 		resched_task(curr);
 }
 
 /**
- * Ñ¡ÔñÏÂÒ»¸ö½«ÒªÔËÐÐµÄ½ø³Ì
+ * é€‰æ‹©ä¸‹ä¸€ä¸ªå°†è¦è¿è¡Œçš„è¿›ç¨‹
  */
 static struct task_struct *pick_next_task_fair(struct rq *rq)
 {
 	struct cfs_rq *cfs_rq = &rq->cfs;
 	struct sched_entity *se;
 
-	if (unlikely(!cfs_rq->nr_running))/* Ã»ÓÐ¿ÉÔËÐÐµÄ½ø³Ì */
+	if (unlikely(!cfs_rq->nr_running))/* æ²¡æœ‰å¯è¿è¡Œçš„è¿›ç¨‹ */
 		return NULL;
 
 	do {
-		/* Ñ¡ÔñºìºÚÊ÷×î×ó±ßµÄ½ø³Ì */
+		/* é€‰æ‹©çº¢é»‘æ ‘æœ€å·¦è¾¹çš„è¿›ç¨‹ */
 		se = pick_next_entity(cfs_rq);
 		cfs_rq = group_cfs_rq(se);
 	} while (cfs_rq);
@@ -1109,7 +1109,7 @@ move_one_task_fair(struct rq *this_rq, int this_cpu, struct rq *busiest,
 /*
  * scheduler tick hitting a task of our scheduling class:
  */
-/* ´¦ÀíCFSµ÷¶ÈÆ÷µÄÖÜÆÚÐÔµ÷¶È */
+/* å¤„ç†CFSè°ƒåº¦å™¨çš„å‘¨æœŸæ€§è°ƒåº¦ */
 static void task_tick_fair(struct rq *rq, struct task_struct *curr)
 {
 	struct cfs_rq *cfs_rq;
@@ -1117,7 +1117,7 @@ static void task_tick_fair(struct rq *rq, struct task_struct *curr)
 
 	for_each_sched_entity(se) {
 		cfs_rq = cfs_rq_of(se);
-		/* Êµ¼Ê¹¤×÷ÓÉentity_tickÍê³É */
+		/* å®žé™…å·¥ä½œç”±entity_tickå®Œæˆ */
 		entity_tick(cfs_rq, se);
 	}
 }
@@ -1132,7 +1132,7 @@ static void task_tick_fair(struct rq *rq, struct task_struct *curr)
  * the child is not running yet.
  */
 /**
- * ´´½¨ÐÂ½ø³ÌÊ±£¬
+ * åˆ›å»ºæ–°è¿›ç¨‹æ—¶ï¼Œ
  */
 static void task_new_fair(struct rq *rq, struct task_struct *p)
 {
@@ -1142,23 +1142,23 @@ static void task_new_fair(struct rq *rq, struct task_struct *p)
 
 	sched_info_queued(p);
 
-	/* ¸üÐÂµ±Ç°½ø³ÌµÄÔËÐÐÊ±¼ä */
+	/* æ›´æ–°å½“å‰è¿›ç¨‹çš„è¿è¡Œæ—¶é—´ */
 	update_curr(cfs_rq);
-	/* ½«ÐÂ½ø³Ì·ÅÖÃµ½ºìºÚÊ÷ÖÐ£¬initial²ÎÊý±íÊ¾ÊÇÐÂ´´½¨µÄ½ø³Ì */
+	/* å°†æ–°è¿›ç¨‹æ”¾ç½®åˆ°çº¢é»‘æ ‘ä¸­ï¼Œinitialå‚æ•°è¡¨ç¤ºæ˜¯æ–°åˆ›å»ºçš„è¿›ç¨‹ */
 	place_entity(cfs_rq, se, 1);
 
 	/* 'curr' will be NULL if the child belongs to a different group */
-	if (sysctl_sched_child_runs_first && this_cpu == task_cpu(p) &&/* ×Ó½ø³ÌÏÈÔËÐÐ£¬×Ó½ø³ÌÓë¸¸½ø³ÌÔÚÍ¬Ò»CPUÉÏ */
-			curr && curr->vruntime < se->vruntime) {/* µ±Ç°½ø³ÌµÄÐéÄâÔËÐÐÊ±¼äÐ¡ÓÚ×Ó½ø³ÌµÄÔËÐÐÊ±¼ä */
+	if (sysctl_sched_child_runs_first && this_cpu == task_cpu(p) &&/* å­è¿›ç¨‹å…ˆè¿è¡Œï¼Œå­è¿›ç¨‹ä¸Žçˆ¶è¿›ç¨‹åœ¨åŒä¸€CPUä¸Š */
+			curr && curr->vruntime < se->vruntime) {/* å½“å‰è¿›ç¨‹çš„è™šæ‹Ÿè¿è¡Œæ—¶é—´å°äºŽå­è¿›ç¨‹çš„è¿è¡Œæ—¶é—´ */
 		/*
 		 * Upon rescheduling, sched_class::put_prev_task() will place
 		 * 'current' within the tree based on its new key value.
 		 */
-		/* ½»»»¶þÕßµÄÔËÐÐÊ±¼ä£¬Ëæºó»á½«µ±Ç°½ø³Ì²åÈëµ½ºìºÚÊ÷ºÏÊÊµÄÎ»ÖÃ */
+		/* äº¤æ¢äºŒè€…çš„è¿è¡Œæ—¶é—´ï¼ŒéšåŽä¼šå°†å½“å‰è¿›ç¨‹æ’å…¥åˆ°çº¢é»‘æ ‘åˆé€‚çš„ä½ç½® */
 		swap(curr->vruntime, se->vruntime);
 	}
 
-	/* ½«ÐÂ½ø³Ì¼ÓÈëµ½ÔËÐÐ¶ÓÁÐ²¢ÖØÐÂµ÷¶È */
+	/* å°†æ–°è¿›ç¨‹åŠ å…¥åˆ°è¿è¡Œé˜Ÿåˆ—å¹¶é‡æ–°è°ƒåº¦ */
 	enqueue_task_fair(rq, p, 0);
 	resched_task(rq->curr);
 }

@@ -1129,14 +1129,14 @@ out:
  * (most normal use), this basically shouldn't matter.
  */
 
-/* É¨ÃèÄÚ´æµÄÊØ»¤½ø³Ì */
+/* æ‰«æå†…å­˜çš„å®ˆæŠ¤è¿›ç¨‹ */
 static int kswapd(void *p)
 {
 	unsigned long order;
 	pg_data_t *pgdat = (pg_data_t*)p;
 	struct task_struct *tsk = current;
-        /* Í¨¹ýÕâÀïÀ´³õÊ¼»¯½ø³ÌµÄµÈ´ý½á¹¹£¬
-          * Í¬Ê±Ö¸¶¨µÈ´ý½á¹¹µÄ»Øµ÷º¯Êý 
+        /* é€šè¿‡è¿™é‡Œæ¥åˆå§‹åŒ–è¿›ç¨‹çš„ç­‰å¾…ç»“æž„ï¼Œ
+          * åŒæ—¶æŒ‡å®šç­‰å¾…ç»“æž„çš„å›žè°ƒå‡½æ•° 
           */
 	DEFINE_WAIT(wait);
 	struct reclaim_state reclaim_state = {
@@ -1262,12 +1262,12 @@ static int __devinit cpu_callback(struct notifier_block *nfb,
 }
 #endif /* CONFIG_HOTPLUG_CPU */
 
-/* Æô¶¯ÄÚºËÒ³Ãæ»»³öÊØ»¤½ø³Ì */
+/* å¯åŠ¨å†…æ ¸é¡µé¢æ¢å‡ºå®ˆæŠ¤è¿›ç¨‹ */
 static int __init kswapd_init(void)
 {
 	pg_data_t *pgdat;
 	swap_setup();
-        /* ÎªÃ¿Ò»¸ö´æ´¢½Úµã´´½¨Ò»¸öÄÚ´æ»»³ö½ø³Ì */
+        /* ä¸ºæ¯ä¸€ä¸ªå­˜å‚¨èŠ‚ç‚¹åˆ›å»ºä¸€ä¸ªå†…å­˜æ¢å‡ºè¿›ç¨‹ */
 	for_each_pgdat(pgdat)
 		pgdat->kswapd
 		= find_task_by_pid(kernel_thread(kswapd, pgdat, CLONE_KERNEL));

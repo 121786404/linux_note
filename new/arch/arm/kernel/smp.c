@@ -434,8 +434,8 @@ void __init smp_prepare_boot_cpu(void)
 	set_my_cpu_offset(per_cpu_offset(smp_processor_id()));
 }
 /*
-»áÒÔÈ«¾Ö±äÁ¿setup_max_cpusÎªº¯Ê½²ÎÊımax_cpus,
-ÒÔ±íÊ¾ÔÚ±àÒëºËĞÄÊ±,Éè¶¨Ö§Ô®µÄ×î´óCPUÊıÁ¿
+ä¼šä»¥å…¨å±€å˜é‡setup_max_cpusä¸ºå‡½å¼å‚æ•°max_cpus,
+ä»¥è¡¨ç¤ºåœ¨ç¼–è¯‘æ ¸å¿ƒæ—¶,è®¾å®šæ”¯æ´çš„æœ€å¤§CPUæ•°é‡
 */
 void __init smp_prepare_cpus(unsigned int max_cpus)
 {

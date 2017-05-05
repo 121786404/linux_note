@@ -67,7 +67,7 @@ struct usb_hub {
 
 	struct usb_hub_descriptor *descriptor;	/* class descriptor */
 	/**
-	 * ¸ßËÙHUBÖĞµÄµçÂ·¡£Èç¹ûÒ»¸ö¸ßËÙHUB°üº¬´ËµçÂ·£¬Ôò¿ÉÒÔÁ¬½ÓµÍËÙÉè±¸¡£
+	 * é«˜é€ŸHUBä¸­çš„ç”µè·¯ã€‚å¦‚æœä¸€ä¸ªé«˜é€ŸHUBåŒ…å«æ­¤ç”µè·¯ï¼Œåˆ™å¯ä»¥è¿æ¥ä½é€Ÿè®¾å¤‡ã€‚
 	 */
 	struct usb_tt		tt;		/* Transaction Translator */
 
@@ -79,7 +79,7 @@ struct usb_hub {
 	unsigned		disconnected:1;
 
 	/**
-	 * ÊÇ·ñÖ§³ÖÑÕÉ«Ö¸Ê¾µÆ¡£
+	 * æ˜¯å¦æ”¯æŒé¢œè‰²æŒ‡ç¤ºç¯ã€‚
 	 */
 	unsigned		has_indicators:1;
 	u8			indicator[USB_MAXCHILDREN];
@@ -165,7 +165,7 @@ static int get_hub_descriptor(struct usb_device *hdev, void *data, int size)
 			USB_DT_HUB << 8, 0, data, size,
 			USB_CTRL_GET_TIMEOUT);
 		/**
-		 * HUBÃèÊö·ûµÄÇ°7¸ö×Ö½ÚÊÇ¹Ì¶¨ºó£¬ºóÃæµÄ×Ö½ÚÊıÓëÆäÉÏµÄ¶ËµãÊıÄ¿Ïà¹Ø£¬ÖÁÉÙ°üº¬2¸ö×Ö½Ú¡£
+		 * HUBæè¿°ç¬¦çš„å‰7ä¸ªå­—èŠ‚æ˜¯å›ºå®šåï¼Œåé¢çš„å­—èŠ‚æ•°ä¸å…¶ä¸Šçš„ç«¯ç‚¹æ•°ç›®ç›¸å…³ï¼Œè‡³å°‘åŒ…å«2ä¸ªå­—èŠ‚ã€‚
 		 */
 		if (ret >= (USB_DT_HUB_NONVAR_SIZE + 2))
 			return ret;
@@ -243,7 +243,7 @@ static void led_work (struct work_struct *work)
 		return;
 
 	/**
-	 * Ñ­»·´¦ÀíÃ¿¸ö¶Ë¿Ú¡£
+	 * å¾ªç¯å¤„ç†æ¯ä¸ªç«¯å£ã€‚
 	 */
 	for (i = 0; i < hub->descriptor->bNbrPorts; i++) {
 		unsigned	selector, mode;
@@ -345,18 +345,18 @@ static void kick_khubd(struct usb_hub *hub)
 
 	/* Suppress autosuspend until khubd runs */
 	/**
-	 * ¼ÈÈ»¶¼Òª½øĞĞÊ¹ÓÃÁË£¬¾ÍÉèÖÃ±êÖ¾£¬²»ÒªÈÃµçÔ´¹ÜÀí°ÑËü¹ÒÆğÀ´¡£
+	 * æ—¢ç„¶éƒ½è¦è¿›è¡Œä½¿ç”¨äº†ï¼Œå°±è®¾ç½®æ ‡å¿—ï¼Œä¸è¦è®©ç”µæºç®¡ç†æŠŠå®ƒæŒ‚èµ·æ¥ã€‚
 	 */
 	to_usb_interface(hub->intfdev)->pm_usage_cnt = 1;
 
 	spin_lock_irqsave(&hub_event_lock, flags);
 	if (!hub->disconnected && list_empty(&hub->event_list)) {
 		/**
-		 * ½«Éè±¸µÄÊÂ¼şÁ´±í¼ÓÈëÈ«¾ÖÁ´±í¡£
+		 * å°†è®¾å¤‡çš„äº‹ä»¶é“¾è¡¨åŠ å…¥å…¨å±€é“¾è¡¨ã€‚
 		 */
 		list_add_tail(&hub->event_list, &hub_event_list);
 		/**
-		 * »½ĞÑhub_thread£¬ÕâÑùhub_events½«»áÖ´ĞĞ¡£
+		 * å”¤é†’hub_threadï¼Œè¿™æ ·hub_eventså°†ä¼šæ‰§è¡Œã€‚
 		 */
 		wake_up(&khubd_wait);
 	}
@@ -374,7 +374,7 @@ void usb_kick_khubd(struct usb_device *hdev)
 static void hub_irq(struct urb *urb)
 {
 	/**
-	 * ÔÚÉêÇëÖĞ¶Ï´«ÊäÊ±£¬¾ÍÖ¸¶¨ÁËcontextÎªHUB¡£
+	 * åœ¨ç”³è¯·ä¸­æ–­ä¼ è¾“æ—¶ï¼Œå°±æŒ‡å®šäº†contextä¸ºHUBã€‚
 	 */
 	struct usb_hub *hub = urb->context;
 	int status = urb->status;
@@ -391,7 +391,7 @@ static void hub_irq(struct urb *urb)
 		/* Cause a hub reset after 10 consecutive errors */
 		dev_dbg (hub->intfdev, "transfer --> %d\n", status);
 		/**
-		 * µ±´íÎó´ÎÊı²»³¬¹ı10´Î£¬ÔòÖØ¸´Ìá½»¡£
+		 * å½“é”™è¯¯æ¬¡æ•°ä¸è¶…è¿‡10æ¬¡ï¼Œåˆ™é‡å¤æäº¤ã€‚
 		 */
 		if ((++hub->nerrors < 10) || hub->error)
 			goto resubmit;
@@ -401,17 +401,17 @@ static void hub_irq(struct urb *urb)
 	/* let khubd handle things */
 	case 0:			/* we got data:  port status changed */
 		/**
-		 * URB±»Ë³ÀûµÄ´¦ÀíÁË¡£
+		 * URBè¢«é¡ºåˆ©çš„å¤„ç†äº†ã€‚
 		 */
 		bits = 0;
 		/**
-		 * Êµ¼ÊÉÏÊÇ½«bufferÖĞµÄÊı¾İ×ª³ÉlongĞÍ´æµ½ÊÂ¼şÑÚÂëÖĞÈ¥¡£actual_lengthÓë¶Ë¿ÚÊıÏà¹Ø£¬Èç16¸ö¶Ë¿ÚÔòÎª(16+1) / 8 = 3
+		 * å®é™…ä¸Šæ˜¯å°†bufferä¸­çš„æ•°æ®è½¬æˆlongå‹å­˜åˆ°äº‹ä»¶æ©ç ä¸­å»ã€‚actual_lengthä¸ç«¯å£æ•°ç›¸å…³ï¼Œå¦‚16ä¸ªç«¯å£åˆ™ä¸º(16+1) / 8 = 3
 		 */
 		for (i = 0; i < urb->actual_length; ++i)
 			bits |= ((unsigned long) ((*hub->buffer)[i]))
 					<< (i*8);
 		/**
-		 * µÚ0Î»±íÊ¾HUB·¢ÉúÊÂ¼ş£¬ÆäËûÎ»±íÊ¾¶Ë¿ÚÊÂ¼ş¡£
+		 * ç¬¬0ä½è¡¨ç¤ºHUBå‘ç”Ÿäº‹ä»¶ï¼Œå…¶ä»–ä½è¡¨ç¤ºç«¯å£äº‹ä»¶ã€‚
 		 */
 		hub->event_bits[0] = bits;
 		break;
@@ -421,13 +421,13 @@ static void hub_irq(struct urb *urb)
 
 	/* Something happened, let khubd figure it out */
 	/**
-	 * ÓĞÊÂ¼ş·¢Éú£¬¾Í´¥·¢hub_envents¡£
+	 * æœ‰äº‹ä»¶å‘ç”Ÿï¼Œå°±è§¦å‘hub_enventsã€‚
 	 */
 	kick_khubd(hub);
 
 resubmit:
 	/**
-	 * Ö»ÓĞµ±Éè±¸±»¹ÒÆğÁË£¬»òÕßÒª±»resetÁË£¬²Å½«quiescingÉèÖÃÎª0£¬Ö±½ÓÍË³ö£¬²»ÒªÔÙÌá½»ÁË¡£
+	 * åªæœ‰å½“è®¾å¤‡è¢«æŒ‚èµ·äº†ï¼Œæˆ–è€…è¦è¢«resetäº†ï¼Œæ‰å°†quiescingè®¾ç½®ä¸º0ï¼Œç›´æ¥é€€å‡ºï¼Œä¸è¦å†æäº¤äº†ã€‚
 	 */
 	if (hub->quiescing)
 		return;
@@ -577,20 +577,20 @@ static void hub_activate(struct usb_hub *hub)
 	hub->activating = 1;
 
 	/**
-	 * ÒÑ¾­³õÊ¼»¯ºÃÁËÖĞ¶ÏURB£¬ÕâÀï½øĞĞÌá½»£¬ÕâÑùÖ÷»ú¿ØÖÆÆ÷¾Í»á¶¨ÆÚÂÖÑ¯HUB¡£
+	 * å·²ç»åˆå§‹åŒ–å¥½äº†ä¸­æ–­URBï¼Œè¿™é‡Œè¿›è¡Œæäº¤ï¼Œè¿™æ ·ä¸»æœºæ§åˆ¶å™¨å°±ä¼šå®šæœŸè½®è¯¢HUBã€‚
 	 */
 	status = usb_submit_urb(hub->urb, GFP_NOIO);
 	if (status < 0)
 		dev_err(hub->intfdev, "activate --> %d\n", status);
 	/**
-	 * Ã¿Á½Ãëµ÷ÓÃÈı´ÎÉÁµÆ¡£
+	 * æ¯ä¸¤ç§’è°ƒç”¨ä¸‰æ¬¡é—ªç¯ã€‚
 	 */
 	if (hub->has_indicators && blinkenlights)
 		schedule_delayed_work(&hub->leds, LED_CYCLE_PERIOD);
 
 	/* scan all ports ASAP */
 	/**
-	 * ¼¤»îHUB¡£
+	 * æ¿€æ´»HUBã€‚
 	 */
 	kick_khubd(hub);
 }
@@ -718,7 +718,7 @@ static int hub_configure(struct usb_hub *hub,
 	 * but the hub can/will return fewer bytes here.
 	 */
 	/**
-	 * »ñµÃHUBµÄÃèÊö·û¡£
+	 * è·å¾—HUBçš„æè¿°ç¬¦ã€‚
 	 */
 	ret = get_hub_descriptor(hdev, hub->descriptor,
 			sizeof(*hub->descriptor));
@@ -726,8 +726,8 @@ static int hub_configure(struct usb_hub *hub,
 		message = "can't read hub descriptor";
 		goto fail;
 	/**
-	 * »ñÈ¡ÃèÊö·û³É¹¦ºó£¬»¹ĞèÒªÔÙ×öÒ»Ğ©ÅĞ¶Ï¡£
-	 * ÕâÀïÊÇÅĞ¶Ï¶Ë¿ÚÊıÊÇ·ñ³¬¹ı31¸ö£¬ËäÈ»¹æ·¶ÔÊĞíÒ»¸öHUB×î¶à255¸ö¶Ë¿Ú£¬µ«ÊÇÊµ¼ÊÉÏÅĞ¶Ï10¸ö¾Í¿ÉÒÔÁË¡£
+	 * è·å–æè¿°ç¬¦æˆåŠŸåï¼Œè¿˜éœ€è¦å†åšä¸€äº›åˆ¤æ–­ã€‚
+	 * è¿™é‡Œæ˜¯åˆ¤æ–­ç«¯å£æ•°æ˜¯å¦è¶…è¿‡31ä¸ªï¼Œè™½ç„¶è§„èŒƒå…è®¸ä¸€ä¸ªHUBæœ€å¤š255ä¸ªç«¯å£ï¼Œä½†æ˜¯å®é™…ä¸Šåˆ¤æ–­10ä¸ªå°±å¯ä»¥äº†ã€‚
 	 */
 	} else if (hub->descriptor->bNbrPorts > USB_MAXCHILDREN) {
 		message = "hub has too many ports!";
@@ -742,14 +742,14 @@ static int hub_configure(struct usb_hub *hub,
 	wHubCharacteristics = le16_to_cpu(hub->descriptor->wHubCharacteristics);
 
 	/**
-	 * ÊÇ·ñÎª¸´ºÏÉè±¸¡£
+	 * æ˜¯å¦ä¸ºå¤åˆè®¾å¤‡ã€‚
 	 */
 	if (wHubCharacteristics & HUB_CHAR_COMPOUND) {
 		int	i;
 		char	portstr [USB_MAXCHILDREN + 1];
 
 		/**
-		 * ´òÓ¡Ã¿¸ö¶Ë¿ÚÊÇ·ñ¿É±»ÒÆ³ı¡£
+		 * æ‰“å°æ¯ä¸ªç«¯å£æ˜¯å¦å¯è¢«ç§»é™¤ã€‚
 		 */
 		for (i = 0; i < hdev->maxchild; i++)
 			portstr[i] = hub->descriptor->DeviceRemovable
@@ -761,7 +761,7 @@ static int hub_configure(struct usb_hub *hub,
 		dev_dbg(hub_dev, "standalone hub\n");
 
 	/**
-	 * µçÔ´ÇĞ»»·½Ê½¡£
+	 * ç”µæºåˆ‡æ¢æ–¹å¼ã€‚
 	 */
 	switch (wHubCharacteristics & HUB_CHAR_LPSM) {
 		case 0x00:
@@ -777,7 +777,7 @@ static int hub_configure(struct usb_hub *hub,
 	}
 
 	/**
-	 * ¹ıÁ÷±£»¤Ä£Ê½¡£
+	 * è¿‡æµä¿æŠ¤æ¨¡å¼ã€‚
 	 */
 	switch (wHubCharacteristics & HUB_CHAR_OCPM) {
 		case 0x00:
@@ -793,26 +793,26 @@ static int hub_configure(struct usb_hub *hub,
 	}
 
 	/**
-	 * ³õÊ¼»¯TTÓÃµ½µÄ×ÔĞıËø¡£
+	 * åˆå§‹åŒ–TTç”¨åˆ°çš„è‡ªæ—‹é”ã€‚
 	 */
 	spin_lock_init (&hub->tt.lock);
 	INIT_LIST_HEAD (&hub->tt.clear_list);
 	/**
-	 * ³õÊ¼»¯TTÓÃµ½µÄ¹¤×÷¶ÓÁĞ¡£
+	 * åˆå§‹åŒ–TTç”¨åˆ°çš„å·¥ä½œé˜Ÿåˆ—ã€‚
 	 */
 	INIT_WORK (&hub->tt.kevent, hub_tt_kevent);
 	/**
-	 * ¸ù¾İHUB¶ÔÓ¦Éè±¸µÄĞ­Òé£¬³õÊ¼»¯TT¡£
+	 * æ ¹æ®HUBå¯¹åº”è®¾å¤‡çš„åè®®ï¼Œåˆå§‹åŒ–TTã€‚
 	 */
 	switch (hdev->descriptor.bDeviceProtocol) {
-		case 0:/* È«ËÙ¡¢µÍËÙHUBÃ»ÓĞTT£¬Ö±½ÓÍË³ö */
+		case 0:/* å…¨é€Ÿã€ä½é€ŸHUBæ²¡æœ‰TTï¼Œç›´æ¥é€€å‡º */
 			break;
-		case 1:/* Õû¸öHUB½ö°üº¬Ò»¸öTT£¬ÆÕ±éµÄÅäÖÃ¡£ */
+		case 1:/* æ•´ä¸ªHUBä»…åŒ…å«ä¸€ä¸ªTTï¼Œæ™®éçš„é…ç½®ã€‚ */
 			dev_dbg(hub_dev, "Single TT\n");
 			hub->tt.hub = hdev;
 			break;
 		case 2:
-			/* ¶Ô¶àTTÀ´Ëµ£¬Ã¿¸ö½Ó¿Ú»¹ĞèÒªÉèÖÃÆäbDeviceProtocol×Ö¶ÎÎª²»Í¬µÄÖµ¡£ÕâÀï½«µÚÒ»¸ö½Ó¿ÚµÄbDeviceProtocolÉèÖÃÔÚ1 */
+			/* å¯¹å¤šTTæ¥è¯´ï¼Œæ¯ä¸ªæ¥å£è¿˜éœ€è¦è®¾ç½®å…¶bDeviceProtocolå­—æ®µä¸ºä¸åŒçš„å€¼ã€‚è¿™é‡Œå°†ç¬¬ä¸€ä¸ªæ¥å£çš„bDeviceProtocolè®¾ç½®åœ¨1 */
 			ret = usb_set_interface(hdev, 0, 1);
 			if (ret == 0) {
 				dev_dbg(hub_dev, "TT per port\n");
@@ -830,10 +830,10 @@ static int hub_configure(struct usb_hub *hub,
 
 	/* Note 8 FS bit times == (8 bits / 12000000 bps) ~= 666ns */
 	/**
-	 * TTÔÚ´¦ÀíÁ½¸öµÍËÙ/È«ËÙµÄ°üÖ®¼äĞèÒªÒ»µãµãÊ±¼äÀ´»º³å
+	 * TTåœ¨å¤„ç†ä¸¤ä¸ªä½é€Ÿ/å…¨é€Ÿçš„åŒ…ä¹‹é—´éœ€è¦ä¸€ç‚¹ç‚¹æ—¶é—´æ¥ç¼“å†²
 	 */
 	switch (wHubCharacteristics & HUB_CHAR_TTTT) {
-		case HUB_TTTT_8_BITS:/* Á½¸ö°üÖ®¼äĞèÒª8Î»»º³åÊ±¼ä£¬¶ÔÈ«ËÙÉè±¸À´¾ÍÊÇ666ns */
+		case HUB_TTTT_8_BITS:/* ä¸¤ä¸ªåŒ…ä¹‹é—´éœ€è¦8ä½ç¼“å†²æ—¶é—´ï¼Œå¯¹å…¨é€Ÿè®¾å¤‡æ¥å°±æ˜¯666ns */
 			if (hdev->descriptor.bDeviceProtocol != 0) {
 				hub->tt.think_time = 666;
 				dev_dbg(hub_dev, "TT requires at most %d "
@@ -863,7 +863,7 @@ static int hub_configure(struct usb_hub *hub,
 
 	/* probe() zeroes hub->indicator[] */
 	/**
-	 * ÊÇ·ñÖ§³ÖÑÕÉ«Ö¸Ê¾µÆ¡£Ò»°ã¾ùÊÇÖ§³ÖµÄ¡£
+	 * æ˜¯å¦æ”¯æŒé¢œè‰²æŒ‡ç¤ºç¯ã€‚ä¸€èˆ¬å‡æ˜¯æ”¯æŒçš„ã€‚
 	 */
 	if (wHubCharacteristics & HUB_CHAR_PORTIND) {
 		hub->has_indicators = 1;
@@ -877,7 +877,7 @@ static int hub_configure(struct usb_hub *hub,
 	 * and battery-powered root hubs (may provide just 8 mA).
 	 */
 	/**
-	 * Í¨¹ı¿ØÖÆÇëÇó»ñµÃÉè±¸µÄ×´Ì¬¡£
+	 * é€šè¿‡æ§åˆ¶è¯·æ±‚è·å¾—è®¾å¤‡çš„çŠ¶æ€ã€‚
 	 */
 	ret = usb_get_status(hdev, USB_RECIP_DEVICE, 0, &hubstatus);
 	if (ret < 2) {
@@ -885,30 +885,30 @@ static int hub_configure(struct usb_hub *hub,
 		goto fail;
 	}
 	le16_to_cpus(&hubstatus);
-	if (hdev == hdev->bus->root_hub) {/* ËùÔÚÉè±¸ÊÇ¸ù¿ØÖÆÆ÷ */
-		if (hdev->bus_mA == 0 || hdev->bus_mA >= 500)/* Ìá¹©µÄµçÁ÷Ã»ÓĞÏŞÖÆ»òÕß´óÓÚÁË500mA */
-			hub->mA_per_port = 500;/* Ã¿¸ö¶Ë¿Ú¿ÉÒÔÌá¹©³ä×ãµÄµçÁ÷500mA */
+	if (hdev == hdev->bus->root_hub) {/* æ‰€åœ¨è®¾å¤‡æ˜¯æ ¹æ§åˆ¶å™¨ */
+		if (hdev->bus_mA == 0 || hdev->bus_mA >= 500)/* æä¾›çš„ç”µæµæ²¡æœ‰é™åˆ¶æˆ–è€…å¤§äºäº†500mA */
+			hub->mA_per_port = 500;/* æ¯ä¸ªç«¯å£å¯ä»¥æä¾›å……è¶³çš„ç”µæµ500mA */
 		else {
-			hub->mA_per_port = hdev->bus_mA; /* Ã¿¸ö¶Ë¿ÚµÄµçÁ÷ÊÜÏŞ¡£ */
+			hub->mA_per_port = hdev->bus_mA; /* æ¯ä¸ªç«¯å£çš„ç”µæµå—é™ã€‚ */
 			hub->limited_power = 1;
 		}
-	} else if ((hubstatus & (1 << USB_DEVICE_SELF_POWERED)) == 0) {/* Éè±¸ÇëÇó×ÜÏß¹©µç */
+	} else if ((hubstatus & (1 << USB_DEVICE_SELF_POWERED)) == 0) {/* è®¾å¤‡è¯·æ±‚æ€»çº¿ä¾›ç”µ */
 		dev_dbg(hub_dev, "hub controller current requirement: %dmA\n",
 			hub->descriptor->bHubContrCurrent);
 		hub->limited_power = 1;
-		if (hdev->maxchild > 0) {/* Õâ×ÜÊÇ»áÂú×ãµÄ */
+		if (hdev->maxchild > 0) {/* è¿™æ€»æ˜¯ä¼šæ»¡è¶³çš„ */
 			int remaining = hdev->bus_mA -
-					hub->descriptor->bHubContrCurrent;/* ÉÏĞĞµçÁ÷¼õÈ¥HUB±¾ÉíĞèÒªµÄµçÁ÷£¬ÔòÎª¿ÉÓÃµçÁ÷ */
+					hub->descriptor->bHubContrCurrent;/* ä¸Šè¡Œç”µæµå‡å»HUBæœ¬èº«éœ€è¦çš„ç”µæµï¼Œåˆ™ä¸ºå¯ç”¨ç”µæµ */
 
 			/**
-			 * USB¶Ë¿ÚÉÏ£¬×îĞ¡µçÁ÷¸ºÔØÊÇ100mA¡£
+			 * USBç«¯å£ä¸Šï¼Œæœ€å°ç”µæµè´Ÿè½½æ˜¯100mAã€‚
 			 */
 			if (remaining < hdev->maxchild * 100)
 				dev_warn(hub_dev,
 					"insufficient power available "
 					"to use all downstream ports\n");
 			/**
-			 * ÉèÖÃÃ¿¶Ë¿ÚµçÁ÷Îª×îĞ¡µÄ100mA¡£
+			 * è®¾ç½®æ¯ç«¯å£ç”µæµä¸ºæœ€å°çš„100mAã€‚
 			 */
 			hub->mA_per_port = 100;		/* 7.2.1.1 */
 		}
@@ -916,7 +916,7 @@ static int hub_configure(struct usb_hub *hub,
 		/* FIXME: What about battery-powered external hubs that
 		 * provide less current per port? */
 		/**
-		 * Éè±¸ÊÇ×Ô¼º¹©µçµÄ£¬Ö±½ÓÉèÖÃ³É×î´óµçÁ÷¡£
+		 * è®¾å¤‡æ˜¯è‡ªå·±ä¾›ç”µçš„ï¼Œç›´æ¥è®¾ç½®æˆæœ€å¤§ç”µæµã€‚
 		 */
 		hub->mA_per_port = 500;
 	}
@@ -925,7 +925,7 @@ static int hub_configure(struct usb_hub *hub,
 				hub->mA_per_port);
 
 	/**
-	 * Ê¹ÓÃHUBĞ­ÒéµÄGET_STATUS£¬¶ø²»ÊÇ±ê×¼µÄGET_STATUS½Ó¿Ú»ñÈ¡HUBµÄ×´Ì¬¡£
+	 * ä½¿ç”¨HUBåè®®çš„GET_STATUSï¼Œè€Œä¸æ˜¯æ ‡å‡†çš„GET_STATUSæ¥å£è·å–HUBçš„çŠ¶æ€ã€‚
 	 */
 	ret = hub_hub_status(hub, &hubstatus, &hubchange);
 	if (ret < 0) {
@@ -950,23 +950,23 @@ static int hub_configure(struct usb_hub *hub,
 	 * maxpktsize is defined in hcd.c's fake endpoint descriptors
 	 * to be big enough for at least USB_MAXCHILDREN ports. */
 	/**
-	 * HUB×î³£¼ûµÄÊÇÖĞ¶Ï¡¢ÅúÁ¿´«Êä£¬ÆäÖĞendpoint¶Ëµã¾ÍÊÇÖĞ¶Ï¶Ëµã¡£
-	 * ÕâÀï»ñµÃÖĞ¶Ï´«ÊäµÄ¹ÜµÀ¡£
+	 * HUBæœ€å¸¸è§çš„æ˜¯ä¸­æ–­ã€æ‰¹é‡ä¼ è¾“ï¼Œå…¶ä¸­endpointç«¯ç‚¹å°±æ˜¯ä¸­æ–­ç«¯ç‚¹ã€‚
+	 * è¿™é‡Œè·å¾—ä¸­æ–­ä¼ è¾“çš„ç®¡é“ã€‚
 	 */
 	pipe = usb_rcvintpipe(hdev, endpoint->bEndpointAddress);
 	/**
-	 * µÃµ½¶ËµãµÄ×î´ó´«Êä°ü³¤¡£
+	 * å¾—åˆ°ç«¯ç‚¹çš„æœ€å¤§ä¼ è¾“åŒ…é•¿ã€‚
 	 */
 	maxp = usb_maxpacket(hdev, pipe, usb_pipeout(pipe));
 
 	/**
-	 * ×î´ó°ü³¤²»ÄÜ³¬¹ıHUBµÄ»º³åÇø³¤¶È¡£
+	 * æœ€å¤§åŒ…é•¿ä¸èƒ½è¶…è¿‡HUBçš„ç¼“å†²åŒºé•¿åº¦ã€‚
 	 */
 	if (maxp > sizeof(*hub->buffer))
 		maxp = sizeof(*hub->buffer);
 
 	/**
-	 * ÎªHUBÉêÇëÒ»¸öURB¡£
+	 * ä¸ºHUBç”³è¯·ä¸€ä¸ªURBã€‚
 	 */
 	hub->urb = usb_alloc_urb(0, GFP_KERNEL);
 	if (!hub->urb) {
@@ -978,20 +978,20 @@ static int hub_configure(struct usb_hub *hub,
 	usb_fill_int_urb(hub->urb, hdev, pipe, *hub->buffer, maxp, hub_irq,
 		hub, endpoint->bInterval);
 	/**
-	 * Èç¹ûHUBÖ§³ÖDMA£¬ÔòURBµ±È»Ó¦µ±Ö§³ÖDMAÁË¡£
+	 * å¦‚æœHUBæ”¯æŒDMAï¼Œåˆ™URBå½“ç„¶åº”å½“æ”¯æŒDMAäº†ã€‚
 	 */
 	hub->urb->transfer_dma = hub->buffer_dma;
 	hub->urb->transfer_flags |= URB_NO_TRANSFER_DMA_MAP;
 
 	/* maybe cycle the hub leds */
 	/**
-	 * ¿ÉÒÔÔÚ¼ÓÔØÄ£¿éµÄÊ±ºòÖ¸¶¨Ö¸Ê¾µÆÊÇ·ñĞèÒªÉÁË¸¡£
+	 * å¯ä»¥åœ¨åŠ è½½æ¨¡å—çš„æ—¶å€™æŒ‡å®šæŒ‡ç¤ºç¯æ˜¯å¦éœ€è¦é—ªçƒã€‚
 	 */
 	if (hub->has_indicators && blinkenlights)
 		hub->indicator [0] = INDICATOR_CYCLE;
 
 	/**
-	 * ¸øHUB¼Óµç¡£
+	 * ç»™HUBåŠ ç”µã€‚
 	 */
 	hub_power_on(hub);
 	hub_activate(hub);
@@ -1050,13 +1050,13 @@ static int hub_probe(struct usb_interface *intf, const struct usb_device_id *id)
 	struct usb_hub *hub;
 
 	/**
-	 * ½Ó¿ÚµÄµ±Ç°ÉèÖÃ¡£
+	 * æ¥å£çš„å½“å‰è®¾ç½®ã€‚
 	 */
 	desc = intf->cur_altsetting;
 	hdev = interface_to_usbdev(intf);
 
 /**
- * OTGÓÃÓÚÒ»¸öÉè±¸¼´×÷ÎªÖ÷Éè±¸£¬ÓÖ×÷Îª´ÓÉè±¸¡£
+ * OTGç”¨äºä¸€ä¸ªè®¾å¤‡å³ä½œä¸ºä¸»è®¾å¤‡ï¼Œåˆä½œä¸ºä»è®¾å¤‡ã€‚
  */
 #ifdef	CONFIG_USB_OTG_BLACKLIST_HUB
 	if (hdev->parent) {
@@ -1067,8 +1067,8 @@ static int hub_probe(struct usb_interface *intf, const struct usb_device_id *id)
 
 	/* Some hubs have a subclass of 1, which AFAICT according to the */
 	/*  specs is not defined, but it works */
-	if ((desc->desc.bInterfaceSubClass != 0) &&/* HUBÉè±¸µÄ×ÓÀàÓ¦µ±ÊÇ0 */
-	    (desc->desc.bInterfaceSubClass != 1)) {/* ²»¹ıÄ³Ğ©³§ÉÌµÄ×ÓÀàÊÇ1£¬Ò²¿ÉÒÔÃãÇ¿¹¤×÷¡£ */
+	if ((desc->desc.bInterfaceSubClass != 0) &&/* HUBè®¾å¤‡çš„å­ç±»åº”å½“æ˜¯0 */
+	    (desc->desc.bInterfaceSubClass != 1)) {/* ä¸è¿‡æŸäº›å‚å•†çš„å­ç±»æ˜¯1ï¼Œä¹Ÿå¯ä»¥å‹‰å¼ºå·¥ä½œã€‚ */
 descriptor_error:
 		dev_err (&intf->dev, "bad descriptor, ignoring hub\n");
 		return -EIO;
@@ -1076,7 +1076,7 @@ descriptor_error:
 
 	/* Multiple endpoints? What kind of mutant ninja-hub is this? */
 	/**
-	 * ÔÙ×öÒ»´ÎÅĞ¶Ï¡£ÒòÎªHUBµÄ¶ËµãÊı±ØĞëÊÇ1.
+	 * å†åšä¸€æ¬¡åˆ¤æ–­ã€‚å› ä¸ºHUBçš„ç«¯ç‚¹æ•°å¿…é¡»æ˜¯1.
 	 */
 	if (desc->desc.bNumEndpoints != 1)
 		goto descriptor_error;
@@ -1085,7 +1085,7 @@ descriptor_error:
 
 	/* If it's not an interrupt in endpoint, we'd better punt! */
 	/**
-	 * HUBµÄ¶Ëµã±ØĞëÖ§³ÖÖĞ¶Ï´«Êä¡£
+	 * HUBçš„ç«¯ç‚¹å¿…é¡»æ”¯æŒä¸­æ–­ä¼ è¾“ã€‚
 	 */
 	if (!usb_endpoint_is_int_in(endpoint))
 		goto descriptor_error;
@@ -1094,7 +1094,7 @@ descriptor_error:
 	dev_info (&intf->dev, "USB hub found\n");
 
 	/**
-	 * ·ÖÅäÒ»¸öusb_hub½á¹¹²¢³õÊ¼»¯Îª0.
+	 * åˆ†é…ä¸€ä¸ªusb_hubç»“æ„å¹¶åˆå§‹åŒ–ä¸º0.
 	 */
 	hub = kzalloc(sizeof(*hub), GFP_KERNEL);
 	if (!hub) {
@@ -1103,37 +1103,37 @@ descriptor_error:
 	}
 
 	/**
-	 * ³õÊ¼»¯HUBÊÂ¼ş¶ÓÁĞ¡£
+	 * åˆå§‹åŒ–HUBäº‹ä»¶é˜Ÿåˆ—ã€‚
 	 */
 	INIT_LIST_HEAD(&hub->event_list);
 	hub->intfdev = &intf->dev;
 	hub->hdev = hdev;
 	/**
-	 * ³õÊ¼»¯¹¤×÷¶ÓÁĞ¡£
+	 * åˆå§‹åŒ–å·¥ä½œé˜Ÿåˆ—ã€‚
 	 */
 	INIT_DELAYED_WORK(&hub->leds, led_work);
 	usb_get_intf(intf);
 
 	/**
-	 * ½«½Ó¿ÚºÍHUB¹ØÁªÆğÀ´¡£
+	 * å°†æ¥å£å’ŒHUBå…³è”èµ·æ¥ã€‚
 	 */
 	usb_set_intfdata (intf, hub);
 	intf->needs_remote_wakeup = 1;
 
 	/**
-	 * Èç¹ûÊÇ¸ßËÙHUB£¬Ôò½«È«¾Ö¼ÆÊıÆ÷¼Ó1.
+	 * å¦‚æœæ˜¯é«˜é€ŸHUBï¼Œåˆ™å°†å…¨å±€è®¡æ•°å™¨åŠ 1.
 	 */
 	if (hdev->speed == USB_SPEED_HIGH)
 		highspeed_hubs++;
 
 	/**
-	 * ÅäÖÃHUB£¬³É¹¦Ôò·µ»Ø¡£
+	 * é…ç½®HUBï¼ŒæˆåŠŸåˆ™è¿”å›ã€‚
 	 */
 	if (hub_configure(hub, endpoint) >= 0)
 		return 0;
 
 	/**
-	 * ÅäÖÃ²»³É¹¦£¬¶Ï¿ª¡£
+	 * é…ç½®ä¸æˆåŠŸï¼Œæ–­å¼€ã€‚
 	 */
 	hub_disconnect (intf);
 	return -ENODEV;
@@ -1183,7 +1183,7 @@ static void recursively_mark_NOTATTACHED(struct usb_device *udev)
 			recursively_mark_NOTATTACHED(udev->children[i]);
 	}
 	/**
-	 * ÏÖÔÚÉè±¸Òª±»¶Ï¿ªÁ¬½ÓÁË£¬ÄÇÃ´ÔÚ¹ÒÆğÊ±£¬½«Æä¶Ï¿ª¡£´ËÊ±»¹²»ÄÜ´¦Àí¶Ï¿ªÁ¬½Ó¡£
+	 * ç°åœ¨è®¾å¤‡è¦è¢«æ–­å¼€è¿æ¥äº†ï¼Œé‚£ä¹ˆåœ¨æŒ‚èµ·æ—¶ï¼Œå°†å…¶æ–­å¼€ã€‚æ­¤æ—¶è¿˜ä¸èƒ½å¤„ç†æ–­å¼€è¿æ¥ã€‚
 	 */
 	if (udev->state == USB_STATE_SUSPENDED)
 		udev->discon_suspended = 1;
@@ -1212,7 +1212,7 @@ static void recursively_mark_NOTATTACHED(struct usb_device *udev)
  * to USB_STATE_NOTATTACHED.
  */
 /**
- * ÉèÖÃUSBÉè±¸µÄ×´Ì¬¡£
+ * è®¾ç½®USBè®¾å¤‡çš„çŠ¶æ€ã€‚
  */
 void usb_set_device_state(struct usb_device *udev,
 		enum usb_device_state new_state)
@@ -1221,7 +1221,7 @@ void usb_set_device_state(struct usb_device *udev,
 
 	spin_lock_irqsave(&device_state_lock, flags);
 	/**
-	 * µ±Ç°×´Ì¬ÊÇUSB_STATE_NOTATTACHED,¾ÍÊÇÉ¶Ò²Ã»ÓĞ,»ù±¾ÉÏ¾ÍÊÇËµÉè±¸ÒÑ¾­¶Ï¿ªÁË,ÕâÖÖÇé¿öµ±È»É¶Ò²²»ÓÃ×ö.
+	 * å½“å‰çŠ¶æ€æ˜¯USB_STATE_NOTATTACHED,å°±æ˜¯å•¥ä¹Ÿæ²¡æœ‰,åŸºæœ¬ä¸Šå°±æ˜¯è¯´è®¾å¤‡å·²ç»æ–­å¼€äº†,è¿™ç§æƒ…å†µå½“ç„¶å•¥ä¹Ÿä¸ç”¨åš.
 	 */
 	if (udev->state == USB_STATE_NOTATTACHED)
 		;	/* do nothing */
@@ -1230,25 +1230,25 @@ void usb_set_device_state(struct usb_device *udev,
 		/* root hub wakeup capabilities are managed out-of-band
 		 * and may involve silicon errata ... ignore them here.
 		 */
-		if (udev->parent) {/* ²»ÊÇRoot HUB */
+		if (udev->parent) {/* ä¸æ˜¯Root HUB */
 			if (udev->state == USB_STATE_SUSPENDED
-					|| new_state == USB_STATE_SUSPENDED)/* ĞÂ¾É×´Ì¬¶¼ÊÇ¹ÒÆğ×´Ì¬£¬Ê²Ã´¶¼²»ÓÃ×ö */
+					|| new_state == USB_STATE_SUSPENDED)/* æ–°æ—§çŠ¶æ€éƒ½æ˜¯æŒ‚èµ·çŠ¶æ€ï¼Œä»€ä¹ˆéƒ½ä¸ç”¨åš */
 				;	/* No change to wakeup settings */
-			else if (new_state == USB_STATE_CONFIGURED)/* ĞÂ×´Ì¬ÊÇÅäÖÃ×´Ì¬£¬ÕâÀïĞèÒª´¦ÀíµçÔ´Ïà¹ØµÄ¶«Î÷¡£ */
+			else if (new_state == USB_STATE_CONFIGURED)/* æ–°çŠ¶æ€æ˜¯é…ç½®çŠ¶æ€ï¼Œè¿™é‡Œéœ€è¦å¤„ç†ç”µæºç›¸å…³çš„ä¸œè¥¿ã€‚ */
 				device_init_wakeup(&udev->dev,
 					(udev->actconfig->desc.bmAttributes
-					 & USB_CONFIG_ATT_WAKEUP));/* USB_CONFIG_ATT_WAKEUP±íÊ¾Éè±¸ÊÇ·ñ¾ßÓĞ±»»½ĞÑµÄÄÜÁ¦¡£ */
+					 & USB_CONFIG_ATT_WAKEUP));/* USB_CONFIG_ATT_WAKEUPè¡¨ç¤ºè®¾å¤‡æ˜¯å¦å…·æœ‰è¢«å”¤é†’çš„èƒ½åŠ›ã€‚ */
 			else
-				device_init_wakeup(&udev->dev, 0);/* Éè±¸²»ÊÇUSB_STATE_CONFIGURED×´Ì¬£¬´«Èë0¹Ø±ÕÆä»½ĞÑÄÜÁ¦ */
+				device_init_wakeup(&udev->dev, 0);/* è®¾å¤‡ä¸æ˜¯USB_STATE_CONFIGUREDçŠ¶æ€ï¼Œä¼ å…¥0å…³é—­å…¶å”¤é†’èƒ½åŠ› */
 		}
 		udev->state = new_state;
-	} else/* Ô­À´µÄ×´Ì¬²»ÊÇUSB_STATE_NOTATTACHED¶øÏÖÔÚÒªÉèÖÃ³ÉUSB_STATE_NOTATTACHED */
+	} else/* åŸæ¥çš„çŠ¶æ€ä¸æ˜¯USB_STATE_NOTATTACHEDè€Œç°åœ¨è¦è®¾ç½®æˆUSB_STATE_NOTATTACHED */
 		recursively_mark_NOTATTACHED(udev);
 	spin_unlock_irqrestore(&device_state_lock, flags);
 }
 
 /**
- * ÎªÉè±¸Ñ¡ÔñÒ»¸öµØÖ·¡£
+ * ä¸ºè®¾å¤‡é€‰æ‹©ä¸€ä¸ªåœ°å€ã€‚
  */
 static void choose_address(struct usb_device *udev)
 {
@@ -1259,23 +1259,23 @@ static void choose_address(struct usb_device *udev)
 
 	/* Try to allocate the next devnum beginning at bus->devnum_next. */
 	/**
-	 * Ò»Ìõ×ÜÏß¿ÉÒÔÁ¬½Ó128¸öUSBÉè±¸¡£Ê×ÏÈ´ÓÉÏ´Î²éÕÒµÄÏÂÒ»¸öµØ·½²éÕÒ¡£
+	 * ä¸€æ¡æ€»çº¿å¯ä»¥è¿æ¥128ä¸ªUSBè®¾å¤‡ã€‚é¦–å…ˆä»ä¸Šæ¬¡æŸ¥æ‰¾çš„ä¸‹ä¸€ä¸ªåœ°æ–¹æŸ¥æ‰¾ã€‚
 	 */
 	devnum = find_next_zero_bit(bus->devmap.devicemap, 128,
 			bus->devnum_next);
 	/**
-	 * È«±íËÑË÷ÍêÁË£¬ÔÙ´ÓÍ·¿ªÊ¼²éÕÒÒ»´Î¡£
+	 * å…¨è¡¨æœç´¢å®Œäº†ï¼Œå†ä»å¤´å¼€å§‹æŸ¥æ‰¾ä¸€æ¬¡ã€‚
 	 */
 	if (devnum >= 128)
 		devnum = find_next_zero_bit(bus->devmap.devicemap, 128, 1);
 
 	/**
-	 * ÉèÖÃÏÂÒ»´Î¿ªÊ¼²éÕÒµÄË÷ÒıºÅ¡£
+	 * è®¾ç½®ä¸‹ä¸€æ¬¡å¼€å§‹æŸ¥æ‰¾çš„ç´¢å¼•å·ã€‚
 	 */
 	bus->devnum_next = ( devnum >= 127 ? 1 : devnum + 1);
 
 	/**
-	 * ²éÕÒ³É¹¦£¬ÉèÖÃÎ»Í¼ÑÚÂë¼°Éè±¸µØÖ·¡£
+	 * æŸ¥æ‰¾æˆåŠŸï¼Œè®¾ç½®ä½å›¾æ©ç åŠè®¾å¤‡åœ°å€ã€‚
 	 */
 	if (devnum < 128) {
 		set_bit(devnum, bus->devmap.devicemap);
@@ -1721,7 +1721,7 @@ static int hub_port_wait_reset(struct usb_hub *hub, int port1,
 	u16 portchange;
 
 	/**
-	 * ×î¶àµÈ´ı500ms
+	 * æœ€å¤šç­‰å¾…500ms
 	 */
 	for (delay_time = 0;
 			delay_time < HUB_RESET_TIMEOUT;
@@ -1731,7 +1731,7 @@ static int hub_port_wait_reset(struct usb_hub *hub, int port1,
 
 		/* read and decode port status */
 		/**
-		 * »ñÈ¡¶Ë¿Ú×´Ì¬¡£
+		 * è·å–ç«¯å£çŠ¶æ€ã€‚
 		 */
 		ret = hub_port_status(hub, port1, &portstatus, &portchange);
 		if (ret < 0)
@@ -1739,41 +1739,41 @@ static int hub_port_wait_reset(struct usb_hub *hub, int port1,
 
 		/* Device went away? */
 		/**
-		 * ÔÚresetÆÚ¼ä£¬Éè±¸Á¬½Ó¶Ï¿ªÁË¡£ÍË³ö¡£
+		 * åœ¨resetæœŸé—´ï¼Œè®¾å¤‡è¿æ¥æ–­å¼€äº†ã€‚é€€å‡ºã€‚
 		 */
 		if (!(portstatus & USB_PORT_STAT_CONNECTION))
 			return -ENOTCONN;
 
 		/* bomb out completely if the connection bounced */
 		/**
-		 * ¸´Î»ÆÚ¼äÓĞÉè±¸²åÈë????
+		 * å¤ä½æœŸé—´æœ‰è®¾å¤‡æ’å…¥????
 		 */
 		if ((portchange & USB_PORT_STAT_C_CONNECTION))
 			return -ENOTCONN;
 
 		/* if we`ve finished resetting, then break out of the loop */
 		/**
-		 * ¸´Î»ÒÑ¾­³É¹¦¡£¶Ë¿Ú×´Ì¬¿ÉÓÃ¡£
+		 * å¤ä½å·²ç»æˆåŠŸã€‚ç«¯å£çŠ¶æ€å¯ç”¨ã€‚
 		 */
 		if (!(portstatus & USB_PORT_STAT_RESET) &&
 		    (portstatus & USB_PORT_STAT_ENABLE)) {
 		    /**
-		     * Èç¹ûÊÇÎŞÏßroot hub£¬ÔòÉèÖÃÆäËÙ¶ÈÎª¿É±ä¡£
+		     * å¦‚æœæ˜¯æ— çº¿root hubï¼Œåˆ™è®¾ç½®å…¶é€Ÿåº¦ä¸ºå¯å˜ã€‚
 		     */
 			if (hub_is_wusb(hub))
 				udev->speed = USB_SPEED_VARIABLE;
-			else if (portstatus & USB_PORT_STAT_HIGH_SPEED)/* ¸ßËÙÉè±¸ */
+			else if (portstatus & USB_PORT_STAT_HIGH_SPEED)/* é«˜é€Ÿè®¾å¤‡ */
 				udev->speed = USB_SPEED_HIGH;
-			else if (portstatus & USB_PORT_STAT_LOW_SPEED)/* µÍËÙÉè±¸ */
+			else if (portstatus & USB_PORT_STAT_LOW_SPEED)/* ä½é€Ÿè®¾å¤‡ */
 				udev->speed = USB_SPEED_LOW;
 			else
-				udev->speed = USB_SPEED_FULL;/* È«ËÙÉè±¸ */
+				udev->speed = USB_SPEED_FULL;/* å…¨é€Ÿè®¾å¤‡ */
 			return 0;
 		}
 
 		/* switch to the long delay after two short delay failures */
 		/**
-		 * ¸´Î»³¬Ê±£¬ÕûÀíÑÓÊ±ÖµÔÙÊÔ¡£
+		 * å¤ä½è¶…æ—¶ï¼Œæ•´ç†å»¶æ—¶å€¼å†è¯•ã€‚
 		 */
 		if (delay_time >= 2 * HUB_SHORT_RESET_TIME)
 			delay = HUB_LONG_RESET_TIME;
@@ -1799,7 +1799,7 @@ static int hub_port_reset(struct usb_hub *hub, int port1,
 	/* Reset the port */
 	for (i = 0; i < PORT_RESET_TRIES; i++) {
 		/**
-		 * ÏòÉè±¸·¢ËÍÒ»¸ö¸´Î»ÇëÇó¡£
+		 * å‘è®¾å¤‡å‘é€ä¸€ä¸ªå¤ä½è¯·æ±‚ã€‚
 		 */
 		status = set_port_feature(hub->hdev,
 				port1, USB_PORT_FEAT_RESET);
@@ -1809,7 +1809,7 @@ static int hub_port_reset(struct usb_hub *hub, int port1,
 					port1, status);
 		else {
 			/**
-			 * ÑÓÊ±µÈ´ıÉè±¸¸´Î»³É¹¦¡£
+			 * å»¶æ—¶ç­‰å¾…è®¾å¤‡å¤ä½æˆåŠŸã€‚
 			 */
 			status = hub_port_wait_reset(hub, port1, udev, delay);
 			if (status && status != -ENOTCONN)
@@ -1820,7 +1820,7 @@ static int hub_port_reset(struct usb_hub *hub, int port1,
 
 		/* return on disconnect or reset */
 		switch (status) {
-		case 0:/* ¸´Î»³É¹¦£¬ÔÙµÈ´ıÒ»ÏÂ */
+		case 0:/* å¤ä½æˆåŠŸï¼Œå†ç­‰å¾…ä¸€ä¸‹ */
 			/* TRSTRCY = 10 ms; plus some extra */
 			msleep(10 + 40);
 		  	udev->devnum = 0;	/* Device now at address 0 */
@@ -1915,7 +1915,7 @@ int usb_port_suspend(struct usb_device *udev)
 	 * NOTE:  OTG devices may issue remote wakeup (or SRP) even when
 	 * we don't explicitly enable it here.
 	 */
-	if (udev->do_remote_wakeup) {/* ´ò¿ªÉè±¸µÄÔ¶³Ì»½ĞÑ¹¦ÄÜ */
+	if (udev->do_remote_wakeup) {/* æ‰“å¼€è®¾å¤‡çš„è¿œç¨‹å”¤é†’åŠŸèƒ½ */
 		status = usb_control_msg(udev, usb_sndctrlpipe(udev, 0),
 				USB_REQ_SET_FEATURE, USB_RECIP_DEVICE,
 				USB_DEVICE_REMOTE_WAKEUP, 0,
@@ -1927,7 +1927,7 @@ int usb_port_suspend(struct usb_device *udev)
 	}
 
 	/* see 7.1.7.6 */
-	/* ÕâÀïÕæÕıµÄ¹ÒÆğ¶Ë¿Ú¡£ */
+	/* è¿™é‡ŒçœŸæ­£çš„æŒ‚èµ·ç«¯å£ã€‚ */
 	status = set_port_feature(hub->hdev, port1, USB_PORT_FEAT_SUSPEND);
 	if (status) {
 		dev_dbg(hub->intfdev, "can't suspend port %d, status %d\n",
@@ -2375,7 +2375,7 @@ static int hub_set_address(struct usb_device *udev, int devnum)
  * pointers, it's not necessary to lock the device.
  */
 /**
- * USB¶Ë¿Ú³õÊ¼»¯¡£
+ * USBç«¯å£åˆå§‹åŒ–ã€‚
  */
 static int
 hub_port_init (struct usb_hub *hub, struct usb_device *udev, int port1,
@@ -2386,7 +2386,7 @@ hub_port_init (struct usb_hub *hub, struct usb_device *udev, int port1,
 	struct usb_device	*hdev = hub->hdev;
 	int			i, j, retval;
 	/**
-	 * USB¹æ·¶¹æ¶¨¸´Î»Ê±¼ä²»³¬¹ı10ms¡£
+	 * USBè§„èŒƒè§„å®šå¤ä½æ—¶é—´ä¸è¶…è¿‡10msã€‚
 	 */
 	unsigned		delay = HUB_SHORT_RESET_TIME;
 	enum usb_device_speed	oldspeed = udev->speed;
@@ -2398,7 +2398,7 @@ hub_port_init (struct usb_hub *hub, struct usb_device *udev, int port1,
 	 */
 	if (!hdev->parent) {
 		/**
-		 * Root HUBµÄ¸´Î»Ê±¼ä×î³¤¿ÉÒÔ´ïµ½50ms¡£
+		 * Root HUBçš„å¤ä½æ—¶é—´æœ€é•¿å¯ä»¥è¾¾åˆ°50msã€‚
 		 */
 		delay = HUB_ROOT_RESET_TIME;
 		if (port1 == hdev->bus->otg_port)
@@ -2408,19 +2408,19 @@ hub_port_init (struct usb_hub *hub, struct usb_device *udev, int port1,
 	/* Some low speed devices have problems with the quick delay, so */
 	/*  be a bit pessimistic with those devices. RHbug #23670 */
 	/**
-	 * Ä³Ğ©µÍËÙÉè±¸Òª½Ï¸ßµÄÑÓ³Ù£¬ÕâÊÇÒ»¸ö¾­ÑéÖµ¡£
+	 * æŸäº›ä½é€Ÿè®¾å¤‡è¦è¾ƒé«˜çš„å»¶è¿Ÿï¼Œè¿™æ˜¯ä¸€ä¸ªç»éªŒå€¼ã€‚
 	 */
 	if (oldspeed == USB_SPEED_LOW)
 		delay = HUB_LONG_RESET_TIME;
 
 	/**
-	 * ÎªÊ²Ã´ÒªÊ¹ÓÃÈ«¾ÖËø??
+	 * ä¸ºä»€ä¹ˆè¦ä½¿ç”¨å…¨å±€é”??
 	 */
 	mutex_lock(&usb_address0_mutex);
 
 	/* Reset the device; full speed may morph to high speed */
 	/**
-	 * ¸´Î»Éè±¸¡£
+	 * å¤ä½è®¾å¤‡ã€‚
 	 */
 	retval = hub_port_reset(hub, port1, udev, delay);
 	if (retval < 0)		/* error or disconnect */
@@ -2442,13 +2442,13 @@ hub_port_init (struct usb_hub *hub, struct usb_device *udev, int port1,
 	switch (udev->speed) {
 	case USB_SPEED_VARIABLE:	/* fixed at 512 */
 		/**
-		 * ¶ÔÓÚÎŞÏßÉè±¸£¬¹æ¶¨¶Ëµã0µÄ×î´ó´«Êä³¤¶ÈÊÇ512.
+		 * å¯¹äºæ— çº¿è®¾å¤‡ï¼Œè§„å®šç«¯ç‚¹0çš„æœ€å¤§ä¼ è¾“é•¿åº¦æ˜¯512.
 		 */
 		udev->ep0.desc.wMaxPacketSize = __constant_cpu_to_le16(512);
 		break;
 	case USB_SPEED_HIGH:		/* fixed at 64 */
 		/**
-		 * ÕâÒ²ÊÇ¹æ·¶¹æ¶¨ÁËµÄ¡£
+		 * è¿™ä¹Ÿæ˜¯è§„èŒƒè§„å®šäº†çš„ã€‚
 		 */
 		udev->ep0.desc.wMaxPacketSize = __constant_cpu_to_le16(64);
 		break;
@@ -2458,13 +2458,13 @@ hub_port_init (struct usb_hub *hub, struct usb_device *udev, int port1,
 		 * then correct our initial guess.
 		 */
 		/**
-		 * ºóÃæ»á´ÓÃèÊö·ûÖĞ¶ÁÈ¡³¤¶È¡£
+		 * åé¢ä¼šä»æè¿°ç¬¦ä¸­è¯»å–é•¿åº¦ã€‚
 		 */
 		udev->ep0.desc.wMaxPacketSize = __constant_cpu_to_le16(64);
 		break;
 	case USB_SPEED_LOW:		/* fixed at 8 */
 		/**
-		 * ÕâÒ²ÊÇ¹æ·¶¹æ¶¨ÁËµÄ¡£
+		 * è¿™ä¹Ÿæ˜¯è§„èŒƒè§„å®šäº†çš„ã€‚
 		 */
 		udev->ep0.desc.wMaxPacketSize = __constant_cpu_to_le16(8);
 		break;
@@ -2492,8 +2492,8 @@ hub_port_init (struct usb_hub *hub, struct usb_device *udev, int port1,
 	if (hdev->tt) {
 		udev->tt = hdev->tt;
 		udev->ttport = hdev->ttport;
-	} else if (udev->speed != USB_SPEED_HIGH/* Éè±¸²»ÊÇ¸ßËÙµÄ */
-			&& hdev->speed == USB_SPEED_HIGH) {/* HUBÊÇ¸ßËÙµÄ */
+	} else if (udev->speed != USB_SPEED_HIGH/* è®¾å¤‡ä¸æ˜¯é«˜é€Ÿçš„ */
+			&& hdev->speed == USB_SPEED_HIGH) {/* HUBæ˜¯é«˜é€Ÿçš„ */
 		udev->tt = &hub->tt;
 		udev->ttport = port1;
 	}
@@ -2534,7 +2534,7 @@ hub_port_init (struct usb_hub *hub, struct usb_device *udev, int port1,
 					buf, GET_DESCRIPTOR_BUFSIZE,
 					USB_CTRL_GET_TIMEOUT);
 				switch (buf->bMaxPacketSize0) {
-				case 8: case 16: case 32: case 64: case 255:/* 255Êµ¼ÊÉÏÊÇÎŞÏßÉè±¸£¬´ú±íºÏÀíÖµ512 */
+				case 8: case 16: case 32: case 64: case 255:/* 255å®é™…ä¸Šæ˜¯æ— çº¿è®¾å¤‡ï¼Œä»£è¡¨åˆç†å€¼512 */
 					if (buf->bDescriptorType ==
 							USB_DT_DEVICE) {
 						r = 0;
@@ -2554,7 +2554,7 @@ hub_port_init (struct usb_hub *hub, struct usb_device *udev, int port1,
 			kfree(buf);
 
 			/**
-			 * ÎªÊ²Ã´»¹Òª¸´Î»Ò»´Î??
+			 * ä¸ºä»€ä¹ˆè¿˜è¦å¤ä½ä¸€æ¬¡??
 			 */
 			retval = hub_port_reset(hub, port1, udev, delay);
 			if (retval < 0)		/* error or disconnect */
@@ -2576,7 +2576,7 @@ hub_port_init (struct usb_hub *hub, struct usb_device *udev, int port1,
 		}
 
 		/**
-		 * ÊÔÍ¼»ñµÃÉè±¸µØÖ·¡£ÕâÊÇÍ¨¹ıÏòÉè±¸·¢ËÍSET_ADDRESSÏûÏ¢ÊµÏÖµÄ¡£
+		 * è¯•å›¾è·å¾—è®¾å¤‡åœ°å€ã€‚è¿™æ˜¯é€šè¿‡å‘è®¾å¤‡å‘é€SET_ADDRESSæ¶ˆæ¯å®ç°çš„ã€‚
 		 */
 		for (j = 0; j < SET_ADDRESS_TRIES; ++j) {
 			retval = hub_set_address(udev, devnum);
@@ -2597,13 +2597,13 @@ hub_port_init (struct usb_hub *hub, struct usb_device *udev, int port1,
   		 */
 		msleep(10);
 		/**
-		 * Èç¹ûÊÇĞÂ²ßÂÔ£¬¾ÍÍêÁË¡£
+		 * å¦‚æœæ˜¯æ–°ç­–ç•¥ï¼Œå°±å®Œäº†ã€‚
 		 */
 		if (USE_NEW_SCHEME(retry_counter))
 			break;
 
 		/**
-		 * Èç¹û¾É²ßÂÔ£¬¾ÍÏÈ¶ÁÈ¡8¸ö×Ö½Ú£¬µÃµ½ÃèÊö·û³¤¶È¡£
+		 * å¦‚æœæ—§ç­–ç•¥ï¼Œå°±å…ˆè¯»å–8ä¸ªå­—èŠ‚ï¼Œå¾—åˆ°æè¿°ç¬¦é•¿åº¦ã€‚
 		 */
 		retval = usb_get_device_descriptor(udev, 8);
 		if (retval < 8) {
@@ -2632,7 +2632,7 @@ hub_port_init (struct usb_hub *hub, struct usb_device *udev, int port1,
 		dev_dbg(&udev->dev, "ep0 maxpacket = %d\n", i);
 		udev->ep0.desc.wMaxPacketSize = cpu_to_le16(i);
 		/**
-		 * È¡Ïû¹ÒÔÚ¶Ë¿Ú0ÉÏÃæµÄURB¡£
+		 * å–æ¶ˆæŒ‚åœ¨ç«¯å£0ä¸Šé¢çš„URBã€‚
 		 */
 		ep0_reinit(udev);
 	}
@@ -2668,7 +2668,7 @@ check_highspeed (struct usb_hub *hub, struct usb_device *udev, int port1)
 		return;
 
 	/**
-	 * »ñÈ¡´ËÃèÊö·û£¬ÒÔÈ·¶¨Éè±¸µ½µ×¹¤×÷ÔÚÈ«ËÙ»¹ÊÇ¸ßËÙ¡£
+	 * è·å–æ­¤æè¿°ç¬¦ï¼Œä»¥ç¡®å®šè®¾å¤‡åˆ°åº•å·¥ä½œåœ¨å…¨é€Ÿè¿˜æ˜¯é«˜é€Ÿã€‚
 	 */
 	status = usb_get_descriptor (udev, USB_DT_DEVICE_QUALIFIER, 0,
 			qual, sizeof *qual);
@@ -2692,17 +2692,17 @@ hub_power_remaining (struct usb_hub *hub)
 	int port1;
 
 	/**
-	 * µçÔ´²»ÊÜÏŞ¡£
+	 * ç”µæºä¸å—é™ã€‚
 	 */
 	if (!hub->limited_power)
 		return 0;
 
 	/**
-	 * µçÁ÷×ÜÁ¿¼õÈ¥BUS±¾ÉíĞèÒªµÄµçÁ÷¡£
+	 * ç”µæµæ€»é‡å‡å»BUSæœ¬èº«éœ€è¦çš„ç”µæµã€‚
 	 */
 	remaining = hdev->bus_mA - hub->descriptor->bHubContrCurrent;
 	/**
-	 * ±éÀúÃ¿¸ö¶Ë¿Ú£¬¼õÈ¥ËüµÄµçÁ÷¡£
+	 * éå†æ¯ä¸ªç«¯å£ï¼Œå‡å»å®ƒçš„ç”µæµã€‚
 	 */
 	for (port1 = 1; port1 <= hdev->maxchild; ++port1) {
 		struct usb_device	*udev = hdev->children[port1 - 1];
@@ -2714,13 +2714,13 @@ hub_power_remaining (struct usb_hub *hub)
 		/* Unconfigured devices may not use more than 100mA,
 		 * or 8mA for OTG ports */
 		if (udev->actconfig)
-			delta = udev->actconfig->desc.bMaxPower * 2;/* µ¥Î»ÊÇ2mA£¬Òò´Ë³ËÒÔ2 */
+			delta = udev->actconfig->desc.bMaxPower * 2;/* å•ä½æ˜¯2mAï¼Œå› æ­¤ä¹˜ä»¥2 */
 		else if (port1 != udev->bus->otg_port || hdev->parent)
 			delta = 100;
 		else
 			delta = 8;
 		/**
-		 * Éè±¸µçÁ÷ÒªÇó±ÈÆ½¾ùµçÁ÷´ó£¬Ôò¾¯¸æÒ»ÏÂ¡£
+		 * è®¾å¤‡ç”µæµè¦æ±‚æ¯”å¹³å‡ç”µæµå¤§ï¼Œåˆ™è­¦å‘Šä¸€ä¸‹ã€‚
 		 */
 		if (delta > hub->mA_per_port)
 			dev_warn(&udev->dev, "%dmA is over %umA budget "
@@ -2729,7 +2729,7 @@ hub_power_remaining (struct usb_hub *hub)
 		remaining -= delta;
 	}
 	/**
-	 * Ê£ÓàµçÁ¿²»×ã¡£
+	 * å‰©ä½™ç”µé‡ä¸è¶³ã€‚
 	 */
 	if (remaining < 0) {
 		dev_warn(hub->intfdev, "%dmA over power budget!\n",
@@ -2748,7 +2748,7 @@ hub_power_remaining (struct usb_hub *hub)
  * caller already locked the hub
  */
 /**
- * µ±HUB¶Ë¿ÚÁ¬½Ó×´Ì¬¸Ä±äÊ±£¬µ÷ÓÃ´Ëº¯Êı£¬Ò»°ãÊÇ²åÈëÉè±¸¡£
+ * å½“HUBç«¯å£è¿æ¥çŠ¶æ€æ”¹å˜æ—¶ï¼Œè°ƒç”¨æ­¤å‡½æ•°ï¼Œä¸€èˆ¬æ˜¯æ’å…¥è®¾å¤‡ã€‚
  */
 static void hub_port_connect_change(struct usb_hub *hub, int port1,
 					u16 portstatus, u16 portchange)
@@ -2763,7 +2763,7 @@ static void hub_port_connect_change(struct usb_hub *hub, int port1,
 		port1, portstatus, portchange, portspeed (portstatus));
 
 	/**
-	 * Èç¹ûĞèÒªÉèÖÃÖ¸Ê¾µÆ£¬ÔòÉèÖÃ³É×Ô¶¯Ä£Ê½¡£
+	 * å¦‚æœéœ€è¦è®¾ç½®æŒ‡ç¤ºç¯ï¼Œåˆ™è®¾ç½®æˆè‡ªåŠ¨æ¨¡å¼ã€‚
 	 */
 	if (hub->has_indicators) {
 		set_port_led(hub, port1, HUB_LED_AUTO);
@@ -2772,7 +2772,7 @@ static void hub_port_connect_change(struct usb_hub *hub, int port1,
  
 	/* Disconnect any existing devices under this port */
 	/**
-	 * Èç¹û¸Ã¶Ë¿ÚÓĞ×ÓÉè±¸£¬ÏÈ¶Ï¿ª¡£
+	 * å¦‚æœè¯¥ç«¯å£æœ‰å­è®¾å¤‡ï¼Œå…ˆæ–­å¼€ã€‚
 	 */
 	if (hdev->children[port1-1])
 		usb_disconnect(&hdev->children[port1-1]);
@@ -2785,15 +2785,15 @@ static void hub_port_connect_change(struct usb_hub *hub, int port1,
 #endif
 
 	/**
-	 * Á¬½Ó´ÓÎŞµ½ÓĞ£¬ÕâÀï´¦Àí·´µ¯¡£
+	 * è¿æ¥ä»æ— åˆ°æœ‰ï¼Œè¿™é‡Œå¤„ç†åå¼¹ã€‚
 	 */
 	if (portchange & USB_PORT_STAT_C_CONNECTION) {
 		/**
-		 * Èç¹û100msºó£¬Éè±¸ÈÔ´¦ÓÚÁ¬½Ó×´Ì¬£¬ÔòÃ»ÓĞ²úÉú¶¶¶¯¡£
+		 * å¦‚æœ100msåï¼Œè®¾å¤‡ä»å¤„äºè¿æ¥çŠ¶æ€ï¼Œåˆ™æ²¡æœ‰äº§ç”ŸæŠ–åŠ¨ã€‚
 		 */
 		status = hub_port_debounce(hub, port1);
 		/**
-		 * Èç¹û²úÉú¶¶¶¯£¬Ôò´òÓ¡¾¯¸æºóÍË³ö¡£
+		 * å¦‚æœäº§ç”ŸæŠ–åŠ¨ï¼Œåˆ™æ‰“å°è­¦å‘Šåé€€å‡ºã€‚
 		 */
 		if (status < 0) {
 			if (printk_ratelimit())
@@ -2806,20 +2806,20 @@ static void hub_port_connect_change(struct usb_hub *hub, int port1,
 
 	/* Return now if nothing is connected */
 	/**
-	 * Ã»ÓĞÉè±¸Á¬½ÓÉÏHUB£¬ËµÃ÷Éè±¸±»ÒÆ³ı¡£
+	 * æ²¡æœ‰è®¾å¤‡è¿æ¥ä¸ŠHUBï¼Œè¯´æ˜è®¾å¤‡è¢«ç§»é™¤ã€‚
 	 */
 	if (!(portstatus & USB_PORT_STAT_CONNECTION)) {
 
 		/* maybe switch power back on (e.g. root hub was reset) */
 		/**
-		 * Èç¹û¶Ë¿ÚµÄµçÔ´±»¹Ø±ÕÁË£¬Ôò´ò¿ªµçÔ´¡£
+		 * å¦‚æœç«¯å£çš„ç”µæºè¢«å…³é—­äº†ï¼Œåˆ™æ‰“å¼€ç”µæºã€‚
 		 */
 		if ((wHubCharacteristics & HUB_CHAR_LPSM) < 2
 				&& !(portstatus & (1 << USB_PORT_FEAT_POWER)))
 			set_port_feature(hdev, port1, USB_PORT_FEAT_POWER);
  
  		/**
- 		 * Èç¹ûÉè±¸ÒÑ¾­¼¤»îÁË£¬Ôò×ªµ½done½«Æä½ûÖ¹µô¡£
+ 		 * å¦‚æœè®¾å¤‡å·²ç»æ¿€æ´»äº†ï¼Œåˆ™è½¬åˆ°doneå°†å…¶ç¦æ­¢æ‰ã€‚
  		 */
 		if (portstatus & USB_PORT_STAT_ENABLE)
   			goto done;
@@ -2827,7 +2827,7 @@ static void hub_port_connect_change(struct usb_hub *hub, int port1,
 	}
 
 	/**
-	 * Ä¬ÈÏÊ¹ÓÃĞÂ²ßÂÔ(windows)£¬²»ĞĞÔÙÊ¹ÓÃ¾É²ßÂÔ(usb spec)¡£Òò´Ë×Ü¹²ĞèÒªÖØÊÔ4´Î¡£
+	 * é»˜è®¤ä½¿ç”¨æ–°ç­–ç•¥(windows)ï¼Œä¸è¡Œå†ä½¿ç”¨æ—§ç­–ç•¥(usb spec)ã€‚å› æ­¤æ€»å…±éœ€è¦é‡è¯•4æ¬¡ã€‚
 	 */
 	for (i = 0; i < SET_CONFIG_TRIES; i++) {
 		struct usb_device *udev;
@@ -2836,7 +2836,7 @@ static void hub_port_connect_change(struct usb_hub *hub, int port1,
 		 * to the previous one can escape in various ways
 		 */
 		/**
-		 * Ã¿´ÎÖØÊÔÊ±£¬ĞèÒªÖØĞÂ·ÖÅäÉè±¸½á¹¹¡£
+		 * æ¯æ¬¡é‡è¯•æ—¶ï¼Œéœ€è¦é‡æ–°åˆ†é…è®¾å¤‡ç»“æ„ã€‚
 		 */
 		udev = usb_alloc_dev(hdev, hdev->bus, port1);
 		if (!udev) {
@@ -2847,25 +2847,25 @@ static void hub_port_connect_change(struct usb_hub *hub, int port1,
 		}
 
 		/**
-		 * ½«Éè±¸×´Ì¬ÉèÖÃÎªPOWERED¡£
+		 * å°†è®¾å¤‡çŠ¶æ€è®¾ç½®ä¸ºPOWEREDã€‚
 		 */
 		usb_set_device_state(udev, USB_STATE_POWERED);
 		/**
-		 * ËÙ¶ÈÎ´Öª¡£
+		 * é€Ÿåº¦æœªçŸ¥ã€‚
 		 */
 		udev->speed = USB_SPEED_UNKNOWN;
 		/**
-		 * ´ÓHUBÄÇÀïÄÜ¹»µÃµ½µÄµçÁ÷¡£
+		 * ä»HUBé‚£é‡Œèƒ½å¤Ÿå¾—åˆ°çš„ç”µæµã€‚
 		 */
  		udev->bus_mA = hub->mA_per_port;
 		/**
-		 * Ôö¼ÓÒ»¼¶¡£
+		 * å¢åŠ ä¸€çº§ã€‚
 		 */
 		udev->level = hdev->level + 1;
 
 		/* set the address */
 		/**
-		 * ÎªÉè±¸ÔÚ×ÜÏßÉÏÕÒÒ»¸öµØÖ·Öµ¡£
+		 * ä¸ºè®¾å¤‡åœ¨æ€»çº¿ä¸Šæ‰¾ä¸€ä¸ªåœ°å€å€¼ã€‚
 		 */
 		choose_address(udev);
 		if (udev->devnum <= 0) {
@@ -2875,7 +2875,7 @@ static void hub_port_connect_change(struct usb_hub *hub, int port1,
 
 		/* reset and get descriptor */
 		/**
-		 * ¸´Î»²¢»ñµÃÃèÊö·û¡£
+		 * å¤ä½å¹¶è·å¾—æè¿°ç¬¦ã€‚
 		 */
 		status = hub_port_init(hub, udev, port1, i);
 		if (status < 0)
@@ -2887,12 +2887,12 @@ static void hub_port_connect_change(struct usb_hub *hub, int port1,
 		 * (without reading syslog), even without per-port LEDs
 		 * on the parent.
 		 */
-		if (udev->descriptor.bDeviceClass == USB_CLASS_HUB /* ¼¶ÁªHUB */
-				&& udev->bus_mA <= 100) {/* Éè±¸¹©µç²»×ã */
+		if (udev->descriptor.bDeviceClass == USB_CLASS_HUB /* çº§è”HUB */
+				&& udev->bus_mA <= 100) {/* è®¾å¤‡ä¾›ç”µä¸è¶³ */
 			u16	devstat;
 
 			/**
-			 * »ñÈ¡Éè±¸×´Ì¬£¬¿´ÊÇ²»ÊÇĞÅÀµ×ÜÏß¹©µç
+			 * è·å–è®¾å¤‡çŠ¶æ€ï¼Œçœ‹æ˜¯ä¸æ˜¯ä¿¡èµ–æ€»çº¿ä¾›ç”µ
 			 */
 			status = usb_get_status(udev, USB_RECIP_DEVICE, 0,
 					&devstat);
@@ -2901,12 +2901,12 @@ static void hub_port_connect_change(struct usb_hub *hub, int port1,
 				goto loop_disable;
 			}
 			le16_to_cpus(&devstat);
-			if ((devstat & (1 << USB_DEVICE_SELF_POWERED)) == 0) {/* HUB²»ÊÇ×Ô¹©µçµÄ£¬ÕâÏÂÂé·³ÁË¡£ */
+			if ((devstat & (1 << USB_DEVICE_SELF_POWERED)) == 0) {/* HUBä¸æ˜¯è‡ªä¾›ç”µçš„ï¼Œè¿™ä¸‹éº»çƒ¦äº†ã€‚ */
 				dev_err(&udev->dev,
 					"can't connect bus-powered hub "
 					"to this port\n");
 				/**
-				 * µ÷¶È¹¤×÷ÈÎÎñled_work£¬ÉÁµÆÖ¸Ê¾Éè±¸µÄÎÊÌâ¡£
+				 * è°ƒåº¦å·¥ä½œä»»åŠ¡led_workï¼Œé—ªç¯æŒ‡ç¤ºè®¾å¤‡çš„é—®é¢˜ã€‚
 				 */
 				if (hub->has_indicators) {
 					hub->indicator[port1-1] =
@@ -2915,16 +2915,16 @@ static void hub_port_connect_change(struct usb_hub *hub, int port1,
 				}
 				status = -ENOTCONN;	/* Don't retry */
 				/**
-				 * ¶Ë¿ÚÓĞÎÊÌâ£¬¹Ø±ÕËü¡£
+				 * ç«¯å£æœ‰é—®é¢˜ï¼Œå…³é—­å®ƒã€‚
 				 */
 				goto loop_disable;
 			}
 		}
  
 		/* check for devices running slower than they could */
-		if (le16_to_cpu(udev->descriptor.bcdUSB) >= 0x0200/* Éè±¸ÃèÊö·û±íÊ¾ËüÄÜ¹»½øĞĞ¸ßËÙ´«Êä */
-				&& udev->speed == USB_SPEED_FULL/* µ«ÊÇÉè±¸´¦ÓÚÈ«ËÙ×´Ì¬ */
-				&& highspeed_hubs != 0)/* ÓĞ¸ßËÙHUB£¬¿´ÆğÀ´²»Ì«Õı³£ */
+		if (le16_to_cpu(udev->descriptor.bcdUSB) >= 0x0200/* è®¾å¤‡æè¿°ç¬¦è¡¨ç¤ºå®ƒèƒ½å¤Ÿè¿›è¡Œé«˜é€Ÿä¼ è¾“ */
+				&& udev->speed == USB_SPEED_FULL/* ä½†æ˜¯è®¾å¤‡å¤„äºå…¨é€ŸçŠ¶æ€ */
+				&& highspeed_hubs != 0)/* æœ‰é«˜é€ŸHUBï¼Œçœ‹èµ·æ¥ä¸å¤ªæ­£å¸¸ */
 			check_highspeed (hub, udev, port1);
 
 		/* Store the parent's children[] pointer.  At this point
@@ -2947,7 +2947,7 @@ static void hub_port_connect_change(struct usb_hub *hub, int port1,
 		/* Run it through the hoops (find a driver, etc) */
 		if (!status) {
 			/**
-			 * ½«Éè±¸¼ÓÈëµ½Éè±¸Ê÷¡£
+			 * å°†è®¾å¤‡åŠ å…¥åˆ°è®¾å¤‡æ ‘ã€‚
 			 */
 			status = usb_new_device(udev);
 			if (status) {
@@ -2961,7 +2961,7 @@ static void hub_port_connect_change(struct usb_hub *hub, int port1,
 			goto loop_disable;
 
 		/**
-		 * ´¦ÀíHUBµÄµçÔ´¡£
+		 * å¤„ç†HUBçš„ç”µæºã€‚
 		 */
 		status = hub_power_remaining(hub);
 		if (status)
@@ -3007,7 +3007,7 @@ static void hub_events(void)
 
 		/* Grab the first entry at the beginning of the list */
 		/**
-		 * ÔÚ»ñµÃËøµÄÇé¿öÏÂ£¬ÅĞ¶ÏÊÂ¼şÁ´±íÊÇ·ñÎª¿Õ¡£
+		 * åœ¨è·å¾—é”çš„æƒ…å†µä¸‹ï¼Œåˆ¤æ–­äº‹ä»¶é“¾è¡¨æ˜¯å¦ä¸ºç©ºã€‚
 		 */
 		spin_lock_irq(&hub_event_lock);
 		if (list_empty(&hub_event_list)) {
@@ -3016,13 +3016,13 @@ static void hub_events(void)
 		}
 
 		/**
-		 * »ñÈ¡Á´±íÖĞµÄµÚÒ»¸öHUBÓĞ¹ØµÄÊÂ¼ş¡£
+		 * è·å–é“¾è¡¨ä¸­çš„ç¬¬ä¸€ä¸ªHUBæœ‰å…³çš„äº‹ä»¶ã€‚
 		 */
 		tmp = hub_event_list.next;
 		list_del_init(tmp);
 
 		/**
-		 * ÕÒµ½´ËÁ´±í¶ÔÓ¦µÄHUB¡£
+		 * æ‰¾åˆ°æ­¤é“¾è¡¨å¯¹åº”çš„HUBã€‚
 		 */
 		hub = list_entry(tmp, struct usb_hub, event_list);
 		kref_get(&hub->kref);
@@ -3040,7 +3040,7 @@ static void hub_events(void)
 				(u16) hub->event_bits[0]);
 
 		/**
-		 * ÒıÓÃHUBµÄ½Ó¿ÚÃèÊö·û¡£
+		 * å¼•ç”¨HUBçš„æ¥å£æè¿°ç¬¦ã€‚
 		 */
 		usb_get_intf(intf);
 		spin_unlock_irq(&hub_event_lock);
@@ -3048,7 +3048,7 @@ static void hub_events(void)
 		/* Lock the device, then check to see if we were
 		 * disconnected while waiting for the lock to succeed. */
 		/**
-		 * Ëø×¡HUBÉè±¸£¬Õâ¸öËø»úÖÆÔÚ¸ß°æ±¾ÖĞÒÑ¾­È¥µô¡£
+		 * é”ä½HUBè®¾å¤‡ï¼Œè¿™ä¸ªé”æœºåˆ¶åœ¨é«˜ç‰ˆæœ¬ä¸­å·²ç»å»æ‰ã€‚
 		 */
 		usb_lock_device(hdev);
 		if (unlikely(hub->disconnected))
@@ -3056,7 +3056,7 @@ static void hub_events(void)
 
 		/* If the hub has died, clean up after it */
 		/**
-		 * Èç¹ûÉè±¸ÓÉÓÚÒì³££¬±»ÆäËû´úÂëÂ·¾¶ÉèÖÃ³ÉUSB_STATE_NOTATTACHED£¬ÔòĞèÒª¸´Î»HUB¡£
+		 * å¦‚æœè®¾å¤‡ç”±äºå¼‚å¸¸ï¼Œè¢«å…¶ä»–ä»£ç è·¯å¾„è®¾ç½®æˆUSB_STATE_NOTATTACHEDï¼Œåˆ™éœ€è¦å¤ä½HUBã€‚
 		 */
 		if (hdev->state == USB_STATE_NOTATTACHED) {
 			hub->error = -ENODEV;
@@ -3066,7 +3066,7 @@ static void hub_events(void)
 
 		/* Autoresume */
 		/**
-		 * ½Ó¿ÚµÄµçÔ´¹ÜÀí¼ÆÊı£¬Èç¹û´óÓÚ0£¬ËµÃ÷²»ÄÜ±»×Ô¶¯»½ĞÑ¡£
+		 * æ¥å£çš„ç”µæºç®¡ç†è®¡æ•°ï¼Œå¦‚æœå¤§äº0ï¼Œè¯´æ˜ä¸èƒ½è¢«è‡ªåŠ¨å”¤é†’ã€‚
 		 */
 		ret = usb_autopm_get_interface(intf);
 		if (ret) {
@@ -3076,13 +3076,13 @@ static void hub_events(void)
 
 		/* If this is an inactive hub, do nothing */
 		/**
-		 * Éè±¸ÕıÔÚ±»Í£Ö¹£¬Ã»ÓĞ±ØÒª´¦ÀíµçÔ´ÊÂ¼ş¡£
+		 * è®¾å¤‡æ­£åœ¨è¢«åœæ­¢ï¼Œæ²¡æœ‰å¿…è¦å¤„ç†ç”µæºäº‹ä»¶ã€‚
 		 */
 		if (hub->quiescing)
 			goto loop_autopm;
 
 		/**
-		 * Éè±¸³öÏÖÁË´íÎó£¬µ÷ÓÃusb_reset_composite_device¸´Î»Ò»ÏÂ¡£
+		 * è®¾å¤‡å‡ºç°äº†é”™è¯¯ï¼Œè°ƒç”¨usb_reset_composite_deviceå¤ä½ä¸€ä¸‹ã€‚
 		 */
 		if (hub->error) {
 			dev_dbg (hub_dev, "resetting for error %d\n",
@@ -3101,11 +3101,11 @@ static void hub_events(void)
 
 		/* deal with port status changes */
 		/**
-		 * ´¦ÀíËùÓĞ¶Ë¿Ú¡£¿¼²ìÆä×´Ì¬±ä»¯¡£µ±USBÉè±¸²åÈëUSB¶Ë¿Ú»áÒıÆğÕâĞ©×´Ì¬±ä»¯¡£
+		 * å¤„ç†æ‰€æœ‰ç«¯å£ã€‚è€ƒå¯Ÿå…¶çŠ¶æ€å˜åŒ–ã€‚å½“USBè®¾å¤‡æ’å…¥USBç«¯å£ä¼šå¼•èµ·è¿™äº›çŠ¶æ€å˜åŒ–ã€‚
 		 */
 		for (i = 1; i <= hub->descriptor->bNbrPorts; i++) {
 			/**
-			 * ¶Ë¿ÚÕıÃ¦£¬´¦ÀíÏÂÒ»¸ö¶Ë¿Ú¡£¶Ë¿ÚÃ¦±íÊ¾ÕıÔÚ±»¸´Î»»ò½øĞĞµçÔ´×´Ì¬´¦Àí¡£
+			 * ç«¯å£æ­£å¿™ï¼Œå¤„ç†ä¸‹ä¸€ä¸ªç«¯å£ã€‚ç«¯å£å¿™è¡¨ç¤ºæ­£åœ¨è¢«å¤ä½æˆ–è¿›è¡Œç”µæºçŠ¶æ€å¤„ç†ã€‚
 			 */
 			if (test_bit(i, hub->busy_bits))
 				continue;
@@ -3115,7 +3115,7 @@ static void hub_events(void)
 				continue;
 
 			/**
-			 * Í¨¹ı¿ØÖÆÏûÏ¢È¡µÃ¶Ë¿Ú×´Ì¬¡£
+			 * é€šè¿‡æ§åˆ¶æ¶ˆæ¯å–å¾—ç«¯å£çŠ¶æ€ã€‚
 			 */
 			ret = hub_port_status(hub, i,
 					&portstatus, &portchange);
@@ -3123,7 +3123,7 @@ static void hub_events(void)
 				continue;
 
 			/**
-			 * ¶Ë¿ÚÒÑ¾­Á¬½ÓÉÏUSB£¬Í¬Ê±»¹Ã»ÓĞ³õÊ¼»¯¸Ã¶Ë¿Ú¡£
+			 * ç«¯å£å·²ç»è¿æ¥ä¸ŠUSBï¼ŒåŒæ—¶è¿˜æ²¡æœ‰åˆå§‹åŒ–è¯¥ç«¯å£ã€‚
 			 */
 			if (hub->activating && !hdev->children[i-1] &&
 					(portstatus &
@@ -3131,7 +3131,7 @@ static void hub_events(void)
 				connect_change = 1;
 
 			/**
-			 * Èç¹ûÁ¬½Ó×´Ì¬¸Ä±äÁË£¬ÔòÇå³ı×´Ì¬Î»£¬Í¬Ê±ÉèÖÃconnect_change±êÖ¾¡£
+			 * å¦‚æœè¿æ¥çŠ¶æ€æ”¹å˜äº†ï¼Œåˆ™æ¸…é™¤çŠ¶æ€ä½ï¼ŒåŒæ—¶è®¾ç½®connect_changeæ ‡å¿—ã€‚
 			 */
 			if (portchange & USB_PORT_STAT_C_CONNECTION) {
 				clear_port_feature(hdev, i,
@@ -3140,7 +3140,7 @@ static void hub_events(void)
 			}
 
 			/**
-			 * ¶Ë¿Ú¿ª¹Ø×´Ì¬ÓĞ±ä»¯¡£USB_PORT_STAT_C_ENABLE±íÊ¾¶Ë¿Ú´Óenable½øÈëÁËdisable¡£
+			 * ç«¯å£å¼€å…³çŠ¶æ€æœ‰å˜åŒ–ã€‚USB_PORT_STAT_C_ENABLEè¡¨ç¤ºç«¯å£ä»enableè¿›å…¥äº†disableã€‚
 			 */
 			if (portchange & USB_PORT_STAT_C_ENABLE) {
 				if (!connect_change)
@@ -3158,7 +3158,7 @@ static void hub_events(void)
 				 * Works at least with mouse driver. 
 				 */
 				/**
-				 * ¶Ë¿Ú±»disableÁË,µ«ÊÇÁ¬½ÓÃ»ÓĞ±ä»¯,²¢ÇÒhdev->children[i]»¹ÓĞÖµ,Õâ¾ÍËµÃ÷Ã÷Ã÷ÓĞ×ÓÉè±¸Á¬ÔÚ¶Ë¿ÚÉÏ,¿ÉÊÇ¶Ë¿ÚÈ´±»disableÁË,»ù±¾ÉÏÕâÖÖÇé¿ö¾ÍÊÇµç´Å¸ÉÈÅÔì³ÉµÄ
+				 * ç«¯å£è¢«disableäº†,ä½†æ˜¯è¿æ¥æ²¡æœ‰å˜åŒ–,å¹¶ä¸”hdev->children[i]è¿˜æœ‰å€¼,è¿™å°±è¯´æ˜æ˜æ˜æœ‰å­è®¾å¤‡è¿åœ¨ç«¯å£ä¸Š,å¯æ˜¯ç«¯å£å´è¢«disableäº†,åŸºæœ¬ä¸Šè¿™ç§æƒ…å†µå°±æ˜¯ç”µç£å¹²æ‰°é€ æˆçš„
 				 */
 				if (!(portstatus & USB_PORT_STAT_ENABLE)
 				    && !connect_change
@@ -3173,13 +3173,13 @@ static void hub_events(void)
 			}
 
 			/**
-			 * resumeÍê³É.
+			 * resumeå®Œæˆ.
 			 */
 			if (portchange & USB_PORT_STAT_C_SUSPEND) {
 				clear_port_feature(hdev, i,
 					USB_PORT_FEAT_C_SUSPEND);
 				/**
-				 * ¶Ë¿ÚÁ¬½ÓÁË×ÓÉè±¸£¬¾Í½«Ëü»½ĞÑ¡£·ñÔò½«Ëü½ûÖ¹µô¡£
+				 * ç«¯å£è¿æ¥äº†å­è®¾å¤‡ï¼Œå°±å°†å®ƒå”¤é†’ã€‚å¦åˆ™å°†å®ƒç¦æ­¢æ‰ã€‚
 				 */
 				if (hdev->children[i-1]) {
 					ret = remote_wakeup(hdev->
@@ -3196,7 +3196,7 @@ static void hub_events(void)
 			}
 			
 			/**
-			 * ¶Ë¿Ú¿ÉÄÜÔø¾­´æÔÚµçÁ÷¹ı´óµÄÇé¿ö,¶øÏÖÔÚÕâÖÖÇé¿ö²»´æÔÚÁË,»òÕß±¾À´²»´æÔÚ¶øÏÖÔÚ´æÔÚÁË.
+			 * ç«¯å£å¯èƒ½æ›¾ç»å­˜åœ¨ç”µæµè¿‡å¤§çš„æƒ…å†µ,è€Œç°åœ¨è¿™ç§æƒ…å†µä¸å­˜åœ¨äº†,æˆ–è€…æœ¬æ¥ä¸å­˜åœ¨è€Œç°åœ¨å­˜åœ¨äº†.
 			 */
 			if (portchange & USB_PORT_STAT_C_OVERCURRENT) {
 				dev_err (hub_dev,
@@ -3205,13 +3205,13 @@ static void hub_events(void)
 				clear_port_feature(hdev, i,
 					USB_PORT_FEAT_C_OVER_CURRENT);
 				/**
-				 * ÖØĞÂ½«Éè±¸ÉÏµç¡£
+				 * é‡æ–°å°†è®¾å¤‡ä¸Šç”µã€‚
 				 */
 				hub_power_on(hub);
 			}
 
 			/**
-			 * ¶Ë¿Ú´ÓResetting×´Ì¬½øÈëµ½Enabled×´Ì¬.
+			 * ç«¯å£ä»ResettingçŠ¶æ€è¿›å…¥åˆ°EnabledçŠ¶æ€.
 			 */
 			if (portchange & USB_PORT_STAT_C_RESET) {
 				dev_dbg (hub_dev,
@@ -3222,7 +3222,7 @@ static void hub_events(void)
 			}
 
 			/**
-			 * Ò»¸öĞÂÉè±¸Á¬½ÓÉÏUSB¶Ë¿Ú¡£»òÕß²¦³ö¡£
+			 * ä¸€ä¸ªæ–°è®¾å¤‡è¿æ¥ä¸ŠUSBç«¯å£ã€‚æˆ–è€…æ‹¨å‡ºã€‚
 			 */
 			if (connect_change)
 				hub_port_connect_change(hub, i,
@@ -3235,13 +3235,13 @@ static void hub_events(void)
 		else if (hub_hub_status(hub, &hubstatus, &hubchange) < 0)
 			dev_err (hub_dev, "get_hub_status failed\n");
 		else {
-			if (hubchange & HUB_CHANGE_LOCAL_POWER) {/* µçÔ´À´Ô´ÓĞ±ä»¯ */
+			if (hubchange & HUB_CHANGE_LOCAL_POWER) {/* ç”µæºæ¥æºæœ‰å˜åŒ– */
 				dev_dbg (hub_dev, "power change\n");
 				clear_hub_feature(hdev, C_HUB_LOCAL_POWER);
-				if (hubstatus & HUB_STATUS_LOCAL_POWER)/* HUB_STATUS_LOCAL_POWERÎª1ËµÃ÷²»ÊÇ×Ô´øµçÔ´ */
+				if (hubstatus & HUB_STATUS_LOCAL_POWER)/* HUB_STATUS_LOCAL_POWERä¸º1è¯´æ˜ä¸æ˜¯è‡ªå¸¦ç”µæº */
 					/* FIXME: Is this always true? */
 					/**
-					 * ÕâÀïÊÇÒ»¸öBUG£¬ÕıºÃÉèÖÃ´íÎó¡£
+					 * è¿™é‡Œæ˜¯ä¸€ä¸ªBUGï¼Œæ­£å¥½è®¾ç½®é”™è¯¯ã€‚
 					 */
 					hub->limited_power = 0;
 				else
@@ -3250,28 +3250,28 @@ static void hub_events(void)
 					hub->limited_power = 0;
 			}
 			/**
-			 * ¹ıÁ÷ÊÂ¼ş·¢Éú£¬¿ÉÄÜÊÇ¹ıÁ÷±äÎª·Ç¹ıÁ÷¡£
+			 * è¿‡æµäº‹ä»¶å‘ç”Ÿï¼Œå¯èƒ½æ˜¯è¿‡æµå˜ä¸ºéè¿‡æµã€‚
 			 */
 			if (hubchange & HUB_CHANGE_OVERCURRENT) {
 				dev_dbg (hub_dev, "overcurrent change\n");
 				msleep(500);	/* Cool down */
 				clear_hub_feature(hdev, C_HUB_OVER_CURRENT);
 				/**
-				 * ¹ıÁ÷¿ÉÄÜ½«Éè±¸¹Ø±Õ£¬ÏÖÔÚÖØĞÂÉÏµç¡£
+				 * è¿‡æµå¯èƒ½å°†è®¾å¤‡å…³é—­ï¼Œç°åœ¨é‡æ–°ä¸Šç”µã€‚
 				 */
                         	hub_power_on(hub);
 			}
 		}
 
 		/**
-		 * ¼¤»î¹ı³Ì½áÊøÁË¡£
+		 * æ¿€æ´»è¿‡ç¨‹ç»“æŸäº†ã€‚
 		 */
 		hub->activating = 0;
 
 		/* If this is a root hub, tell the HCD it's okay to
 		 * re-enable port-change interrupts now. */
 		/**
-		 * Èç¹ûÊÇRoot HUB£¬²¢ÇÒÃ»ÓĞÒ»¸ö¶Ë¿Ú´¦ÓÚreset/resume×´Ì¬,µ÷ÓÃusb_enable_root_hub_irq()º¯Êı´ò¿ªÉè±¸ÖĞ¶Ï¡£
+		 * å¦‚æœæ˜¯Root HUBï¼Œå¹¶ä¸”æ²¡æœ‰ä¸€ä¸ªç«¯å£å¤„äºreset/resumeçŠ¶æ€,è°ƒç”¨usb_enable_root_hub_irq()å‡½æ•°æ‰“å¼€è®¾å¤‡ä¸­æ–­ã€‚
 		 */
 		if (!hdev->parent && !hub->busy_bits[0])
 			usb_enable_root_hub_irq(hdev->bus);
@@ -3279,7 +3279,7 @@ static void hub_events(void)
 loop_autopm:
 		/* Allow autosuspend if we're not going to run again */
 		/**
-		 * Ã»ÓĞÊÂ¼şĞèÒª´¦ÀíÁË£¬µ÷ÓÃusb_autopm_enableÒÔÔÊĞíÉè±¸ÔÚÊÊµ±µÄÊ±ºò½øÈëË¯Ãß×´Ì¬¡£
+		 * æ²¡æœ‰äº‹ä»¶éœ€è¦å¤„ç†äº†ï¼Œè°ƒç”¨usb_autopm_enableä»¥å…è®¸è®¾å¤‡åœ¨é€‚å½“çš„æ—¶å€™è¿›å…¥ç¡çœ çŠ¶æ€ã€‚
 		 */
 		if (list_empty(&hub->event_list))
 			usb_autopm_enable(intf);
@@ -3291,21 +3291,21 @@ loop:
 }
 
 /**
- * HUBÊØ»¤Ïß³Ì¡£
+ * HUBå®ˆæŠ¤çº¿ç¨‹ã€‚
  */
 static int hub_thread(void *__unused)
 {
 	set_freezable();
 	do {
 		/**
-		 * ´¦ÀíHUBÊÂ¼şÁ´±íÖĞµÄÊÂ¼ş¡£
+		 * å¤„ç†HUBäº‹ä»¶é“¾è¡¨ä¸­çš„äº‹ä»¶ã€‚
 		 */
 		hub_events();
 		wait_event_freezable(khubd_wait,
 				!list_empty(&hub_event_list) ||
 
 	/**
-	 * hub_event_listÊÇËùÓĞHUBÊÂ¼şÁ´±íµÄÁ´±í¡£
+	 * hub_event_listæ˜¯æ‰€æœ‰HUBäº‹ä»¶é“¾è¡¨çš„é“¾è¡¨ã€‚
 	 */				kthread_should_stop());
 	} while (!kthread_should_stop() || !list_empty(&hub_event_list));
 
@@ -3338,12 +3338,12 @@ static struct usb_driver hub_driver = {
 };
 
 /**
- * ³õÊ¼»¯USB HUB¡£
+ * åˆå§‹åŒ–USB HUBã€‚
  */
 int usb_hub_init(void)
 {
 	/**
-	 * ×¢²áHUBÇı¶¯¡£
+	 * æ³¨å†ŒHUBé©±åŠ¨ã€‚
 	 */
 	if (usb_register(&hub_driver) < 0) {
 		printk(KERN_ERR "%s: can't register hub driver\n",
@@ -3352,11 +3352,11 @@ int usb_hub_init(void)
 	}
 
 	/**
-	 * ´´½¨HUBÊØ»¤Ïß³Ì¡£
+	 * åˆ›å»ºHUBå®ˆæŠ¤çº¿ç¨‹ã€‚
 	 */
 	khubd_task = kthread_run(hub_thread, NULL, "khubd");
 	/**
-	 * ´´½¨³É¹¦¡£
+	 * åˆ›å»ºæˆåŠŸã€‚
 	 */
 	if (!IS_ERR(khubd_task))
 		return 0;
@@ -3569,7 +3569,7 @@ int usb_reset_composite_device(struct usb_device *udev,
 	struct usb_host_config *config = udev->actconfig;
 
 	/**
-	 * ÔÚÉè±¸´¦ÓÚUSB_STATE_NOTATTACHED»òÕßUSB_STATE_SUSPENDEDµÄ×´Ì¬Ê±,resetÊÇ²»±»ÔÊĞíµÄ.
+	 * åœ¨è®¾å¤‡å¤„äºUSB_STATE_NOTATTACHEDæˆ–è€…USB_STATE_SUSPENDEDçš„çŠ¶æ€æ—¶,resetæ˜¯ä¸è¢«å…è®¸çš„.
 	 */
 	if (udev->state == USB_STATE_NOTATTACHED ||
 			udev->state == USB_STATE_SUSPENDED) {
@@ -3580,12 +3580,12 @@ int usb_reset_composite_device(struct usb_device *udev,
 
 	/* Prevent autosuspend during the reset */
 	/**
-	 * Ôö¼ÓdeviceµÄÒıÓÃ¼ÆÊı,½ûÖ¹Éè±¸autosuspendµÄ·¢Éú.
+	 * å¢åŠ deviceçš„å¼•ç”¨è®¡æ•°,ç¦æ­¢è®¾å¤‡autosuspendçš„å‘ç”Ÿ.
 	 */
 	usb_autoresume_device(udev);
 
 	/**
-	 * ½Ó¿Ú»¹ÔÚUSB_INTERFACE_BINDING×´Ì¬£¬´ËÊ±²»ĞèÒª¶Ô½Ó¿Ú½øĞĞ²Ù×÷¡£
+	 * æ¥å£è¿˜åœ¨USB_INTERFACE_BINDINGçŠ¶æ€ï¼Œæ­¤æ—¶ä¸éœ€è¦å¯¹æ¥å£è¿›è¡Œæ“ä½œã€‚
 	 */
 	if (iface && iface->condition != USB_INTERFACE_BINDING)
 		iface = NULL;
@@ -3596,18 +3596,18 @@ int usb_reset_composite_device(struct usb_device *udev,
 		struct usb_driver *drv;
 
 		/**
-		 * ±éÀúHUBÉè±¸µÄËùÓĞUSB½Ó¿Ú¡£
+		 * éå†HUBè®¾å¤‡çš„æ‰€æœ‰USBæ¥å£ã€‚
 		 */
 		for (i = 0; i < config->desc.bNumInterfaces; ++i) {
 			cintf = config->interface[i];
 			/**
-			 * µ±iface²»´¦ÓÚBINDING×´Ì¬Ê±£¬iface±»ÖÃÎªNULL
-			 * µ±Éè±¸ÔÚUSB_INTERFACE_BINDING×´Ì¬Ê±£¬²»ĞèÒª»ñµÃËø£¬ÒòÎª´ËÊ±ÒÑ¾­»ñµÃËøÁË¡£
+			 * å½“ifaceä¸å¤„äºBINDINGçŠ¶æ€æ—¶ï¼Œifaceè¢«ç½®ä¸ºNULL
+			 * å½“è®¾å¤‡åœ¨USB_INTERFACE_BINDINGçŠ¶æ€æ—¶ï¼Œä¸éœ€è¦è·å¾—é”ï¼Œå› ä¸ºæ­¤æ—¶å·²ç»è·å¾—é”äº†ã€‚
 			 */
 			if (cintf != iface)
 				down(&cintf->dev.sem);
 			/**
-			 * ÕâÀïÊÇ»Øµ÷Éè±¸µÄÃ¿¸ö½Ó¿ÚµÄpre_reset·½·¨£¬Í¨Öª½Ó¿ÚÇı¶¯£¬½Ó¿Ú½«Òª±»¸´Î»ÁË¡£
+			 * è¿™é‡Œæ˜¯å›è°ƒè®¾å¤‡çš„æ¯ä¸ªæ¥å£çš„pre_resetæ–¹æ³•ï¼Œé€šçŸ¥æ¥å£é©±åŠ¨ï¼Œæ¥å£å°†è¦è¢«å¤ä½äº†ã€‚
 			 */
 			if (device_is_registered(&cintf->dev) &&
 					cintf->dev.driver) {
@@ -3620,12 +3620,12 @@ int usb_reset_composite_device(struct usb_device *udev,
 	}
 
 	/**
-	 * Ö´ĞĞÉè±¸µÄ¸´Î»²Ù×÷¡£
+	 * æ‰§è¡Œè®¾å¤‡çš„å¤ä½æ“ä½œã€‚
 	 */ 
 	ret = usb_reset_device(udev);
 
 	/**
-	 * ÔÙ´Î»Øµ÷ËùÓĞ½Ó¿ÚµÄpost_resetº¯Êı£¬±íÊ¾ÒÑ¾­¸´Î»³É¹¦¡£
+	 * å†æ¬¡å›è°ƒæ‰€æœ‰æ¥å£çš„post_resetå‡½æ•°ï¼Œè¡¨ç¤ºå·²ç»å¤ä½æˆåŠŸã€‚
 	 */
 	if (config) {
 		int i;
@@ -3647,7 +3647,7 @@ int usb_reset_composite_device(struct usb_device *udev,
 	}
 
 	/**
-	 * µİ¼õµçÔ´ÒıÓÃ¼ÆÊı¡£
+	 * é€’å‡ç”µæºå¼•ç”¨è®¡æ•°ã€‚
 	 */
 	usb_autosuspend_device(udev);
 	return ret;

@@ -813,7 +813,7 @@ struct net_device
  */
 	unsigned long		last_rx;	/* Time of last Rx	*/
 	/* Interface address info used in eth_type_trans() */
-	unsigned char		*dev_addr;	/* (MAC地址)hw address, (before bcast
+	unsigned char		*dev_addr;	/* (MAC鍦板潃)hw address, (before bcast
 						   because most packets are
 						   unicast) */
 

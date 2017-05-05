@@ -469,7 +469,7 @@ static int unix_dgram_connect(struct socket *, struct sockaddr *,
 static int unix_seqpacket_sendmsg(struct kiocb *, struct socket *,
 				  struct msghdr *, size_t);
 
-/* unixĞ­ÒéÓòµÄº¯Êı²Ù×÷¼¯ */
+/* unixåè®®åŸŸçš„å‡½æ•°æ“ä½œé›† */
 static struct proto_ops unix_stream_ops = {
 	.family =	PF_UNIX,
 	.owner =	THIS_MODULE,
@@ -533,7 +533,7 @@ static struct proto_ops unix_seqpacket_ops = {
 	.sendpage =	sock_no_sendpage,
 };
 
-/* unixÓòÌ×½Ó×ÖµÄÕæÕı´´½¨ */
+/* unixåŸŸå¥—æ¥å­—çš„çœŸæ­£åˆ›å»º */
 static struct sock * unix_create1(struct socket *sock)
 {
 	struct sock *sk = NULL;
@@ -556,7 +556,7 @@ static struct sock * unix_create1(struct socket *sock)
 	sk->sk_max_ack_backlog	= sysctl_unix_max_dgram_qlen;
 	sk->sk_destruct		= unix_sock_destructor;
 
-        /*  ÀàĞÍ×ª»»  */
+        /*  ç±»å‹è½¬æ¢  */
 	u	  = unix_sk(sk);
 	u->dentry = NULL;
 	u->mnt	  = NULL;
@@ -569,7 +569,7 @@ out:
 	return sk;
 }
 
-/* unixÓòÌ×½Ó×ÖµÄ´´½¨£¬unixºÍinetĞ­ÒéÓòµÄ´´½¨²»Ò»Ñù  */
+/* unixåŸŸå¥—æ¥å­—çš„åˆ›å»ºï¼Œunixå’Œinetåè®®åŸŸçš„åˆ›å»ºä¸ä¸€æ ·  */
 static int unix_create(struct socket *sock, int protocol)
 {
 	if (protocol && protocol != PF_UNIX)
@@ -577,7 +577,7 @@ static int unix_create(struct socket *sock, int protocol)
 
 	sock->state = SS_UNCONNECTED;
 
-        /* ÉèÖÃĞ­Òé×åµÄ²Ù×÷Ö¸Õë */
+        /* è®¾ç½®åè®®æ—çš„æ“ä½œæŒ‡é’ˆ */
 	switch (sock->type) {
 	case SOCK_STREAM:
 		sock->ops = &unix_stream_ops;
@@ -2038,8 +2038,8 @@ static struct file_operations unix_seq_fops = {
 
 #endif
 
-/* unixÓòÍøÂçĞ­Òé×å£¬ÔÚ´´½¨unixµÄĞ­ÒéÓòÊ±£¬
-  * µ÷ÓÃµ±ÖĞµÄunix_createº¯ÊıÀ´¾ßÌåÍê³É
+/* unixåŸŸç½‘ç»œåè®®æ—ï¼Œåœ¨åˆ›å»ºunixçš„åè®®åŸŸæ—¶ï¼Œ
+  * è°ƒç”¨å½“ä¸­çš„unix_createå‡½æ•°æ¥å…·ä½“å®Œæˆ
   */
 static struct net_proto_family unix_family_ops = {
 	.family = PF_UNIX,
@@ -2055,7 +2055,7 @@ static inline void unix_sysctl_register(void) {}
 static inline void unix_sysctl_unregister(void) {}
 #endif
 
-/* unixĞ­Òé×åµÄ³õÊ¼»¯ */
+/* unixåè®®æ—çš„åˆå§‹åŒ– */
 static int __init af_unix_init(void)
 {
 	struct sk_buff *dummy_skb;

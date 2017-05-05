@@ -44,7 +44,7 @@ static const char Unused_offset[] = "Unused swap offset entry ";
 
 struct swap_list_t swap_list = {-1, -1};
 
-/* ÏµÍ³½»»»ÇøĞÅÏ¢ */
+/* ç³»ç»Ÿäº¤æ¢åŒºä¿¡æ¯ */
 static struct swap_info_struct swap_info[MAX_SWAPFILES];
 
 static DEFINE_MUTEX(swapon_mutex);
@@ -101,9 +101,9 @@ static inline unsigned long scan_swap_map(struct swap_info_struct *si)
 	 */
 
 	si->flags += SWP_SCANNING;
-	if (unlikely(!si->cluster_nr)) {/* µ±Ç°¾Û½¹´ØÓÃÍêÁË£¬·ÖÅäĞÂµÄ´Ø */
+	if (unlikely(!si->cluster_nr)) {/* å½“å‰èšç„¦ç°‡ç”¨å®Œäº†ï¼Œåˆ†é…æ–°çš„ç°‡ */
 		si->cluster_nr = SWAPFILE_CLUSTER - 1;
-		/* ¿ÕÏĞÒ³Ãæ²»×ãÒ»¸ö´Ø */
+		/* ç©ºé—²é¡µé¢ä¸è¶³ä¸€ä¸ªç°‡ */
 		if (si->pages - si->inuse_pages < SWAPFILE_CLUSTER)
 			goto lowest;
 		spin_unlock(&swap_lock);
@@ -112,14 +112,14 @@ static inline unsigned long scan_swap_map(struct swap_info_struct *si)
 		last_in_cluster = offset + SWAPFILE_CLUSTER - 1;
 
 		/* Locate the first empty (unaligned) cluster */
-		/* ´Óµ±Ç°Î»ÖÃ¿ªÊ¼£¬²éÕÒÁ¬ĞøµÄ´Ø */
+		/* ä»å½“å‰ä½ç½®å¼€å§‹ï¼ŒæŸ¥æ‰¾è¿ç»­çš„ç°‡ */
 		for (; last_in_cluster <= si->highest_bit; offset++) {
-			if (si->swap_map[offset])/* µ±Ç°Î»ÖÃ²»¿ÉÓÃ£¬ÖØĞÂÉèÖÃ½áÊø¿éºÅ */
+			if (si->swap_map[offset])/* å½“å‰ä½ç½®ä¸å¯ç”¨ï¼Œé‡æ–°è®¾ç½®ç»“æŸå—å· */
 				last_in_cluster = offset + SWAPFILE_CLUSTER;
-			else if (offset == last_in_cluster) {/* Ö±µ½½áÊø¿éºÅÎªÖ¹£¬¶¼¿ÉÓÃ */
+			else if (offset == last_in_cluster) {/* ç›´åˆ°ç»“æŸå—å·ä¸ºæ­¢ï¼Œéƒ½å¯ç”¨ */
 				spin_lock(&swap_lock);
 				si->cluster_next = offset-SWAPFILE_CLUSTER+1;
-				goto cluster;/* ÕÒµ½Ò»¸ö¿ÉÓÃµÄ´Ø */
+				goto cluster;/* æ‰¾åˆ°ä¸€ä¸ªå¯ç”¨çš„ç°‡ */
 			}
 			if (unlikely(--latency_ration < 0)) {
 				cond_resched();
@@ -130,7 +130,7 @@ static inline unsigned long scan_swap_map(struct swap_info_struct *si)
 		goto lowest;
 	}
 
-	/* µİ¼õµ±Ç°´ØÖĞ¿ÉÓÃÒ³ÊıÁ¿ */
+	/* é€’å‡å½“å‰ç°‡ä¸­å¯ç”¨é¡µæ•°é‡ */
 	si->cluster_nr--;
 cluster:
 	offset = si->cluster_next;
@@ -140,7 +140,7 @@ checks:	if (!(si->flags & SWP_WRITEOK))
 		goto no_page;
 	if (!si->highest_bit)
 		goto no_page;
-	/* µ±Ç°Ò³¼ÆÊıÎª0£¬¿ÉÓÃ */
+	/* å½“å‰é¡µè®¡æ•°ä¸º0ï¼Œå¯ç”¨ */
 	if (!si->swap_map[offset]) {
 		if (offset == si->lowest_bit)
 			si->lowest_bit++;
@@ -158,18 +158,18 @@ checks:	if (!(si->flags & SWP_WRITEOK))
 	}
 
 	spin_unlock(&swap_lock);
-	/* ÊÍ·ÅËøÒÔºó±éÀú²éÕÒ¿ÉÓÃ²ÛÎ» */
+	/* é‡Šæ”¾é”ä»¥åéå†æŸ¥æ‰¾å¯ç”¨æ§½ä½ */
 	while (++offset <= si->highest_bit) {
-		if (!si->swap_map[offset]) {/* ¿ÉÓÃ£¬µ«ÊÇ´ËÊ±Ã»ÓĞ¼ÓËø£¬Òò´Ë¼ÓËøºóÔÙ´Î¼ì²é */
+		if (!si->swap_map[offset]) {/* å¯ç”¨ï¼Œä½†æ˜¯æ­¤æ—¶æ²¡æœ‰åŠ é”ï¼Œå› æ­¤åŠ é”åå†æ¬¡æ£€æŸ¥ */
 			spin_lock(&swap_lock);
 			goto checks;
 		}
-		if (unlikely(--latency_ration < 0)) {/* ¼ÓÈëµ÷¶Èµã */
+		if (unlikely(--latency_ration < 0)) {/* åŠ å…¥è°ƒåº¦ç‚¹ */
 			cond_resched();
 			latency_ration = LATENCY_LIMIT;
 		}
 	}
-	/* ±éÀúµ½¸ßµã£¬ÈÔÈ»Ã»ÓĞÕÒµ½ºÏÊÊµÄ²ÛÎ»£¬¼ÓËøºó´ÓµÍµã¿ªÊ¼²éÕÒ */
+	/* éå†åˆ°é«˜ç‚¹ï¼Œä»ç„¶æ²¡æœ‰æ‰¾åˆ°åˆé€‚çš„æ§½ä½ï¼ŒåŠ é”åä»ä½ç‚¹å¼€å§‹æŸ¥æ‰¾ */
 	spin_lock(&swap_lock);
 	goto lowest;
 
@@ -179,7 +179,7 @@ no_page:
 }
 
 /**
- * ´Ó½»»»ÇøÖĞ·ÖÅäÒ»¸ö¿ÉÓÃµÄ²ÛÎ»
+ * ä»äº¤æ¢åŒºä¸­åˆ†é…ä¸€ä¸ªå¯ç”¨çš„æ§½ä½
  */
 swp_entry_t get_swap_page(void)
 {
@@ -189,12 +189,12 @@ swp_entry_t get_swap_page(void)
 	int wrapped = 0;
 
 	spin_lock(&swap_lock);
-	if (nr_swap_pages <= 0)/* Ã»ÓĞ½»»»ÇøÁË */
+	if (nr_swap_pages <= 0)/* æ²¡æœ‰äº¤æ¢åŒºäº† */
 		goto noswap;
 	nr_swap_pages--;
 
 	/**
-	 * ´Óµ±Ç°½»»»Çøswap_list.next¿ªÊ¼£¬±éÀúËùÓĞ½»»»Çø
+	 * ä»å½“å‰äº¤æ¢åŒºswap_list.nextå¼€å§‹ï¼Œéå†æ‰€æœ‰äº¤æ¢åŒº
 	 */
 	for (type = swap_list.next; type >= 0 && wrapped < 2; type = next) {
 		si = swap_info + type;
@@ -211,7 +211,7 @@ swp_entry_t get_swap_page(void)
 			continue;
 
 		swap_list.next = next;
-		/* ÔÚ½»»»ÇøÖĞÉ¨Ãè·ÖÅäÎ»Í¼£¬ÕÒµ½¿ÕÏĞµÄ²ÛÎ» */
+		/* åœ¨äº¤æ¢åŒºä¸­æ‰«æåˆ†é…ä½å›¾ï¼Œæ‰¾åˆ°ç©ºé—²çš„æ§½ä½ */
 		offset = scan_swap_map(si);
 		if (offset) {
 			spin_unlock(&swap_lock);
@@ -1081,9 +1081,9 @@ static int setup_swap_extents(struct swap_info_struct *sis, sector_t *span)
 	int ret;
 
 	inode = sis->swap_file->f_mapping->host;
-	/* ¿éÉè±¸×÷Îª½»»»Çø */
+	/* å—è®¾å¤‡ä½œä¸ºäº¤æ¢åŒº */
 	if (S_ISBLK(inode->i_mode)) {
-		/* ¿éÉè±¸ÊÇÁ¬ĞøµÄ£¬Òò´ËÖ»ÓĞÒ»¸öÇø¿é£¬Ìí¼Óºó·µ»Ø */
+		/* å—è®¾å¤‡æ˜¯è¿ç»­çš„ï¼Œå› æ­¤åªæœ‰ä¸€ä¸ªåŒºå—ï¼Œæ·»åŠ åè¿”å› */
 		ret = add_swap_extent(sis, 0, sis->max, 0);
 		*span = sis->pages;
 		goto done;
@@ -1099,34 +1099,34 @@ static int setup_swap_extents(struct swap_info_struct *sis, sector_t *span)
 	probe_block = 0;
 	page_no = 0;
 	last_block = i_size_read(inode) >> blkbits;
-	/* Ñ­»·´¦ÀíÎÄ¼şÖĞ¸÷¸ö¿é */
+	/* å¾ªç¯å¤„ç†æ–‡ä»¶ä¸­å„ä¸ªå— */
 	while ((probe_block + blocks_per_page) <= last_block &&
 			page_no < sis->max) {
 		unsigned block_in_page;
 		sector_t first_block;
 
-		/* »ñµÃµ±Ç°Âß¼­¿é¶ÔÓ¦µÄ´ÅÅÌ¿éºÅ */
+		/* è·å¾—å½“å‰é€»è¾‘å—å¯¹åº”çš„ç£ç›˜å—å· */
 		first_block = bmap(inode, probe_block);
-		if (first_block == 0)/* ??»á·¢ÉúÂğ?? */
+		if (first_block == 0)/* ??ä¼šå‘ç”Ÿå—?? */
 			goto bad_bmap;
 
 		/*
 		 * It must be PAGE_SIZE aligned on-disk
 		 */
-		if (first_block & (blocks_per_page - 1)) {/* ¸Ã¿éÔÚ´ÅÅÌÉÏÃ»ÓĞ¶ÔÆëµ½Ò³±ß½ç */
+		if (first_block & (blocks_per_page - 1)) {/* è¯¥å—åœ¨ç£ç›˜ä¸Šæ²¡æœ‰å¯¹é½åˆ°é¡µè¾¹ç•Œ */
 			probe_block++;
 			goto reprobe;
 		}
 
-		/* ¼ÆËãÍ¬Ò»Ò³ÖĞ£¬ÆäËû¼¸¸öÂß¼­¿éÊÇ·ñÔÚ´ÅÅÌÉÏÁ¬Ğø */
+		/* è®¡ç®—åŒä¸€é¡µä¸­ï¼Œå…¶ä»–å‡ ä¸ªé€»è¾‘å—æ˜¯å¦åœ¨ç£ç›˜ä¸Šè¿ç»­ */
 		for (block_in_page = 1; block_in_page < blocks_per_page;
 					block_in_page++) {
 			sector_t block;
 
 			block = bmap(inode, probe_block + block_in_page);
-			if (block == 0)/* Òì³£ */
+			if (block == 0)/* å¼‚å¸¸ */
 				goto bad_bmap;
-			/* ²»Á¬Ğø£¬ÏÂÒ»Ò³ */
+			/* ä¸è¿ç»­ï¼Œä¸‹ä¸€é¡µ */
 			if (block != first_block + block_in_page) {
 				/* Discontiguity */
 				probe_block++;
@@ -1146,8 +1146,8 @@ static int setup_swap_extents(struct swap_info_struct *sis, sector_t *span)
 		 * We found a PAGE_SIZE-length, PAGE_SIZE-aligned run of blocks
 		 */
 		/**
-		 * ½«Ò»¸öÎïÀíÉÏÁ¬ĞøµÄÂß¼­Ò³Ìí¼Óµ½Çø¿éÁ´±íÖĞ
-		 * Èç¹ûÓëÉÏÒ»¸öÒ³Á¬Ğø£¬ÔòÓëÇ°Ò»¸öÇø¿éºÏ²¢
+		 * å°†ä¸€ä¸ªç‰©ç†ä¸Šè¿ç»­çš„é€»è¾‘é¡µæ·»åŠ åˆ°åŒºå—é“¾è¡¨ä¸­
+		 * å¦‚æœä¸ä¸Šä¸€ä¸ªé¡µè¿ç»­ï¼Œåˆ™ä¸å‰ä¸€ä¸ªåŒºå—åˆå¹¶
 		 */
 		ret = add_swap_extent(sis, page_no, 1, first_block);
 		if (ret < 0)
@@ -1158,7 +1158,7 @@ static int setup_swap_extents(struct swap_info_struct *sis, sector_t *span)
 reprobe:
 		continue;
 	}
-	/* ½«¿ÉÓÃÒ³ÃæÊıÁ¿±£´æµ½½»»»ÇøÃèÊö·ûÖĞ */
+	/* å°†å¯ç”¨é¡µé¢æ•°é‡ä¿å­˜åˆ°äº¤æ¢åŒºæè¿°ç¬¦ä¸­ */
 	ret = nr_extents;
 	*span = 1 + highest_block - lowest_block;
 	if (page_no == 0)
@@ -1436,7 +1436,7 @@ __initcall(procswaps_init);
  * The swapon system call
  */
 /**
- * ÆôÓÃ½»»»·ÖÇø
+ * å¯ç”¨äº¤æ¢åˆ†åŒº
  */
 asmlinkage long sys_swapon(const char __user * specialfile, int swap_flags)
 {
@@ -1461,24 +1461,24 @@ asmlinkage long sys_swapon(const char __user * specialfile, int swap_flags)
 	struct inode *inode = NULL;
 	int did_down = 0;
 
-	if (!capable(CAP_SYS_ADMIN))/* È¨ÏŞ¼ì²é */
+	if (!capable(CAP_SYS_ADMIN))/* æƒé™æ£€æŸ¥ */
 		return -EPERM;
-	/* »ñÈ¡×ÔĞıËø£¬ÒÔ±£»¤¶Ô½»»»ÇøÊı×éµÄ·ÃÎÊ */
+	/* è·å–è‡ªæ—‹é”ï¼Œä»¥ä¿æŠ¤å¯¹äº¤æ¢åŒºæ•°ç»„çš„è®¿é—® */
 	spin_lock(&swap_lock);
 	p = swap_info;
-	/* ²éÕÒÒ»¸ö¿ÕÏĞÏî */
+	/* æŸ¥æ‰¾ä¸€ä¸ªç©ºé—²é¡¹ */
 	for (type = 0 ; type < nr_swapfiles ; type++,p++)
 		if (!(p->flags & SWP_USED))
 			break;
 	error = -EPERM;
-	/* Ã»ÓĞ¿ÕÏĞÏîÁË£¬ÍË³ö */
+	/* æ²¡æœ‰ç©ºé—²é¡¹äº†ï¼Œé€€å‡º */
 	if (type >= MAX_SWAPFILES) {
 		spin_unlock(&swap_lock);
 		goto out;
 	}
-	if (type >= nr_swapfiles)/* ÕâÑùµÄÓÅ»¯ÊµÔÚÃ»ÓĞ±ØÒª */
+	if (type >= nr_swapfiles)/* è¿™æ ·çš„ä¼˜åŒ–å®åœ¨æ²¡æœ‰å¿…è¦ */
 		nr_swapfiles = type+1;
-	/* ³õÊ¼»¯Êı¾İÏî */
+	/* åˆå§‹åŒ–æ•°æ®é¡¹ */
 	INIT_LIST_HEAD(&p->extent_list);
 	p->flags = SWP_USED;
 	p->swap_file = NULL;
@@ -1502,7 +1502,7 @@ asmlinkage long sys_swapon(const char __user * specialfile, int swap_flags)
 		name = NULL;
 		goto bad_swap_2;
 	}
-	/* ´ò¿ª½»»»ÎÄ¼ş»òÉè±¸ */
+	/* æ‰“å¼€äº¤æ¢æ–‡ä»¶æˆ–è®¾å¤‡ */
 	swap_file = filp_open(name, O_RDWR|O_LARGEFILE, 0);
 	error = PTR_ERR(swap_file);
 	if (IS_ERR(swap_file)) {
@@ -1515,7 +1515,7 @@ asmlinkage long sys_swapon(const char __user * specialfile, int swap_flags)
 	inode = mapping->host;
 
 	error = -EBUSY;
-	/* ÔÚÒÑ¾­´ò¿ªµÄ½»»»ÇøÖĞ£¬²éÕÒÊÇ·ñÒÑ¾­´ò¿ªÁËÍ¬Ò»¸öÉè±¸ */
+	/* åœ¨å·²ç»æ‰“å¼€çš„äº¤æ¢åŒºä¸­ï¼ŒæŸ¥æ‰¾æ˜¯å¦å·²ç»æ‰“å¼€äº†åŒä¸€ä¸ªè®¾å¤‡ */
 	for (i = 0; i < nr_swapfiles; i++) {
 		struct swap_info_struct *q = &swap_info[i];
 
@@ -1526,10 +1526,10 @@ asmlinkage long sys_swapon(const char __user * specialfile, int swap_flags)
 	}
 
 	error = -EINVAL;
-	/* ´ò¿ªÉè±¸ÊÇÒ»¸ö¿éÉè±¸ */
+	/* æ‰“å¼€è®¾å¤‡æ˜¯ä¸€ä¸ªå—è®¾å¤‡ */
 	if (S_ISBLK(inode->i_mode)) {
 		bdev = I_BDEV(inode);
-		/* »ñµÃ¿éÉè±¸µÄÒıÓÃ¼ÆÊı */
+		/* è·å¾—å—è®¾å¤‡çš„å¼•ç”¨è®¡æ•° */
 		error = bd_claim(bdev, sys_swapon);
 		if (error < 0) {
 			bdev = NULL;
@@ -1541,7 +1541,7 @@ asmlinkage long sys_swapon(const char __user * specialfile, int swap_flags)
 		if (error < 0)
 			goto bad_swap;
 		p->bdev = bdev;
-	} else if (S_ISREG(inode->i_mode)) {/* ÎÄ¼ş×÷Îª·ÖÇøÉè±¸ */
+	} else if (S_ISREG(inode->i_mode)) {/* æ–‡ä»¶ä½œä¸ºåˆ†åŒºè®¾å¤‡ */
 		p->bdev = inode->i_sb->s_bdev;
 		mutex_lock(&inode->i_mutex);
 		did_down = 1;
@@ -1558,33 +1558,33 @@ asmlinkage long sys_swapon(const char __user * specialfile, int swap_flags)
 	/*
 	 * Read the swap header.
 	 */
-	if (!mapping->a_ops->readpage) {/* µØÖ·¿Õ¼äÃ»ÓĞÖ¸¶¨readpageº¯Êı£¬ÎŞ·¨ÓÃÓÚ½»»» */
+	if (!mapping->a_ops->readpage) {/* åœ°å€ç©ºé—´æ²¡æœ‰æŒ‡å®šreadpageå‡½æ•°ï¼Œæ— æ³•ç”¨äºäº¤æ¢ */
 		error = -EINVAL;
 		goto bad_swap;
 	}
-	/* ¶ÁÈ¡µÚÒ»Ò³ */
+	/* è¯»å–ç¬¬ä¸€é¡µ */
 	page = read_mapping_page(mapping, 0, swap_file);
 	if (IS_ERR(page)) {
 		error = PTR_ERR(page);
 		goto bad_swap;
 	}
 	kmap(page);
-	/* ·ÖÎöµÚÒ»Ò³µÄÄÚÈİ */
+	/* åˆ†æç¬¬ä¸€é¡µçš„å†…å®¹ */
 	swap_header = page_address(page);
 
-	/* ¶ÁÈ¡°æ±¾ºÅ */
+	/* è¯»å–ç‰ˆæœ¬å· */
 	if (!memcmp("SWAP-SPACE",swap_header->magic.magic,10))
 		swap_header_version = 1;
 	else if (!memcmp("SWAPSPACE2",swap_header->magic.magic,10))
 		swap_header_version = 2;
-	else {/* ²»ÊÇ½»»»·ÖÇø */
+	else {/* ä¸æ˜¯äº¤æ¢åˆ†åŒº */
 		printk(KERN_ERR "Unable to find swap-space signature\n");
 		error = -EINVAL;
 		goto bad_swap;
 	}
 	
 	switch (swap_header_version) {
-	case 1:/* µ±Ç°°æ±¾µÄÄÚºËÒÑ¾­²»Ö§³ÖµÚÒ»°æ·ÖÇøÁË£¬ËüÖ»ÄÜ½»»»128MÄÚ´æ */
+	case 1:/* å½“å‰ç‰ˆæœ¬çš„å†…æ ¸å·²ç»ä¸æ”¯æŒç¬¬ä¸€ç‰ˆåˆ†åŒºäº†ï¼Œå®ƒåªèƒ½äº¤æ¢128Må†…å­˜ */
 		printk(KERN_ERR "version 0 swap is no longer supported. "
 			"Use mkswap -v1 %s\n", name);
 		error = -EINVAL;
@@ -1661,7 +1661,7 @@ asmlinkage long sys_swapon(const char __user * specialfile, int swap_flags)
 		p->swap_map[0] = SWAP_MAP_BAD;
 		p->max = maxpages;
 		p->pages = nr_good_pages;
-		/* ³õÊ¼»¯·Ö¿éÇø¼äÁ´±í */
+		/* åˆå§‹åŒ–åˆ†å—åŒºé—´é“¾è¡¨ */
 		nr_extents = setup_swap_extents(p, &span);
 		if (nr_extents < 0) {
 			error = nr_extents;
@@ -1688,7 +1688,7 @@ asmlinkage long sys_swapon(const char __user * specialfile, int swap_flags)
 
 	/* insert swap space into swap_list: */
 	prev = -1;
-	/* ¸ù¾İÓÅÏÈ¼¶£¬½«Æä²åÈëµ½½»»»ÇøÁ´±íÖĞ */
+	/* æ ¹æ®ä¼˜å…ˆçº§ï¼Œå°†å…¶æ’å…¥åˆ°äº¤æ¢åŒºé“¾è¡¨ä¸­ */
 	for (i = swap_list.head; i >= 0; i = swap_info[i].next) {
 		if (p->prio >= swap_info[i].prio) {
 			break;

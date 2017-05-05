@@ -2119,13 +2119,13 @@ int __init cpuset_init(void)
 {
 	int err = 0;
 
-	//Îª¶¥²ãcpuset·ÖÅäÎ»Í¼ÄÚ´æ
+	//ä¸ºé¡¶å±‚cpusetåˆ†é…ä½å›¾å†…å­˜
 	if (!alloc_cpumask_var(&top_cpuset.cpus_allowed, GFP_KERNEL))
 		BUG();
 	if (!alloc_cpumask_var(&top_cpuset.effective_cpus, GFP_KERNEL))
 		BUG();
 
-	//½«¶¥²ãcpusetÉèÖÃÎªËùÓĞCPU
+	//å°†é¡¶å±‚cpusetè®¾ç½®ä¸ºæ‰€æœ‰CPU
 	cpumask_setall(top_cpuset.cpus_allowed);
 	nodes_setall(top_cpuset.mems_allowed);
 	cpumask_setall(top_cpuset.effective_cpus);
@@ -2135,7 +2135,7 @@ int __init cpuset_init(void)
 	set_bit(CS_SCHED_LOAD_BALANCE, &top_cpuset.flags);
 	top_cpuset.relax_domain_level = -1;
 
-	//Õâ¸ö»¹ÕûÒ»¸öÎÄ¼şÏµÍ³???
+	//è¿™ä¸ªè¿˜æ•´ä¸€ä¸ªæ–‡ä»¶ç³»ç»Ÿ???
 	err = register_filesystem(&cpuset_fs_type);
 	if (err < 0)
 		return err;
@@ -2395,16 +2395,16 @@ static struct notifier_block cpuset_track_online_nodes_nb = {
  */
 void __init cpuset_init_smp(void)
 {
-	//¸üĞÂtopcpusetµÄcpu¼¯ºÏ
+	//æ›´æ–°topcpusetçš„cpué›†åˆ
 	cpumask_copy(top_cpuset.cpus_allowed, cpu_active_mask);
-	//¿ÉÓÃµÄÄÚ´æ½Úµã¡£
+	//å¯ç”¨çš„å†…å­˜èŠ‚ç‚¹ã€‚
 	top_cpuset.mems_allowed = node_states[N_MEMORY];
 	top_cpuset.old_mems_allowed = top_cpuset.mems_allowed;
 
 	cpumask_copy(top_cpuset.effective_cpus, cpu_active_mask);
 	top_cpuset.effective_mems = node_states[N_MEMORY];
 
-	//×¢²áÄÚ´æÈÈ²å²¦»Øµ÷º¯Êı¡£
+	//æ³¨å†Œå†…å­˜çƒ­æ’æ‹¨å›è°ƒå‡½æ•°ã€‚
 	register_hotmemory_notifier(&cpuset_track_online_nodes_nb);
 
 	cpuset_migrate_mm_wq = alloc_ordered_workqueue("cpuset_migrate_mm", 0);

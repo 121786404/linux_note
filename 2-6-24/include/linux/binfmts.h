@@ -63,23 +63,23 @@ struct linux_binprm{
  * This structure defines the functions that are used to load the binary formats that
  * linux accepts.
  */
-/* ¶ş½øÖÆ¿ÉÖ´ĞĞÎÄ¼ş½á¹¹ */
+/* äºŒè¿›åˆ¶å¯æ‰§è¡Œæ–‡ä»¶ç»“æ„ */
 struct linux_binfmt {
-	/* Í¨¹ı´Ë½ÚµãÁ´½Óµ½È«¾ÖformatsÁ´±íÖĞ£¬±íÊ¾ËùÓĞÖ§³ÖµÄÎÄ¼ş¸ñÊ½ */
+	/* é€šè¿‡æ­¤èŠ‚ç‚¹é“¾æ¥åˆ°å…¨å±€formatsé“¾è¡¨ä¸­ï¼Œè¡¨ç¤ºæ‰€æœ‰æ”¯æŒçš„æ–‡ä»¶æ ¼å¼ */
 	struct list_head lh;
 	struct module *module;
-	/* ¼ÓÔØÆÕÍ¨³ÌĞò */
+	/* åŠ è½½æ™®é€šç¨‹åº */
 	int (*load_binary)(struct linux_binprm *, struct  pt_regs * regs);
-	/* ¼ÓÔØ¹²Ïí¿â */
+	/* åŠ è½½å…±äº«åº“ */
 	int (*load_shlib)(struct file *);
-	/* ÔÚ³ÌĞòÒì³£Ê±Êä³öÄÚ´æ×ª´¢ */
+	/* åœ¨ç¨‹åºå¼‚å¸¸æ—¶è¾“å‡ºå†…å­˜è½¬å‚¨ */
 	int (*core_dump)(long signr, struct pt_regs *regs, struct file *file, unsigned long limit);
-	/* Éú³É×ª´¢ÎÄ¼şÊ±£¬ÄÚ´æ×ª´¢ÎÄ¼şµÄÏÂÏŞ£¬Í¨³£ÊÇÒ»¸öÒ³Ãæ */
+	/* ç”Ÿæˆè½¬å‚¨æ–‡ä»¶æ—¶ï¼Œå†…å­˜è½¬å‚¨æ–‡ä»¶çš„ä¸‹é™ï¼Œé€šå¸¸æ˜¯ä¸€ä¸ªé¡µé¢ */
 	unsigned long min_coredump;	/* minimal dump size */
 	int hasvdso;
 };
 
-/* ×¢²áÒ»ÖÖĞÂµÄ¶ş½øÖÆ¸ñÊ½ */
+/* æ³¨å†Œä¸€ç§æ–°çš„äºŒè¿›åˆ¶æ ¼å¼ */
 extern int register_binfmt(struct linux_binfmt *);
 extern void unregister_binfmt(struct linux_binfmt *);
 

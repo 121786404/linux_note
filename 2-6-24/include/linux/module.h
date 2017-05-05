@@ -92,7 +92,7 @@ extern struct module __this_module;
 #define MODULE_INFO(tag, info) __MODULE_INFO(tag, tag, info)
 
 /* For userspace: you can also call me... */
-/* Éú³ÉÄ£¿é±ğÃû¡£¿ÉÒÔ°´´Ë±ğÃûÀ´¼ÓÔØÄ£¿é */
+/* ç”Ÿæˆæ¨¡å—åˆ«åã€‚å¯ä»¥æŒ‰æ­¤åˆ«åæ¥åŠ è½½æ¨¡å— */
 #define MODULE_ALIAS(_alias) MODULE_INFO(alias, _alias)
 
 /*
@@ -136,7 +136,7 @@ extern struct module __this_module;
 #define MODULE_PARM_DESC(_parm, desc) \
 	__MODULE_INFO(parm, _parm, #_parm ":" desc)
 
-/* Éú³ÉÉè±¸Êı¾İ¿â£¬±íÊ¾¸ÃÄ£¿éÖ§³ÖÌØ¶¨µÄÉè±¸ */
+/* ç”Ÿæˆè®¾å¤‡æ•°æ®åº“ï¼Œè¡¨ç¤ºè¯¥æ¨¡å—æ”¯æŒç‰¹å®šçš„è®¾å¤‡ */
 #define MODULE_DEVICE_TABLE(type,name)		\
   MODULE_GENERIC_TABLE(type##_device,name)
 
@@ -226,11 +226,11 @@ struct module_ref
 
 enum module_state
 {
-	/* ÕıÔÚÕı³£ÔËĞĞ¹ı³ÌÖĞ */
+	/* æ­£åœ¨æ­£å¸¸è¿è¡Œè¿‡ç¨‹ä¸­ */
 	MODULE_STATE_LIVE,
-	/* ÕıÔÚ×°ÔØ¹ı³ÌÖĞ */
+	/* æ­£åœ¨è£…è½½è¿‡ç¨‹ä¸­ */
 	MODULE_STATE_COMING,
-	/* ÕıÔÚÒÆ³ıÄ£¿é */
+	/* æ­£åœ¨ç§»é™¤æ¨¡å— */
 	MODULE_STATE_GOING,
 };
 
@@ -252,19 +252,19 @@ struct module_sect_attrs
 struct module_param_attrs;
 
 /**
- * ÔÚÄÚºËÖĞÒÑ¾­¼ÓÔØµÄÄ£¿éÃèÊö·û
+ * åœ¨å†…æ ¸ä¸­å·²ç»åŠ è½½çš„æ¨¡å—æè¿°ç¬¦
  */
 struct module
 {
-	/* Ä£¿éµ±Ç°×´Ì¬ */
+	/* æ¨¡å—å½“å‰çŠ¶æ€ */
 	enum module_state state;
 
 	/* Member of list of modules */
-	/* Í¨¹ı´Ë×Ö¶Î½«Ä£¿é¼Óµ½È«¾ÖÁ´±íÖĞ */
+	/* é€šè¿‡æ­¤å­—æ®µå°†æ¨¡å—åŠ åˆ°å…¨å±€é“¾è¡¨ä¸­ */
 	struct list_head list;
 
 	/* Unique handle for this module */
-	/* Ä£¿éÃû³Æ£¬Èçvfat */
+	/* æ¨¡å—åç§°ï¼Œå¦‚vfat */
 	char name[MODULE_NAME_LEN];
 
 	/* Sysfs stuff. */
@@ -276,15 +276,15 @@ struct module
 	struct kobject *holders_dir;
 
 	/* Exported symbols */
-	/* µ¼³öµÄ·ûºÅÊı×é */
+	/* å¯¼å‡ºçš„ç¬¦å·æ•°ç»„ */
 	const struct kernel_symbol *syms;
-	/* ·ûºÅÊı×éµÄ´óĞ¡ */
+	/* ç¬¦å·æ•°ç»„çš„å¤§å° */
 	unsigned int num_syms;
-	/* ´óĞ¡Îªnum_syms£¬ÓÃÓÚÊµÏÖ°æ±¾¿ØÖÆ¡£±íÊ¾µ¼³ö·ûºÅµÄĞ£ÑéºÍ¡£ */
+	/* å¤§å°ä¸ºnum_symsï¼Œç”¨äºå®ç°ç‰ˆæœ¬æ§åˆ¶ã€‚è¡¨ç¤ºå¯¼å‡ºç¬¦å·çš„æ ¡éªŒå’Œã€‚ */
 	const unsigned long *crcs;
 
 	/* GPL-only exported symbols. */
-	/* ÕâĞ©µ¼³öµÄ·ûºÅÖ»ÄÜÓÃÓÚGPLĞ­ÒéµÄÄ£¿é */
+	/* è¿™äº›å¯¼å‡ºçš„ç¬¦å·åªèƒ½ç”¨äºGPLåè®®çš„æ¨¡å— */
 	const struct kernel_symbol *gpl_syms;
 	unsigned int num_gpl_syms;
 	const unsigned long *gpl_crcs;
@@ -304,24 +304,24 @@ struct module
 	const unsigned long *gpl_future_crcs;
 
 	/* Exception table */
-	/* ÓÉÄ£¿é¶¨ÒåµÄÒì³£´¦Àí±í */
+	/* ç”±æ¨¡å—å®šä¹‰çš„å¼‚å¸¸å¤„ç†è¡¨ */
 	unsigned int num_exentries;
 	const struct exception_table_entry *extable;
 
 	/* Startup function. */
-	/* Ä£¿é³õÊ¼»¯Ê±µ÷ÓÃµÄº¯Êı */
+	/* æ¨¡å—åˆå§‹åŒ–æ—¶è°ƒç”¨çš„å‡½æ•° */
 	int (*init)(void);
 
 	/* If this is non-NULL, vfree after init() returns */
-	/* Ä£¿é³õÊ¼»¯º¯Êı¼°Êı¾İµÄµØÖ·£¬×°ÔØºó½«±»¶ªÆú¡£ */
+	/* æ¨¡å—åˆå§‹åŒ–å‡½æ•°åŠæ•°æ®çš„åœ°å€ï¼Œè£…è½½åå°†è¢«ä¸¢å¼ƒã€‚ */
 	void *module_init;
 
 	/* Here is the actual code + data, vfree'd on unload. */
-	/* Ä£¿éÕı³£ÔËĞĞ¹ı³ÌÖĞĞèÒªµÄ´úÂëºÍÊı¾İµØÖ· */
+	/* æ¨¡å—æ­£å¸¸è¿è¡Œè¿‡ç¨‹ä¸­éœ€è¦çš„ä»£ç å’Œæ•°æ®åœ°å€ */
 	void *module_core;
 
 	/* Here are the sizes of the init and core sections */
-	/* Ä£¿é³õÊ¼»¯¼°ºËĞÄ¶ÎµÄ³¤¶È */
+	/* æ¨¡å—åˆå§‹åŒ–åŠæ ¸å¿ƒæ®µçš„é•¿åº¦ */
 	unsigned long init_size, core_size;
 
 	/* The size of the executable code in each section.  */
@@ -331,10 +331,10 @@ struct module
 	void *unwind_info;
 
 	/* Arch-specific module values */
-	/* ÌØ¶¨ÌåÏµ½á¹¹µÄÊı¾İ¡£ÔÚx86Æ½Ì¨ÉÏÎª¿Õ */
+	/* ç‰¹å®šä½“ç³»ç»“æ„çš„æ•°æ®ã€‚åœ¨x86å¹³å°ä¸Šä¸ºç©º */
 	struct mod_arch_specific arch;
 
-	/* ¸ÃÄ£¿éÊÇ·ñ¿ÉÄÜÎÛÈ¾ÄÚºË¡£ÀıÈç£¬Ëü²»ÊÇGPL£¬»òÕßÊÇÇ¿ÖÆ¼ÓÔØµÄ¡£ */
+	/* è¯¥æ¨¡å—æ˜¯å¦å¯èƒ½æ±¡æŸ“å†…æ ¸ã€‚ä¾‹å¦‚ï¼Œå®ƒä¸æ˜¯GPLï¼Œæˆ–è€…æ˜¯å¼ºåˆ¶åŠ è½½çš„ã€‚ */
 	unsigned int taints;	/* same bits as kernel:tainted */
 
 #ifdef CONFIG_GENERIC_BUG
@@ -344,29 +344,29 @@ struct module
 	unsigned num_bugs;
 #endif
 
-/* ÔÊĞíĞ¶ÔØÄ£¿é */
+/* å…è®¸å¸è½½æ¨¡å— */
 #ifdef CONFIG_MODULE_UNLOAD
 	/* Reference counts */
-	/* ÒıÓÃ¼ÆÊı */
+	/* å¼•ç”¨è®¡æ•° */
 	struct module_ref ref[NR_CPUS];
 
 	/* What modules depend on me? */
-	/* ÒÀÀµÓÚ´ËÄ£¿éµÄÆäËûÄ£¿é */
+	/* ä¾èµ–äºæ­¤æ¨¡å—çš„å…¶ä»–æ¨¡å— */
 	struct list_head modules_which_use_me;
 
 	/* Who is waiting for us to be unloaded */
-	/* ÕıÔÚµÈ´ıĞ¶ÔØ´ËÄ£¿éµÄ½ø³Ì */
+	/* æ­£åœ¨ç­‰å¾…å¸è½½æ­¤æ¨¡å—çš„è¿›ç¨‹ */
 	struct task_struct *waiter;
 
 	/* Destruction function. */
-	/* Ä£¿éÍË³öÊ±µÄº¯Êı */
+	/* æ¨¡å—é€€å‡ºæ—¶çš„å‡½æ•° */
 	void (*exit)(void);
 #endif
 
-/* CONFIG_KALLSYMS±íÊ¾ÔÚÄÚºËÖĞµ¼³öËùÓĞ·ûºÅµÄĞÅÏ¢£¬¶ø²»½ö½öÊÇÃ÷È·±íÊ¾µ¼³öµÄº¯Êı¡£ÔÚoopsÊ±ÓĞÓÃ¡£ */
+/* CONFIG_KALLSYMSè¡¨ç¤ºåœ¨å†…æ ¸ä¸­å¯¼å‡ºæ‰€æœ‰ç¬¦å·çš„ä¿¡æ¯ï¼Œè€Œä¸ä»…ä»…æ˜¯æ˜ç¡®è¡¨ç¤ºå¯¼å‡ºçš„å‡½æ•°ã€‚åœ¨oopsæ—¶æœ‰ç”¨ã€‚ */
 #ifdef CONFIG_KALLSYMS
 	/* We keep the symbol and string tables for kallsyms. */
-	/* Ä£¿é·ûºÅĞÅÏ¢£¬²»½ö½öÊÇÏÔÊ½µ¼³öµÄ·ûºÅ */
+	/* æ¨¡å—ç¬¦å·ä¿¡æ¯ï¼Œä¸ä»…ä»…æ˜¯æ˜¾å¼å¯¼å‡ºçš„ç¬¦å· */
 	Elf_Sym *symtab;
 	unsigned long num_symtab;
 	char *strtab;
@@ -379,12 +379,12 @@ struct module
 #endif
 
 	/* Per-cpu data. */
-	/* Ä£¿éµÄÃ¿CPUÊı¾İ */
+	/* æ¨¡å—çš„æ¯CPUæ•°æ® */
 	void *percpu;
 
 	/* The command line arguments (may be mangled).  People like
 	   keeping pointers to this stuff */
-	/* ×°ÔØÄ£¿éÊ±´«µİµÄ²ÎÊı */
+	/* è£…è½½æ¨¡å—æ—¶ä¼ é€’çš„å‚æ•° */
 	char *args;
 #ifdef CONFIG_MARKERS
 	struct marker *markers;

@@ -766,7 +766,7 @@ specific_send_sig_info(int sig, struct siginfo *info, struct task_struct *t)
 	assert_spin_locked(&t->sighand->siglock);
 
 	/* Short-circuit ignored signals.  */
-	if (sig_ignored(t, sig))/* ĞèÒªºöÂÔ´ËĞÅºÅ£¬ÀıÈç£¬Ã»ÓĞÉèÖÃ´ËĞÅºÅµÄ´¦Àíº¯Êı£¬²¢ÇÒÄ¬ÈÏ´¦Àí¹ı³ÌÊÇºöÂÔ */
+	if (sig_ignored(t, sig))/* éœ€è¦å¿½ç•¥æ­¤ä¿¡å·ï¼Œä¾‹å¦‚ï¼Œæ²¡æœ‰è®¾ç½®æ­¤ä¿¡å·çš„å¤„ç†å‡½æ•°ï¼Œå¹¶ä¸”é»˜è®¤å¤„ç†è¿‡ç¨‹æ˜¯å¿½ç•¥ */
 		goto out;
 
 	/* Support queueing exactly one non-rt signal, so that we
@@ -775,10 +775,10 @@ specific_send_sig_info(int sig, struct siginfo *info, struct task_struct *t)
 	if (LEGACY_QUEUE(&t->pending, sig))
 		goto out;
 
-	/* ²úÉúÒ»¸ösigqueueÊµÀı£¬²¢½«ÆäÌí¼Óµ½½ø³ÌµÄ¹ÒÆğÁ´±í */
+	/* äº§ç”Ÿä¸€ä¸ªsigqueueå®ä¾‹ï¼Œå¹¶å°†å…¶æ·»åŠ åˆ°è¿›ç¨‹çš„æŒ‚èµ·é“¾è¡¨ */
 	ret = send_signal(sig, info, t, &t->pending);
-	if (!ret && !sigismember(&t->blocked, sig))/* ĞÅºÅ·¢ËÍ³É¹¦£¬²¢ÇÒÃ»ÓĞ±»×èÈû */
-		signal_wake_up(t, sig == SIGKILL);/* »½ĞÑ½ø³Ì */
+	if (!ret && !sigismember(&t->blocked, sig))/* ä¿¡å·å‘é€æˆåŠŸï¼Œå¹¶ä¸”æ²¡æœ‰è¢«é˜»å¡ */
+		signal_wake_up(t, sig == SIGKILL);/* å”¤é†’è¿›ç¨‹ */
 out:
 	return ret;
 }
@@ -2210,7 +2210,7 @@ sys_rt_sigtimedwait(const sigset_t __user *uthese,
 	return ret;
 }
 
-/* Ïò½ø³Ì×éµÄËùÓĞ½ø³Ì·¢ËÍÒ»¸öĞÅºÅ */
+/* å‘è¿›ç¨‹ç»„çš„æ‰€æœ‰è¿›ç¨‹å‘é€ä¸€ä¸ªä¿¡å· */
 asmlinkage long
 sys_kill(int pid, int sig)
 {
@@ -2239,10 +2239,10 @@ static int do_tkill(int tgid, int pid, int sig)
 	info.si_uid = current->uid;
 
 	read_lock(&tasklist_lock);
-	/* ²éÕÒpid½ø³ÌµÄÈÎÎñ½á¹¹ */
+	/* æŸ¥æ‰¾pidè¿›ç¨‹çš„ä»»åŠ¡ç»“æ„ */
 	p = find_task_by_vpid(pid);
-	if (p && (tgid <= 0 || task_tgid_vnr(p) == tgid)) {/* Ä¿±ê½ø³Ì´æÔÚ£¬²¢ÇÒÓë½ø³ÌÊôÓÚÍ¬Ò»×é */
-		/* ¼ì²é½ø³ÌÊÇ·ñÓĞÈ¨ÏŞ·¢ËÍ¸ÃĞÅºÅ */
+	if (p && (tgid <= 0 || task_tgid_vnr(p) == tgid)) {/* ç›®æ ‡è¿›ç¨‹å­˜åœ¨ï¼Œå¹¶ä¸”ä¸è¿›ç¨‹å±äºåŒä¸€ç»„ */
+		/* æ£€æŸ¥è¿›ç¨‹æ˜¯å¦æœ‰æƒé™å‘é€è¯¥ä¿¡å· */
 		error = check_kill_permission(sig, &info, p);
 		/*
 		 * The null signal is a permissions and process existence
@@ -2251,7 +2251,7 @@ static int do_tkill(int tgid, int pid, int sig)
 		if (!error && sig && p->sighand) {
 			spin_lock_irq(&p->sighand->siglock);
 			handle_stop_signal(sig, p);
-			/* ·¢ËÍĞÅºÅ */
+			/* å‘é€ä¿¡å· */
 			error = specific_send_sig_info(sig, &info, p);
 			spin_unlock_irq(&p->sighand->siglock);
 		}
@@ -2284,13 +2284,13 @@ asmlinkage long sys_tgkill(int tgid, int pid, int sig)
  *  Send a signal to only one task, even if it's a CLONE_THREAD task.
  */
 /**
- * Ïòµ¥¸ö½ø³Ì·¢ËÍĞÅºÅ
+ * å‘å•ä¸ªè¿›ç¨‹å‘é€ä¿¡å·
  */
 asmlinkage long
 sys_tkill(int pid, int sig)
 {
 	/* This is only valid for single tasks */
-	if (pid <= 0)/* ±íÊ¾ÏòËùÓĞ½ø³Ì·¢ËÍ£¬±¾µ÷ÓÃ²»Ö§³Ö */
+	if (pid <= 0)/* è¡¨ç¤ºå‘æ‰€æœ‰è¿›ç¨‹å‘é€ï¼Œæœ¬è°ƒç”¨ä¸æ”¯æŒ */
 		return -EINVAL;
 
 	return do_tkill(0, pid, sig);
@@ -2427,7 +2427,7 @@ out:
 #ifdef __ARCH_WANT_SYS_SIGPENDING
 
 /**
- * ¼ì²éÊÇ·ñÓĞ´ı¾öĞÅºÅ
+ * æ£€æŸ¥æ˜¯å¦æœ‰å¾…å†³ä¿¡å·
  */
 asmlinkage long
 sys_sigpending(old_sigset_t __user *set)
@@ -2442,7 +2442,7 @@ sys_sigpending(old_sigset_t __user *set)
    support only sys_rt_sigprocmask.  */
 
 /**
- * ĞŞ¸Ä×èÈûĞÅºÅµÄÎ»ÑÚÂë
+ * ä¿®æ”¹é˜»å¡ä¿¡å·çš„ä½æ©ç 
  */
 asmlinkage long
 sys_sigprocmask(int how, old_sigset_t __user *set, old_sigset_t __user *oset)

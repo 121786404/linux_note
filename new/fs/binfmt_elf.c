@@ -152,13 +152,13 @@ static int padzero(unsigned long elf_bss)
 #define ELF_BASE_PLATFORM NULL
 #endif
 /*
-ÔÚÍê³É×°Èë£¬Æô¶¯ÓÃ»§¿Õ¼äµÄÓ³ÏñÔËĞĞÖ®Ç°£¬
-»¹ĞèÒªÎªÄ¿±êÓ³ÏñºÍ½âÊÍÆ÷×¼±¸ºÃÒ»Ğ©ÓĞ¹ØµÄĞÅÏ¢£¬
-ÕâĞ©ĞÅÏ¢°üÀ¨³£¹æµÄargc¡¢envcµÈµÈ£¬
-»¹ÓĞÒ»Ğ©¡°¸¨ÖúÏòÁ¿£¨Auxiliary Vector£©¡±¡£
-ÕâĞ©ĞÅÏ¢ĞèÒª¸´ÖÆµ½ÓÃ»§¿Õ¼ä£¬
-Ê¹ËüÃÇÔÚCPU½øÈë½âÊÍÆ÷»òÄ¿±êÓ³ÏñµÄ³ÌĞòÈë¿ÚÊ±³öÏÖ
-ÔÚÓÃ»§¿Õ¼ä¶ÑÕ»ÉÏ
+åœ¨å®Œæˆè£…å…¥ï¼Œå¯åŠ¨ç”¨æˆ·ç©ºé—´çš„æ˜ åƒè¿è¡Œä¹‹å‰ï¼Œ
+è¿˜éœ€è¦ä¸ºç›®æ ‡æ˜ åƒå’Œè§£é‡Šå™¨å‡†å¤‡å¥½ä¸€äº›æœ‰å…³çš„ä¿¡æ¯ï¼Œ
+è¿™äº›ä¿¡æ¯åŒ…æ‹¬å¸¸è§„çš„argcã€envcç­‰ç­‰ï¼Œ
+è¿˜æœ‰ä¸€äº›â€œè¾…åŠ©å‘é‡ï¼ˆAuxiliary Vectorï¼‰â€ã€‚
+è¿™äº›ä¿¡æ¯éœ€è¦å¤åˆ¶åˆ°ç”¨æˆ·ç©ºé—´ï¼Œ
+ä½¿å®ƒä»¬åœ¨CPUè¿›å…¥è§£é‡Šå™¨æˆ–ç›®æ ‡æ˜ åƒçš„ç¨‹åºå…¥å£æ—¶å‡ºç°
+åœ¨ç”¨æˆ·ç©ºé—´å †æ ˆä¸Š
 */
 static int
 create_elf_tables(struct linux_binprm *bprm, struct elfhdr *exec,
@@ -425,8 +425,8 @@ static struct elf_phdr *load_elf_phdrs(struct elfhdr *elf_ex,
 
 	/* Sanity check the number of program headers... */
 /*
-      ±ØĞëÖÁÉÙÓĞÒ»¸ö¶Î
-	ËùÓĞ¶ÎµÄ´óĞ¡Ö®ºÍ²»ÄÜ³¬¹ı64K
+      å¿…é¡»è‡³å°‘æœ‰ä¸€ä¸ªæ®µ
+	æ‰€æœ‰æ®µçš„å¤§å°ä¹‹å’Œä¸èƒ½è¶…è¿‡64K
 */
 	if (elf_ex->e_phnum < 1 ||
 		elf_ex->e_phnum > 65536U / sizeof(struct elf_phdr))
@@ -705,9 +705,9 @@ static int load_elf_binary(struct linux_binprm *bprm)
 	int executable_stack = EXSTACK_DEFAULT;
 
 /*
-    Ìî³ä²¢ÇÒ¼ì²éÄ¿±ê³ÌĞòELFÍ·²¿
+    å¡«å……å¹¶ä¸”æ£€æŸ¥ç›®æ ‡ç¨‹åºELFå¤´éƒ¨
 */
-	struct pt_regs *regs = current_pt_regs();   // »ñÈ¡µ±Ç°½ø³ÌµÄ¼Ä´æÆ÷´æ´¢Î»ÖÃ
+	struct pt_regs *regs = current_pt_regs();   // è·å–å½“å‰è¿›ç¨‹çš„å¯„å­˜å™¨å­˜å‚¨ä½ç½®
 	struct {
 		struct elfhdr elf_ex;
 		struct elfhdr interp_elf_ex;
@@ -721,15 +721,15 @@ static int load_elf_binary(struct linux_binprm *bprm)
 	}
 	
 	/* Get the exec-header */
-	/* »ñÈ¡elfÇ°128¸ö×Ö½Ú£¬×÷ÎªÄ§Êı */
+	/* è·å–elfå‰128ä¸ªå­—èŠ‚ï¼Œä½œä¸ºé­”æ•° */
 	loc->elf_ex = *((struct elfhdr *)bprm->buf);
 
 	retval = -ENOEXEC;
 	/* First of all, some simple consistency checks */
-	/* ¼ì²éÄ§ÊıÊÇ·ñÆ¥Åä */
+	/* æ£€æŸ¥é­”æ•°æ˜¯å¦åŒ¹é… */
 	if (memcmp(loc->elf_ex.e_ident, ELFMAG, SELFMAG) != 0)
 		goto out;
-    /* Èç¹û¼È²»ÊÇ¿ÉÖ´ĞĞÎÄ¼şÒ²²»ÊÇ¶¯Ì¬Á´½Ó³ÌĞò£¬¾Í´íÎóÍË³ö */
+    /* å¦‚æœæ—¢ä¸æ˜¯å¯æ‰§è¡Œæ–‡ä»¶ä¹Ÿä¸æ˜¯åŠ¨æ€é“¾æ¥ç¨‹åºï¼Œå°±é”™è¯¯é€€å‡º */
 	if (loc->elf_ex.e_type != ET_EXEC && loc->elf_ex.e_type != ET_DYN)
 		goto out;
 	if (!elf_check_arch(&loc->elf_ex))
@@ -738,7 +738,7 @@ static int load_elf_binary(struct linux_binprm *bprm)
 		goto out;
 
 /*
-    ¼ÓÔØÄ¿±ê³ÌĞòµÄ³ÌĞòÍ·±í
+    åŠ è½½ç›®æ ‡ç¨‹åºçš„ç¨‹åºå¤´è¡¨
 */
 	elf_phdata = load_elf_phdrs(&loc->elf_ex, bprm->file);
 	if (!elf_phdata)
@@ -753,9 +753,9 @@ static int load_elf_binary(struct linux_binprm *bprm)
 	start_data = 0;
 	end_data = 0;
 
-    // ±éÀúelfµÄ³ÌĞòÍ· , Ñ°ÕÒºÍ´¦ÀíÄ¿±êÓ³ÏñµÄ¡±½âÊÍÆ÷¡±¶Î
+    // éå†elfçš„ç¨‹åºå¤´ , å¯»æ‰¾å’Œå¤„ç†ç›®æ ‡æ˜ åƒçš„â€è§£é‡Šå™¨â€æ®µ
 	for (i = 0; i < loc->elf_ex.e_phnum; i++) {
-		if (elf_ppnt->p_type == PT_INTERP) {  // Èç¹û´æÔÚ½âÊÍÆ÷Í·²¿
+		if (elf_ppnt->p_type == PT_INTERP) {  // å¦‚æœå­˜åœ¨è§£é‡Šå™¨å¤´éƒ¨
 			/* This is the program interpreter used for
 			 * shared libraries - for now assume that this
 			 * is an a.out format binary
@@ -771,10 +771,10 @@ static int load_elf_binary(struct linux_binprm *bprm)
 			if (!elf_interpreter)
 				goto out_free_ph;
 
-            /* Õû¸ö¡±½âÊÍÆ÷¡±¶ÎµÄÄÚÈİ¶ÁÈë»º³åÇø
-                   ¡°½âÊÍÆ÷¡±¶ÎÊµ¼ÊÉÏÖ»ÊÇÒ»¸ö×Ö·û´®
-                   Èç¡±/lib/ld-linux.so.2¡±, \
-                   »òÕß64Î»»úÆ÷ÉÏ¶ÔÓ¦µÄ½Ğ×ö¡±/lib64/ld-linux-x86-64.so.2¡±
+            /* æ•´ä¸ªâ€è§£é‡Šå™¨â€æ®µçš„å†…å®¹è¯»å…¥ç¼“å†²åŒº
+                   â€œè§£é‡Šå™¨â€æ®µå®é™…ä¸Šåªæ˜¯ä¸€ä¸ªå­—ç¬¦ä¸²
+                   å¦‚â€/lib/ld-linux.so.2â€, \
+                   æˆ–è€…64ä½æœºå™¨ä¸Šå¯¹åº”çš„å«åšâ€/lib64/ld-linux-x86-64.so.2â€
                  */
 			retval = kernel_read(bprm->file, elf_ppnt->p_offset,
 					     elf_interpreter,
@@ -788,7 +788,7 @@ static int load_elf_binary(struct linux_binprm *bprm)
 			retval = -ENOEXEC;
 			if (elf_interpreter[elf_ppnt->p_filesz - 1] != '\0')
 				goto out_free_interp;
-            // ´ò¿ª½âÊÍÆ÷ÎÄ¼ş
+            // æ‰“å¼€è§£é‡Šå™¨æ–‡ä»¶
 			interpreter = open_exec(elf_interpreter);
 			retval = PTR_ERR(interpreter);
 			if (IS_ERR(interpreter))
@@ -803,7 +803,7 @@ static int load_elf_binary(struct linux_binprm *bprm)
 
 			/* Get the exec headers */
             /*
-			¶ÁÈë½âÊÍÆ÷µÄÇ°128¸ö×Ö½Ú£¬¼´½âÊÍÆ÷Ó³ÏñµÄÍ·²¿
+			è¯»å…¥è§£é‡Šå™¨çš„å‰128ä¸ªå­—èŠ‚ï¼Œå³è§£é‡Šå™¨æ˜ åƒçš„å¤´éƒ¨
                  */
 			retval = kernel_read(interpreter, 0,
 					     (void *)&loc->interp_elf_ex,
@@ -816,7 +816,7 @@ static int load_elf_binary(struct linux_binprm *bprm)
 
 			break;
 		}
-		/* Ñ­»·¼ì²éËùÓĞµÄ³ÌĞòÍ·¿´ÊÇ·ñÓĞ¶¯Ì¬Á¬½ÓÆ÷ */
+		/* å¾ªç¯æ£€æŸ¥æ‰€æœ‰çš„ç¨‹åºå¤´çœ‹æ˜¯å¦æœ‰åŠ¨æ€è¿æ¥å™¨ */
 		elf_ppnt++;
 	}
 
@@ -841,10 +841,10 @@ static int load_elf_binary(struct linux_binprm *bprm)
 
 	/* Some simple consistency checks for the interpreter */
 	/*
-        Èç¹ûĞèÒª×°Èë½âÊÍÆ÷£¬²¢ÇÒ½âÊÍÆ÷µÄÓ³ÏñÊÇELF¸ñÊ½µÄ£¬
-        ¾ÍÍ¨¹ıload_elf_interp()×°ÈëÆäÓ³Ïñ£¬²¢°Ñ½«À´½øÈëÓÃ»§¿Õ¼äÊ±µÄÈë¿ÚµØÖ·ÉèÖÃ³Éload_elf_interp()µÄ·µ»ØÖµ£¬
-        ÄÇÏÔÈ»ÊÇ½âÊÍÆ÷µÄ³ÌĞòÈë¿Ú¡£¶øÈô²»×°Èë½âÊÍÆ÷£¬
-        ÄÇÃ´Õâ¸öµØÖ·¾ÍÊÇÄ¿±êÓ³Ïñ±¾ÉíµÄ³ÌĞòÈë¿Ú¡£
+        å¦‚æœéœ€è¦è£…å…¥è§£é‡Šå™¨ï¼Œå¹¶ä¸”è§£é‡Šå™¨çš„æ˜ åƒæ˜¯ELFæ ¼å¼çš„ï¼Œ
+        å°±é€šè¿‡load_elf_interp()è£…å…¥å…¶æ˜ åƒï¼Œå¹¶æŠŠå°†æ¥è¿›å…¥ç”¨æˆ·ç©ºé—´æ—¶çš„å…¥å£åœ°å€è®¾ç½®æˆload_elf_interp()çš„è¿”å›å€¼ï¼Œ
+        é‚£æ˜¾ç„¶æ˜¯è§£é‡Šå™¨çš„ç¨‹åºå…¥å£ã€‚è€Œè‹¥ä¸è£…å…¥è§£é‡Šå™¨ï¼Œ
+        é‚£ä¹ˆè¿™ä¸ªåœ°å€å°±æ˜¯ç›®æ ‡æ˜ åƒæœ¬èº«çš„ç¨‹åºå…¥å£ã€‚
 	*/
 	if (elf_interpreter) {
 		retval = -ELIBBAD;
@@ -857,7 +857,7 @@ static int load_elf_binary(struct linux_binprm *bprm)
 
 		/* Load the interpreter program headers */
 /*
-		¶ÁÈë½âÊÍÆ÷µÄ³ÌĞòÍ·
+		è¯»å…¥è§£é‡Šå™¨çš„ç¨‹åºå¤´
 */
 		interp_elf_phdata = load_elf_phdrs(&loc->interp_elf_ex,
 						   interpreter);
@@ -891,8 +891,8 @@ static int load_elf_binary(struct linux_binprm *bprm)
 
 	/* Flush all traces of the currently running executable */
 	/* 
-      ÔÚ´ËÇå³ıµôÁË¸¸½ø³ÌµÄËùÓĞÏà¹Ø´úÂë
-	ÊÍ·Å¿Õ¼ä¡¢É¾³ıĞÅºÅ¡¢¹Ø±Õ´øÓĞCLOSE_ON_EXEC±êÖ¾µÄÎÄ¼ş
+      åœ¨æ­¤æ¸…é™¤æ‰äº†çˆ¶è¿›ç¨‹çš„æ‰€æœ‰ç›¸å…³ä»£ç 
+	é‡Šæ”¾ç©ºé—´ã€åˆ é™¤ä¿¡å·ã€å…³é—­å¸¦æœ‰CLOSE_ON_EXECæ ‡å¿—çš„æ–‡ä»¶
 	*/
 	retval = flush_old_exec(bprm);
 	if (retval)
@@ -900,7 +900,7 @@ static int load_elf_binary(struct linux_binprm *bprm)
 
 	/* Do this immediately, since STACK_TOP as used in setup_arg_pages
 	   may depend on the personality.  */
-	/* ÉèÖÃelf¿ÉÖ´ĞĞÎÄ¼şµÄÌØĞÔ */
+	/* è®¾ç½®elfå¯æ‰§è¡Œæ–‡ä»¶çš„ç‰¹æ€§ */
 	SET_PERSONALITY2(loc->elf_ex, &arch_state);
 	if (elf_read_implies_exec(loc->elf_ex, executable_stack))
 		current->personality |= READ_IMPLIES_EXEC;
@@ -913,8 +913,8 @@ static int load_elf_binary(struct linux_binprm *bprm)
 
 	/* Do this so that we can load the interpreter, if need be.  We will
 	   change some of these later 
-	   ÎªÏÂÃæµÄ¶¯Ì¬Á¬½ÓÆ÷Ö´ĞĞ»ñÈ¡ÄÚºË¿Õ¼äpage
-         Îª½ø³Ì·ÖÅäÓÃ»§Ì¬¶ÑÕ»£¬²¢ÈûÈë²ÎÊıºÍ»·¾³±äÁ¿
+	   ä¸ºä¸‹é¢çš„åŠ¨æ€è¿æ¥å™¨æ‰§è¡Œè·å–å†…æ ¸ç©ºé—´page
+         ä¸ºè¿›ç¨‹åˆ†é…ç”¨æˆ·æ€å †æ ˆï¼Œå¹¶å¡å…¥å‚æ•°å’Œç¯å¢ƒå˜é‡
 	*/
 	retval = setup_arg_pages(bprm, randomize_stack_top(STACK_TOP),
 				 executable_stack);
@@ -926,23 +926,23 @@ static int load_elf_binary(struct linux_binprm *bprm)
 	/* Now we do a little grungy work by mmapping the ELF image into
 	   the correct location in memory. 
 
-	 ×°ÈëÄ¿±ê³ÌĞòµÄ¶Îsegment 
-       Õâ¶Î´úÂë´ÓÄ¿±êÓ³ÏñµÄ³ÌĞòÍ·ÖĞËÑË÷ÀàĞÍÎªPT_LOADµÄ¶Î£¨Segment£©¡£
-       ÔÚ¶ş½øÖÆÓ³ÏñÖĞ£¬Ö»ÓĞÀàĞÍÎªPT_LOADµÄ¶Î²ÅÊÇĞèÒª×°ÈëµÄ¡£
-       µ±È»ÔÚ×°ÈëÖ®Ç°£¬ĞèÒªÈ·¶¨×°ÈëµÄµØÖ·£¬Ö»Òª¿¼ÂÇµÄ¾ÍÊÇÒ³Ãæ¶ÔÆë£¬
-       »¹ÓĞ¸Ã¶ÎµÄp_vaddrÓòµÄÖµ£¨ÉÏÃæÊ¡ÂÔÕâ²¿·ÖÄÚÈİ£©¡£
-       È·¶¨ÁË×°ÈëµØÖ·ºó£¬¾ÍÍ¨¹ıelf_map()½¨Á¢ÓÃ»§¿Õ¼äĞéÄâµØÖ·¿Õ¼ä
-       ÓëÄ¿±êÓ³ÏñÎÄ¼şÖĞÄ³¸öÁ¬ĞøÇø¼äÖ®¼äµÄÓ³Éä£¬
-       Æä·µ»ØÖµ¾ÍÊÇÊµ¼ÊÓ³ÉäµÄÆğÊ¼µØÖ·*/
+	 è£…å…¥ç›®æ ‡ç¨‹åºçš„æ®µsegment 
+       è¿™æ®µä»£ç ä»ç›®æ ‡æ˜ åƒçš„ç¨‹åºå¤´ä¸­æœç´¢ç±»å‹ä¸ºPT_LOADçš„æ®µï¼ˆSegmentï¼‰ã€‚
+       åœ¨äºŒè¿›åˆ¶æ˜ åƒä¸­ï¼Œåªæœ‰ç±»å‹ä¸ºPT_LOADçš„æ®µæ‰æ˜¯éœ€è¦è£…å…¥çš„ã€‚
+       å½“ç„¶åœ¨è£…å…¥ä¹‹å‰ï¼Œéœ€è¦ç¡®å®šè£…å…¥çš„åœ°å€ï¼Œåªè¦è€ƒè™‘çš„å°±æ˜¯é¡µé¢å¯¹é½ï¼Œ
+       è¿˜æœ‰è¯¥æ®µçš„p_vaddråŸŸçš„å€¼ï¼ˆä¸Šé¢çœç•¥è¿™éƒ¨åˆ†å†…å®¹ï¼‰ã€‚
+       ç¡®å®šäº†è£…å…¥åœ°å€åï¼Œå°±é€šè¿‡elf_map()å»ºç«‹ç”¨æˆ·ç©ºé—´è™šæ‹Ÿåœ°å€ç©ºé—´
+       ä¸ç›®æ ‡æ˜ åƒæ–‡ä»¶ä¸­æŸä¸ªè¿ç»­åŒºé—´ä¹‹é—´çš„æ˜ å°„ï¼Œ
+       å…¶è¿”å›å€¼å°±æ˜¯å®é™…æ˜ å°„çš„èµ·å§‹åœ°å€*/
 
-    /* °´ÕÕÏÈÇ°»ñÈ¡µÄ³ÌĞòÍ·±í£¬Ñ­»·½«ËùÓĞµÄ¿ÉÖ´ĞĞÎÄ¼ş¼ÓÔØµ½ÄÚ´æÖĞ */
+    /* æŒ‰ç…§å…ˆå‰è·å–çš„ç¨‹åºå¤´è¡¨ï¼Œå¾ªç¯å°†æ‰€æœ‰çš„å¯æ‰§è¡Œæ–‡ä»¶åŠ è½½åˆ°å†…å­˜ä¸­ */
 	for(i = 0, elf_ppnt = elf_phdata;
 	    i < loc->elf_ex.e_phnum; i++, elf_ppnt++) {
 		int elf_prot = 0, elf_flags;
 		unsigned long k, vaddr;
 		unsigned long total_size = 0;
 
-        /*  ËÑË÷PT_LOADµÄ¶Î, Õâ¸öÊÇĞèÒª×°ÈëµÄ */
+        /*  æœç´¢PT_LOADçš„æ®µ, è¿™ä¸ªæ˜¯éœ€è¦è£…å…¥çš„ */
 		if (elf_ppnt->p_type != PT_LOAD)
 			continue;
 
@@ -952,8 +952,8 @@ static int load_elf_binary(struct linux_binprm *bprm)
 			/* There was a PT_LOAD segment with p_memsz > p_filesz
 			   before this one. Map anonymous pages, if needed,
 			   and clear the area.  */
-			// Éú³ÉBSS
-			// ¼ì²éµØÖ·ºÍÒ³ÃæµÄĞÅÏ¢
+			// ç”ŸæˆBSS
+			// æ£€æŸ¥åœ°å€å’Œé¡µé¢çš„ä¿¡æ¯
 			retval = set_brk(elf_bss + load_bias,
 					 elf_brk + load_bias,
 					 bss_prot);
@@ -985,7 +985,7 @@ static int load_elf_binary(struct linux_binprm *bprm)
 		elf_flags = MAP_PRIVATE | MAP_DENYWRITE | MAP_EXECUTABLE;
 
 		vaddr = elf_ppnt->p_vaddr;
-		// ¿ÉÖ´ĞĞ³ÌĞò
+		// å¯æ‰§è¡Œç¨‹åº
 		if (loc->elf_ex.e_type == ET_EXEC || load_addr_set) {
 			elf_flags |= MAP_FIXED;
 		} else if (loc->elf_ex.e_type == ET_DYN) {
@@ -1004,12 +1004,12 @@ static int load_elf_binary(struct linux_binprm *bprm)
 				goto out_free_dentry;
 			}
 		}
-        /* ´´½¨Ò»¸öĞÂÏßĞÔÇø¶Ô¿ÉÖ´ĞĞÎÄ¼şµÄÊı¾İ¶Î½øĞĞÓ³Éä */
-        /*  ĞéÄâµØÖ·¿Õ¼äÓëÄ¿±êÓ³ÏñÎÄ¼şµÄÓ³Éä
-                 È·¶¨ÁË×°ÈëµØÖ·ºó£¬
-                 ¾ÍÍ¨¹ıelf_map()½¨Á¢ÓÃ»§¿Õ¼äĞéÄâµØÖ·¿Õ¼ä
-                 ÓëÄ¿±êÓ³ÏñÎÄ¼şÖĞÄ³¸öÁ¬ĞøÇø¼äÖ®¼äµÄÓ³Éä£¬
-                 Æä·µ»ØÖµ¾ÍÊÇÊµ¼ÊÓ³ÉäµÄÆğÊ¼µØÖ· */
+        /* åˆ›å»ºä¸€ä¸ªæ–°çº¿æ€§åŒºå¯¹å¯æ‰§è¡Œæ–‡ä»¶çš„æ•°æ®æ®µè¿›è¡Œæ˜ å°„ */
+        /*  è™šæ‹Ÿåœ°å€ç©ºé—´ä¸ç›®æ ‡æ˜ åƒæ–‡ä»¶çš„æ˜ å°„
+                 ç¡®å®šäº†è£…å…¥åœ°å€åï¼Œ
+                 å°±é€šè¿‡elf_map()å»ºç«‹ç”¨æˆ·ç©ºé—´è™šæ‹Ÿåœ°å€ç©ºé—´
+                 ä¸ç›®æ ‡æ˜ åƒæ–‡ä»¶ä¸­æŸä¸ªè¿ç»­åŒºé—´ä¹‹é—´çš„æ˜ å°„ï¼Œ
+                 å…¶è¿”å›å€¼å°±æ˜¯å®é™…æ˜ å°„çš„èµ·å§‹åœ°å€ */
 		error = elf_map(bprm->file, load_bias + vaddr, elf_ppnt,
 				elf_prot, elf_flags, total_size);
 		if (BAD_ADDR(error)) {
@@ -1061,8 +1061,8 @@ static int load_elf_binary(struct linux_binprm *bprm)
 			elf_brk = k;
 		}
 	}
-    // ¼ÓÉÏÆ«ÒÆÁ¿
-    /* ¸üĞÂ¶ÁÈëÄÚ´æÖĞÏà¹ØĞÅÏ¢µÄ¼ÇÂ¼ */
+    // åŠ ä¸Šåç§»é‡
+    /* æ›´æ–°è¯»å…¥å†…å­˜ä¸­ç›¸å…³ä¿¡æ¯çš„è®°å½• */
 	loc->elf_ex.e_entry += load_bias;
 	elf_bss += load_bias;
 	elf_brk += load_bias;
@@ -1076,9 +1076,9 @@ static int load_elf_binary(struct linux_binprm *bprm)
 	 * mapping in the interpreter, to make sure it doesn't wind
 	 * up getting placed where the bss needs to go.
 	 */
-	// ´´½¨Ò»¸öĞÂµÄÄäÃûÏßĞÔÇø£¬À´Ó³Éä³ÌĞòµÄbss¶Î
+	// åˆ›å»ºä¸€ä¸ªæ–°çš„åŒ¿åçº¿æ€§åŒºï¼Œæ¥æ˜ å°„ç¨‹åºçš„bssæ®µ
 /*
-	Ê¹ÓÃset_brkµ÷Õûbss¶ÎµÄ´óĞ¡ 
+	ä½¿ç”¨set_brkè°ƒæ•´bssæ®µçš„å¤§å° 
 */
 	retval = set_brk(elf_bss, elf_brk, bss_prot);
 	if (retval)
@@ -1088,16 +1088,16 @@ static int load_elf_binary(struct linux_binprm *bprm)
 		goto out_free_dentry;
 	}
 /*
-     Èç¹ûĞèÒª×°Èë½âÊÍÆ÷£¬¾ÍÍ¨¹ıload_elf_interp×°ÈëÆäÓ³Ïñ, 
-     ²¢°Ñ½«À´½øÈëÓÃ»§¿Õ¼äµÄÈë¿ÚµØÖ·ÉèÖÃ³Éload_elf_interp()µÄ·µ»ØÖµ£¬
-     ¼´½âÊÍÆ÷Ó³ÏñµÄÈë¿ÚµØÖ·¡£
+     å¦‚æœéœ€è¦è£…å…¥è§£é‡Šå™¨ï¼Œå°±é€šè¿‡load_elf_interpè£…å…¥å…¶æ˜ åƒ, 
+     å¹¶æŠŠå°†æ¥è¿›å…¥ç”¨æˆ·ç©ºé—´çš„å…¥å£åœ°å€è®¾ç½®æˆload_elf_interp()çš„è¿”å›å€¼ï¼Œ
+     å³è§£é‡Šå™¨æ˜ åƒçš„å…¥å£åœ°å€ã€‚
 
-     ¶øÈô²»×°Èë½âÊÍÆ÷£¬ÄÇÃ´Õâ¸öÈë¿ÚµØÖ·¾ÍÊÇÄ¿±ê
-     Ó³Ïñ±¾ÉíµÄÈë¿ÚµØÖ·¡£
+     è€Œè‹¥ä¸è£…å…¥è§£é‡Šå™¨ï¼Œé‚£ä¹ˆè¿™ä¸ªå…¥å£åœ°å€å°±æ˜¯ç›®æ ‡
+     æ˜ åƒæœ¬èº«çš„å…¥å£åœ°å€ã€‚
 */
 	if (elf_interpreter) {
 		unsigned long interp_map_addr = 0;
-        // µ÷ÓÃÒ»¸ö×°Èë¶¯Ì¬Á´½Ó³ÌĞòµÄº¯Êı ´ËÊ±elf_entryÖ¸ÏòÒ»¸ö¶¯Ì¬Á´½Ó³ÌĞòµÄÈë¿Ú
+        // è°ƒç”¨ä¸€ä¸ªè£…å…¥åŠ¨æ€é“¾æ¥ç¨‹åºçš„å‡½æ•° æ­¤æ—¶elf_entryæŒ‡å‘ä¸€ä¸ªåŠ¨æ€é“¾æ¥ç¨‹åºçš„å…¥å£
 		elf_entry = load_elf_interp(&loc->interp_elf_ex,
 					    interpreter,
 					    &interp_map_addr,
@@ -1121,7 +1121,7 @@ static int load_elf_binary(struct linux_binprm *bprm)
 		fput(interpreter);
 		kfree(elf_interpreter);
 	} else {
-	    // elf_entryÊÇ¿ÉÖ´ĞĞ³ÌĞòµÄÈë¿Ú
+	    // elf_entryæ˜¯å¯æ‰§è¡Œç¨‹åºçš„å…¥å£
 		elf_entry = loc->elf_ex.e_entry;
 		if (BAD_ADDR(elf_entry)) {
 			retval = -EINVAL;
@@ -1141,7 +1141,7 @@ static int load_elf_binary(struct linux_binprm *bprm)
 #endif /* ARCH_HAS_SETUP_ADDITIONAL_PAGES */
 
 /*
-    ÌîĞ´Ä¿±êÎÄ¼şµÄ²ÎÊı»·¾³±äÁ¿µÈ±ØÒªĞÅÏ¢
+    å¡«å†™ç›®æ ‡æ–‡ä»¶çš„å‚æ•°ç¯å¢ƒå˜é‡ç­‰å¿…è¦ä¿¡æ¯
 */
 	retval = create_elf_tables(bprm, &loc->elf_ex,
 			  load_addr, interp_load_addr);
@@ -1149,7 +1149,7 @@ static int load_elf_binary(struct linux_binprm *bprm)
 		goto out;
 	/* N.B. passed_fileno might not be initialized? */
 /*
-	µ÷ÕûÄÚ´æÓ³ÉäÄÚÈİ
+	è°ƒæ•´å†…å­˜æ˜ å°„å†…å®¹
 */
 	current->mm->end_code = end_code;
 	current->mm->start_code = start_code;
@@ -1187,25 +1187,25 @@ static int load_elf_binary(struct linux_binprm *bprm)
 	 */
 	ELF_PLAT_INIT(regs, reloc_func_desc);
 #endif
-    // ĞŞ¸Ä±£´æÔÚÄÚºË¶ÑÕ»£¬µ«ÊôÓÚÓÃ»§Ì¬µÄeipºÍesp
+    // ä¿®æ”¹ä¿å­˜åœ¨å†…æ ¸å †æ ˆï¼Œä½†å±äºç”¨æˆ·æ€çš„eipå’Œesp
 /*
-      ×îºó£¬start_thread()Õâ¸öºê²Ù×÷»á½«eipºÍesp¸Ä³ÉĞÂµÄµØÖ·£¬
-      ¾ÍÊ¹µÃCPUÔÚ·µ»ØÓÃ»§¿Õ¼äÊ±¾Í½øÈëĞÂµÄ³ÌĞòÈë¿Ú¡£
-      Èç¹û´æÔÚ½âÊÍÆ÷Ó³Ïñ£¬ÄÇÃ´Õâ¾ÍÊÇ½âÊÍÆ÷Ó³ÏñµÄ³ÌĞòÈë¿Ú£¬
-      ·ñÔò¾ÍÊÇÄ¿±êÓ³ÏñµÄ³ÌĞòÈë¿Ú¡£
-      ÄÇÃ´Ê²Ã´Çé¿öÏÂÓĞ½âÊÍÆ÷Ó³Ïñ´æÔÚ£¬Ê²Ã´Çé¿öÏÂÃ»ÓĞÄØ£¿
-      Èç¹ûÄ¿±êÓ³ÏñÓë¸÷ÖÖ¿âµÄÁ´½ÓÊÇ¾²Ì¬Á´½Ó£¬
-      Òò¶øÎŞĞèÒÀ¿¿¹²Ïí¿â¡¢¼´¶¯Ì¬Á´½Ó¿â£¬ÄÇ¾Í²»ĞèÒª½âÊÍÆ÷Ó³Ïñ£»
+      æœ€åï¼Œstart_thread()è¿™ä¸ªå®æ“ä½œä¼šå°†eipå’Œespæ”¹æˆæ–°çš„åœ°å€ï¼Œ
+      å°±ä½¿å¾—CPUåœ¨è¿”å›ç”¨æˆ·ç©ºé—´æ—¶å°±è¿›å…¥æ–°çš„ç¨‹åºå…¥å£ã€‚
+      å¦‚æœå­˜åœ¨è§£é‡Šå™¨æ˜ åƒï¼Œé‚£ä¹ˆè¿™å°±æ˜¯è§£é‡Šå™¨æ˜ åƒçš„ç¨‹åºå…¥å£ï¼Œ
+      å¦åˆ™å°±æ˜¯ç›®æ ‡æ˜ åƒçš„ç¨‹åºå…¥å£ã€‚
+      é‚£ä¹ˆä»€ä¹ˆæƒ…å†µä¸‹æœ‰è§£é‡Šå™¨æ˜ åƒå­˜åœ¨ï¼Œä»€ä¹ˆæƒ…å†µä¸‹æ²¡æœ‰å‘¢ï¼Ÿ
+      å¦‚æœç›®æ ‡æ˜ åƒä¸å„ç§åº“çš„é“¾æ¥æ˜¯é™æ€é“¾æ¥ï¼Œ
+      å› è€Œæ— éœ€ä¾é å…±äº«åº“ã€å³åŠ¨æ€é“¾æ¥åº“ï¼Œé‚£å°±ä¸éœ€è¦è§£é‡Šå™¨æ˜ åƒï¼›
 
-      ·ñÔò¾ÍÒ»¶¨ÒªÓĞ½âÊÍÆ÷Ó³Ïñ´æÔÚ¡£
-       ¶ÔÓÚÒ»¸öÄ¿±ê³ÌĞò, gccÔÚ±àÒëÊ±£¬³ı·ÇÏÔÊ¾µÄÊ¹ÓÃstatic±êÇ©£¬
-       ·ñÔòËùÓĞ³ÌĞòµÄÁ´½Ó¶¼ÊÇ¶¯Ì¬Á´½ÓµÄ£¬
-       Ò²¾ÍÊÇËµĞèÒª½âÊÍÆ÷¡£ÓÉ´Ë¿É¼û£¬
-       ÎÒÃÇµÄ³ÌĞòÔÚ±»ÄÚºË¼ÓÔØµ½ÄÚ´æ£¬
-       ÄÚºËÌøµ½ÓÃ»§¿Õ¼äºó²¢²»ÊÇÖ´ĞĞÎÒÃÇ³ÌĞòµÄ£¬
-       ¶øÊÇÏÈ°Ñ¿ØÖÆÈ¨½»µ½ÓÃ»§¿Õ¼äµÄ½âÊÍÆ÷£¬
-       ÓÉ½âÊÍÆ÷¼ÓÔØÔËĞĞÓÃ»§³ÌĞòËùĞèÒªµÄ¶¯Ì¬¿â£¨±ÈÈçlibcµÈµÈ£©£¬
-       È»ºó¿ØÖÆÈ¨²Å»á×ªÒÆµ½ÓÃ»§³ÌĞò¡£
+      å¦åˆ™å°±ä¸€å®šè¦æœ‰è§£é‡Šå™¨æ˜ åƒå­˜åœ¨ã€‚
+       å¯¹äºä¸€ä¸ªç›®æ ‡ç¨‹åº, gccåœ¨ç¼–è¯‘æ—¶ï¼Œé™¤éæ˜¾ç¤ºçš„ä½¿ç”¨staticæ ‡ç­¾ï¼Œ
+       å¦åˆ™æ‰€æœ‰ç¨‹åºçš„é“¾æ¥éƒ½æ˜¯åŠ¨æ€é“¾æ¥çš„ï¼Œ
+       ä¹Ÿå°±æ˜¯è¯´éœ€è¦è§£é‡Šå™¨ã€‚ç”±æ­¤å¯è§ï¼Œ
+       æˆ‘ä»¬çš„ç¨‹åºåœ¨è¢«å†…æ ¸åŠ è½½åˆ°å†…å­˜ï¼Œ
+       å†…æ ¸è·³åˆ°ç”¨æˆ·ç©ºé—´åå¹¶ä¸æ˜¯æ‰§è¡Œæˆ‘ä»¬ç¨‹åºçš„ï¼Œ
+       è€Œæ˜¯å…ˆæŠŠæ§åˆ¶æƒäº¤åˆ°ç”¨æˆ·ç©ºé—´çš„è§£é‡Šå™¨ï¼Œ
+       ç”±è§£é‡Šå™¨åŠ è½½è¿è¡Œç”¨æˆ·ç¨‹åºæ‰€éœ€è¦çš„åŠ¨æ€åº“ï¼ˆæ¯”å¦‚libcç­‰ç­‰ï¼‰ï¼Œ
+       ç„¶åæ§åˆ¶æƒæ‰ä¼šè½¬ç§»åˆ°ç”¨æˆ·ç¨‹åºã€‚
 */
 	start_thread(regs, elf_entry, bprm->p);
 	retval = 0;

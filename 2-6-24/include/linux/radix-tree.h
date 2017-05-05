@@ -59,14 +59,14 @@ static inline int radix_tree_is_indirect_ptr(void *ptr)
 
 /* root tags are stored in gfp_mask, shifted by __GFP_BITS_SHIFT */
 /**
- * »ùÊı¸ù½Úµã
+ * åŸºæ•°æ ¹èŠ‚ç‚¹
  */
 struct radix_tree_root {
-	/* Ê÷µÄ¸ß¶È£¬¿É¾İ´Ë¼ÆËãÊ÷ÖĞÊı¾İÏîµÄ×î´óÊıÄ¿ */
+	/* æ ‘çš„é«˜åº¦ï¼Œå¯æ®æ­¤è®¡ç®—æ ‘ä¸­æ•°æ®é¡¹çš„æœ€å¤§æ•°ç›® */
 	unsigned int		height;
-	/* ´ÓÄÄ¸öÇøÓò·ÖÅäÄÚ´æ */
+	/* ä»å“ªä¸ªåŒºåŸŸåˆ†é…å†…å­˜ */
 	gfp_t			gfp_mask;
-	/* Ê÷µÄµÚÒ»¸ö½Úµã */
+	/* æ ‘çš„ç¬¬ä¸€ä¸ªèŠ‚ç‚¹ */
 	struct radix_tree_node	*rnode;
 };
 

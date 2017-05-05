@@ -247,7 +247,7 @@ typedef struct elf64_sym {
 
 #define EI_NIDENT	16
 
-/* 32Î»elf¿ÉÖ´ĞĞÎÄ¼şÍ·²¿ */
+/* 32ä½elfå¯æ‰§è¡Œæ–‡ä»¶å¤´éƒ¨ */
 typedef struct elf32_hdr{
   unsigned char	e_ident[EI_NIDENT];
   Elf32_Half	e_type;
@@ -265,25 +265,25 @@ typedef struct elf32_hdr{
   Elf32_Half	e_shstrndx;
 } Elf32_Ehdr;
 
-/* elf64Î»¿ÉÖ´ĞĞÎÄ¼şµÄÍ·²¿ */
+/* elf64ä½å¯æ‰§è¡Œæ–‡ä»¶çš„å¤´éƒ¨ */
 typedef struct elf64_hdr {
   unsigned char	e_ident[16];		/* ELF "magic number" */
-  Elf64_Half e_type;             /* Ä¿±êÎÄ¼şÀàĞÍ */
+  Elf64_Half e_type;             /* ç›®æ ‡æ–‡ä»¶ç±»å‹ */
   Elf64_Half e_machine;
   Elf64_Word e_version;
-  Elf64_Addr e_entry;		 /* ¿ÉÖ´ĞĞÎÄ¼şÈë¿ÚµØÖ· */ /* Entry point virtual address */
+  Elf64_Addr e_entry;		 /* å¯æ‰§è¡Œæ–‡ä»¶å…¥å£åœ°å€ */ /* Entry point virtual address */
   Elf64_Off e_phoff;		/* Program header table file offset */
   Elf64_Off e_shoff;		/* Section header table file offset */
   Elf64_Word e_flags;
-  Elf64_Half e_ehsize;  /* ¸ÃÊı¾İ½á¹¹Ò»×Ö½ÚÎªµ¥Î»µÄÊµ¼Ê´óĞ¡ */
-  Elf64_Half e_phentsize;  /* program headerµÄ´óĞ¡ */
-  Elf64_Half e_phnum;      /* program header entryµÄÊıÁ¿ */
+  Elf64_Half e_ehsize;  /* è¯¥æ•°æ®ç»“æ„ä¸€å­—èŠ‚ä¸ºå•ä½çš„å®é™…å¤§å° */
+  Elf64_Half e_phentsize;  /* program headerçš„å¤§å° */
+  Elf64_Half e_phnum;      /* program header entryçš„æ•°é‡ */
   Elf64_Half e_shentsize;
   Elf64_Half e_shnum;
-  /* ÔÚSection header tableÖĞÓĞÒ»¸öÌØÊâµÄentry£¬
-    * Ëü¶¨ÒåÁËSection header tableÖĞ¸÷¸öentryµÄÃû×Ö£¬
-    * e_shstrndxÓÃÓÚÖ¸Ê¾Õâ¸öÌØÊâµÄentryÔÚSection header tableÖĞµÄË÷Òı£¬¼´ËüÔÚµÚ¼¸¸öentry£¬ 
-    * Õâ¸öÌØÊâµÄentry³ÆÎªsection name string table¡£
+  /* åœ¨Section header tableä¸­æœ‰ä¸€ä¸ªç‰¹æ®Šçš„entryï¼Œ
+    * å®ƒå®šä¹‰äº†Section header tableä¸­å„ä¸ªentryçš„åå­—ï¼Œ
+    * e_shstrndxç”¨äºæŒ‡ç¤ºè¿™ä¸ªç‰¹æ®Šçš„entryåœ¨Section header tableä¸­çš„ç´¢å¼•ï¼Œå³å®ƒåœ¨ç¬¬å‡ ä¸ªentryï¼Œ 
+    * è¿™ä¸ªç‰¹æ®Šçš„entryç§°ä¸ºsection name string tableã€‚
     */
   Elf64_Half e_shstrndx;
 } Elf64_Ehdr;
@@ -305,18 +305,18 @@ typedef struct elf32_phdr{
   Elf32_Word	p_align;
 } Elf32_Phdr;
 
-/* ÓÃÕâ¸öÊı¾İ½á¹¹¿ÉÒÔÕÒµ½Ã¿¸ösegmentÔÚÎÄ¼şÖĞµÄÎ»ÖÃ */
+/* ç”¨è¿™ä¸ªæ•°æ®ç»“æ„å¯ä»¥æ‰¾åˆ°æ¯ä¸ªsegmentåœ¨æ–‡ä»¶ä¸­çš„ä½ç½® */
 typedef struct elf64_phdr {
   Elf64_Word p_type;
   Elf64_Word p_flags;
   Elf64_Off p_offset;		/* Segment file offset */
-  /* ÔÚÄÚ´æµ±ÖĞµÄÏßĞÔµØÖ· */
+  /* åœ¨å†…å­˜å½“ä¸­çš„çº¿æ€§åœ°å€ */
   Elf64_Addr p_vaddr;		/* Segment virtual address */
-  /* ÎïÀíÄÚ´æµÄµØÖ· */
+  /* ç‰©ç†å†…å­˜çš„åœ°å€ */
   Elf64_Addr p_paddr;		/* Segment physical address */
-  /* p_fileszÖ¸Ê¾Program headerËùÖ¸µÄSegmentÔÚÎÄ¼şÖĞµÄ´óĞ¡¡£
-    * p_memszÖ¸Ê¾Program headerËùÖ¸µÄSegmentÔÚÄÚ´æÖĞµÄ´óĞ¡£¬
-    * Ò»°ãµØ£¬p_memsz>=p_filesz£¬¶Ôp_filesz²»×ãµÄÄÚ´æÇøÓòÌî0¡£ 
+  /* p_fileszæŒ‡ç¤ºProgram headeræ‰€æŒ‡çš„Segmentåœ¨æ–‡ä»¶ä¸­çš„å¤§å°ã€‚
+    * p_memszæŒ‡ç¤ºProgram headeræ‰€æŒ‡çš„Segmentåœ¨å†…å­˜ä¸­çš„å¤§å°ï¼Œ
+    * ä¸€èˆ¬åœ°ï¼Œp_memsz>=p_fileszï¼Œå¯¹p_fileszä¸è¶³çš„å†…å­˜åŒºåŸŸå¡«0ã€‚ 
     */ 
   Elf64_Xword p_filesz;		/* Segment size in file */
   Elf64_Xword p_memsz;		/* Segment size in memory */
@@ -324,10 +324,10 @@ typedef struct elf64_phdr {
 } Elf64_Phdr;
 
 /* sh_type */
-#define SHT_NULL	0         /* ±íÊ¾¶ÎÍ·±íÎŞĞ§£¬²»Õ¼ÓÃÎÄ¼ş¿Õ¼ä */
-#define SHT_PROGBITS	1 /* ±íÊ¾¸Ã¶Î°üº¬³ÌĞòÖ¸Áî */
-#define SHT_SYMTAB	2   /* ±íÊ¾¸Ã¶Î°üº¬ÖØ¶¨Î»·ûºÅ±í */
-#define SHT_STRTAB	3   /* °üº¬×Ö·û±í */
+#define SHT_NULL	0         /* è¡¨ç¤ºæ®µå¤´è¡¨æ— æ•ˆï¼Œä¸å ç”¨æ–‡ä»¶ç©ºé—´ */
+#define SHT_PROGBITS	1 /* è¡¨ç¤ºè¯¥æ®µåŒ…å«ç¨‹åºæŒ‡ä»¤ */
+#define SHT_SYMTAB	2   /* è¡¨ç¤ºè¯¥æ®µåŒ…å«é‡å®šä½ç¬¦å·è¡¨ */
+#define SHT_STRTAB	3   /* åŒ…å«å­—ç¬¦è¡¨ */
 #define SHT_RELA	4
 #define SHT_HASH	5
 #define SHT_DYNAMIC	6
@@ -371,25 +371,25 @@ typedef struct {
 } Elf32_Shdr;
 
 typedef struct elf64_shdr {
-  /* ÔÚsection name string tableµ±ÖĞµÄË÷Òı */
+  /* åœ¨section name string tableå½“ä¸­çš„ç´¢å¼• */
   Elf64_Word sh_name;		/* Section name, index in string tbl */
-  /* ±íÃ÷¶ÎµÄÀàĞÍ */
+  /* è¡¨æ˜æ®µçš„ç±»å‹ */
   Elf64_Word sh_type;		/* Type of section */
   Elf64_Xword sh_flags;		/* Miscellaneous section attributes */
-  /* ±íÃ÷µ±Ç°¶ÎÔÚÄÚ´æµ±ÖĞµÄÆğÊ¼ÏßĞÔµØÖ· */
+  /* è¡¨æ˜å½“å‰æ®µåœ¨å†…å­˜å½“ä¸­çš„èµ·å§‹çº¿æ€§åœ°å€ */
   Elf64_Addr sh_addr;		/* Section virtual addr at execution */
-  /* µ±Ç°¶ÎÔÚÎÄ¼şÖĞµÄÆ«ÒÆÁ¿ */
+  /* å½“å‰æ®µåœ¨æ–‡ä»¶ä¸­çš„åç§»é‡ */
   Elf64_Off sh_offset;		/* Section file offset */
-  /* µ±Ç°¶ÎÔÚÎÄ¼şÖĞÕ¼ÓÃµÄ×Ö½ÚÊı */
+  /* å½“å‰æ®µåœ¨æ–‡ä»¶ä¸­å ç”¨çš„å­—èŠ‚æ•° */
   Elf64_Xword sh_size;		/* Size of section in bytes */
-  /* Ò»ÏÂÁ½¸ö¹©Á¬½ÓÆ÷Ê¹ÓÃ */
+  /* ä¸€ä¸‹ä¸¤ä¸ªä¾›è¿æ¥å™¨ä½¿ç”¨ */
   Elf64_Word sh_link;		/* Index of another section */
   Elf64_Word sh_info;		/* Additional section information */
-  /* Ö¸Ê¾sh_addrµÄ¶ÔÆëÒªÇó */
+  /* æŒ‡ç¤ºsh_addrçš„å¯¹é½è¦æ±‚ */
   Elf64_Xword sh_addralign;	/* Section alignment */
-  /* ÓĞÒ»Ğ©ÌØÊâµÄsection£¬ËüÄÚ²¿ÈÔÈ»°üº¬¶à¸öentry£¬
-    * Ã¿¸öentry´óĞ¡ÏàÍ¬£¬Èçsymbol table£¬sh_entsizeÓÃÓÚ
-    * Ö¸Ê¾Õâ¸öÌØÊâµÄsectionÖĞÃ¿¸öentryµÄ´óĞ¡¡£ 
+  /* æœ‰ä¸€äº›ç‰¹æ®Šçš„sectionï¼Œå®ƒå†…éƒ¨ä»ç„¶åŒ…å«å¤šä¸ªentryï¼Œ
+    * æ¯ä¸ªentryå¤§å°ç›¸åŒï¼Œå¦‚symbol tableï¼Œsh_entsizeç”¨äº
+    * æŒ‡ç¤ºè¿™ä¸ªç‰¹æ®Šçš„sectionä¸­æ¯ä¸ªentryçš„å¤§å°ã€‚ 
     */ 
   Elf64_Xword sh_entsize;	/* Entry size if section holds table */
 } Elf64_Shdr;

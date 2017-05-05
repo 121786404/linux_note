@@ -24,13 +24,13 @@
 #define SLAB_RED_ZONE		0x00000400UL	/* DEBUG: Red zone objs in a cache */
 #define SLAB_POISON		0x00000800UL	/* DEBUG: Poison objects */
 /*
-Ö¸¶¨cache¶ÔÆë(cache line¶ÔÆë,Èç32×Ö½Ú¶ÔÆë).
+æŒ‡å®šcacheå¯¹é½(cache lineå¯¹é½,å¦‚32å­—èŠ‚å¯¹é½).
 */
 #define SLAB_HWCACHE_ALIGN	0x00002000UL	/* Align objs on cache lines */
 #define SLAB_CACHE_DMA		0x00004000UL	/* Use GFP_DMA memory */
 #define SLAB_STORE_USER		0x00010000UL	/* DEBUG: Store the last owner for bug hunting */
 /*
-Ö¸Ê¾´´½¨Ê§°ÜÊ±ºò,ÏµÍ³halt
+æŒ‡ç¤ºåˆ›å»ºå¤±è´¥æ—¶å€™,ç³»ç»Ÿhalt
 
 */
 #define SLAB_PANIC		0x00040000UL	/* Panic if kmem_cache_create() fails */
@@ -483,27 +483,27 @@ static __always_inline void *kmalloc_large(size_t size, gfp_t flags)
  * potential flags, always refer to linux/gfp.h.
  */
 /*
- ÓÃÓÚÉêÇë½ÏÐ¡µÄ¡¢Á¬ÐøµÄÎïÀíÄÚ´æ
-1. ÒÔ×Ö½ÚÎªµ¥Î»½øÐÐ·ÖÅä
-2. ·ÖÅäµÄÄÚ´æÎïÀíµØÖ·ÉÏÁ¬Ðø£¬ÐéÄâµØÖ·ÉÏ×ÔÈ»Á¬Ðø
-3. gfp_mask±êÖ¾£ºÊ²Ã´Ê±ºòÊ¹ÓÃÄÄÖÖ±êÖ¾£¿ÈçÏÂ£º
-½ø³ÌÉÏÏÂÎÄ£¬¿ÉÒÔË¯Ãß GFP_KERNEL
-½ø³ÌÉÏÏÂÎÄ£¬²»¿ÉÒÔË¯Ãß GFP_ATOMIC
-ÖÐ¶Ï´¦Àí³ÌÐò GFP_ATOMIC
-ÈíÖÐ¶Ï GFP_ATOMIC
+ ç”¨äºŽç”³è¯·è¾ƒå°çš„ã€è¿žç»­çš„ç‰©ç†å†…å­˜
+1. ä»¥å­—èŠ‚ä¸ºå•ä½è¿›è¡Œåˆ†é…
+2. åˆ†é…çš„å†…å­˜ç‰©ç†åœ°å€ä¸Šè¿žç»­ï¼Œè™šæ‹Ÿåœ°å€ä¸Šè‡ªç„¶è¿žç»­
+3. gfp_maskæ ‡å¿—ï¼šä»€ä¹ˆæ—¶å€™ä½¿ç”¨å“ªç§æ ‡å¿—ï¼Ÿå¦‚ä¸‹ï¼š
+è¿›ç¨‹ä¸Šä¸‹æ–‡ï¼Œå¯ä»¥ç¡çœ  GFP_KERNEL
+è¿›ç¨‹ä¸Šä¸‹æ–‡ï¼Œä¸å¯ä»¥ç¡çœ  GFP_ATOMIC
+ä¸­æ–­å¤„ç†ç¨‹åº GFP_ATOMIC
+è½¯ä¸­æ–­ GFP_ATOMIC
 Tasklet GFP_ATOMIC
-ÓÃÓÚDMAµÄÄÚ´æ£¬¿ÉÒÔË¯Ãß GFP_DMA | GFP_KERNEL
-ÓÃÓÚDMAµÄÄÚ´æ£¬²»¿ÉÒÔË¯Ãß GFP_DMA | GFP_ATOMIC
+ç”¨äºŽDMAçš„å†…å­˜ï¼Œå¯ä»¥ç¡çœ  GFP_DMA | GFP_KERNEL
+ç”¨äºŽDMAçš„å†…å­˜ï¼Œä¸å¯ä»¥ç¡çœ  GFP_DMA | GFP_ATOMIC
 */
 static __always_inline void *kmalloc(size_t size, gfp_t flags)
 {
 /*
-__builtin_constant_pÊÇGccÄÚ½¨º¯Êý£¬ÓÃÓÚÅÐ¶ÏÒ»¸öÖµÊÇ·ñÎª±àÒëÊ±³£Á¿
+__builtin_constant_pæ˜¯Gccå†…å»ºå‡½æ•°ï¼Œç”¨äºŽåˆ¤æ–­ä¸€ä¸ªå€¼æ˜¯å¦ä¸ºç¼–è¯‘æ—¶å¸¸é‡
 */
 	if (__builtin_constant_p(size)) {
 /*
-	´«Èë³£Á¿ÇÒ¸ÃÖµ´óÓÚKMALLOC_MAX_CACHE_SIZE£¨¼´ÉêÇë¿Õ¼ä³¬¹ýkmalloc()ËùÄÜ·ÖÅä×î´ócacheµÄ´óÐ¡£©£¬
-	ÄÇÃ´½«»áÍ¨¹ýkmalloc_large()½øÐÐ·ÖÅä
+	ä¼ å…¥å¸¸é‡ä¸”è¯¥å€¼å¤§äºŽKMALLOC_MAX_CACHE_SIZEï¼ˆå³ç”³è¯·ç©ºé—´è¶…è¿‡kmalloc()æ‰€èƒ½åˆ†é…æœ€å¤§cacheçš„å¤§å°ï¼‰ï¼Œ
+	é‚£ä¹ˆå°†ä¼šé€šè¿‡kmalloc_large()è¿›è¡Œåˆ†é…
 */
 		if (size > KMALLOC_MAX_CACHE_SIZE)
 			return kmalloc_large(size, flags);
@@ -685,7 +685,7 @@ static inline void *kmem_cache_zalloc(struct kmem_cache *k, gfp_t flags)
  * @size: how many bytes of memory are required.
  * @flags: the type of memory to allocate (see kmalloc).
  */
- /*kzallocº¯ÊýÊ±kmallocº¯ÊýÔÚÉèÖÃÁË__GFP_ZEROÇé¿öµÄ¼ò»¯°æ±¾*/
+ /*kzallocå‡½æ•°æ—¶kmallocå‡½æ•°åœ¨è®¾ç½®äº†__GFP_ZEROæƒ…å†µçš„ç®€åŒ–ç‰ˆæœ¬*/
 static inline void *kzalloc(size_t size, gfp_t flags)
 {
 	return kmalloc(size, flags | __GFP_ZERO);

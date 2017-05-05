@@ -793,7 +793,7 @@ asmlinkage long sys_fchown(unsigned int fd, uid_t user, gid_t group)
 	return error;
 }
 
-//��file�ṹ����һЩ��ʼ��
+//对file结构进行一些初始化
 static struct file *__dentry_open(struct dentry *dentry, struct vfsmount *mnt,
 					int flags, struct file *f,
 					int (*open)(struct inode *, struct file *))
@@ -806,7 +806,7 @@ static struct file *__dentry_open(struct dentry *dentry, struct vfsmount *mnt,
 				FMODE_PREAD | FMODE_PWRITE;
 	inode = dentry->d_inode;
 	
-	if (f->f_mode & FMODE_WRITE) //����ļ���дȨ��
+	if (f->f_mode & FMODE_WRITE) //检查文件的写权限
 	{
 		error = get_write_access(inode);
 		if (error)
@@ -814,16 +814,16 @@ static struct file *__dentry_open(struct dentry *dentry, struct vfsmount *mnt,
 	}
 
 	
-	//���ļ��ṹ��ʼ����ֵ
+	//给文件结构初始化赋值
 	f->f_mapping = inode->i_mapping;//
 	f->f_dentry = dentry;
 	f->f_vfsmnt = mnt;
-	f->f_pos = 0; //λ��
-	f->f_op = fops_get(inode->i_fop);//��������
-	file_move(f, &inode->i_sb->s_files);//���ļ�������볬������ļ���������
+	f->f_pos = 0; //位置
+	f->f_op = fops_get(inode->i_fop);//操作函数
+	file_move(f, &inode->i_sb->s_files);//把文件对象加入超级块的文件对象链表
 	//************************************************
 
-	//����ļ�ϵͳ�Ƿ�Ϊ�ļ�������open����
+	//检查文件系统是否为文件定义上open函数
 	if (!open && f->f_op)
 		open = f->f_op->open;
 	if (open) {
@@ -833,11 +833,11 @@ static struct file *__dentry_open(struct dentry *dentry, struct vfsmount *mnt,
 	}
 
 	f->f_flags &= ~(O_CREAT | O_EXCL | O_NOCTTY | O_TRUNC);
-	//��ʼ���ļ���Ԥ������
+	//初始化文件的预读参数
 	file_ra_state_init(&f->f_ra, f->f_mapping->host->i_mapping);
 
 	/* NB: we're sure to have correct a_ops only after f_op->open */
-	//����ļ�����O_DIRECT��־�����direct I/O�ĺ������� 
+	//如果文件带有O_DIRECT标志，检查direct I/O的函数调用 
 	if (f->f_flags & O_DIRECT) {
 		if (!f->f_mapping->a_ops ||
 		    ((!f->f_mapping->a_ops->direct_IO) &&
@@ -877,25 +877,25 @@ cleanup_file:
  * for the internal routines (ie open_namei()/follow_link() etc). 00 is
  * used by symlinks.
  */
- //�������������뵽�򿪹��ܵ�����ʵ�ֹ��ܵĺ���do_filp_open()������
+ //接下来即将进入到打开功能的真正实现功能的函数do_filp_open()函数：
 static struct file *do_filp_open(int dfd, const char *filename, int flags,
 				 int mode)
 {
 	int namei_flags, error;
-	struct nameidata nd; //��ʱ�����ṹ(������dentry,vfsmount�����ļ���ص���Ϣ)
+	struct nameidata nd; //临时辅助结构(包含了dentry,vfsmount等与文件相关的信息)
 
 	namei_flags = flags;
 	if ((namei_flags+1) & O_ACCMODE)
 		namei_flags++;
 		
-	/*�����ļ���������·����һ������·�������õ��ļ���dentry��vfsmount����
-	  ���浽һ��nameidata�ṹ��(nameidata��һ����ʱ�����ṹ���򻯲�������)
-	  name���ļ�·����(������ȫ·����Ҳ���������·����)*/
+	/*沿着文件名的整个路径，一层层解析路径。最后得到文件的dentry和vfsmount对象
+	  保存到一个nameidata结构中(nameidata是一个临时辅助结构，简化参数传递)
+	  name是文件路径名(可以是全路径，也可以是相对路径名)*/
 	error = open_namei(dfd, filename, namei_flags, mode, &nd); 
 
 	
-	if (!error)//���ļ������һ��������ļ��ṹ
-		return nameidata_to_filp(&nd, flags);//nd ��ʼ��������file����
+	if (!error)//打开文件的最后一步，获得文件结构
+		return nameidata_to_filp(&nd, flags);//nd 初始化，产生file对象
 
 	return ERR_PTR(error);
 }
@@ -952,7 +952,7 @@ EXPORT_SYMBOL_GPL(lookup_instantiate_filp);
  *
  * Note that this function destroys the original nameidata
  */
- //���ļ������һ�������file�ṹ
+ //打开文件的最后一步，获得file结构
 struct file *nameidata_to_filp(struct nameidata *nd, int flags)
 {
 	struct file *filp;
@@ -960,9 +960,9 @@ struct file *nameidata_to_filp(struct nameidata *nd, int flags)
 	/* Pick up the filp from the open intent */
 	filp = nd->intent.open.file;
 	/* Has the filesystem initialised the file for us? */
-	//����ļ�ϵͳû�г�ʼ��f_dentry
+	//如果文件系统没有初始化f_dentry
 	if (filp->f_dentry == NULL)
-		filp = __dentry_open(nd->dentry, nd->mnt, flags, filp, NULL);//dentry�Ĵ� 
+		filp = __dentry_open(nd->dentry, nd->mnt, flags, filp, NULL);//dentry的打开 
 	else
 		path_release(nd);
 	return filp;
@@ -991,7 +991,7 @@ EXPORT_SYMBOL(dentry_open);
 
 /*
  * Find an empty file descriptor entry, and mark it busy.
- * �ҵ�һ���յ��ļ�������,���������Ϊæ��
+ * 找到一个空的文件描述符,并将它标记为忙。
  */
 int get_unused_fd(void)
 {
@@ -1095,57 +1095,57 @@ EXPORT_SYMBOL(fd_install);
 
 //**********************add by jian **************************
 /*
-�����ں˶��ԣ����д��ļ������ļ����������á��ļ���������һ���Ǹ�������
-����һ���ִ��ļ��򴴽�һ�����ļ�ʱ���ں�����̷���һ���ļ���������
-������дһ���ļ�ʱ����open��create���ص��ļ������� fd ��ʶ���ļ���������Ϊ�������͸�read��write��
-��POSIX.1Ӧ�ó����У��ļ�������Ϊ����0��1��2�ֱ����STDIN_FILENO��STDOUT_FILENO��STDERR_FILENO��
-�⼴��׼���룬��׼����ͱ�׼�����������Щ������������ͷ�ļ�<unistd.h>;
-�С��ļ��������ķ�Χ��0~OPEN_MAX����Ŀǰ���õ�linuxϵͳ�У���32λ�������ܱ�ʾ����������65535��64λ��������ࡣ
+对于内核而言，所有打开文件都由文件描述符引用。文件描述符是一个非负整数。
+当打开一个现存文件或创建一个新文件时，内核向进程返回一个文件描述符。
+当读、写一个文件时，用open或create返回的文件描述符 fd 标识该文件，将其作为参数传送给read或write。
+在POSIX.1应用程序中，文件描述符为常数0、1和2分别代表STDIN_FILENO、STDOUT_FILENO和STDERR_FILENO，
+意即标准输入，标准输出和标准出错输出，这些常数都定义在头文件<unistd.h>;
+中。文件描述符的范围是0~OPEN_MAX，在目前常用的linux系统中，是32位整形所能表示的整数，即65535，64位机上则更多。
 
-ʵ���ϣ��ļ�������fd��Ӧ���Ǵ��ļ���file�ṹ�ڽ�����ά����������±�(���������files_struct��)��
-		ͨ��fd�����ҵ��򿪵��ļ���Ӧ��file�ṹ��
+实际上；文件描述符fd对应的是打开文件的file结构在进程所维护的数组的下标(这个数组在files_struct中)。
+		通过fd可以找到打开的文件对应的file结构。
 */
 
-//name���ļ�·����(������ȫ·����Ҳ���������·����)
+//name是文件路径名(可以是全路径，也可以是相对路径名)
 long do_sys_open(int dfd, const char __user *filename, int flags, int mode)
 {
-    /*���ļ������û��ռ俽�����ں˿ռ�*/
+    /*将文件名从用户空间拷贝到内核空间*/
 	char *tmp = getname(filename);
 	
 	int fd = PTR_ERR(tmp);
 
 	if (!IS_ERR(tmp)) 
 	{
-		/*��ȡһ�����õ�fd����fd_table�л�ȡһ������fd,����Щ�򵥳�ʼ��*/
+		/*获取一个可用的fd，从fd_table中获取一个可用fd,并做些简单初始化*/
 		fd = get_unused_fd();
 		if (fd >= 0) 
 		{
-			/*fd��ȡ�ɹ���ʼ���ļ����˺�������Ҫ��ɴ򿪹��ܵĺ���*/
-			//name���ļ�·����(������ȫ·����Ҳ���������·����)
+			/*fd获取成功则开始打开文件，此函数是主要完成打开功能的函数*/
+			//name是文件路径名(可以是全路径，也可以是相对路径名)
 			struct file *f = do_filp_open(dfd, tmp, flags, mode);
 			if (IS_ERR(f))
 			{
-				/*��ʧ�ܣ��ͷ�fd*/
+				/*打开失败，释放fd*/
 				put_unused_fd(fd);
 				fd = PTR_ERR(f);
 			} 
 			else
 			{
-				/*�ļ�����Ѿ������ˣ�����fsnotify_open()����*/
+				/*文件如果已经被打开了，调用fsnotify_open()函数*/
 				fsnotify_open(f->f_dentry);
-				/*���ļ�ָ�밲װ��fd������*/
+				/*将文件指针安装在fd数组中*/
 				fd_install(fd, f);
 			}
 		}
-		/*�ͷŷ��ô��û��ռ俽���������ļ����Ĵ洢�ռ�*/
+		/*释放放置从用户空间拷贝过来的文件名的存储空间*/
 		putname(tmp);
 	}
-	return fd;//�ļ������������ļ���
+	return fd;//文件描述符，及文件号
 }
 
 
-//���ļ�
-//filename���ļ�·����(������ȫ·����Ҳ���������·����)
+//打开文件
+//filename是文件路径名(可以是全路径，也可以是相对路径名)
 asmlinkage long sys_open(const char __user *filename, int flags, int mode)
 {
 	long ret;
@@ -1153,10 +1153,10 @@ asmlinkage long sys_open(const char __user *filename, int flags, int mode)
 	if (force_o_largefile())
 		flags |= O_LARGEFILE;
 
-	//AT_FDCWDָʾ�ļ��Ĳ���λ��
+	//AT_FDCWD指示文件的查找位置
 	ret = do_sys_open(AT_FDCWD, filename, flags, mode);
 	/* avoid REGPARM breakage on x86: */
-	prevent_tail_call(ret);//��ֹ������β�����ü��Ż�
+	prevent_tail_call(ret);//禁止编译器尾部调用及优化
 	return ret;
 }
 EXPORT_SYMBOL_GPL(sys_open);

@@ -222,8 +222,8 @@ EXPORT_SYMBOL_GPL(blkdev_driver_ioctl);
  * compat_blkdev_locked_ioctl()
  */
 /**
- * ¿éÉè±¸µÄioctl£¬¶Ô¹«ÓÃÃüÁî£¬ÔÚ´Ëº¯ÊıÖĞ´¦Àí¡£
- * ·ñÔòµ÷ÓÃÉè±¸×ÔÉíµÄioctl´¦Àí¡£
+ * å—è®¾å¤‡çš„ioctlï¼Œå¯¹å…¬ç”¨å‘½ä»¤ï¼Œåœ¨æ­¤å‡½æ•°ä¸­å¤„ç†ã€‚
+ * å¦åˆ™è°ƒç”¨è®¾å¤‡è‡ªèº«çš„ioctlå¤„ç†ã€‚
  */
 int blkdev_ioctl(struct inode *inode, struct file *file, unsigned cmd,
 			unsigned long arg)

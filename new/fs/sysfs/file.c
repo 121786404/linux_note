@@ -311,7 +311,7 @@ int sysfs_add_file_mode_ns(struct kernfs_node *parent,
 	}
 	return 0;
 }
-/*º¯Êı½«ÔÚdir_sd¶ÔÓ¦µÄÄ¿Â¼ÏÂÉú³ÉÒ»¸öÊôĞÔÎÄ¼ş*/
+/*å‡½æ•°å°†åœ¨dir_sdå¯¹åº”çš„ç›®å½•ä¸‹ç”Ÿæˆä¸€ä¸ªå±æ€§æ–‡ä»¶*/
 int sysfs_add_file(struct kernfs_node *parent, const struct attribute *attr,
 		   bool is_bin)
 {
@@ -324,8 +324,8 @@ int sysfs_add_file(struct kernfs_node *parent, const struct attribute *attr,
  * @attr: attribute descriptor
  * @ns: namespace the new file should belong to
  */
-/*ÎªÒ»¸ökobject¶ÔÏó´´½¨Ò»¸öÊôĞÔÎÄ¼ş,Ê¹ÓÃÕâ¸öº¯ÊıÊ±,±ØĞëÈ·±£ÒªÌí¼ÓÊôĞÔÎÄ¼şµÄkobj¶ÔÏóÖ®Ç°
- *ÒÑ¾­¼ÓÈëÁËsysfs,sysfs_add_fileº¯Êı½«ÔÚkobj->sd¶ÔÓ¦µÄÄ¿Â¼ÏÂÉú³ÉÒ»¸öÊôĞÔÎÄ¼ş*/
+/*ä¸ºä¸€ä¸ªkobjectå¯¹è±¡åˆ›å»ºä¸€ä¸ªå±æ€§æ–‡ä»¶,ä½¿ç”¨è¿™ä¸ªå‡½æ•°æ—¶,å¿…é¡»ç¡®ä¿è¦æ·»åŠ å±æ€§æ–‡ä»¶çš„kobjå¯¹è±¡ä¹‹å‰
+ *å·²ç»åŠ å…¥äº†sysfs,sysfs_add_fileå‡½æ•°å°†åœ¨kobj->sdå¯¹åº”çš„ç›®å½•ä¸‹ç”Ÿæˆä¸€ä¸ªå±æ€§æ–‡ä»¶*/
 int sysfs_create_file_ns(struct kobject *kobj, const struct attribute *attr,
 			 const void *ns)
 {

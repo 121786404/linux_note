@@ -65,7 +65,7 @@ static struct file_system_type **find_filesystem(const char *name, unsigned len)
  */
 
 /**
- * ×¢²áÎÄ¼þÏµÍ³¡£½«ÎÄ¼þÏµÍ³±£´æµ½Ò»¸öÈ«¾ÖÁ´±íÖÐ¡£
+ * æ³¨å†Œæ–‡ä»¶ç³»ç»Ÿã€‚å°†æ–‡ä»¶ç³»ç»Ÿä¿å­˜åˆ°ä¸€ä¸ªå…¨å±€é“¾è¡¨ä¸­ã€‚
  */
 int register_filesystem(struct file_system_type * fs)
 {
@@ -223,16 +223,16 @@ struct file_system_type *get_fs_type(const char *name)
 	const char *dot = strchr(name, '.');
 	unsigned len = dot ? dot - name : strlen(name);
 
-	/* »ñÈ¡ÎÄ¼þÏµÍ³¶ÁËø */
+	/* èŽ·å–æ–‡ä»¶ç³»ç»Ÿè¯»é” */
 	read_lock(&file_systems_lock);
-	/* ¸ù¾ÝÃû³Æ²éÕÒÎÄ¼þÏµÍ³ */
+	/* æ ¹æ®åç§°æŸ¥æ‰¾æ–‡ä»¶ç³»ç»Ÿ */
 	fs = *(find_filesystem(name, len));
-	if (fs && !try_module_get(fs->owner))/* ÎÄ¼þÏµÍ³´æÔÚ£¬µ«ÊÇÄ£¿éÕýÔÚÐ¶ÔØÖÐ */
+	if (fs && !try_module_get(fs->owner))/* æ–‡ä»¶ç³»ç»Ÿå­˜åœ¨ï¼Œä½†æ˜¯æ¨¡å—æ­£åœ¨å¸è½½ä¸­ */
 		fs = NULL;
-	read_unlock(&file_systems_lock);/* ÊÍ·ÅÎÄ¼þÏµÍ³Ëø */
-	/* Ã»ÓÐÆ¥ÅäµÄÎÄ¼þÏµÍ³ */
-	if (!fs && (request_module("%.*s", len, name) == 0)) {/* ¼ÓÔØÏàÓ¦µÄÄ£¿é */
-		read_lock(&file_systems_lock);/* ÔÙ´Î»ñµÃÎÄ¼þÏµÍ³Ëø²¢²éÕÒ */
+	read_unlock(&file_systems_lock);/* é‡Šæ”¾æ–‡ä»¶ç³»ç»Ÿé” */
+	/* æ²¡æœ‰åŒ¹é…çš„æ–‡ä»¶ç³»ç»Ÿ */
+	if (!fs && (request_module("%.*s", len, name) == 0)) {/* åŠ è½½ç›¸åº”çš„æ¨¡å— */
+		read_lock(&file_systems_lock);/* å†æ¬¡èŽ·å¾—æ–‡ä»¶ç³»ç»Ÿé”å¹¶æŸ¥æ‰¾ */
 		fs = *(find_filesystem(name, len));
 		if (fs && !try_module_get(fs->owner))
 			fs = NULL;

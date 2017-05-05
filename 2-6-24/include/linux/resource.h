@@ -40,12 +40,12 @@ struct	rusage {
 };
 
 /**
- * ��Դ���ƽṹ�����������಻ͬ����Դ���͡�
+ * 资源限制结构，可用于许多不同的资源类型、
  */
 struct rlimit {
-	/* ���̵�ǰ����Դ���ƣ�Ҳ��Ϊ������ */
+	/* 进程当前的资源限制，也称为软限制 */
 	unsigned long	rlim_cur;
-	/* �����Ƶ��������ֵ��Ҳ��ΪӲ���� */
+	/* 该限制的最大容许值，也称为硬限制 */
 	unsigned long	rlim_max;
 };
 

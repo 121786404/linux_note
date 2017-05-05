@@ -91,7 +91,7 @@ void dynamic_irq_cleanup(unsigned int irq)
  *	@chip:	pointer to irq chip description structure
  */
 /**
- * ÉèÖÃÄ³¸öIRQ¹ØÁªµÄ¿ØÖÆĞ¾Æ¬
+ * è®¾ç½®æŸä¸ªIRQå…³è”çš„æ§åˆ¶èŠ¯ç‰‡
  */
 int set_irq_chip(unsigned int irq, struct irq_chip *chip)
 {
@@ -290,7 +290,7 @@ static inline void mask_ack_irq(struct irq_desc *desc, int irq)
  *	unmask issues if necessary.
  */
 /**
- * ×ÔĞĞ´¦ÀíµçÁ÷ÌØĞÔ£¬»òÕß²»ĞèÒª´¦ÀíµçÁ÷ÌØĞÔµÄ¼òµ¥ÖĞ¶Ï¡£
+ * è‡ªè¡Œå¤„ç†ç”µæµç‰¹æ€§ï¼Œæˆ–è€…ä¸éœ€è¦å¤„ç†ç”µæµç‰¹æ€§çš„ç®€å•ä¸­æ–­ã€‚
  */
 void fastcall
 handle_simple_irq(unsigned int irq, struct irq_desc *desc)
@@ -382,7 +382,7 @@ out_unlock:
  *	details in hardware, transparently.
  */
 /**
- * ´ËÀàÖĞ¶ÏÖ»ĞèÒªÔÚISR½áÊøºóµ÷ÓÃeoiº¯Êı£¬±Èhandle_edge_irq¸ü¼òµ¥¡£
+ * æ­¤ç±»ä¸­æ–­åªéœ€è¦åœ¨ISRç»“æŸåè°ƒç”¨eoiå‡½æ•°ï¼Œæ¯”handle_edge_irqæ›´ç®€å•ã€‚
  */
 void fastcall
 handle_fasteoi_irq(unsigned int irq, struct irq_desc *desc)
@@ -444,15 +444,15 @@ out:
  *	loop is left.
  */
 /**
- * ±ßÑØ´¥·¢µÄIRQÖĞ¶ÏµçÁ÷´¦Àí¡£´ó²¿·ÖÓ²¼ş²ÉÓÃ´Ë´¦Àí¹ı³Ì¡£
- * ÕâÖÖÖĞ¶ÏÎŞĞëÆÁ±Î£¬µ«ÊÇ¿ÉÄÜÍ¬Ê±ÔÚÁ½¸öCPUÉÏ´¥·¢¡£Òò´ËĞèÒª´¦Àí²¢·¢¡£
+ * è¾¹æ²¿è§¦å‘çš„IRQä¸­æ–­ç”µæµå¤„ç†ã€‚å¤§éƒ¨åˆ†ç¡¬ä»¶é‡‡ç”¨æ­¤å¤„ç†è¿‡ç¨‹ã€‚
+ * è¿™ç§ä¸­æ–­æ— é¡»å±è”½ï¼Œä½†æ˜¯å¯èƒ½åŒæ—¶åœ¨ä¸¤ä¸ªCPUä¸Šè§¦å‘ã€‚å› æ­¤éœ€è¦å¤„ç†å¹¶å‘ã€‚
  */
 void fastcall
 handle_edge_irq(unsigned int irq, struct irq_desc *desc)
 {
 	const unsigned int cpu = smp_processor_id();
 
-	/* »ñµÃ¸ÃÖĞ¶Ï¶ÔÓ¦µÄspinlockËø */
+	/* è·å¾—è¯¥ä¸­æ–­å¯¹åº”çš„spinlocké” */
 	spin_lock(&desc->lock);
 
 	desc->status &= ~(IRQ_REPLAY | IRQ_WAITING);
@@ -462,22 +462,22 @@ handle_edge_irq(unsigned int irq, struct irq_desc *desc)
 	 * we shouldn't process the IRQ. Mark it pending, handle
 	 * the necessary masking and go out
 	 */
-	if (unlikely((desc->status & (IRQ_INPROGRESS | IRQ_DISABLED)) ||/* ÆäËûºËÕıÔÚ´¦Àí¸ÃÖĞ¶Ï£¬»òÕß¸ÃÖĞ¶ÏÒÑ¾­±»½ûÖ¹ÁË */
-		    !desc->action)) {/* Ã»ÓĞÌá¹©ÖĞ¶Ï´¦Àí³ÌĞò£¬¿ÉÄÜÊÇÉú³ÉµÄ¼ÙÖĞ¶Ï */
-		/* ÉèÖÃ¹ÒÆğ±êÖ¾£¬µÈÒÔºó´¦Àí¸ÃÖĞ¶Ï */
+	if (unlikely((desc->status & (IRQ_INPROGRESS | IRQ_DISABLED)) ||/* å…¶ä»–æ ¸æ­£åœ¨å¤„ç†è¯¥ä¸­æ–­ï¼Œæˆ–è€…è¯¥ä¸­æ–­å·²ç»è¢«ç¦æ­¢äº† */
+		    !desc->action)) {/* æ²¡æœ‰æä¾›ä¸­æ–­å¤„ç†ç¨‹åºï¼Œå¯èƒ½æ˜¯ç”Ÿæˆçš„å‡ä¸­æ–­ */
+		/* è®¾ç½®æŒ‚èµ·æ ‡å¿—ï¼Œç­‰ä»¥åå¤„ç†è¯¥ä¸­æ–­ */
 		desc->status |= (IRQ_PENDING | IRQ_MASKED);
-		/* Ïò¿ØÖÆÆ÷·¢ËÍÓ¦´ğÏûÏ¢ */
+		/* å‘æ§åˆ¶å™¨å‘é€åº”ç­”æ¶ˆæ¯ */
 		mask_ack_irq(desc, irq);
 		goto out_unlock;
 	}
 
-	kstat_cpu(cpu).irqs[irq]++;/* ¼ÆÊı */
+	kstat_cpu(cpu).irqs[irq]++;/* è®¡æ•° */
 
 	/* Start handling the irq */
-	desc->chip->ack(irq);/* ¿ªÊ¼´¦ÀíÖĞ¶Ï£¬Ó¦´ğËü */
+	desc->chip->ack(irq);/* å¼€å§‹å¤„ç†ä¸­æ–­ï¼Œåº”ç­”å®ƒ */
 
 	/* Mark the IRQ currently in progress.*/
-	desc->status |= IRQ_INPROGRESS;/* ÉèÖÃ´¦Àí±êÖ¾£¬ÓÃÓÚ¶àºËÍ¬²½ */
+	desc->status |= IRQ_INPROGRESS;/* è®¾ç½®å¤„ç†æ ‡å¿—ï¼Œç”¨äºå¤šæ ¸åŒæ­¥ */
 
 	do {
 		struct irqaction *action = desc->action;
@@ -502,16 +502,16 @@ handle_edge_irq(unsigned int irq, struct irq_desc *desc)
 
 		desc->status &= ~IRQ_PENDING;
 		spin_unlock(&desc->lock);
-		/* µ÷ÓÃISR´¦ÀíÖĞ¶Ï */
+		/* è°ƒç”¨ISRå¤„ç†ä¸­æ–­ */
 		action_ret = handle_IRQ_event(irq, action);
 		if (!noirqdebug)
 			note_interrupt(irq, desc, action_ret);
 		spin_lock(&desc->lock);
 
-	/* Èç¹ûÔÚ´¦ÀíÖĞ¶ÏµÄ¹ı³ÌÖĞ£¬ÆäËûºËÊÕµ½ÁËÖĞ¶Ï£¬ÔòÓÉ±¾ºË¼ÌĞø´¦Àí */
+	/* å¦‚æœåœ¨å¤„ç†ä¸­æ–­çš„è¿‡ç¨‹ä¸­ï¼Œå…¶ä»–æ ¸æ”¶åˆ°äº†ä¸­æ–­ï¼Œåˆ™ç”±æœ¬æ ¸ç»§ç»­å¤„ç† */
 	} while ((desc->status & (IRQ_PENDING | IRQ_DISABLED)) == IRQ_PENDING);
 
-	/* ÕâÀïÈÔÈ»ÓÉ×ÔĞıËø±£»¤£¬Çå³ı´¦Àí±êÖ¾¡£ÕâÑùÆäËûºË¿ÉÒÔ´¦Àí¸ÃÖĞ¶ÏÁË */
+	/* è¿™é‡Œä»ç„¶ç”±è‡ªæ—‹é”ä¿æŠ¤ï¼Œæ¸…é™¤å¤„ç†æ ‡å¿—ã€‚è¿™æ ·å…¶ä»–æ ¸å¯ä»¥å¤„ç†è¯¥ä¸­æ–­äº† */
 	desc->status &= ~IRQ_INPROGRESS;
 out_unlock:
 	spin_unlock(&desc->lock);
@@ -525,7 +525,7 @@ out_unlock:
  *	Per CPU interrupts on SMP machines without locking requirements
  */
 /**
- * ´ËÀàÖĞ¶Ï½ö½öÔÚÒ»¸öCPUÉÏÔËĞĞ£¬²»ĞèÒª¿¼ÂÇSMPÍ¬²½¡£
+ * æ­¤ç±»ä¸­æ–­ä»…ä»…åœ¨ä¸€ä¸ªCPUä¸Šè¿è¡Œï¼Œä¸éœ€è¦è€ƒè™‘SMPåŒæ­¥ã€‚
  */
 void fastcall
 handle_percpu_irq(unsigned int irq, struct irq_desc *desc)

@@ -85,9 +85,9 @@ static void noop_exit_queue(elevator_t *e)
 }
 
 /**
- * ×î¼òµ¥µÄIOµ÷¶ÈÆ÷£¬°´FIFO´¦ÀíÇëÇó¡£
- * ¿ÉÒÔ½øÐÐIOºÏ²¢£¬µ«ÊÇ²¢²»ÖØÅÅ¡£
- * ÊÊÓÃÓÚ×Ô¶¯ÖØÅÅµÄÓ²¼þ»òÕß²»ÐèÒªÑ°µÀµÄÉè±¸¡£
+ * æœ€ç®€å•çš„IOè°ƒåº¦å™¨ï¼ŒæŒ‰FIFOå¤„ç†è¯·æ±‚ã€‚
+ * å¯ä»¥è¿›è¡ŒIOåˆå¹¶ï¼Œä½†æ˜¯å¹¶ä¸é‡æŽ’ã€‚
+ * é€‚ç”¨äºŽè‡ªåŠ¨é‡æŽ’çš„ç¡¬ä»¶æˆ–è€…ä¸éœ€è¦å¯»é“çš„è®¾å¤‡ã€‚
  */
 static struct elevator_type elevator_noop = {
 	.ops = {

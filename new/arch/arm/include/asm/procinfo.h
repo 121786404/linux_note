@@ -30,18 +30,18 @@ struct proc_info_list {
 	unsigned int		cpu_val;
 	unsigned int		cpu_mask;
 /*
-    ÓÃÓÚ½¨Á¢ÄÚºË´úÂëµÄÏßĞÔÓ³Éä
+    ç”¨äºå»ºç«‹å†…æ ¸ä»£ç çš„çº¿æ€§æ˜ å°„
 
-    Ö¸¶¨ÁËÁÙÊ±Ò³±íÓ³ÉäµÄÄÚºË¿Õ¼äÊÇsection-mapping·½Ê½£¬
-    ¿É¶Á¿ÉĞ´£¬²¢ÇÒÊÇcachedµÄ
+    æŒ‡å®šäº†ä¸´æ—¶é¡µè¡¨æ˜ å°„çš„å†…æ ¸ç©ºé—´æ˜¯section-mappingæ–¹å¼ï¼Œ
+    å¯è¯»å¯å†™ï¼Œå¹¶ä¸”æ˜¯cachedçš„
 */
 	unsigned long		__cpu_mm_mmu_flags;	/* used by head.S */
 /*
-    ÓÃÓÚÔçÆÚ¶ÔÓÚIO¿Õ¼äµÄÓ³Éä£¬ÈçÎÒÃÇĞèÒªÒ»¸öÔçÆÚµÄµ÷ÊÔ´®¿Ú£¬
-    Ôò¿ÉÒÔÔÚcreate_page_tablesÖĞ½«´®¿Ú¼Ä´æÆ÷¿Õ¼ä½øĞĞÓ³Éä
+    ç”¨äºæ—©æœŸå¯¹äºIOç©ºé—´çš„æ˜ å°„ï¼Œå¦‚æˆ‘ä»¬éœ€è¦ä¸€ä¸ªæ—©æœŸçš„è°ƒè¯•ä¸²å£ï¼Œ
+    åˆ™å¯ä»¥åœ¨create_page_tablesä¸­å°†ä¸²å£å¯„å­˜å™¨ç©ºé—´è¿›è¡Œæ˜ å°„
 
-    Ö¸¶¨ÁËÆäËùÓ³ÉäµÄIOÇøÓòÊÇsection-mapping·½Ê½£¬¿É¶Á¿ÉĞ´£¬
-    µ«ÊÇÊÇuncachedµÄ
+    æŒ‡å®šäº†å…¶æ‰€æ˜ å°„çš„IOåŒºåŸŸæ˜¯section-mappingæ–¹å¼ï¼Œå¯è¯»å¯å†™ï¼Œ
+    ä½†æ˜¯æ˜¯uncachedçš„
 */
 	unsigned long		__cpu_io_mmu_flags;	/* used by head.S */
 	unsigned long		__cpu_flush;		/* used by head.S */

@@ -17,8 +17,8 @@
 #include <uapi/linux/perf_event.h>
 
 /*
-Performance EventÊÇÒ»¿îËæ Linux ÄÚºË´úÂëÒ»Í¬·¢²¼ºÍÎ¬»¤µÄÐÔÄÜÕï¶Ï¹¤¾ß¡£
-ÕâÐ©³ÉÔ±ÓÃÓÚ°ïÖúPerformanceEvent·ÖÎö½ø³ÌµÄÐÔÄÜÎÊÌâ
+Performance Eventæ˜¯ä¸€æ¬¾éš Linux å†…æ ¸ä»£ç ä¸€åŒå‘å¸ƒå’Œç»´æŠ¤çš„æ€§èƒ½è¯Šæ–­å·¥å…·ã€‚
+è¿™äº›æˆå‘˜ç”¨äºŽå¸®åŠ©PerformanceEventåˆ†æžè¿›ç¨‹çš„æ€§èƒ½é—®é¢˜
 */
 
 /*

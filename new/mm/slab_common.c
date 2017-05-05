@@ -356,7 +356,7 @@ unsigned long calculate_alignment(unsigned long flags,
 	return ALIGN(align, sizeof(void *));
 }
 
-//´´½¨slab·ÖÅäÆ÷µÄÖ÷º¯Êı
+//åˆ›å»ºslabåˆ†é…å™¨çš„ä¸»å‡½æ•°
 static struct kmem_cache *create_cache(const char *name,
 		size_t object_size, size_t size, size_t align,
 		unsigned long flags, void (*ctor)(void *),
@@ -366,13 +366,13 @@ static struct kmem_cache *create_cache(const char *name,
 	int err;
 
 	err = -ENOMEM;
-	//ÏÈ·ÖÅäÒ»¸ökmem_cache¹ÜÀí½á¹¹
+	//å…ˆåˆ†é…ä¸€ä¸ªkmem_cacheç®¡ç†ç»“æ„
 	s = kmem_cache_zalloc(kmem_cache, GFP_KERNEL);
 	if (!s)
 		goto out;
 
 
-	//³õÊ¼»¯kmem_cache¹ÜÀí½á¹¹
+	//åˆå§‹åŒ–kmem_cacheç®¡ç†ç»“æ„
 	s->name = name;
 	s->object_size = object_size;
 	s->size = size;
@@ -383,14 +383,14 @@ static struct kmem_cache *create_cache(const char *name,
 	if (err)
 		goto out_free_cache;
 
-	//´´½¨slab»º´æ
+	//åˆ›å»ºslabç¼“å­˜
 	err = __kmem_cache_create(s, flags);
 	if (err)
 		goto out_free_cache;
 
-	//ÉèÖÃÒıÓÃ¼ÆÊı
+	//è®¾ç½®å¼•ç”¨è®¡æ•°
 	s->refcount = 1;
-	//Ìí¼Óµ½È«¾ÖÁ´±íÖĞ
+	//æ·»åŠ åˆ°å…¨å±€é“¾è¡¨ä¸­
 	list_add(&s->list, &slab_caches);
 	memcg_link_cache(s);
 out:
@@ -429,7 +429,7 @@ out_free_cache:
  * as davem.
  */
 /**
- * ´´½¨cache
+ * åˆ›å»ºcache
  */
 struct kmem_cache *
 kmem_cache_create(const char *name, size_t size, size_t align,
@@ -439,15 +439,15 @@ kmem_cache_create(const char *name, size_t size, size_t align,
 	const char *cache_name;
 	int err;
 
-	//Ôö¼Ó¶ÔÈÈ²å²¦Ïà¹ØÊı¾İ½á¹¹µÄÒıÓÃ¡£
+	//å¢åŠ å¯¹çƒ­æ’æ‹¨ç›¸å…³æ•°æ®ç»“æ„çš„å¼•ç”¨ã€‚
 	get_online_cpus();
 	get_online_mems();
 	memcg_get_cache_ids();
 
-	//»ñÈ¡Ëø£¬±£»¤È«¾ÖµÄslabÁ´±í¡£
+	//è·å–é”ï¼Œä¿æŠ¤å…¨å±€çš„slabé“¾è¡¨ã€‚
 	mutex_lock(&slab_mutex);
 
-	//±éÀúÁ´±í£¬¿´¿´ÊÇ·ñÒÑ¾­´´½¨ÁËÍ¬ÃûµÄslab
+	//éå†é“¾è¡¨ï¼Œçœ‹çœ‹æ˜¯å¦å·²ç»åˆ›å»ºäº†åŒåçš„slab
 	err = kmem_cache_sanity_check(name, size);
 	if (err) {
 		goto out_unlock;
@@ -467,19 +467,19 @@ kmem_cache_create(const char *name, size_t size, size_t align,
 	 */
 	flags &= CACHE_CREATE_MASK;
 
-	//¿´¿´ÊÇ·ñ¿ÉÒÔÓëÒÑ¾­´´½¨µÄslabºÏ²¢????Ó·Ö×¸´ÔÓÁË°É:)
+	//çœ‹çœ‹æ˜¯å¦å¯ä»¥ä¸å·²ç»åˆ›å»ºçš„slabåˆå¹¶????è‡ƒè‚¿å¤æ‚äº†å§:)
 	s = __kmem_cache_alias(name, size, align, flags, ctor);
 	if (s)
 		goto out_unlock;
 
-	//¸´ÖÆslabÃû³Æ
+	//å¤åˆ¶slabåç§°
 	cache_name = kstrdup_const(name, GFP_KERNEL);
 	if (!cache_name) {
 		err = -ENOMEM;
 		goto out_unlock;
 	}
 
-	//ÕæÕı¸É»îµÄÔÚÕâÀï¡£
+	//çœŸæ­£å¹²æ´»çš„åœ¨è¿™é‡Œã€‚
 	s = create_cache(cache_name, size, size,
 			 calculate_alignment(flags, align, size),
 			 flags, ctor, NULL, NULL);
@@ -488,7 +488,7 @@ kmem_cache_create(const char *name, size_t size, size_t align,
 		kfree_const(cache_name);
 	}
 
-out_unlock: //½âËø,µİ¼õÒıÓÃÖµ
+out_unlock: //è§£é”,é€’å‡å¼•ç”¨å€¼
 	mutex_unlock(&slab_mutex);
 
 	memcg_put_cache_ids();
@@ -982,26 +982,26 @@ struct kmem_cache *kmalloc_slab(size_t size, gfp_t flags)
 		if (!size)
 			return ZERO_SIZE_PTR;
          /*
-            Í¨¹ısize_index_elemºê×ª»»ÎªÏÂ±êºó,  ¾­size_indexÈ«¾ÖÊı×éÈ¡µÃË÷ÒıÖµ
+            é€šè¿‡size_index_elemå®è½¬æ¢ä¸ºä¸‹æ ‡å,  ç»size_indexå…¨å±€æ•°ç»„å–å¾—ç´¢å¼•å€¼
             */
 		index = size_index[size_index_elem(size)];
 	} else
         /*
-        	Ö±½ÓÍ¨¹ıfls()È¡µÃË÷ÒıÖµ
+        	ç›´æ¥é€šè¿‡fls()å–å¾—ç´¢å¼•å€¼
            */
 		index = fls(size - 1);
 
 #ifdef CONFIG_ZONE_DMA
 /*
-¿ªÆôÁËDMAÄÚ´æÅäÖÃÇÒÉèÖÃÁËGFP_DMA±êÖ¾£¬
-½«½áºÏË÷ÒıÖµÍ¨¹ıkmalloc_dma_caches·µ»Økmem_cache¹ÜÀí½á¹¹ĞÅÏ¢£¬
+å¼€å¯äº†DMAå†…å­˜é…ç½®ä¸”è®¾ç½®äº†GFP_DMAæ ‡å¿—ï¼Œ
+å°†ç»“åˆç´¢å¼•å€¼é€šè¿‡kmalloc_dma_cachesè¿”å›kmem_cacheç®¡ç†ç»“æ„ä¿¡æ¯ï¼Œ
 */
 	if (unlikely((flags & GFP_DMA)))
 		return kmalloc_dma_caches[index];
 
 #endif
 /*
-    Í¨¹ıkmalloc_caches·µ»Ø¸Ã½á¹¹
+    é€šè¿‡kmalloc_cachesè¿”å›è¯¥ç»“æ„
 */
 	return kmalloc_caches[index];
 }
@@ -1085,9 +1085,9 @@ static void __init new_kmalloc_cache(int idx, unsigned long flags)
  * Create the kmalloc array. Some of the regular kmalloc arrays
  * may already have been created because they were needed to
  * enable allocations for slab creation.
-¹æ»®ĞèÒª´´½¨µÄkmalloc size£¬ÀıÈçkmalloc-128£¬kmalloc-256£¬kmalloc-512µÈ¡£
-µ÷ÓÃkmem_cache_zalloc()´Ó·ÖÅäÒ»¸ökmem_cache¶ÔÏó£¨kmem_cache cacheÔÚÇ°ÃæÒÑ¾­´´½¨ÁË£¬ÏÖÔÚ¿ÉÒÔÊ¹ÓÃÁË£©¡£
-µ÷ÓÃcreate_boot_cache()´´½¨cache¡£
+è§„åˆ’éœ€è¦åˆ›å»ºçš„kmalloc sizeï¼Œä¾‹å¦‚kmalloc-128ï¼Œkmalloc-256ï¼Œkmalloc-512ç­‰ã€‚
+è°ƒç”¨kmem_cache_zalloc()ä»åˆ†é…ä¸€ä¸ªkmem_cacheå¯¹è±¡ï¼ˆkmem_cache cacheåœ¨å‰é¢å·²ç»åˆ›å»ºäº†ï¼Œç°åœ¨å¯ä»¥ä½¿ç”¨äº†ï¼‰ã€‚
+è°ƒç”¨create_boot_cache()åˆ›å»ºcacheã€‚
  */
 void __init create_kmalloc_caches(unsigned long flags)
 {

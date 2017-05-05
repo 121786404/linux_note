@@ -554,16 +554,16 @@ int follow_up(struct vfsmount **mnt, struct dentry **dentry)
 /* no need for dcache_lock, as serialization is taken care in
  * namespace.c
  */
-/* »ñÈ¡¸ÃÄ¿Â¼ÏÂÏàÓ¦µÄ¹ÒÔØµã
-  * mntÊÇÊäÈëºÍÊä³ö²ÎÊıÊäÈëÎªdentryËùÔÚÎÄ¼şÏµÍ³µÄ¹ÒÔØµã£¬ 
-  * ·µ»ØÊ±»ñÈ¡¹ÒÔØµãµÄÖ¸Õë 
-  * dentryÊÇÊäÈëºÍÊä³ö²ÎÊı£¬Èç¹û¸ÃÄ¿Â¼±»¹ÒÔØ 
-  * Ôò´«»Ø¹ÒÔØµãµÄ¸ùÄ¿Â¼£¬Ò²¾ÍÏàµ±ÓÚÊÇÄ¿Â¼Ìæ»»ÁË 
+/* è·å–è¯¥ç›®å½•ä¸‹ç›¸åº”çš„æŒ‚è½½ç‚¹
+  * mntæ˜¯è¾“å…¥å’Œè¾“å‡ºå‚æ•°è¾“å…¥ä¸ºdentryæ‰€åœ¨æ–‡ä»¶ç³»ç»Ÿçš„æŒ‚è½½ç‚¹ï¼Œ 
+  * è¿”å›æ—¶è·å–æŒ‚è½½ç‚¹çš„æŒ‡é’ˆ 
+  * dentryæ˜¯è¾“å…¥å’Œè¾“å‡ºå‚æ•°ï¼Œå¦‚æœè¯¥ç›®å½•è¢«æŒ‚è½½ 
+  * åˆ™ä¼ å›æŒ‚è½½ç‚¹çš„æ ¹ç›®å½•ï¼Œä¹Ÿå°±ç›¸å½“äºæ˜¯ç›®å½•æ›¿æ¢äº† 
   */
 static int follow_mount(struct vfsmount **mnt, struct dentry **dentry)
 {
 	int res = 0;
-        /* ÅĞ¶Ï¸ÃÄ¿Â¼ÊÇ·ñ±»¹ÒÔØ */
+        /* åˆ¤æ–­è¯¥ç›®å½•æ˜¯å¦è¢«æŒ‚è½½ */
 	while (d_mountpoint(*dentry)) {
 		struct vfsmount *mounted = lookup_mnt(*mnt, *dentry);
 		if (!mounted)
@@ -581,7 +581,7 @@ static int follow_mount(struct vfsmount **mnt, struct dentry **dentry)
  * namespace.c
  */
 
-/* ÅĞ¶Ï¸ÃdentryÄ¿Â¼ÊÇ·ñ±»¹ÒÔØ£¬Èç¹û±»¹ÒÔØ£¬Ôò²ÎÊı·µ»Ø¹ÒÔØµãºÍ¹ÒÔØµã¶ÔÓ¦µÄ¸ùÄ¿Â¼
+/* åˆ¤æ–­è¯¥dentryç›®å½•æ˜¯å¦è¢«æŒ‚è½½ï¼Œå¦‚æœè¢«æŒ‚è½½ï¼Œåˆ™å‚æ•°è¿”å›æŒ‚è½½ç‚¹å’ŒæŒ‚è½½ç‚¹å¯¹åº”çš„æ ¹ç›®å½•
   *
   */
 static inline int __follow_down(struct vfsmount **mnt, struct dentry **dentry)
@@ -589,7 +589,7 @@ static inline int __follow_down(struct vfsmount **mnt, struct dentry **dentry)
 	struct vfsmount *mounted;
 
 	mounted = lookup_mnt(*mnt, *dentry);
-        /* Èç¹ûÕÒµ½ÁËdentryÄ¿Â¼¶ÔÓ¦µÄ¹ÒÔØµã */
+        /* å¦‚æœæ‰¾åˆ°äº†dentryç›®å½•å¯¹åº”çš„æŒ‚è½½ç‚¹ */
 	if (mounted) {
 		mntput(*mnt);
 		*mnt = mounted;
@@ -653,7 +653,7 @@ struct path {
  *  It _is_ time-critical.
  */
 
-/* ´Óndµ±ÖĞµÄÆğµã¿ªÊ¼²éÕÒÃû³ÆÎªnameµÄ×ÓÂ·¾¶ £¬È»ºó½«×ÔÂ·¾¶µÄ½á¹û·ÅÔÚpathµ±ÖĞ */
+/* ä»ndå½“ä¸­çš„èµ·ç‚¹å¼€å§‹æŸ¥æ‰¾åç§°ä¸ºnameçš„å­è·¯å¾„ ï¼Œç„¶åå°†è‡ªè·¯å¾„çš„ç»“æœæ”¾åœ¨pathå½“ä¸­ */
 static int do_lookup(struct nameidata *nd, struct qstr *name,
 		     struct path *path)
 {
@@ -695,7 +695,7 @@ fail:
  *
  * We expect 'base' to be positive and a directory.
  */
-/* ±íÊ¾´Óndµ±ÖĞµÄÄ¿Â¼ÎªÆğµã²éÕÒnameÂ·¾¶ */
+/* è¡¨ç¤ºä»ndå½“ä¸­çš„ç›®å½•ä¸ºèµ·ç‚¹æŸ¥æ‰¾nameè·¯å¾„ */
 int fastcall link_path_walk(const char * name, struct nameidata *nd)
 {
 	struct path next;
@@ -967,7 +967,7 @@ set_it:
 	}
 }
 
-/* ¸ù¾İÂ·¾¶À´²éÕÒÎÄ¼ş  */
+/* æ ¹æ®è·¯å¾„æ¥æŸ¥æ‰¾æ–‡ä»¶  */
 int fastcall path_lookup(const char *name, unsigned int flags, struct nameidata *nd)
 {
 	int retval;
@@ -977,7 +977,7 @@ int fastcall path_lookup(const char *name, unsigned int flags, struct nameidata 
 	nd->depth = 0;
 
 	read_lock(&current->fs->lock);
-        /* Èç¹ûÊ××ÖÄ¸ÊÇ'/'£¬Ôò±íÊ¾´Ó¸ùÎÄ¼şÏµÍ³¿ªÊ¼²éÕÒ */
+        /* å¦‚æœé¦–å­—æ¯æ˜¯'/'ï¼Œåˆ™è¡¨ç¤ºä»æ ¹æ–‡ä»¶ç³»ç»Ÿå¼€å§‹æŸ¥æ‰¾ */
 	if (*name=='/') {
 		if (current->fs->altroot && !(nd->flags & LOOKUP_NOALT)) {
 			nd->mnt = mntget(current->fs->altrootmnt);
@@ -990,7 +990,7 @@ int fastcall path_lookup(const char *name, unsigned int flags, struct nameidata 
 		nd->mnt = mntget(current->fs->rootmnt);
 		nd->dentry = dget(current->fs->root);
 	} else {
-                /* Èç¹û²»ÊÇµÄ£¬Ôò´Óµ±Ç°Ä¿Â¼¿ªÊ¼²éÕÒ */
+                /* å¦‚æœä¸æ˜¯çš„ï¼Œåˆ™ä»å½“å‰ç›®å½•å¼€å§‹æŸ¥æ‰¾ */
 		nd->mnt = mntget(current->fs->pwdmnt);
 		nd->dentry = dget(current->fs->pwd);
 	}
@@ -1369,7 +1369,7 @@ int may_open(struct nameidata *nd, int acc_mode, int flag)
  * for symlinks (where the permissions are checked later).
  * SMP-safe
  */
-/* ´ò¿ªÒ»¸öÂ·¾¶£¬²¢½«Â·¾¶ÕÒµ½µÄĞÅÏ¢Êı¾İ´æ·ÅÔÚstruct nameidataµ±ÖĞ */
+/* æ‰“å¼€ä¸€ä¸ªè·¯å¾„ï¼Œå¹¶å°†è·¯å¾„æ‰¾åˆ°çš„ä¿¡æ¯æ•°æ®å­˜æ”¾åœ¨struct nameidataå½“ä¸­ */
 int open_namei(const char * pathname, int flag, int mode, struct nameidata *nd)
 {
 	int acc_mode, error = 0;
@@ -1391,7 +1391,7 @@ int open_namei(const char * pathname, int flag, int mode, struct nameidata *nd)
 	/*
 	 * The simplest case - just a plain lookup.
 	 */
-        /*  Èç¹ûÊÇÎÄ¼ş²»´æÔÚÔò´´½¨ÎÄ¼şµÄ±ê¼Ç */
+        /*  å¦‚æœæ˜¯æ–‡ä»¶ä¸å­˜åœ¨åˆ™åˆ›å»ºæ–‡ä»¶çš„æ ‡è®° */
 	if (!(flag & O_CREAT)) {
 		error = path_lookup(pathname, lookup_flags(flag)|LOOKUP_OPEN, nd);
 		if (error)

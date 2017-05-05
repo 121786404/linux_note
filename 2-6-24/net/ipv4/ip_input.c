@@ -196,7 +196,7 @@ int ip_call_ra_chain(struct sk_buff *skb)
 }
 
 /**
- * ½«±¨ÎÄ·Ö·¢µ½L4²ã´¦Àíº¯Êı
+ * å°†æŠ¥æ–‡åˆ†å‘åˆ°L4å±‚å¤„ç†å‡½æ•°
  */
 static int ip_local_deliver_finish(struct sk_buff *skb)
 {
@@ -261,7 +261,7 @@ static int ip_local_deliver_finish(struct sk_buff *skb)
  * 	Deliver IP Packets to the higher protocol layers.
  */
 /**
- * ½«ip±¨ÎÄ·¢ËÍµ½±¾µØL4²ã
+ * å°†ipæŠ¥æ–‡å‘é€åˆ°æœ¬åœ°L4å±‚
  */
 int ip_local_deliver(struct sk_buff *skb)
 {
@@ -269,17 +269,17 @@ int ip_local_deliver(struct sk_buff *skb)
 	 *	Reassemble IP fragments.
 	 */
 
-	/* ¸ÃIP±¨ÎÄÊÇ·ÖÆ¬±¨ÎÄ */
+	/* è¯¥IPæŠ¥æ–‡æ˜¯åˆ†ç‰‡æŠ¥æ–‡ */
 	if (ip_hdr(skb)->frag_off & htons(IP_MF | IP_OFFSET)) {
-		/* ÖØĞÂ½«·ÖÆ¬×éºÏÆğÀ´ */
+		/* é‡æ–°å°†åˆ†ç‰‡ç»„åˆèµ·æ¥ */
 		if (ip_defrag(skb, IP_DEFRAG_LOCAL_DELIVER))
 			return 0;
 	}
 
 	/**
-	 * ip_local_deliver_finish¸ù¾İ±¨ÎÄL4Ğ­ÒéµÄÀàĞÍ£¬½«Ëü×ª½»¸øL4²ã´¦Àí
-	 * Èçtcp_v4_rcvºÍudp_rcv
-	 * Í¬Ê±µ÷ÓÃnetfilter½øĞĞ°²È«ĞÔ´¦Àí
+	 * ip_local_deliver_finishæ ¹æ®æŠ¥æ–‡L4åè®®çš„ç±»å‹ï¼Œå°†å®ƒè½¬äº¤ç»™L4å±‚å¤„ç†
+	 * å¦‚tcp_v4_rcvå’Œudp_rcv
+	 * åŒæ—¶è°ƒç”¨netfilterè¿›è¡Œå®‰å…¨æ€§å¤„ç†
 	 */
 	return NF_HOOK(PF_INET, NF_IP_LOCAL_IN, skb, skb->dev, NULL,
 		       ip_local_deliver_finish);
@@ -347,10 +347,10 @@ static int ip_rcv_finish(struct sk_buff *skb)
 	 *	how the packet travels inside Linux networking.
 	 */
 	if (skb->dst == NULL) {
-		/* Ñ¡ÔñÂ·ÓÉ */
+		/* é€‰æ‹©è·¯ç”± */
 		int err = ip_route_input(skb, iph->daddr, iph->saddr, iph->tos,
 					 skb->dev);
-		if (unlikely(err)) {/* ÎŞ·¨ÕÒµ½Â·ÓÉ£¬Ôò¶ªÆú°ü */
+		if (unlikely(err)) {/* æ— æ³•æ‰¾åˆ°è·¯ç”±ï¼Œåˆ™ä¸¢å¼ƒåŒ… */
 			if (err == -EHOSTUNREACH)
 				IP_INC_STATS_BH(IPSTATS_MIB_INADDRERRORS);
 			else if (err == -ENETUNREACH)
@@ -370,7 +370,7 @@ static int ip_rcv_finish(struct sk_buff *skb)
 	}
 #endif
 
-	/* ´æÔÚIPÑ¡Ïî£¬´¦ÀíÕâĞ©Ñ¡Ïî */
+	/* å­˜åœ¨IPé€‰é¡¹ï¼Œå¤„ç†è¿™äº›é€‰é¡¹ */
 	if (iph->ihl > 5 && ip_rcv_options(skb))
 		goto drop;
 
@@ -391,14 +391,14 @@ drop:
  * 	Main IP Receive routine.
  */
 /**
- * IPÍøÂç²ãÖ÷´¦Àíº¯Êı
+ * IPç½‘ç»œå±‚ä¸»å¤„ç†å‡½æ•°
  */
 int ip_rcv(struct sk_buff *skb, struct net_device *dev, struct packet_type *pt, struct net_device *orig_dev)
 {
 	struct iphdr *iph;
 	u32 len;
 	
-	/* ¼ì²éÃüÃû¿Õ¼ä£¬Ä¿Ç°Ö»Ö§³ÖÄ¬ÈÏ¿Õ¼ä */
+	/* æ£€æŸ¥å‘½åç©ºé—´ï¼Œç›®å‰åªæ”¯æŒé»˜è®¤ç©ºé—´ */
 	if (dev->nd_net != &init_net)
 		goto drop;
 
@@ -415,7 +415,7 @@ int ip_rcv(struct sk_buff *skb, struct net_device *dev, struct packet_type *pt, 
 		goto out;
 	}
 
-	/* ¼ì²é±¨ÎÄ³¤¶ÈÊÇ·ñ´ïµ½±¨Í·³¤¶È */
+	/* æ£€æŸ¥æŠ¥æ–‡é•¿åº¦æ˜¯å¦è¾¾åˆ°æŠ¥å¤´é•¿åº¦ */
 	if (!pskb_may_pull(skb, sizeof(struct iphdr)))
 		goto inhdr_error;
 
@@ -432,22 +432,22 @@ int ip_rcv(struct sk_buff *skb, struct net_device *dev, struct packet_type *pt, 
 	 *	4.	Doesn't have a bogus length
 	 */
 
-	/* ¼ì²é±¨ÎÄ±¨Í·³¤¶È£¬IPĞ­Òé°æ±¾ */
+	/* æ£€æŸ¥æŠ¥æ–‡æŠ¥å¤´é•¿åº¦ï¼ŒIPåè®®ç‰ˆæœ¬ */
 	if (iph->ihl < 5 || iph->version != 4)
 		goto inhdr_error;
 
-	/* ¼ì²é±¨ÎÄ³¤¶ÈÊÇ·ñÓë±¨Í·ÖĞÖ¸¶¨µÄ³¤¶ÈÒ»ÖÂ */
+	/* æ£€æŸ¥æŠ¥æ–‡é•¿åº¦æ˜¯å¦ä¸æŠ¥å¤´ä¸­æŒ‡å®šçš„é•¿åº¦ä¸€è‡´ */
 	if (!pskb_may_pull(skb, iph->ihl*4))
 		goto inhdr_error;
 
 	iph = ip_hdr(skb);
 
-	/* ¼ì²éIPĞ£ÑéºÍ */
+	/* æ£€æŸ¥IPæ ¡éªŒå’Œ */
 	if (unlikely(ip_fast_csum((u8 *)iph, iph->ihl)))
 		goto inhdr_error;
 
 	len = ntohs(iph->tot_len);
-	if (skb->len < len) {/* ¼ì²é±¨ÎÄ×Ü³¤¶È */
+	if (skb->len < len) {/* æ£€æŸ¥æŠ¥æ–‡æ€»é•¿åº¦ */
 		IP_INC_STATS_BH(IPSTATS_MIB_INTRUNCATEDPKTS);
 		goto drop;
 	} else if (len < (iph->ihl*4))
@@ -466,7 +466,7 @@ int ip_rcv(struct sk_buff *skb, struct net_device *dev, struct packet_type *pt, 
 	memset(IPCB(skb), 0, sizeof(struct inet_skb_parm));
 
 	/**
-	 * Ê×ÏÈÓÉnetfilter¼ì²é£¬Èç¹û°²È«ĞÔÍ¨¹ı£¬Ôòµ÷ÓÃip_rcv_finishºóĞø´¦Àí
+	 * é¦–å…ˆç”±netfilteræ£€æŸ¥ï¼Œå¦‚æœå®‰å…¨æ€§é€šè¿‡ï¼Œåˆ™è°ƒç”¨ip_rcv_finishåç»­å¤„ç†
 	 */
 	return NF_HOOK(PF_INET, NF_IP_PRE_ROUTING, skb, dev, NULL,
 		       ip_rcv_finish);

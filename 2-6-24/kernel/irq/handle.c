@@ -48,13 +48,13 @@ handle_bad_irq(unsigned int irq, struct irq_desc *desc)
  * Controller mappings for all interrupt sources:
  */
 /**
- * È«¾ÖIRQ´¦Àíº¯Êı
+ * å…¨å±€IRQå¤„ç†å‡½æ•°
  */
 struct irq_desc irq_desc[NR_IRQS] __cacheline_aligned_in_smp = {
 	[0 ... NR_IRQS-1] = {
 		.status = IRQ_DISABLED,
 		.chip = &no_irq_chip,
-		/* Ä¬ÈÏ²»´¦ÀíÈÎºÎIRQ£¬³õÊ¼»¯ºóÓÉÏµÍ³ÆäËûº¯Êı´úÌæ */
+		/* é»˜è®¤ä¸å¤„ç†ä»»ä½•IRQï¼Œåˆå§‹åŒ–åç”±ç³»ç»Ÿå…¶ä»–å‡½æ•°ä»£æ›¿ */
 		.handle_irq = handle_bad_irq,
 		.depth = 1,
 		.lock = __SPIN_LOCK_UNLOCKED(irq_desc->lock),
@@ -131,7 +131,7 @@ irqreturn_t no_action(int cpl, void *dev_id)
  * Handles the action chain of an irq event
  */
 /**
- * ÔÚÖĞ¶Ï´¦Àíº¯ÊıÖĞ£¬µ÷ÓÃ´Ëº¯Êı»Øµ÷Çı¶¯µÄISR
+ * åœ¨ä¸­æ–­å¤„ç†å‡½æ•°ä¸­ï¼Œè°ƒç”¨æ­¤å‡½æ•°å›è°ƒé©±åŠ¨çš„ISR
  */
 irqreturn_t handle_IRQ_event(unsigned int irq, struct irqaction *action)
 {
@@ -140,23 +140,23 @@ irqreturn_t handle_IRQ_event(unsigned int irq, struct irqaction *action)
 
 	handle_dynamic_tick(action);
 
-	if (!(action->flags & IRQF_DISABLED))/* µÚÒ»¸öÖĞ¶ÏISR²»ÒªÇó¹ØÖĞ¶ÏÔËĞĞ */
-		local_irq_enable_in_hardirq();/* ¿ªÖĞ¶Ï */
+	if (!(action->flags & IRQF_DISABLED))/* ç¬¬ä¸€ä¸ªä¸­æ–­ISRä¸è¦æ±‚å…³ä¸­æ–­è¿è¡Œ */
+		local_irq_enable_in_hardirq();/* å¼€ä¸­æ–­ */
 
-	/* ±éÀúISRÁ´±í */
+	/* éå†ISRé“¾è¡¨ */
 	do {
-		/* »Øµ÷ISR´¦Àíº¯Êı */
+		/* å›è°ƒISRå¤„ç†å‡½æ•° */
 		ret = action->handler(irq, action->dev_id);
-		if (ret == IRQ_HANDLED)/* ¸ÃISRÏìÓ¦ÁËÖĞ¶Ï */
+		if (ret == IRQ_HANDLED)/* è¯¥ISRå“åº”äº†ä¸­æ–­ */
 			status |= action->flags;
 		retval |= ret;
-		/* ÏÂÒ»¸öISR */
+		/* ä¸‹ä¸€ä¸ªISR */
 		action = action->next;
 	} while (action);
 
-	if (status & IRQF_SAMPLE_RANDOM)/* ´¦ÀíËæ»úÊıÖÖ×Ó */
+	if (status & IRQF_SAMPLE_RANDOM)/* å¤„ç†éšæœºæ•°ç§å­ */
 		add_interrupt_randomness(irq);
-	local_irq_disable();/* »Øµ½ÉÏ²ãº¯Êı£¬¹Ø±ÕÖĞ¶Ï */
+	local_irq_disable();/* å›åˆ°ä¸Šå±‚å‡½æ•°ï¼Œå…³é—­ä¸­æ–­ */
 
 	return retval;
 }

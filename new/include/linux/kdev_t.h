@@ -6,11 +6,11 @@
 #define MINORBITS	20
 #define MINORMASK	((1U << MINORBITS) - 1)
 
-/*���豸������ȡ���豸��*/
+/*从设备号中提取主设备号*/
 #define MAJOR(dev)	((unsigned int) ((dev) >> MINORBITS))
-/*���豸������ȡ���豸��*/
+/*从设备号中提取次设备号*/
 #define MINOR(dev)	((unsigned int) ((dev) & MINORMASK))
-/*�������豸�źʹ��豸�������豸��*/
+/*根据主设备号和次设备号生成设备号*/
 #define MKDEV(ma,mi)	(((ma) << MINORBITS) | (mi))
 
 #define print_dev_t(buffer, dev)					\

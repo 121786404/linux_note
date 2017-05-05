@@ -514,26 +514,26 @@ int __init early_irq_init(void)
 	int count, i, node = first_online_node;
 	struct irq_desc *desc;
 
-	//����Ĭ�ϵ��ж��׺���λͼ
+	//设置默认的中断亲和性位图
 	init_irq_default_affinity();
 
 	printk(KERN_INFO "NR_IRQS:%d\n", NR_IRQS);
 
-	//�õ��ж����������鼰���С
+	//得到中断描述符数组及其大小
 	desc = irq_desc;
 	count = ARRAY_SIZE(irq_desc);
 
-	//���������жϵ�Ĭ��ֵ
+	//设置所有中断的默认值
 	for (i = 0; i < count; i++) {
-		//��¼ÿCPU���ж�ִ��ͳ�ƵĽṹ
+		//记录每CPU上中断执行统计的结构
 		desc[i].kstat_irqs = alloc_percpu(unsigned int);
-		//�����׺���λͼ
+		//分配亲和性位图
 		alloc_masks(&desc[i], GFP_KERNEL, node);
 		raw_spin_lock_init(&desc[i].lock);
 		lockdep_set_class(&desc[i].lock, &irq_desc_lock_class);
 		desc_set_defaults(i, &desc[i], node, NULL, NULL);
 	}
-	//arm����ʲô������
+	//arm上面什么都不做
 	return arch_early_irq_init();
 }
 
@@ -596,13 +596,13 @@ void irq_init_desc(unsigned int irq)
 int generic_handle_irq(unsigned int irq)
 {
 	/**
-	 * ���Ҹ��жϺŵ�������
+	 * 查找该中断号的描述符
 	 */
 	struct irq_desc *desc = irq_to_desc(irq);
 
-	if (!desc)//û�У������ǻ�û��ע���κ��жϡ�
+	if (!desc)//没有，可能是还没有注册任何中断。
 		return -EINVAL;
-	//����ע����жϻص�������
+	//调用注册的中断回调函数。
 	generic_handle_irq_desc(desc);
 	return 0;
 }
@@ -619,32 +619,32 @@ EXPORT_SYMBOL_GPL(generic_handle_irq);
  * Returns:	0 on success, or -EINVAL if conversion has failed
  */
  
-/* �����ⲿ�жϷ���ʱ��Ԥ����ƺõĴ�����Ӳ���߼���ѵ�ǰ���������ļĴ���������һ��
- * �ض����ж�ջ�У����ε���������Ӧ�ⲿ�жϵ��������ڽ������֣�
- * Ӳ���߼������ж��������е��ⲿ�ж϶�Ӧ����ڵ�ַ����ʼ�����ɲ���ϵͳ�ṩ��ͨ���жϴ�������
- * ͨ���жϴ����������ô˺���, �жϴ����ľ��󲿷����̶�Ũ����������ú����У�
- * �������������ʱ,ͨ���жϴ����������µĲ�������ж��ֳ��ָ��Ĺ�������־���жϴ������̵Ľ���, ���жϵ�����ʼ����ִ��
- * @irq:ͨ���жϴ��������ӣУɣ��еõ��������жϺ�
- * @regs�Ǳ��������ı��ж������ִ���ֳ�*/
+/* 当有外部中断发生时，预先设计好的处理器硬件逻辑会把当前任务上下文寄存器保存在一个
+ * 特定的中断栈中，屏蔽掉处理器响应外部中断的能力，在结束部分，
+ * 硬件逻辑根据中断向量表中的外部中断对应的入口地址，开始调用由操作系统提供的通用中断处理函数
+ * 通用中断处理函数调用此函数, 中断处理的绝大部分流程都浓缩在了这个Ｃ函数中，
+ * 当这个函数返回时,通用中断处理函数余下的部分完成中断现场恢复的工作，标志者中断处理流程的结束, 被中断的任务开始继续执行
+ * @irq:通用中断处理函数从ＰＩＣ中得到的软件中断号
+ * @regs是保存下来的被中断任务的执行现场*/
  
 int __handle_domain_irq(struct irq_domain *domain, unsigned int hwirq,
 			bool lookup, struct pt_regs *regs)
 {
 	/**
-	 * ����ǰ�ж��ֳ���������
-	 * ������������Ϳ���ͨ��get_irq_regs��������ж��ֳ��ˡ�
+	 * 将当前中断现场保存下来
+	 * 这样其他代码就可以通过get_irq_regs函数获得中断现场了。
 	 */
 	 
-	/*set_irq_regs��һ��per_CPU�͵�ָ�����__irq_regs���浽old_regs�У�Ȼ��__irq_regs������һ����ֵregs,�����жϴ��������У�ϵͳ��ÿ������������ͨ��__irq_regs������ϵͳ������ж��ֳ�*/
+	/*set_irq_regs将一个per_CPU型的指针变量__irq_regs保存到old_regs中，然后将__irq_regs赋予了一个新值regs,这样中断处理过程中，系统中每个ｃｐｕ都可以通过__irq_regs来访问系统保存的中断现场*/
 	struct pt_regs *old_regs = set_irq_regs(regs);
 	unsigned int irq = hwirq;
 	int ret = 0;
 
 	/**
-	 * ������ռ������rcu�ȵ�
+	 * 处理抢占计数，rcu等等
 	 */
 	 
-	/*HARDIRQ���ֵĿ�ʼ,����ϵͳ�����ϴ������ϰ벿�֣���irq_enter��Ӧ����irq_exit,irq_enter�����ϵͳ�е�һЩͳ������ͬʱ��ѵ�ǰջ�е�preemtp_count��������HARDIRQ_OFFSET����ʶһ��HARDIRQ��������*/
+	/*HARDIRQ部分的开始,告诉系统进入冲断处理的上半部分，与irq_enter对应的是irq_exit,irq_enter会更新系统中的一些统计量，同时会把当前栈中的preemtp_count变量加上HARDIRQ_OFFSET来标识一个HARDIRQ中上下文*/
 	irq_enter();
 
 #ifdef CONFIG_IRQ_DOMAIN
@@ -656,24 +656,24 @@ int __handle_domain_irq(struct irq_domain *domain, unsigned int hwirq,
 	 * Some hardware gives randomly wrong interrupts.  Rather
 	 * than crashing, do something sensible.
 	 */
-	if (unlikely(!irq || irq >= nr_irqs)) {//�ж��жϺŵĺϷ���
+	if (unlikely(!irq || irq >= nr_irqs)) {//判断中断号的合法性
 		ack_bad_irq(irq);
 		ret = -EINVAL;
 	} else {
-		//����ͨ�����жϴ���
+		//进行通常的中断处理
 		
-		/*����Ե�ǰ�������жϽ���ʵ�ʵĴ���*/
+		/*负责对当前发生的中断进行实际的处理*/
 		generic_handle_irq(irq);
 	}
 
-	//����rcu����ռ�����ȵȣ�Ҳ�������ж�
-	/*SOFTIRQ�ڴ˺��������,�жϴ������°ಿ���ڴ˺������*/
+	//处理rcu，抢占计数等等，也处理软中断
+	/*SOFTIRQ在此函数中完成,中断处理的下班部分在此函数完成*/
 	irq_exit();
 	/**
-	 * �˳��ж�ǰ���ָ���һ��pt_regsָ�롣
-	 * ��һ���жϵĴ����������get_irq_regs��������
+	 * 退出中断前，恢复上一个pt_regs指针。
+	 * 上一次中断的处理代码调用get_irq_regs才正常。
 	 */
-	/*������������set_irq_regs���ָ�__irq_regs��__irq_regsһ�������ڵ��Ի������ʱ��ӡ��ǰջ����Ϣ��Ҳ����ͨ����Щ������ж��ֳ��Ĵ����жϳ����жϵĽ��̵�ʱ�������û�̬�����ں�̬*/
+	/*函数结束调用set_irq_regs来恢复__irq_regs，__irq_regs一般用来在调试或者诊断时打印当前栈的信息，也可以通过这些保存的中断现场寄存器判断出被中断的进程当时运行在用户态还是内核态*/
 	set_irq_regs(old_regs);
 	return ret;
 }

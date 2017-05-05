@@ -49,82 +49,82 @@ struct pt_regs;
  * @name:		flow handler name for /proc/interrupts output
  */
 /**
- * ÖĞ¶ÏÃèÊö·û
+ * ä¸­æ–­æè¿°ç¬¦
  */
-  /* ¸Ã½á¹¹ÔÚÕû¸öÖĞ¶Ï´¦Àí¿ò¼ÜÖĞ·Ç³£ÖØÒª£¬Æğ×Å¹µÍ¨´ÓÍ¨ÓÃµÄÖĞ¶Ï´¦Àíº¯Êı
-  * µ½Éè±¸ÌØ¶¨µÄÖĞ¶Ï´¦ÀíÀı³ÌÖ®¼äµÄÇÅÁº×÷ÓÃ*/
+  /* è¯¥ç»“æ„åœ¨æ•´ä¸ªä¸­æ–­å¤„ç†æ¡†æ¶ä¸­éå¸¸é‡è¦ï¼Œèµ·ç€æ²Ÿé€šä»é€šç”¨çš„ä¸­æ–­å¤„ç†å‡½æ•°
+  * åˆ°è®¾å¤‡ç‰¹å®šçš„ä¸­æ–­å¤„ç†ä¾‹ç¨‹ä¹‹é—´çš„æ¡¥æ¢ä½œç”¨*/
 struct irq_desc {
 	struct irq_common_data	irq_common_data;
-	//ÖĞ¶Ï¿ØÖÆÆ÷Ïà¹ØµÄÊı¾İ
+	//ä¸­æ–­æ§åˆ¶å™¨ç›¸å…³çš„æ•°æ®
 	struct irq_data		irq_data;
-	//ÖĞ¶ÏÔÚÃ¿¸öCPUÉÏµÄÖ´ĞĞ×´Ì¬
+	//ä¸­æ–­åœ¨æ¯ä¸ªCPUä¸Šçš„æ‰§è¡ŒçŠ¶æ€
 	unsigned int __percpu	*kstat_irqs;
-	//¸ß¼¶irqÊÂ¼şÊÂ¼ş
-	/*Ö¸Ïò¸ÃÖĞ¶ÏÇëÇóµÄ´¦Àíº¯Êı,ËûÓëÈí¼şÖĞ¶ÏºÅÒ»Ò»¶ÔÓ¦,´ú±íÁË¶ÔIRQ¡¡lineÉÏµÄ´¦Àí¶¯×÷*/
+	//é«˜çº§irqäº‹ä»¶äº‹ä»¶
+	/*æŒ‡å‘è¯¥ä¸­æ–­è¯·æ±‚çš„å¤„ç†å‡½æ•°,ä»–ä¸è½¯ä»¶ä¸­æ–­å·ä¸€ä¸€å¯¹åº”,ä»£è¡¨äº†å¯¹IRQã€€lineä¸Šçš„å¤„ç†åŠ¨ä½œ*/
 	irq_flow_handler_t	handle_irq;
 #ifdef CONFIG_IRQ_PREFLOW_FASTEOI
-	//armÉÏÎ´ÓÃ
+	//armä¸Šæœªç”¨
 	irq_preflow_handler_t	preflow_handler;
 #endif
-	//×¢²áµÄirq»Øµ÷Á´±í
+	//æ³¨å†Œçš„irqå›è°ƒé“¾è¡¨
 	/* IRQ action list */
-				/* Ö¸ÏòÏìÓ¦¸ÃIRQµÄ¶¯×÷Á´±íÖĞµÄµÚÒ»Ïî,
-				 * ´ú±í×ÅÓë¾ßÌåÉè±¸Ïà¹ØµÄÖĞ¶Ï´¦Àí,
-				 * Ò²ÊÇÉè±¸Çı¶¯³ÌĞòÔ±ÒªÖ±½ÓÓëÖ®´ò½»µÀµÄ¶ÔÏó
-				 * Í¨¹ıaction³ÉÔ±¿ÉÒÔÔÚÒ»ÌõIRQ lineÉÏ¹ÒÔÚ¶à¸ö
-				 * Éè±¸,¼´¶à¸öÉè±¸¿ÉÒÔÍ¨¹ıÍ¬Ò»ÌõIRQ lineÀ´
-				 * ¹²ÏíÍ¬Ò»¸öÈí¼şÖĞ¶ÏºÅirq,ĞÎ³ÉËùÎ½µÄÖĞ¶ÏÁ´*/
-	/* handle_irqºÍactionµÄ²ã´Î¹ØÏµ
+				/* æŒ‡å‘å“åº”è¯¥IRQçš„åŠ¨ä½œé“¾è¡¨ä¸­çš„ç¬¬ä¸€é¡¹,
+				 * ä»£è¡¨ç€ä¸å…·ä½“è®¾å¤‡ç›¸å…³çš„ä¸­æ–­å¤„ç†,
+				 * ä¹Ÿæ˜¯è®¾å¤‡é©±åŠ¨ç¨‹åºå‘˜è¦ç›´æ¥ä¸ä¹‹æ‰“äº¤é“çš„å¯¹è±¡
+				 * é€šè¿‡actionæˆå‘˜å¯ä»¥åœ¨ä¸€æ¡IRQ lineä¸ŠæŒ‚åœ¨å¤šä¸ª
+				 * è®¾å¤‡,å³å¤šä¸ªè®¾å¤‡å¯ä»¥é€šè¿‡åŒä¸€æ¡IRQ lineæ¥
+				 * å…±äº«åŒä¸€ä¸ªè½¯ä»¶ä¸­æ–­å·irq,å½¢æˆæ‰€è°“çš„ä¸­æ–­é“¾*/
+	/* handle_irqå’Œactionçš„å±‚æ¬¡å…³ç³»
 	IRQ line	     handle_irq
 	___________________________________
-	 |	¡¡    |		 |      ¡¡£ü
-	 |            |		 |  PIC    |___´¦ÀíÆ÷
-	Éè±¸£±	     Éè±¸n	 ___________
+	 |	ã€€    |		 |      ã€€ï½œ
+	 |            |		 |  PIC    |___å¤„ç†å™¨
+	è®¾å¤‡ï¼‘	     è®¾å¤‡n	 ___________
 	 |	      |
      action  -next-> action
 	
 	*/
 	struct irqaction	*action;	/* IRQ action list */
-	//ºÍirq_common_dataÖĞµÄ×´Ì¬ÓĞÊ²Ã´Çø±ğ?
+	//å’Œirq_common_dataä¸­çš„çŠ¶æ€æœ‰ä»€ä¹ˆåŒºåˆ«?
 	unsigned int		status_use_accessors;
 	unsigned int		core_internal_state__do_not_mess_with_it;
-	//½ûÖ¹¸ÃÖĞ¶ÏµÄ´ÎÊı
-	/* Ö¸³ö¸ÃIRQÏßÉÏµÄÖĞ¶ÏÇ¶Ì×Éî¶È*/
+	//ç¦æ­¢è¯¥ä¸­æ–­çš„æ¬¡æ•°
+	/* æŒ‡å‡ºè¯¥IRQçº¿ä¸Šçš„ä¸­æ–­åµŒå¥—æ·±åº¦*/
 	unsigned int		depth;		/* nested irq disables */
-	//´ò¿ª¸ÃÖĞ¶ÏµÄ´ÎÊı
-	/* Ö¸³ö¸ÃIRQÏßÉÏµÄÖĞ¶ÏÇ¶Ì×Éî¶È*/
+	//æ‰“å¼€è¯¥ä¸­æ–­çš„æ¬¡æ•°
+	/* æŒ‡å‡ºè¯¥IRQçº¿ä¸Šçš„ä¸­æ–­åµŒå¥—æ·±åº¦*/
 	unsigned int		wake_depth;	/* nested wake enables */
-	//·¢ÉúµÄÖĞ¶Ï´ÎÊı£¬ÓÃÓÚ¼ì²âÓ²¼ş¹ÊÕÏ	/* Ö¸³ö¸ÃIRQÏßÉÏÖĞ¶ÏÇëÇóµÄÊıÄ¿*/	unsigned int		irq_count;	/* For detecting broken IRQs */
+	//å‘ç”Ÿçš„ä¸­æ–­æ¬¡æ•°ï¼Œç”¨äºæ£€æµ‹ç¡¬ä»¶æ•…éšœ	/* æŒ‡å‡ºè¯¥IRQçº¿ä¸Šä¸­æ–­è¯·æ±‚çš„æ•°ç›®*/	unsigned int		irq_count;	/* For detecting broken IRQs */
 	unsigned int		irq_count;	/* For detecting broken IRQs */
-	//ÉÏ´ÎÎ´´¦Àí¸ÃÖĞ¶ÏµÄÊ±¼ä¡£
+	//ä¸Šæ¬¡æœªå¤„ç†è¯¥ä¸­æ–­çš„æ—¶é—´ã€‚
 	unsigned long		last_unhandled;	/* Aging timer for unhandled count */
-	//Î´´¦ÀíµÄÖĞ¶Ï´ÎÊı
-	/* Ö¸³ö¸ÃIRQÏßÉÏÎ´´¦ÀíµÄÖĞ¶ÏÊıÄ¿*/
+	//æœªå¤„ç†çš„ä¸­æ–­æ¬¡æ•°
+	/* æŒ‡å‡ºè¯¥IRQçº¿ä¸Šæœªå¤„ç†çš„ä¸­æ–­æ•°ç›®*/
 	unsigned int		irqs_unhandled;
 	//???
 	atomic_t		threads_handled;
 	int			threads_handled_last;
-	//±£»¤¸ÃÊı¾İ½á¹¹µÄ×ÔĞıËø
-	/* ²Ù×÷irq_descÊı×éÊ±ÓÃ×÷»¥³â±£»¤µÄ
-					 * ³ÉÔ±£¬ÒòÎªirq_descÔÚ¶à¸ö´¦ÀíÆ÷Ö®¼ä
-					 * ¹²Ïí£¬¼´Ê¹µ¥´¦ÀíÆ÷ÏµÍ³£¬Ò²ÓĞ²¢·¢²Ù
-					 * ×÷¸ÃÊı×éµÄ¿ÉÄÜ*/
+	//ä¿æŠ¤è¯¥æ•°æ®ç»“æ„çš„è‡ªæ—‹é”
+	/* æ“ä½œirq_descæ•°ç»„æ—¶ç”¨ä½œäº’æ–¥ä¿æŠ¤çš„
+					 * æˆå‘˜ï¼Œå› ä¸ºirq_descåœ¨å¤šä¸ªå¤„ç†å™¨ä¹‹é—´
+					 * å…±äº«ï¼Œå³ä½¿å•å¤„ç†å™¨ç³»ç»Ÿï¼Œä¹Ÿæœ‰å¹¶å‘æ“
+					 * ä½œè¯¥æ•°ç»„çš„å¯èƒ½*/
 	raw_spinlock_t		lock;
 	struct cpumask		*percpu_enabled;
 	const struct cpumask	*percpu_affinity;
 #ifdef CONFIG_SMP
-    /* ÔÚ¶à´¦ÀíÆ÷ÉÏÊ¹ÓÃ£¬ÓÃÒÔÊµÏÖ¸ºÔØ¾ùºâ*/
+    /* åœ¨å¤šå¤„ç†å™¨ä¸Šä½¿ç”¨ï¼Œç”¨ä»¥å®ç°è´Ÿè½½å‡è¡¡*/
 	const struct cpumask	*affinity_hint;
 	struct irq_affinity_notify *affinity_notify;
 #ifdef CONFIG_GENERIC_PENDING_IRQ
-    /* ÓÃÒÔ¹ÒÆğ±»¸ºÔØ¾ùºâµÄÖĞ¶Ï*/
+    /* ç”¨ä»¥æŒ‚èµ·è¢«è´Ÿè½½å‡è¡¡çš„ä¸­æ–­*/
 	cpumask_var_t		pending_mask;
 #endif
 #endif
 	unsigned long		threads_oneshot;
-	//ÕıÔÚÔËĞĞ¸ÃÖĞ¶ÏirqactionµÄÏß³ÌÊıÁ¿¡£
+	//æ­£åœ¨è¿è¡Œè¯¥ä¸­æ–­irqactionçš„çº¿ç¨‹æ•°é‡ã€‚
 	atomic_t		threads_active;
-	//¸ÃÖĞ¶ÏsyncµÈ´ı¶ÓÁĞ
+	//è¯¥ä¸­æ–­syncç­‰å¾…é˜Ÿåˆ—
 	wait_queue_head_t       wait_for_threads;
 #ifdef CONFIG_PM_SLEEP
 	unsigned int		nr_actions;
@@ -133,7 +133,7 @@ struct irq_desc {
 	unsigned int		force_resume_depth;
 #endif
 #ifdef CONFIG_PROC_FS
-    /* Ö¸Ïò/proc/irqÄ¿Â¼Ïî*/
+    /* æŒ‡å‘/proc/irqç›®å½•é¡¹*/
 	struct proc_dir_entry	*dir;
 #endif
 #ifdef CONFIG_SPARSE_IRQ
@@ -142,9 +142,9 @@ struct irq_desc {
 #endif
 	int			parent_irq;
 	struct module		*owner;
-	//procÖĞµÄÃû³Æ
-	/* handle_irqËù¶ÔÓ¦µÄÃû³Æ£¬
-						 * ×îÖÕÏÔÊ¾ÔÚ/proc/interrupts*/
+	//procä¸­çš„åç§°
+	/* handle_irqæ‰€å¯¹åº”çš„åç§°ï¼Œ
+						 * æœ€ç»ˆæ˜¾ç¤ºåœ¨/proc/interrupts*/
 	const char		*name;
 } ____cacheline_internodealigned_in_smp;
 
@@ -199,14 +199,14 @@ static inline struct msi_desc *irq_desc_get_msi_desc(struct irq_desc *desc)
 static inline void generic_handle_irq_desc(struct irq_desc *desc)
 {
 	/**
-	 * µ÷ÓÃÃèÊö·ûÖĞµÄ»Øµ÷£¬ÀıÈçhandle_level_irq.
-	 * Í¨¹ı__irq_set_handlerÉèÖÃ»Øµ÷º¯Êı¡£
+	 * è°ƒç”¨æè¿°ç¬¦ä¸­çš„å›è°ƒï¼Œä¾‹å¦‚handle_level_irq.
+	 * é€šè¿‡__irq_set_handlerè®¾ç½®å›è°ƒå‡½æ•°ã€‚
 	 */
 	desc->handle_irq(desc);
 }
-/* ¸ºÔğ¶Ôµ±Ç°·¢ÉúµÄÖĞ¶Ï½øĞĞÊµ¼ÊµÄ´¦Àí
- * º¯ÊıÍ¨¹ıÈí¼şÖĞ¶ÏºÅirqÀ´Ë÷ÒıÊı×éirq_desc,µÃµ½Ò»¸östruct irq_descÀàĞÍµÄÖ¸Õë±äÁ¿
- * desc,È»ºóµ÷ÓÃÆä³ÉÔ±º¯Êıhandle_irq¶Ôµ±Ç°ÖĞ¶Ï½øĞĞÊµ¼ÊµÄ´¦Àí
+/* è´Ÿè´£å¯¹å½“å‰å‘ç”Ÿçš„ä¸­æ–­è¿›è¡Œå®é™…çš„å¤„ç†
+ * å‡½æ•°é€šè¿‡è½¯ä»¶ä¸­æ–­å·irqæ¥ç´¢å¼•æ•°ç»„irq_desc,å¾—åˆ°ä¸€ä¸ªstruct irq_descç±»å‹çš„æŒ‡é’ˆå˜é‡
+ * desc,ç„¶åè°ƒç”¨å…¶æˆå‘˜å‡½æ•°handle_irqå¯¹å½“å‰ä¸­æ–­è¿›è¡Œå®é™…çš„å¤„ç†
  */
 
 int generic_handle_irq(unsigned int irq);

@@ -71,20 +71,20 @@ extern unsigned int kobjsize(const void *objp);
 /*
  * vm_flags..
  */
-/* VMAÇøÓòµÄÈ¨ÏŞ */
+/* VMAåŒºåŸŸçš„æƒé™ */
 #define VM_READ		0x00000001	/* currently active flags */
 #define VM_WRITE	0x00000002
 #define VM_EXEC		0x00000004
 #define VM_SHARED	0x00000008
 
 /* mprotect() hardcodes VM_MAYREAD >> 4 == VM_READ, and so for r/w/x bits. */
-/* ÓÃÓÚÈ·¶¨ÊÇ·ñ¿ÉÒÔÉèÖÃ¶ÔÓ¦µÄVM_*±êÖ¾¡£ÓÉmprotectÏµÍ³µ÷ÓÃÊ¹ÓÃ */
+/* ç”¨äºç¡®å®šæ˜¯å¦å¯ä»¥è®¾ç½®å¯¹åº”çš„VM_*æ ‡å¿—ã€‚ç”±mprotectç³»ç»Ÿè°ƒç”¨ä½¿ç”¨ */
 #define VM_MAYREAD	0x00000010	/* limits for mprotect() etc */
 #define VM_MAYWRITE	0x00000020
 #define VM_MAYEXEC	0x00000040
 #define VM_MAYSHARE	0x00000080
 
-/* ÊÇ·ñ¿ÉÒÔÏòÉÏ»òÏòÏÂÀ©Õ¹¸ÃÇøÓò */
+/* æ˜¯å¦å¯ä»¥å‘ä¸Šæˆ–å‘ä¸‹æ‰©å±•è¯¥åŒºåŸŸ */
 #define VM_GROWSDOWN	0x00000100	/* general info on the segment */
 #define VM_GROWSUP	0x00000200
 #define VM_PFNMAP	0x00000400	/* Page-ranges managed without "struct page", just pure PFN */
@@ -95,19 +95,19 @@ extern unsigned int kobjsize(const void *objp);
 #define VM_IO           0x00004000	/* Memory mapped I/O or similar */
 
 					/* Used by sys_madvise() */
-/* ¿ÉÄÜ»á´Ó¶Áµ½Î²¶ÁÈ¡¸ÃÇøÓò£¬¿ÉÕë¶Ô´Ë±êÖ¾½øĞĞÓÅ»¯ */
+/* å¯èƒ½ä¼šä»è¯»åˆ°å°¾è¯»å–è¯¥åŒºåŸŸï¼Œå¯é’ˆå¯¹æ­¤æ ‡å¿—è¿›è¡Œä¼˜åŒ– */
 #define VM_SEQ_READ	0x00008000	/* App will access data sequentially */
-/* ¸ÃÇøÓò¿ÉÄÜ»á±»Ëæ»ú¶ÁÈ¡ */
+/* è¯¥åŒºåŸŸå¯èƒ½ä¼šè¢«éšæœºè¯»å– */
 #define VM_RAND_READ	0x00010000	/* App will not benefit from clustered reads */
 
-/* ÔÚforkÊ±£¬²»¸´ÖÆ´ËÇøÓò */
+/* åœ¨forkæ—¶ï¼Œä¸å¤åˆ¶æ­¤åŒºåŸŸ */
 #define VM_DONTCOPY	0x00020000      /* Do not copy this vma on fork */
-/* mremapµ÷ÓÃ²»ÄÜÀ©Õ¹´ËÇøÓò */
+/* mremapè°ƒç”¨ä¸èƒ½æ‰©å±•æ­¤åŒºåŸŸ */
 #define VM_DONTEXPAND	0x00040000	/* Cannot expand with mremap() */
 #define VM_RESERVED	0x00080000	/* Count as reserved_vm like IO */
-/* ±»ÓÃÓÚovercommit¼ÆËã¡£ÕâÑù¿ÉÒÔÏŞÖÆÄÚ´æ·ÖÅä */
+/* è¢«ç”¨äºovercommitè®¡ç®—ã€‚è¿™æ ·å¯ä»¥é™åˆ¶å†…å­˜åˆ†é… */
 #define VM_ACCOUNT	0x00100000	/* Is a VM accounted object */
-/* ¸ÃÇøÓò»ùÓÚ¾ŞÒ³ */
+/* è¯¥åŒºåŸŸåŸºäºå·¨é¡µ */
 #define VM_HUGETLB	0x00400000	/* Huge TLB Page VM */
 #define VM_NONLINEAR	0x00800000	/* Is non-linear (remap_file_pages) */
 #define VM_MAPPED_COPY	0x01000000	/* T if mapped copy of data (nommu mmap) */
@@ -169,15 +169,15 @@ struct vm_fault {
  * to the functions called when a no-page or a wp-page exception occurs. 
  */
 /**
- * ²Ù×÷VMAÇøÓòµÄ±ê×¼·½·¨
+ * æ“ä½œVMAåŒºåŸŸçš„æ ‡å‡†æ–¹æ³•
  */
 struct vm_operations_struct {
-	/* ´´½¨ºÍÉ¾³ıVMAÇøÓòÊ±µÄ»Øµ÷º¯Êı£¬Í¨³£ÎªNULL */
+	/* åˆ›å»ºå’Œåˆ é™¤VMAåŒºåŸŸæ—¶çš„å›è°ƒå‡½æ•°ï¼Œé€šå¸¸ä¸ºNULL */
 	void (*open)(struct vm_area_struct * area);
 	void (*close)(struct vm_area_struct * area);
-	/* È±Ò³Òì³£Ê±»Øµ÷´Ë·½·¨ */
+	/* ç¼ºé¡µå¼‚å¸¸æ—¶å›è°ƒæ­¤æ–¹æ³• */
 	int (*fault)(struct vm_area_struct *vma, struct vm_fault *vmf);
-	/* ÏìÓ¦È±Ò³Òì³£µÄ·½·¨£¬Îª±£³ÖÓë¾É°æ±¾¼æÈİ */
+	/* å“åº”ç¼ºé¡µå¼‚å¸¸çš„æ–¹æ³•ï¼Œä¸ºä¿æŒä¸æ—§ç‰ˆæœ¬å…¼å®¹ */
 	struct page *(*nopage)(struct vm_area_struct *area,
 			unsigned long address, int *type);
 	unsigned long (*nopfn)(struct vm_area_struct *area,
@@ -185,7 +185,7 @@ struct vm_operations_struct {
 
 	/* notification that a previously read-only page is about to become
 	 * writable, if an error is returned it will cause a SIGBUS */
-	/* Èç¹ûÊÇÎÄ¼şÓ³Éä£¬µ÷ÓÃ´Ë»Øµ÷´¦ÀíĞ´Ê±¸´ÖÆ£¬Ê¹Ò³Ãæ±äÎª¿ÉĞ´ */
+	/* å¦‚æœæ˜¯æ–‡ä»¶æ˜ å°„ï¼Œè°ƒç”¨æ­¤å›è°ƒå¤„ç†å†™æ—¶å¤åˆ¶ï¼Œä½¿é¡µé¢å˜ä¸ºå¯å†™ */
 	int (*page_mkwrite)(struct vm_area_struct *vma, struct page *page);
 #ifdef CONFIG_NUMA
 	int (*set_policy)(struct vm_area_struct *vma, struct mempolicy *new);
@@ -797,17 +797,17 @@ extern int mprotect_fixup(struct vm_area_struct *vma,
  * querying the cache size, so a fastpath for that case is appropriate.
  */
 /**
- * ÄÚ´æÊÕËõÆ÷
+ * å†…å­˜æ”¶ç¼©å™¨
  */
 struct shrinker {
-	/* »Øµ÷º¯Êı£¬Ê¹ÓÃËü½øĞĞ»º´æ»ØÊÕ£¬·µ»ØÖµ±íÊ¾»¹ÓĞ¶àÉÙ¶ÔÏóÈÔÈ»ÔÚ»º´æÖĞ */
+	/* å›è°ƒå‡½æ•°ï¼Œä½¿ç”¨å®ƒè¿›è¡Œç¼“å­˜å›æ”¶ï¼Œè¿”å›å€¼è¡¨ç¤ºè¿˜æœ‰å¤šå°‘å¯¹è±¡ä»ç„¶åœ¨ç¼“å­˜ä¸­ */
 	int (*shrink)(int nr_to_scan, gfp_t gfp_mask);
 	int seeks;	/* seeks to recreate an obj */
 
 	/* These are for internal use */
-	/* Í¨¹ı´Ë×Ö¶Î½«ÊÕËõÆ÷¹Ò½Óµ½Á´±íÖĞ */
+	/* é€šè¿‡æ­¤å­—æ®µå°†æ”¶ç¼©å™¨æŒ‚æ¥åˆ°é“¾è¡¨ä¸­ */
 	struct list_head list;
-	/* ÊÍ·ÅµÄ¶ÔÏóÊıÄ¿ */
+	/* é‡Šæ”¾çš„å¯¹è±¡æ•°ç›® */
 	long nr;	/* objs pending delete */
 };
 #define DEFAULT_SEEKS 2 /* A good number if you don't know better. */
@@ -1095,14 +1095,14 @@ extern struct vm_area_struct * find_vma_prev(struct mm_struct * mm, unsigned lon
 /* Look up the first VMA which intersects the interval start_addr..end_addr-1,
    NULL if none.  Assume start_addr < end_addr. */
 /**
- * ÅĞ¶ÏÒ»¸öVMAÇøÓòÊÇ·ñÎ»ÓÚÄ³¸öÓĞĞ§ÇøÓòÄÚ²¿
+ * åˆ¤æ–­ä¸€ä¸ªVMAåŒºåŸŸæ˜¯å¦ä½äºæŸä¸ªæœ‰æ•ˆåŒºåŸŸå†…éƒ¨
  */   
 static inline struct vm_area_struct * find_vma_intersection(struct mm_struct * mm, unsigned long start_addr, unsigned long end_addr)
 {
-	/* ¸ù¾İÆğÊ¼µØÖ·²éÕÒÆäÎ»ÓÚÄÄÒ»¸öÇøÓòÄÚ */
+	/* æ ¹æ®èµ·å§‹åœ°å€æŸ¥æ‰¾å…¶ä½äºå“ªä¸€ä¸ªåŒºåŸŸå†… */
 	struct vm_area_struct * vma = find_vma(mm,start_addr);
 
-	/* Èç¹ûÕâÑùµÄÇøÓò´æÔÚ£¬²¢ÇÒ½áÊøµØÖ·Ğ¡ÓÚ¸ÃÇøÓòµÄ½áÊøµØÖ·£¬ËµÃ÷¶şÕßÊôÓÚ°üº¬¹ØÏµ */
+	/* å¦‚æœè¿™æ ·çš„åŒºåŸŸå­˜åœ¨ï¼Œå¹¶ä¸”ç»“æŸåœ°å€å°äºè¯¥åŒºåŸŸçš„ç»“æŸåœ°å€ï¼Œè¯´æ˜äºŒè€…å±äºåŒ…å«å…³ç³» */
 	if (vma && end_addr <= vma->vm_start)
 		vma = NULL;
 	return vma;

@@ -45,7 +45,7 @@
  * - detects multi-task circular deadlocks and prints out all affected
  *   locks and tasks (and only those tasks)
  */
-/* ¾­µä»¥³âÁ¿ */
+/* ç»å…¸äº’æ–¥é‡ */
 struct mutex {
 	/* 1: unlocked, 0: locked, negative: locked, possible waiters */
 	atomic_t		count;

@@ -32,11 +32,11 @@
 
 #define MODULE_NAME_LEN (64 - sizeof(unsigned long))
 
-/* ÄÚºËµ¼³ö·ûºÅ½á¹¹ */
+/* å†…æ ¸å¯¼å‡ºç¬¦å·ç»“æ„ */
 struct kernel_symbol
 {
-	unsigned long value;			/* ·ûºÅÔÚÄÚ´æÖĞµÄµØÖ· */
-	const char *name;			/* ¸Ã·ûºÅµÄÃû³Æ */
+	unsigned long value;			/* ç¬¦å·åœ¨å†…å­˜ä¸­çš„åœ°å€ */
+	const char *name;			/* è¯¥ç¬¦å·çš„åç§° */
 };
 
 struct modversion_info
@@ -54,7 +54,7 @@ struct module_attribute {
 			 const char *, size_t count);
 };
 
-/* Ä£¿éµÄÄÚºË¶ÔÏó½á¹¹£¬Ò»°ã»áÒÔ/sys/modulesÄ¿Â¼µÄĞÎÊ½±äÏÖ³öÀ´ */
+/* æ¨¡å—çš„å†…æ ¸å¯¹è±¡ç»“æ„ï¼Œä¸€èˆ¬ä¼šä»¥/sys/modulesç›®å½•çš„å½¢å¼å˜ç°å‡ºæ¥ */
 struct module_kobject
 {
 	struct kobject kobj;
@@ -62,7 +62,7 @@ struct module_kobject
 };
 
 /* These are either module local, or the kernel's dummy ones. */
-/* ÄÚºËµÄ³õÊ¼»¯ºÍÍË³öº¯Êı£¬ÒªÃ´±¾µØÄ£¿éÌá¹©£¬ÒªÃ´Ê¹ÓÃÏµÍ³×Ô´ø */
+/* å†…æ ¸çš„åˆå§‹åŒ–å’Œé€€å‡ºå‡½æ•°ï¼Œè¦ä¹ˆæœ¬åœ°æ¨¡å—æä¾›ï¼Œè¦ä¹ˆä½¿ç”¨ç³»ç»Ÿè‡ªå¸¦ */
 extern int init_module(void);
 extern void cleanup_module(void);
 
@@ -77,7 +77,7 @@ void sort_extable(struct exception_table_entry *start,
 		  struct exception_table_entry *finish);
 void sort_main_extable(void);
 
-/* ÄÚºËÄ£¿é×ÓÏµÍ³ */
+/* å†…æ ¸æ¨¡å—å­ç³»ç»Ÿ */
 extern struct subsystem module_subsys;
 
 #ifdef MODULE
@@ -193,7 +193,7 @@ void *__symbol_get_gpl(const char *symbol);
 #endif
 
 /* For every exported symbol, place a struct in the __ksymtab section */
-/* µ¼³öµ½ÄÚºË·ûºÅ±íµ±ÖĞ */
+/* å¯¼å‡ºåˆ°å†…æ ¸ç¬¦å·è¡¨å½“ä¸­ */
 #define __EXPORT_SYMBOL(sym, sec)				\
 	__CRC_SYMBOL(sym, sec)					\
 	static const char __kstrtab_##sym[]			\
@@ -212,17 +212,17 @@ void *__symbol_get_gpl(const char *symbol);
 
 #endif
 
-/* ÄÚºËÄ£¿éµÄÒıÓÃ¼ÆÊı */
+/* å†…æ ¸æ¨¡å—çš„å¼•ç”¨è®¡æ•° */
 struct module_ref
 {
-	local_t count;			/* Ä£¿éµÄÒıÓÃ¼ÆÊı */
+	local_t count;			/* æ¨¡å—çš„å¼•ç”¨è®¡æ•° */
 } ____cacheline_aligned;
 
 enum module_state
 {
-	MODULE_STATE_LIVE, /* Ä£¿éµ±Ç°ÕıÔÚÊ¹ÓÃÖĞ */
-	MODULE_STATE_COMING, /* Ä£¿éµ±Ç°ÕıÔÚ±»¼ÓÔØ */
-	MODULE_STATE_GOING,   /* Ä£¿éÕıÔÚ±»Ğ¶ÔØ */
+	MODULE_STATE_LIVE, /* æ¨¡å—å½“å‰æ­£åœ¨ä½¿ç”¨ä¸­ */
+	MODULE_STATE_COMING, /* æ¨¡å—å½“å‰æ­£åœ¨è¢«åŠ è½½ */
+	MODULE_STATE_GOING,   /* æ¨¡å—æ­£åœ¨è¢«å¸è½½ */
 };
 
 /* Similar stuff for section attributes. */
@@ -234,7 +234,7 @@ struct module_sect_attr
 	unsigned long address;
 };
 
-/* ÄÚºËÄ£¿éµÄ¶ÎÊôĞÔ */
+/* å†…æ ¸æ¨¡å—çš„æ®µå±æ€§ */
 struct module_sect_attrs
 {
 	struct attribute_group grp;
@@ -243,26 +243,26 @@ struct module_sect_attrs
 
 struct module_param_attrs;
 
-/* ÄÚºËÄ£¿é½á¹¹ */
+/* å†…æ ¸æ¨¡å—ç»“æ„ */
 struct module
 {
-	enum module_state state;      /* ¼ÇÂ¼Ä£¿éµÄ×´Ì¬ */
+	enum module_state state;      /* è®°å½•æ¨¡å—çš„çŠ¶æ€ */
 
 	/* Member of list of modules */
-	struct list_head list;           /* ×÷ÎªÒ»¸öË«ÏòÁ´±í£¬Á´½ÓËùÓĞµÄÄÚºËÄ£¿é */
+	struct list_head list;           /* ä½œä¸ºä¸€ä¸ªåŒå‘é“¾è¡¨ï¼Œé“¾æ¥æ‰€æœ‰çš„å†…æ ¸æ¨¡å— */
 
 	/* Unique handle for this module */
-	char name[MODULE_NAME_LEN];        /* ÄÚºËÄ£¿éµÄÃû³Æ */
+	char name[MODULE_NAME_LEN];        /* å†…æ ¸æ¨¡å—çš„åç§° */
 
 	/* Sysfs stuff. */
 	struct module_kobject mkobj;
 	struct module_param_attrs *param_attrs;
 
 	/* Exported symbols */
-        /* ÄÚºËµ¼³öµÄ·ûºÅÒÔ¼°·ûºÅµÄÊıÁ¿ */
+        /* å†…æ ¸å¯¼å‡ºçš„ç¬¦å·ä»¥åŠç¬¦å·çš„æ•°é‡ */
 	const struct kernel_symbol *syms;
 	unsigned int num_syms;
-        /* Ò²ÊÇÒ»¸ö¾ßÓĞnum_syms¸öÔªËØµÄÊı×é£¬´æ´¢ÁËµ¼³ö·ûºÅµÄĞ£ÑéºÍ£¬ÓÃÓÚÊµÏÖ°æ±¾¿ØÖÆ */
+        /* ä¹Ÿæ˜¯ä¸€ä¸ªå…·æœ‰num_symsä¸ªå…ƒç´ çš„æ•°ç»„ï¼Œå­˜å‚¨äº†å¯¼å‡ºç¬¦å·çš„æ ¡éªŒå’Œï¼Œç”¨äºå®ç°ç‰ˆæœ¬æ§åˆ¶ */
 	const unsigned long *crcs; 
 
 	/* GPL-only exported symbols. */
@@ -271,15 +271,15 @@ struct module
 	const unsigned long *gpl_crcs;
 
 	/* Exception table */
-        /* Òì³£±í£¬num_exentriesÖ¸¶¨ÁËÊı×éµÄ³¤¶È */
+        /* å¼‚å¸¸è¡¨ï¼Œnum_exentriesæŒ‡å®šäº†æ•°ç»„çš„é•¿åº¦ */
 	unsigned int num_exentries;
 	const struct exception_table_entry *extable;
 
-	/* Startup function. */   /* Ä£¿éµÄ³õÊ¼»¯º¯Êı£¬Ò»°ãÔÚÄÚºËÄ£¿é¿ª·¢µÄÊ±ºò£¬ĞèÒªÊµÏÖ */
+	/* Startup function. */   /* æ¨¡å—çš„åˆå§‹åŒ–å‡½æ•°ï¼Œä¸€èˆ¬åœ¨å†…æ ¸æ¨¡å—å¼€å‘çš„æ—¶å€™ï¼Œéœ€è¦å®ç° */
 	int (*init)(void);
 
 	/* If this is non-NULL, vfree after init() returns */
-        /* ÔÚ³õÊ¼»¯Íê³É×îºó½×¶Î»áÊÍ·Å¸ÃÖ¸ÕëÖ¸ÏòµÄÄÚ´æ */
+        /* åœ¨åˆå§‹åŒ–å®Œæˆæœ€åé˜¶æ®µä¼šé‡Šæ”¾è¯¥æŒ‡é’ˆæŒ‡å‘çš„å†…å­˜ */
 	void *module_init;
 
 	/* Here is the actual code + data, vfree'd on unload. */
@@ -292,42 +292,42 @@ struct module
 	unsigned long init_text_size, core_text_size;
 
 	/* Arch-specific module values */
-        /* ÓëÌØ¶¨µÄ´¦ÀíÆ÷¼Ü¹¹Ïà¹Ø */
+        /* ä¸ç‰¹å®šçš„å¤„ç†å™¨æ¶æ„ç›¸å…³ */
 	struct mod_arch_specific arch;
 
 	/* Am I unsafe to unload? */
 	int unsafe;
 
 	/* Am I GPL-compatible */
-	int license_gplok;  /* ÊÇ·ñºÍgpl¼æÈİµÄĞí¿É */
+	int license_gplok;  /* æ˜¯å¦å’Œgplå…¼å®¹çš„è®¸å¯ */
 
 #ifdef CONFIG_MODULE_UNLOAD
 	/* Reference counts */
-	struct module_ref ref[NR_CPUS];			/* Ä£¿éÔÚ²»Í¬CPUÉÏµÄÒıÓÃ¼ÆÊı */
+	struct module_ref ref[NR_CPUS];			/* æ¨¡å—åœ¨ä¸åŒCPUä¸Šçš„å¼•ç”¨è®¡æ•° */
 
 	/* What modules depend on me? */
-        /* ÄÚºËÖĞÄÇĞ©Ä£¿éÒÀÀµ¸ÃÄ£¿é£¬×¢ÒâÕâÀï²¢²»ÊÇÍ¨¹ıÃ¿¸östruct module½á¹¹µÄ
-          * ¸Ã±äÁ¿À´ĞÎ³ÉË«ÏòÁ´±í£¬¶øÊÇÍ¨¹ıstruct module_use£¬×¢ÒâÕâÀïÒ²ÓÃµ½ÁËÈİÆ÷¼¼Êõ
+        /* å†…æ ¸ä¸­é‚£äº›æ¨¡å—ä¾èµ–è¯¥æ¨¡å—ï¼Œæ³¨æ„è¿™é‡Œå¹¶ä¸æ˜¯é€šè¿‡æ¯ä¸ªstruct moduleç»“æ„çš„
+          * è¯¥å˜é‡æ¥å½¢æˆåŒå‘é“¾è¡¨ï¼Œè€Œæ˜¯é€šè¿‡struct module_useï¼Œæ³¨æ„è¿™é‡Œä¹Ÿç”¨åˆ°äº†å®¹å™¨æŠ€æœ¯
           */
 	struct list_head modules_which_use_me;
 
 	/* Who is waiting for us to be unloaded */
-        /* µÈ´ıÊ¹ÓÃÄ£¿éµÄ½ø³Ì¶ÓÁĞ £¬Ö¸Ïòµ¼ÖÂÄ£¿éĞ¶ÔØ²¢ÇÒÕıÔÚµÈ´ı¸Ã²Ù×÷½áÊøµÄ½ø³Ì */
+        /* ç­‰å¾…ä½¿ç”¨æ¨¡å—çš„è¿›ç¨‹é˜Ÿåˆ— ï¼ŒæŒ‡å‘å¯¼è‡´æ¨¡å—å¸è½½å¹¶ä¸”æ­£åœ¨ç­‰å¾…è¯¥æ“ä½œç»“æŸçš„è¿›ç¨‹ */
 	struct task_struct *waiter;				
 
-	/* Destruction function. */           /* Ä£¿éµÄÍË³öº¯Êı */
+	/* Destruction function. */           /* æ¨¡å—çš„é€€å‡ºå‡½æ•° */
 	void (*exit)(void);
 #endif
 
 #ifdef CONFIG_KALLSYMS
 	/* We keep the symbol and string tables for kallsyms. */
-        /*  kallsymsµÄ·ûºÅ±íºÍ×Ö·û´®±ê£¬ÓÃÓÚ¼ÇÂ¼¸ÃÄ£¿éµÄËùÓĞ·ûºÅĞÅÏ¢ */
+        /*  kallsymsçš„ç¬¦å·è¡¨å’Œå­—ç¬¦ä¸²æ ‡ï¼Œç”¨äºè®°å½•è¯¥æ¨¡å—çš„æ‰€æœ‰ç¬¦å·ä¿¡æ¯ */
 	Elf_Sym *symtab;
 	unsigned long num_symtab;
 	char *strtab;
 
 	/* Section attributes */
-        /* Ä£¿éÖĞ¸÷¶ÎµÄÊôĞÔ */
+        /* æ¨¡å—ä¸­å„æ®µçš„å±æ€§ */
 	struct module_sect_attrs *sect_attrs;
 #endif
 
@@ -342,7 +342,7 @@ struct module
 /* FIXME: It'd be nice to isolate modules during init, too, so they
    aren't used before they (may) fail.  But presently too much code
    (IDE & SCSI) require entry into the module during init.*/
-/* ÅĞ¶ÏÄ£¿éÊÇ·ñ±»Ğ¶ÔØ */
+/* åˆ¤æ–­æ¨¡å—æ˜¯å¦è¢«å¸è½½ */
 static inline int module_is_live(struct module *mod)
 {
 	return mod->state != MODULE_STATE_GOING;
@@ -385,8 +385,8 @@ static inline void __module_get(struct module *module)
 	}
 }
 
-/* ÅĞ¶ÏÄ£¿éÊÇ·ñ»î¶¯£¬²¢Ôö¼ÓÄ£¿éµÄÒıÓÃ¼ÆÊı£¬
-  * ÕıÈ··µ»Ø1 £¬·ñÔò·µ»Ø0 
+/* åˆ¤æ–­æ¨¡å—æ˜¯å¦æ´»åŠ¨ï¼Œå¹¶å¢åŠ æ¨¡å—çš„å¼•ç”¨è®¡æ•°ï¼Œ
+  * æ­£ç¡®è¿”å›1 ï¼Œå¦åˆ™è¿”å›0 
   */
 static inline int try_module_get(struct module *module)
 {
@@ -403,7 +403,7 @@ static inline int try_module_get(struct module *module)
 	return ret;
 }
 
-/* ¼õÉÙÄ£¿éµÄÒıÓÃ¼ÆÊı */
+/* å‡å°‘æ¨¡å—çš„å¼•ç”¨è®¡æ•° */
 static inline void module_put(struct module *module)
 {
 	if (module) {
