@@ -62,7 +62,7 @@ extern void __chk_io_ptr(void __iomem *);
 
 /* Optimization barrier */
 /**
- * 优化屏障.展开为asm volatile("" ::: "memory")
+ * 浼樺寲灞忛殰.灞曞紑涓篴sm volatile("" ::: "memory")
  */
 #ifndef barrier
 #define barrier() __memory_barrier()

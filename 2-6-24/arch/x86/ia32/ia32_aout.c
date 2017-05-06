@@ -96,7 +96,7 @@ static void dump_thread32(struct pt_regs * regs, struct user32 * dump)
 
 #endif
 
-/* ELF之前的标准格式，较少使用 */
+/* ELF涔嬪墠鐨勬爣鍑嗘牸寮忥紝杈冨皯浣跨敤 */
 static struct linux_binfmt aout_format = {
 	.module		= THIS_MODULE,
 	.load_binary	= load_aout_binary,

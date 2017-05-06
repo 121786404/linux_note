@@ -33,7 +33,7 @@
 #include <asm/tlbflush.h>
 
 void *high_memory;
-struct page *mem_map;        /* 内核页表数组 */
+struct page *mem_map;        /* 鍐呮牳椤佃〃鏁扮粍 */
 unsigned long max_mapnr;
 unsigned long num_physpages;
 unsigned long askedalloc, realalloc;
