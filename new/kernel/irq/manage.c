@@ -467,6 +467,12 @@ static int __disable_irq_nosync(unsigned int irq)
  *
  *	This function may be called from IRQ context.
  */
+
+/*
+disable_irq_no sync与disable_irq的区别在于前者立即返回，而后者等待目前的中断处理完成。
+由于disable_irq会等待指定的中断被处理完，因此如果在n号中断的顶半部调用disable_irq(n)，会引起系统的死锁，
+这种情况下，只能调用disable_irq_nosync(n)。
+*/
 void disable_irq_nosync(unsigned int irq)
 {
 	__disable_irq_nosync(irq);
@@ -1649,6 +1655,18 @@ EXPORT_SYMBOL(free_irq);
 
  函数调用了kmalloc()，kmalloc()是可以睡眠的，
  绝不能再中断上下文或其它不允许阻塞的代码中调用该函数。
+
+request_threaded_irq 多了一个参数thread_fn。用这个API 申请中断的时候，内核会为相应的中断号分配一个对应的内核线程。
+注意这个线程只针对这个中断号，如果其他中断也通过request_threaded_ irq申请，自然会得到新的内核线程。
+参数handler 对应的函数执行于中断上下文， thread fn 参数对应的函数则执行于内核线程。
+如果handler 结束的时候，返回值是IRQ_WAKE_THREAD ，内核会调度对应线程执行thread fn 对应的函数。
+
+request_ threaded_ irq 和devm_request_ threaded_ irq 支持在irqflags 中设置IRQF_ONESHOT标记，
+这样内核会自动帮助我们在中断上下文中屏蔽对应的中断号，而在内核调度thread fn 执行后，重新使能该中断号。
+对于我们无法在上半部清除中断的情况， IRQF_ ONESHOT 特别有用，避免了中断服务程序一退出，中断就洪泛的情况。
+
+handler 参数可以设置为NULL ，这种情况下，内核会用默认的irq_default_primary_handler代替handler ，
+并会使用IRQF_ONESHOT 标记。
 */
 int request_threaded_irq(unsigned int irq, irq_handler_t handler,
 			 irq_handler_t thread_fn, unsigned long irqflags,

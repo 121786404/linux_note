@@ -20,12 +20,11 @@ struct my_keypad_dev{
 	struct cdev cdev;
 }*/
 struct cdev {
-	struct kobject kobj;	//每个cdev都是一个kobject
-	struct module *owner;	//字符设备驱动程序所在的内核模块对象指针
-	const struct file_operations *ops; //操纵这个字符设备文件的方法
-	struct list_head list;	/* 与cdev对应的字符设备文件的inode-i_devices的
-				 * 链表头
-				 * 用来将系统中的字符设备形成链表*/
+	struct kobject kobj;	//内嵌的kobject对象
+	struct module *owner;	//所属模块
+	const struct file_operations *ops; //文件操作
+	struct list_head list;	/* 与cdev对应的字符设备文件的inode-i_devices的链表头
+				               用来将系统中的字符设备形成链表*/
 	dev_t dev;		//字符设备的设备号，由主设备号和次设备号构成
 	unsigned int count;	/* 隶属于同一主设备号的次设备的个数，
 				 * 用于表示由当前设备驱动程序控制的实际同类设备的数量*/

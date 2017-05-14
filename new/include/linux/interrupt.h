@@ -68,19 +68,101 @@
  *                wakeup devices users need to implement wakeup detection in
  *                their interrupt handlers.
  */
+ /*
+IRQF_SHARED：
+这是flag用来描述一个interrupt line是否允许在多个设备中共享。如果中断控制器可以支持足够多的interrupt source，
+那么在两个外设间共享一个interrupt request line是不推荐的，毕竟有一些额外的开销
+
+在中断到来时， 会遍历执行共享此中断的所有中断处理程序，直到某一个函数返回IRQ_HANDLED 。
+在中断处理程序顶半部中， 应根据硬件寄存器中的信息比照传人的dev_id 参数迅速地判断是否为本设备的中断， 
+若不是， 应迅速返回IRQ_NONE表示这个中断不归我管。 
+
+
+早期PC时代，使用8259中断控制器，级联的8259最多支持15个外部中断，但是PC外设那么多，因此需要irq share。
+现在，ARM平台上的系统设计很少会采用外设共享IRQ方式，毕竟一般ARM SOC提供的有中断功能的GPIO非常的多，足够用的。 
+当然，如果确实需要两个外设共享IRQ，那也只能如此设计了。对于HW，
+中断控制器的一个interrupt source的引脚要接到两个外设的interrupt request line上，怎么接？
+直接连接可以吗？当然不行，对于低电平触发的情况，我们可以考虑用与门连接中断控制器和外设。
+
+IRQF_SHARED用来表示该interrupt action descriptor是允许和其他device共享一个interrupt line（IRQ number），
+但是实际上是否能够share还是需要其他条件：例如触发方式必须相同。
+
+有些驱动程序可能有这样的调用场景：我只是想scan一个irq table，看看哪一个是OK的，
+这时候，如果即便是不能和其他的驱动程序share这个interrupt line，我也没有关系，我就是想scan看看情况。
+这时候，caller其实可以预见sharing mismatche的发生，因此，不需要内核打印“Flags mismatch irq……“这样冗余的信息
+*/
+
 #define IRQF_SHARED		0x00000080
+/*
+IRQF_SHARED用来表示该interrupt action descriptor是允许和其他device共享一个interrupt line（IRQ number），
+但是实际上是否能够share还是需要其他条件：例如触发方式必须相同。
+
+有些驱动程序可能有这样的调用场景：我只是想scan一个irq table，看看哪一个是OK的，
+这时候，如果即便是不能和其他的驱动程序share这个interrupt line，我也没有关系，我就是想scan看看情况。
+这时候，caller其实可以预见sharing mismatche的发生，因此，不需要内核打印“Flags mismatch irq……“这样冗余的信息
+*/
 #define IRQF_PROBE_SHARED	0x00000100
 #define __IRQF_TIMER		0x00000200
+/*
+在SMP的架构下，中断有两种mode，一种中断是在所有processor之间共享的，也就是global的，一旦中断产生，
+interrupt controller可以把这个中断送达多个处理器。当然，在具体实现的时候不会同时将中断送达多个CPU，
+一般是软件和硬件协同处理，将中断送达一个CPU处理。
+
+但是一段时间内产生的中断可以平均（或者按照既定的策略）分配到一组CPU上。
+这种interrupt mode下，interrupt controller针对该中断的operational register是global的，
+所有的CPU看到的都是一套寄存器，一旦一个CPU ack了该中断，
+那么其他的CPU看到的该interupt source的状态也是已经ack的状态。 
+和global对应的就是per cpu interrupt了，对于这种interrupt，不是processor之间共享的，
+而是特定属于一个CPU的。
+
+例如GIC中interrupt ID等于30的中断就是per cpu的（这个中断event被用于各个CPU的local timer），
+这个中断号虽然只有一个，但是，实际上控制该interrupt ID的寄存器有n组（如果系统中有n个processor），
+每个CPU看到的是不同的控制寄存器。在具体实现中，这些寄存器组有两种形态，一种是banked，
+所有CPU操作同样的寄存器地址，硬件系统会根据访问的cpu定向到不同的寄存器，
+另外一种是non banked，也就是说，对于该interrupt source，每个cpu都有自己独特的访问地址。
+*/
 #define IRQF_PERCPU		0x00000400
+/*
+这也是和multi-processor相关的一个flag。对于那些可以在多个CPU之间共享的中断，
+具体送达哪一个processor是有策略的，我们可以在多个CPU之间进行平衡。
+如果你不想让你的中断参与到irq balancing的过程中那么就设定这个flag
+*/
 #define IRQF_NOBALANCING	0x00000800
 #define IRQF_IRQPOLL		0x00001000
+/*
+one shot本身的意思的只有一次的，结合到中断这个场景，则表示中断是一次性触发的，不能嵌套。
+对于primary handler，当然是不会嵌套，但是对于threaded interrupt handler，我们有两种选择，
+一种是mask该interrupt source，另外一种是unmask该interrupt source。
+
+一旦mask该interrupt source，那么该interrupt source的中断在整个threaded interrupt handler
+处理过程中都是不会再次触发的，也就是one shot了。这种handler不需要考虑重入问题。 
+
+具体是否要设定one shot的flag是和硬件系统有关的，我们举一个例子，比如电池驱动，电池里面有一个电量计，
+是使用HDQ协议进行通信的，电池驱动会注册一个threaded interrupt handler，
+在这个handler中，会通过HDQ协议和电量计进行通信。
+对于这个handler，通过HDQ进行通信是需要一个完整的HDQ交互过程，如果中间被打断，整个通信过程会出问题，
+因此，这个handler就必须是one shot的。
+*/
 #define IRQF_ONESHOT		0x00002000
+/*
+这个flag比较好理解，就是说在系统suspend的时候，不用disable这个中断，如果disable，可能会导致系统不能正常的resume。
+*/
 #define IRQF_NO_SUSPEND		0x00004000
+/*
+在系统resume的过程中，强制必须进行enable的动作，即便是设定了IRQF_NO_SUSPEND这个flag。这是和特定的硬件行为相关的。
+*/
 #define IRQF_FORCE_RESUME	0x00008000
+/*
+有些low level的interrupt是不能线程化的（例如系统timer的中断），这个flag就是起这个作用的。
+另外，有些级联的interrupt controller对应的IRQ也是不能线程化的（例如secondary GIC对应的IRQ），
+它的线程化可能会影响一大批附属于该interrupt controller的外设的中断响应延迟。
+*/
 #define IRQF_NO_THREAD		0x00010000
 #define IRQF_EARLY_RESUME	0x00020000
 #define IRQF_COND_SUSPEND	0x00040000
-
+/*
+IRQF_TIMER：该标志指定了中断处理程序用于系统计时器（System Timer）。
+*/
 #define IRQF_TIMER		(__IRQF_TIMER | IRQF_NO_SUSPEND | IRQF_NO_THREAD)
 
 /*
@@ -157,7 +239,8 @@ request_threaded_irq(unsigned int irq, irq_handler_t handler,
 		     unsigned long flags, const char *name, void *dev);
 
 /* 把驱动程序实现的中断服务例程赋值给handler,驱动程序中安装中断服务例程
- * @irq:中断号
+ * @irq:中断号，要申请的中断号。对于某些设备，如系统时钟、键盘等，这个参数值通常是固定死    的。
+        而对于大多数设备来说，这个参数值要么可以通过探测获取，要么可以通过编程动态确定。
  * @handler:中断处理例程ISR,由设备驱动程序负责实现
  * @flags:是标志变量,可影响内核在安装ISR时的一些行为模式,信号触发类型
  * @name:当前安装中断ISR的设备名称，内核在proc文件系统生成name的一个入口点
@@ -189,6 +272,11 @@ devm_request_threaded_irq(struct device *dev, unsigned int irq,
 			  unsigned long irqflags, const char *devname,
 			  void *dev_id);
 
+/*
+devm_request_irq与request_irq的区别是devm＿开头的API 申请的是内核“ managed ” 的资源，
+一般不需要在出错处理和remove接口里再显式的释放。有点类似Java 的垃圾回收机制。
+比如， 对于at86rf230 驱动， 如下的补丁中改用devm_request_irq后就删除了free_irq
+*/
 static inline int __must_check
 devm_request_irq(struct device *dev, unsigned int irq, irq_handler_t handler,
 		 unsigned long irqflags, const char *devname, void *dev_id)
@@ -282,6 +370,11 @@ extern int __irq_set_affinity(unsigned int irq, const struct cpumask *cpumask,
  *
  * Fails if cpumask does not contain an online CPU
  */
+ /*
+设定对于SPI 类型中断触发的CPU 核：
+在ARM Linux 默认情况下，中断都是在CPU0 上产生的，比如，我们可以通过如下代码
+irq_set_affinity(irq , cpumaskof (i)把中断irq 设定到CPU i 上去
+*/
 static inline int
 irq_set_affinity(unsigned int irq, const struct cpumask *cpumask)
 {

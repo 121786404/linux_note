@@ -1138,8 +1138,15 @@ static int gic_init_bases(struct gic_chip_data *gic, int irq_start,
 			hwirq_base = 32;
 		}
 
+/*
+        gic_irqs = 系统支持的所有的中断数目－16。之所以减去16主要是因为root GIC的0～15号HW interrupt 是for IPI的，
+        因此要去掉。也正因为如此hwirq_base从16开始
+*/
 		gic_irqs -= hwirq_base; /* calculate # of irqs to allocate */
 
+/*
+        申请gic_irqs个IRQ资源，从16号开始搜索IRQ number。由于是root GIC，申请的IRQ基本上会从16号开始
+*/
 		irq_base = irq_alloc_descs(irq_start, 16, gic_irqs,
 					   numa_node_id());
 		if (irq_base < 0) {
@@ -1147,9 +1154,26 @@ static int gic_init_bases(struct gic_chip_data *gic, int irq_start,
 			     irq_start);
 			irq_base = irq_start;
 		}
-
+        // 向系统注册irq domain并创建映射
+        /*
+        很遗憾，在GIC的代码中没有调用标准的注册irq domain的接口函数。
+        要了解其背后的原因，我们需要回到过去。在旧的linux kernel中，ARM体系结构的代码不甚理想。
+        在arch/arm目录充斥了很多board specific的代码，其中定义了很多具体设备相关的静态表格，
+        这些表格规定了各个device使用的资源，当然，其中包括IRQ资源。
+        在这种情况下，各个外设的IRQ是固定的（如果作为驱动程序员的你足够老的话，应该记得很长篇幅的针对
+        IRQ number的宏定义），也就是说，HW interrupt ID和IRQ number的关系是固定的。
+        一旦关系固定，我们就可以在interupt controller的代码中创建这些映射关系
+        */
 		gic->domain = irq_domain_add_legacy(NULL, gic_irqs, irq_base,
 					hwirq_base, &gic_irq_domain_ops, gic);
+        /*
+        这时候，对于这个版本的GIC driver而言，初始化之后，HW interrupt ID和IRQ number的映射关系已经建立，
+        保存在线性lookup table中，size等于GIC支持的中断数目，具体如下：
+        index 0～15对应的IRQ无效
+        16号IRQ  <------------------>16号HW interrupt ID
+        17号IRQ  <------------------>17号HW interrupt ID
+        如果想充分发挥Device Tree的威力，3.14版本中的GIC 代码需要修改
+        */
 	}
 
 	if (WARN_ON(!gic->domain)) {

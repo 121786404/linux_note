@@ -57,9 +57,14 @@ int kobj_map(struct kobj_map *domain, dev_t dev, unsigned long range,
 	}
 	mutex_lock(domain->lock);
 	for (i = 0, p -= n; i < n; i++, p++, index++) {
+        //找到和主设备号对应的位置的probe的指针.或者这个指针的地址.
 		struct probe **s = &domain->probes[index % 255];
-		while (*s && (*s)->range < range)
+        //判断*s是否为空.如果为空停止循环. 或者超出范围就停止循环
+        while (*s && (*s)->range < range)
+            //否则将s = &(*s)->next;直到s为空.也就是找到链表的尾部
 			s = &(*s)->next;
+        //如果链表中没有元素,讲 p->next = *s;就是将p->next = NULL;
+        //然后改变一级指针的正本也就是 *s = p;
 		p->next = *s;
 		*s = p;
 	}

@@ -26,6 +26,30 @@
 
 /*全局变量，在linux启动期间由chrdev_init函数初始化,字符设备链表加入到次变量中*/
 /*struct kobj_map定义在drivers/base/map.c*/
+/*
+内核中所有都字符设备都会记录在一个 kobj_map 结构的 cdev_map 变量中。
+这个结构的变量中包含一个散列表用来快速存取所有的对象。
+kobj_map() 函数就是用来把字符设备编号和 cdev 结构变量一起保存到 cdev_map 这个散列表里。
+
+当后续要打开一个字符设备文件时，通过调用 kobj_lookup() 函数，根据设备编号就可以找到 cdev 结构变量，从而取出其中的 ops 字段。
+
+kobj_map函数中哈希表的实现原理和前面注册分配设备号中的几乎完全一样，
+通过要加入系统的设备的主设备号major（major=MAJOR(dev)）来获得probes数组的索引值i（i = major % 255），
+
+然后把一个类型为struct probe的节点对象加入到probes[i]所管理的链表中。
+其中struct probe所在的矩形块中的深色部分记录了当前正在加入系统的字符设备对象的有关信息。
+其中，dev是它的设备号，range是从次设备号开始连续的设备数量，data是一void *变量，
+指向当前正要加入系统的设备对象指针p。
+
+图2-6展示了两个满足主设备号major % 255 = 2的字符设备通过调用cdev_add之后，
+cdev_map所展现出来的数据结构状态。
+
+所以，简单地说，设备驱动程序通过调用cdev_add把它所管理的设备对象的指针嵌入到一个类型为struct probe的节点之中，
+然后再把该节点加入到cdev_map所实现的哈希链表中。对系统而言，当设备驱动程序成功调用了cdev_add之后，
+就意味着一个字符设备对象已经加入到了系统，在需要的时候，系统就可以找到它。
+
+对用户态的程序而言，cdev_add调用之后，就已经可以通过文件系统的接口呼叫到我们的驱动程序。
+*/
 static struct kobj_map *cdev_map;
 
 static DEFINE_MUTEX(chrdevs_lock);
@@ -480,7 +504,8 @@ static int exact_lock(dev_t dev, void *data)
  * cdev_add() adds the device represented by @p to the system, making it
  * live immediately.  A negative error code is returned on failure.
  */
- /* 把一个字符设备文件加入到系统中,设备驱动程序通过该函数把他所管理的设备对象的指针嵌入到一个类型为struct probe的节点中，然后再把节点加入到cdev_map所实现的哈希链表中
+ /* 把一个字符设备文件加入到系统中,设备驱动程序通过该函数把他所管理的设备对象的指针嵌入到一个类型为struct probe的节点中，
+  * 然后再把节点加入到cdev_map所实现的哈希链表中
   * @p:为要加入系统的字符设备对象的指针
   * @dev:该设备的设备号
   * @count:从次设备号开始链接的设备数量

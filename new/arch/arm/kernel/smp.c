@@ -64,6 +64,10 @@ struct secondary_data secondary_data;
  */
 volatile int pen_release = -1;
 
+/*
+SGI ( Software Generated Interrupt ） ： 软件产生的中断，可以用于多核的核间通信，
+一个CPU 可以通过写GIC 的寄存器给另外一个CPU 产生中断。ipi_msg_type由SGI产生
+*/
 enum ipi_msg_type {
 	IPI_WAKEUP,
 	IPI_TIMER,
