@@ -177,7 +177,16 @@ enum {
 	IRQC_IS_NESTED,
 };
 
-/*irq_return_t声明,设备驱动程序负责实现该函数,然后调用request_irq函数，后者会把驱动程序实现的中断服务例程赋值给handler*/
+/*irq_return_t声明,设备驱动程序负责实现该函数,然后调用request_irq函数，
+后者会把驱动程序实现的中断服务例程赋值给handler
+
+第l 个参数irq 表示中断号。第2 个参数dev 就是request_irq 和free_irq 函数中的dev 参数。
+用于唯一标识当前的中断处理函数。
+
+dev 参数的类型是void＊，这就意味该参数可以是指向任何数据类型的指针。dev 参数的用处很多。
+例如，如果有多个设备驱动共享同一个中断线，那么可以利用dev 区分是哪个设备请求的中断。
+或者使dev 指向一个结构体，在申请中断时传入一些数据，以便在中断处理函数中可以使用。
+*/
 typedef irqreturn_t (*irq_handler_t)(int, void *);
 
 /**
@@ -239,12 +248,17 @@ request_threaded_irq(unsigned int irq, irq_handler_t handler,
 		     unsigned long flags, const char *name, void *dev);
 
 /* 把驱动程序实现的中断服务例程赋值给handler,驱动程序中安装中断服务例程
- * @irq:中断号，要申请的中断号。对于某些设备，如系统时钟、键盘等，这个参数值通常是固定死    的。
+ * @irq:要申请的中断号。对于某些设备，如系统时钟、键盘等，这个参数值通常是固定死的。
         而对于大多数设备来说，这个参数值要么可以通过探测获取，要么可以通过编程动态确定。
+        所有固定下来的中断号在 arch\arm\mach-s3c24xx\include\mach\irq.h 中定义
  * @handler:中断处理例程ISR,由设备驱动程序负责实现
  * @flags:是标志变量,可影响内核在安装ISR时的一些行为模式,信号触发类型
- * @name:当前安装中断ISR的设备名称，内核在proc文件系统生成name的一个入口点
- * @dev:是个传递到中断处理例程的指针，在中断共享的情况下，将在free_irq时用到，以     区分当前是要释放的哪一个struct irqaction对象*/
+ * @name:当前安装中断ISR的设备名称，内核在proc文件系统生成name的一个入口点,例如， PC 机上键盘中断对应的值是“keyboard"
+ * @dev:当释放一个中断处理程序后， dev 参数为当前中断处理程序提供了唯一的标识，
+        以便系统知道要释放中断线上哪一个中断处理程序。如果没有该参数，系统内核就不知道该释放中断线上的哪一个中断处理函数。
+        当然，如果中断线未共享（中断线上只有一个中断处理程序），该参数也可以设为NULL。
+        该参数值也会传入中断处理函数的第2个参数中。
+*/
 static inline int __must_check
 request_irq(unsigned int irq, irq_handler_t handler, unsigned long flags,
 	    const char *name, void *dev)

@@ -148,10 +148,8 @@ enum {
 };
 
 struct work_struct {
-	atomic_long_t data;	/* 驱动程序可以利用data来将设备驱动程序使用
-				 * 的某些指针传递给延迟函数*/
-	struct list_head entry;	/* 双向链表对象,用来将提交的等待处理的工作节点
-				 * 形成链表*/
+	atomic_long_t data;	/* 驱动程序可以利用data来将设备驱动程序使用的某些指针传递给延迟函数*/
+	struct list_head entry;	/* 双向链表对象,用来将提交的等待处理的工作节点形成链表*/
 	work_func_t func;	/*工作节点的延迟函数,用来完成实际的延迟操作*/
 #ifdef CONFIG_LOCKDEP
 	struct lockdep_map lockdep_map;

@@ -87,6 +87,15 @@
  * The local_irq_*() APIs are equal to the raw_local_irq*()
  * if !TRACE_IRQFLAGS.
  */
+ /*
+如果使用local_irq_ disable 之前已经禁止了中断，那么往往会带来潜在的危险。
+同样local_ irq_ enable 也会存在潜在的危险，因为调用local_irq_enable 会无条件地激活中断
+
+因此，在禁止中断之前最好保存中断系统的状态，这样会更安全一些。
+保存中断系统状态需要使用local_irq_save(flags），恢复中断原来的状态需要使用local_irq_restore(flags）
+local_irq_ save和local_irq_restore 宏必须在同一个函数中调用。
+
+*/
 #ifdef CONFIG_TRACE_IRQFLAGS
 /*用来打开本地处理器的中断*/
 #define local_irq_enable() \

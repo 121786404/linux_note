@@ -16,11 +16,9 @@
 #include <linux/slab.h>
 #include <linux/smp.h>
 #include <linux/fs.h>
-
-/*
-所有的irq domain被挂入一个全局链表
-struct irq_domain中的link成员就是挂入这个队列的节点。
-通过irq_domain_list这个指针，可以获取整个系统中HW interrupt ID和IRQ number的mapping DB。
+/* 
+所有的irq domain被挂入一个全局链表 
+通过irq_domain_list这个指针，可以获取整个系统中HW interrupt ID和IRQ number的mapping DB
 */
 static LIST_HEAD(irq_domain_list);
 static DEFINE_MUTEX(irq_domain_mutex);
@@ -230,11 +228,11 @@ struct irq_domain *irq_domain_add_legacy(struct device_node *of_node,
 					 void *host_data)
 {
 	struct irq_domain *domain;
-    // 注册irq domain 
+    // 注册irq domain
 	domain = __irq_domain_add(of_node_to_fwnode(of_node), first_hwirq + size,
 				  first_hwirq + size, 0, ops, host_data);
-    // 创建映射
-    if (domain)
+	// 创建映射			  
+	if (domain)
 		irq_domain_associate_many(domain, first_irq, first_hwirq, size);
 
 	return domain;
@@ -703,14 +701,23 @@ unsigned int irq_create_fwspec_mapping(struct irq_fwspec *fwspec)
 }
 EXPORT_SYMBOL_GPL(irq_create_fwspec_mapping);
 /*
-看到函数名字中的of（open firmware），我想你也可以猜到了几分，
-这个接口当然是利用device tree进行映射关系的建立。
+of（open firmware），利用device tree进行映射关系的建立。
+
+通常，一个普通设备的device tree node已经描述了足够的中断信息，
+在这种情况下，该设备的驱动在初始化的时候可以调用irq_of_parse_and_map
+这个接口函数进行该device node中和中断相关的内容（interrupts和interrupt-parent属性）进行分析，
+并建立映射关系
+
+对于一个使用Device tree的普通驱动程序，基本上初始化需要调用irq_of_parse_and_map获取IRQ number，
+然后调用request_threaded_irq申请中断handler。
 */
 unsigned int irq_create_of_mapping(struct of_phandle_args *irq_data)
 {
 	struct irq_fwspec fwspec;
 
+    /* 分析device node中的interrupt相关属性 */
 	of_phandle_args_to_fwspec(irq_data, &fwspec);
+	/* 创建映射，并返回对应的IRQ number */
 	return irq_create_fwspec_mapping(&fwspec);
 }
 EXPORT_SYMBOL_GPL(irq_create_of_mapping);

@@ -95,6 +95,10 @@ EXPORT_SYMBOL(synchronize_hardirq);
  *
  *	This function may be called - with care - from IRQ context.
  */
+ /*
+synchronize_irq 函数用于等待一个特定的中断线上所有的处理程序都执行完。
+如果特定中断线上有一个处理程序还没执行完，synchronize_irq 函数会一直阻塞。
+*/
 void synchronize_irq(unsigned int irq)
 {
 	struct irq_desc *desc = irq_to_desc(irq);
@@ -443,7 +447,9 @@ void __disable_irq(struct irq_desc *desc)
 	if (!desc->depth++)
 		irq_disable(desc);
 }
-
+/*
+禁止特定中断线。
+*/
 static int __disable_irq_nosync(unsigned int irq)
 {
 	unsigned long flags;
@@ -491,6 +497,13 @@ EXPORT_SYMBOL(disable_irq_nosync);
  *
  *	This function may be called - with care - from IRQ context.
  */
+ /*
+其中disable_irq 和disable_irq_nosync 函数都用于禁止中断控制器上指定的中断线， 
+也就是说禁止了指定中断向系统中所有处理器的传递。
+这两个函数的区别是disable_irq函数只有在当前正在执行的所有处理程序完成后才会返回，
+而disable_irq_nosync函数会立即返回（不管当前是否还有没执行完的处理程序〉。
+disable_irq 函数就是依靠disable_irq_nosync 和synchronize_irq 函数共同来实现的
+*/
 void disable_irq(unsigned int irq)
 {
 	if (!__disable_irq_nosync(irq))
@@ -557,6 +570,7 @@ void __enable_irq(struct irq_desc *desc)
  *	This function may be called from IRQ context only when
  *	desc->irq_data.chip->bus_lock and desc->chip->bus_sync_unlock are NULL !
  */
+ /*激活中断控制器上指定的中断线*/
 void enable_irq(unsigned int irq)
 {
 	unsigned long flags;
@@ -1590,6 +1604,16 @@ EXPORT_SYMBOL_GPL(remove_irq);
  *
  *	This function must not be called from interrupt context.
  */
+ /*
+如果中断线不是共享的。free_irq函数会在注销dev 指定的中断处理函数的同时释放这条中断线
+（其他的内核程序就可以再次请求该中断线了）。
+如果中断线是共享的，free_irq函数只会注销dev 指定的中断处理函数。
+除非该中断处理函数是中断线上的最后一个中断处理函数，否则free_irq函数不会释放这条中断线。
+
+由此可见dev 参数的重要性。对于共享中断线， dev 是唯一可以区分中断线中不同中断处理函数的标识。
+不管中断线是否共享，只要dev 是非空值，就必须与一个中断处理函数对应。
+而free_irq函数必须从中断上下文调用。
+*/
 void free_irq(unsigned int irq, void *dev_id)
 {
 	struct irq_desc *desc = irq_to_desc(irq);
@@ -1653,8 +1677,18 @@ EXPORT_SYMBOL(free_irq);
  需要在struct irqaction对象中实现他的thread_fn成员，
  request_thread_irq函数内部会生成一个irq_thread的独立线程
 
+thread_fn 与中断处理函数同样的函数（可称为第2 个中断处理函数〉。
+系统会根据前一个中断处理函数的返回值决定是否在另一7个线程中调用第2 个中断处理函数。
+
  函数调用了kmalloc()，kmalloc()是可以睡眠的，
  绝不能再中断上下文或其它不允许阻塞的代码中调用该函数。
+ 
+request_threaded_irq 函数可能引起休眠，因此，不能在中断上下文或其他可能引起阻塞的地方调用．
+那么request_irq 函数为什么会引起睡眠呢？
+在请求中断时，需要在虚拟目录／proc/irq 中建立一个与中断对应的虚拟目录
+（虚拟目录名就是中断号，例如Nexus S 手机上的308 ).
+proc_mkdir函数用来创建虚拟目录．该函数通过调用proc_create 函数对这个新的虚拟目录进行设置。
+而proc_create 会调用krnalloc 函数请求分配内存。问题就出在kmalloc函数上，该函数是可以引起休眠的
 
 request_threaded_irq 多了一个参数thread_fn。用这个API 申请中断的时候，内核会为相应的中断号分配一个对应的内核线程。
 注意这个线程只针对这个中断号，如果其他中断也通过request_threaded_ irq申请，自然会得到新的内核线程。

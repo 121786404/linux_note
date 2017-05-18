@@ -52,7 +52,13 @@
 irq_cpustat_t irq_stat[NR_CPUS] ____cacheline_aligned;
 EXPORT_SYMBOL(irq_stat);
 #endif
-
+// 软中断向量表
+/*
+每一个Linux 驱动都会拥有一个softirq_vec数组。并且在该Linux 驱动中最多可以指定NR_SOFTIRQS个类型的中断。
+软中断和tasklet 的一个重要区别是同类型的软中断处理程序可以在不同处理器上
+同时运行（以并发的方式访问使用软中断的驱动），而同一类型的tasklet 不能在不同处理器上同时执行，
+因此如果使用软中断的驱动程序使用了共享数据，需要使用锁、信号量等保护临界区数据。
+*/
 static struct softirq_action softirq_vec[NR_SOFTIRQS] __cacheline_aligned_in_smp;
 
 DEFINE_PER_CPU(struct task_struct *, ksoftirqd);
@@ -74,7 +80,7 @@ static void wakeup_softirqd(void)
 	struct task_struct *tsk = __this_cpu_read(ksoftirqd);
 
 	if (tsk && tsk->state != TASK_RUNNING)
-		wake_up_process(tsk);
+		wake_up_process(tsk);// 唤醒ksoftirqd 线程所在的进程
 }
 
 /*
@@ -259,7 +265,9 @@ asmlinkage __visible void __softirq_entry __do_softirq(void)
 	pending = local_softirq_pending();
 	account_irq_enter_time(current);
 
+    // 禁止底半部
 	__local_bh_disable_ip(_RET_IP_, SOFTIRQ_OFFSET);
+    // 禁止软中断再次执行
 	in_hardirq = lockdep_softirq_start();
 
 restart:
@@ -269,7 +277,8 @@ restart:
 	local_irq_enable();
 
 	h = softirq_vec;
-
+    
+    // 在这个循环中会根据pending 每一位的值调用相应类型的软中断处理函数
 	while ((softirq_bit = ffs(pending))) {
 		unsigned int vec_nr;
 		int prev_count;
@@ -282,6 +291,7 @@ restart:
 		kstat_incr_softirqs_this_cpu(vec_nr);
 
 		trace_softirq_entry(vec_nr);
+        // 执行相应类型的款中断处理程序
 		h->action(h);
 		trace_softirq_exit(vec_nr);
 		if (unlikely(prev_count != preempt_count())) {
@@ -291,6 +301,7 @@ restart:
 			preempt_count_set(prev_count);
 		}
 		h++;
+        // 将pending 向右移位，然后继续判断最低位是否为1
 		pending >>= softirq_bit;
 	}
 
@@ -303,6 +314,7 @@ restart:
 		    --max_restart)
 			goto restart;
 
+        // 唤醒softirqd 线程
 		wakeup_softirqd();
 	}
 
@@ -315,19 +327,28 @@ restart:
 
 asmlinkage __visible void do_softirq(void)
 {
+    // 用于保存软中断的标记，这里用了一个32 位的无符号整数表示最多32 个软中断类型
+    // 最多支持32 个软中断类型就是从这里来的
+    // 第n 位表示对应类型的软中断已做标记，等待处理。目前最多用了10 位
+
 	__u32 pending;
 	unsigned long flags;
 
+    // 如果当前正在中断处理函数中，直接返回
 	if (in_interrupt())
 		return;
 
+    // 当前软中断的状态已被保存，可以将软中断的状态清零了
 	local_irq_save(flags);
 
+    // 获取当前驱动的软中断注册标记值
 	pending = local_softirq_pending();
 
+    // 如果pending 不为零（至少有一位被设置成1，开始调用软中断处理程序
 	if (pending && !ksoftirqd_running())
 		do_softirq_own_stack();
 
+    // 恢复软中断的状态
 	local_irq_restore(flags);
 }
 
@@ -482,12 +503,16 @@ static DEFINE_PER_CPU(struct tasklet_head, tasklet_hi_vec);
 void __tasklet_schedule(struct tasklet_struct *t)
 {
 	unsigned long flags;
-
+    // 保存中断状态，并禁止中断
 	local_irq_save(flags);
 	t->next = NULL;
+	// 将当前调度的tasklet 添加到tasklet 调度链表的结尾，
+    // 下面的两行代码在tasklet 链表结尾插入一个节点（ tasklet struct 结构体）
 	*__this_cpu_read(tasklet_vec.tail) = t;
 	__this_cpu_write(tasklet_vec.tail, &(t->next));
+	// 挂起TASKLET_SOFTIRQ 中断
 	raise_softirq_irqoff(TASKLET_SOFTIRQ);
+	// 恢复中断状态，并激活中断
 	local_irq_restore(flags);
 }
 EXPORT_SYMBOL(__tasklet_schedule);
@@ -526,16 +551,20 @@ static __latent_entropy void tasklet_action(struct softirq_action *a)
 	__this_cpu_write(tasklet_vec.tail, this_cpu_ptr(&tasklet_vec.head));
 	local_irq_enable();
 
+    // 开始扫描tasklet 链表
 	while (list) {
 		struct tasklet_struct *t = list;
 
 		list = list->next;
 
 		if (tasklet_trylock(t)) {
+		    // 只有tasklet struct.count 的值为0 ，才会执行tasklet 处理程序
 			if (!atomic_read(&t->count)) {
+			    // tasklet_struct. state 必须是TASKLET_STATE_SCHED 才会执行tasklet 处理程序
 				if (!test_and_clear_bit(TASKLET_STATE_SCHED,
 							&t->state))
 					BUG();
+				// 执行处理程序	
 				t->func(t->data);
 				tasklet_unlock(t);
 				continue;
@@ -596,12 +625,14 @@ void tasklet_init(struct tasklet_struct *t,
 {
 	t->next = NULL;
 	t->state = 0;
+	// 使用动态方式创建tasklet struct 结构体会自动设置成激活状态。
 	atomic_set(&t->count, 0);
 	t->func = func;
 	t->data = data;
 }
 EXPORT_SYMBOL(tasklet_init);
 
+// 将tasklet struct.state 设为0
 void tasklet_kill(struct tasklet_struct *t)
 {
 	if (in_interrupt())

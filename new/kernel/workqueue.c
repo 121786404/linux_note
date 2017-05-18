@@ -2164,7 +2164,7 @@ static void process_scheduled_works(struct worker *worker)
 	while (!list_empty(&worker->scheduled)) {
 		struct work_struct *work = list_first_entry(&worker->scheduled,
 						struct work_struct, entry);
-		process_one_work(worker, work);
+		process_one_work(worker, work);// 处理每一个工作节点
 	}
 }
 
@@ -3967,8 +3967,10 @@ struct workqueue_struct *__alloc_workqueue_key(const char *fmt,
 	max_active = wq_clamp_max_active(max_active, flags, wq->name);
 
 	/* init wq */
+	// 设置workqueue_struct . flags 成员变量
 	wq->flags = flags;
 	wq->saved_max_active = max_active;
+	// 初始化mutex
 	mutex_init(&wq->mutex);
 	atomic_set(&wq->nr_pwqs_to_flush, 0);
 	INIT_LIST_HEAD(&wq->pwqs);
@@ -4017,10 +4019,13 @@ struct workqueue_struct *__alloc_workqueue_key(const char *fmt,
 	mutex_lock(&wq_pool_mutex);
 
 	mutex_lock(&wq->mutex);
+	// 对每一个CPU 创建一个cpu workqueue struct 结构体，并使这些结构体的wq 都指向
+    // 前面创建的workqueue struct 结构体
 	for_each_pwq(pwq, wq)
 		pwq_adjust_max_active(pwq);
 	mutex_unlock(&wq->mutex);
 
+    // 将当前世lj建的工作队列添加到系统的工作队列列表中
 	list_add_tail_rcu(&wq->list, &workqueues);
 
 	mutex_unlock(&wq_pool_mutex);
