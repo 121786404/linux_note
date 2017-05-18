@@ -47,8 +47,8 @@ ret_fast_syscall:
 	/* perform architecture specific actions before user return */
 	arch_ret_to_user r1, lr
 /*
-__switch_toº¯ÊıÖĞÒÑ¾­»Ö¸´¹ıÒ»´Îµ±Ç°Ïß³ÌµÄÉÏÏÂÎÄÁË(struct cpu_context_save),
-½ÓÏÂÀ´ÓÖµ÷ÓÃrestore_user_regsÀ´»Ö¸´Ä£Ê½ÉÏÏÂÎÄ(struct pt_regs).
+__switch_toå‡½æ•°ä¸­å·²ç»æ¢å¤è¿‡ä¸€æ¬¡å½“å‰çº¿ç¨‹çš„ä¸Šä¸‹æ–‡äº†(struct cpu_context_save),
+æ¥ä¸‹æ¥åˆè°ƒç”¨restore_user_regsæ¥æ¢å¤æ¨¡å¼ä¸Šä¸‹æ–‡(struct pt_regs).
 */
 	restore_user_regs fast = 1, offset = S_OFF
  UNWIND(.fnend		)
@@ -100,12 +100,12 @@ ENDPROC(ret_fast_syscall)
 ENTRY(ret_to_user)
 ret_slow_syscall:
 /**
- * ÔÚÖĞ¶Ï´¦ÀíÁ÷³ÌÖĞ£¬¿ÉÄÜ´ò¿ªÁËÖĞ¶Ï¡£´Ë´¦¹Ø±Õ
+ * åœ¨ä¸­æ–­å¤„ç†æµç¨‹ä¸­ï¼Œå¯èƒ½æ‰“å¼€äº†ä¸­æ–­ã€‚æ­¤å¤„å…³é—­
  */
 	disable_irq_notrace			@ disable interrupts
 ENTRY(ret_to_user_from_irq)
 /**
- * ´¦ÀíÇÀÕ¼µ÷¶È¡¢ĞÅºÅµÈµÈ
+ * å¤„ç†æŠ¢å è°ƒåº¦ã€ä¿¡å·ç­‰ç­‰
  */
 	ldr	r1, [tsk, #TI_FLAGS]
 	tst	r1, #_TIF_WORK_MASK
@@ -115,13 +115,13 @@ no_work_pending:
 
 	/* perform architecture specific actions before user return */
 /**
- * Ö»ÓĞÌØÊâ¼Ü¹¹²Å»áÔÚ´Ë´¦Àí
+ * åªæœ‰ç‰¹æ®Šæ¶æ„æ‰ä¼šåœ¨æ­¤å¤„ç†
  */
 	arch_ret_to_user r1, lr
 	ct_user_enter save = 0
 
 /**
- * »Ö¸´¼Ä´æÆ÷¡£
+ * æ¢å¤å¯„å­˜å™¨ã€‚
  */
 	restore_user_regs fast = 0, offset = 0
 ENDPROC(ret_to_user_from_irq)
@@ -134,15 +134,15 @@ ENDPROC(ret_to_user)
 ENTRY(ret_from_fork)
 	bl	schedule_tail
 /*
-±È½Ïr5¼Ä´æÆ÷ÊÇ·ñÎª¿Õ£¬Èç¹û²»Îª¿ÕÔò±íÊ¾ÎªÄÚºËÏß³Ì£¬ÔòÖ´ĞĞÈçÏÂÖ¸Áî£¬        
-·ñÔòÖ´ĞĞ±êºÅ1´¦Ö®ºóµÄÖ¸Áîµ÷ÓÃret_slow_syscall·µ»Øµ½ÓÃ»§Ì¬Ö´ĞĞ.
+æ¯”è¾ƒr5å¯„å­˜å™¨æ˜¯å¦ä¸ºç©ºï¼Œå¦‚æœä¸ä¸ºç©ºåˆ™è¡¨ç¤ºä¸ºå†…æ ¸çº¿ç¨‹ï¼Œåˆ™æ‰§è¡Œå¦‚ä¸‹æŒ‡ä»¤ï¼Œ        
+å¦åˆ™æ‰§è¡Œæ ‡å·1å¤„ä¹‹åçš„æŒ‡ä»¤è°ƒç”¨ret_slow_syscallè¿”å›åˆ°ç”¨æˆ·æ€æ‰§è¡Œ.
 */
 	cmp	r5, #0
 	movne	r0, r4
 	badrne	lr, 1f
 /*
-retne r5£ºÌø×ªµ½ÓÉr5Ä¿±ê¼Ä´æÆ÷Ö¸¶¨µÄµØÖ·´¦¡£        
-r5¼Ä´æÆ÷ÔÚcopy_threadº¯ÊıÖĞÖ¸¶¨ÎªÄÚºËÏß³ÌµÄÈë¿ÚµØÖ·
+retne r5ï¼šè·³è½¬åˆ°ç”±r5ç›®æ ‡å¯„å­˜å™¨æŒ‡å®šçš„åœ°å€å¤„ã€‚        
+r5å¯„å­˜å™¨åœ¨copy_threadå‡½æ•°ä¸­æŒ‡å®šä¸ºå†…æ ¸çº¿ç¨‹çš„å…¥å£åœ°å€
 */
 	retne	r5
 1:	get_thread_info tsk
@@ -160,40 +160,40 @@ ENTRY(vector_swi)
 	v7m_exception_entry
 #else
 /*
-Õâ¸öÕ»Ö¡´óĞ¡ÕıºÃÊÇstruct pt_regsµÄ´óĞ¡. struct pt_regsÖĞ±£´æµÄÊÇ¡¡
-Ïß³ÌÓÃ»§Ì¬µÄ¼Ä´æÆ÷ÉÏÏÂÎÄ(Ä£Ê½ÉÏÏÂÎÄ).
-ÕâÀïµÄspÒÑ¾­ÊÇsp_svcÁË£¬Ò²¾ÍÊÇµ±Ç°Ïß³ÌµÄÄÚºËÕ»ÁË
+è¿™ä¸ªæ ˆå¸§å¤§å°æ­£å¥½æ˜¯struct pt_regsçš„å¤§å°. struct pt_regsä¸­ä¿å­˜çš„æ˜¯ã€€
+çº¿ç¨‹ç”¨æˆ·æ€çš„å¯„å­˜å™¨ä¸Šä¸‹æ–‡(æ¨¡å¼ä¸Šä¸‹æ–‡).
+è¿™é‡Œçš„spå·²ç»æ˜¯sp_svcäº†ï¼Œä¹Ÿå°±æ˜¯å½“å‰çº¿ç¨‹çš„å†…æ ¸æ ˆäº†
 */
 	sub	sp, sp, #PT_REGS_SIZE
 /*
-½«r0-r12¼Ä´æÆ÷Ñ¹ÈëÄÚºËÕ»ÖĞ
+å°†r0-r12å¯„å­˜å™¨å‹å…¥å†…æ ¸æ ˆä¸­
 */
 	stmia	sp, {r0 - r12}			@ Calling r0 - r12
 /*
-½«ÓÃ»§Ì¬µÄsp¡¢lrÑ¹ÈëÄÚºËÕ»ÖĞ
+å°†ç”¨æˆ·æ€çš„spã€lrå‹å…¥å†…æ ¸æ ˆä¸­
 */
  ARM(	add	r8, sp, #S_PC		)
 /*
-{sp, lr}^ÖĞµÄ"^"±íÊ¾ÕâÀïµÄspºÍlrÊÇÓÃ»§Ì¬µÄ¼Ä´æÆ÷
+{sp, lr}^ä¸­çš„"^"è¡¨ç¤ºè¿™é‡Œçš„spå’Œlræ˜¯ç”¨æˆ·æ€çš„å¯„å­˜å™¨
 */
  ARM(	stmdb	r8, {sp, lr}^		)	@ Calling sp, lr
  THUMB(	mov	r8, sp			)
  THUMB(	store_user_sp_lr r8, r10, S_SP	)	@ calling sp, lr
 /*
-sprs_svcÖĞ±£´æµÄÊÇµ÷ÓÃswiÖ¸ÁîÇ°µÄcpsrÖµ£¬ÕâÀï½«Ëü±£´æÔÚ¼Ä´æÆ÷r8ÖĞ
+sprs_svcä¸­ä¿å­˜çš„æ˜¯è°ƒç”¨swiæŒ‡ä»¤å‰çš„cpsrå€¼ï¼Œè¿™é‡Œå°†å®ƒä¿å­˜åœ¨å¯„å­˜å™¨r8ä¸­
 */
 	mrs	r8, spsr			@ called from non-FIQ mode, so ok.
 /*
-lrÖĞµÄÖµÊÇswiÖ¸ÁîµÄÏÂÒ»ĞĞ£¬Ò²¾ÍÊÇÏµÍ³µ÷ÓÃµÄÓÃ»§Ì¬·µ»ØµØÖ·¡£½«ÆäÑ¹ÈëÄÚºËÕ»ÖĞ
+lrä¸­çš„å€¼æ˜¯swiæŒ‡ä»¤çš„ä¸‹ä¸€è¡Œï¼Œä¹Ÿå°±æ˜¯ç³»ç»Ÿè°ƒç”¨çš„ç”¨æˆ·æ€è¿”å›åœ°å€ã€‚å°†å…¶å‹å…¥å†…æ ¸æ ˆä¸­
 */
 	str	lr, [sp, #S_PC]			@ Save calling PC
 /*
-½«µ÷ÓÃswiÖ¸ÁîÇ°µÄcpsrÖµÑ¹ÈëÄÚºËÕ»ÖĞ
+å°†è°ƒç”¨swiæŒ‡ä»¤å‰çš„cpsrå€¼å‹å…¥å†…æ ¸æ ˆä¸­
 */
 	str	r8, [sp, #S_PSR]		@ Save CPSR
 /*
-½«r0Ñ¹ÈëÄÚºËÕ»ÖĞ
-ÕâÀïr0»á´æÁ½¸öÎ»ÖÃ£¬Ò»¸ö´ú±íµÚÒ»¸ö²ÎÊı£¬ÁíÒ»¸ö´ú±í·µ»ØÖµ
+å°†r0å‹å…¥å†…æ ¸æ ˆä¸­
+è¿™é‡Œr0ä¼šå­˜ä¸¤ä¸ªä½ç½®ï¼Œä¸€ä¸ªä»£è¡¨ç¬¬ä¸€ä¸ªå‚æ•°ï¼Œå¦ä¸€ä¸ªä»£è¡¨è¿”å›å€¼
 */
 	str	r0, [sp, #S_OLD_R0]		@ Save OLD_R0
 #endif
@@ -240,7 +240,7 @@ lrÖĞµÄÖµÊÇswiÖ¸ÁîµÄÏÂÒ»ĞĞ£¬Ò²¾ÍÊÇÏµÍ³µ÷ÓÃµÄÓÃ»§Ì¬·µ»ØµØÖ·¡£½«ÆäÑ¹ÈëÄÚºËÕ»ÖĞ
 
 	uaccess_disable tbl
 /*
-»á²éÑ¯sys_call_tableÌø×ª±í,Õâ¸ö±íÖĞ´æ´¢µÄÊÇÒ»ÏµÁĞµÄº¯ÊıÖ¸Õë,ÕâĞ©Ö¸Õë¾ÍÊÇÏµÍ³µ÷ÓÃº¯ÊıµÄÖ¸Õë.
+ä¼šæŸ¥è¯¢sys_call_tableè·³è½¬è¡¨,è¿™ä¸ªè¡¨ä¸­å­˜å‚¨çš„æ˜¯ä¸€ç³»åˆ—çš„å‡½æ•°æŒ‡é’ˆ,è¿™äº›æŒ‡é’ˆå°±æ˜¯ç³»ç»Ÿè°ƒç”¨å‡½æ•°çš„æŒ‡é’ˆ.
 */
 	adr	tbl, sys_call_table		@ load syscall table pointer
 
@@ -268,14 +268,14 @@ local_restart:
 
 	cmp	scno, #NR_syscalls		@ check upper syscall limit
 /*
-ÕâÀïÏÈÉèÖÃÏµÍ³µ÷ÓÃÖ´ĞĞº¯Êısys_xxx()µÄ·µ»ØµØÖ·Îªret_fast_syscall  
-ÕâÊÇÉèÖÃµÄÊÇµ±Ç°Ïß³Ìlr_svc¼Ä´æÆ÷,µ±ÏÂ´ÎÍ¨¹ı__switch_to»Ö¸´  
-µ±Ç°Ïß³ÌµÄÉÏÏÂÎÄ(cpu_context)Ê±Ê×ÏÈµ÷ÓÃret_fast_syscallÀ´»Ö¸´ÆäÓÃ»§Ì¬  
-µÄÏß³ÌÉÏÏÂÎÄ(struct pt_regs).
+è¿™é‡Œå…ˆè®¾ç½®ç³»ç»Ÿè°ƒç”¨æ‰§è¡Œå‡½æ•°sys_xxx()çš„è¿”å›åœ°å€ä¸ºret_fast_syscall  
+è¿™æ˜¯è®¾ç½®çš„æ˜¯å½“å‰çº¿ç¨‹lr_svcå¯„å­˜å™¨,å½“ä¸‹æ¬¡é€šè¿‡__switch_toæ¢å¤  
+å½“å‰çº¿ç¨‹çš„ä¸Šä¸‹æ–‡(cpu_context)æ—¶é¦–å…ˆè°ƒç”¨ret_fast_syscallæ¥æ¢å¤å…¶ç”¨æˆ·æ€  
+çš„çº¿ç¨‹ä¸Šä¸‹æ–‡(struct pt_regs).
 */
 	badr	lr, ret_fast_syscall		@ return address
 /*
-ÒÔÏÂ¾ÍÊÇ¸ù¾İÏµÍ³µ÷ÓÃºÅµ÷ÓÃ¾ßÌåµÄÖ´ĞĞº¯Êı¡£
+ä»¥ä¸‹å°±æ˜¯æ ¹æ®ç³»ç»Ÿè°ƒç”¨å·è°ƒç”¨å…·ä½“çš„æ‰§è¡Œå‡½æ•°ã€‚
 */
 	ldrcc	pc, [tbl, scno, lsl #2]		@ call sys_* routine
 

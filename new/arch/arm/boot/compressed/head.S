@@ -149,7 +149,7 @@ start:
 		bl	__hyp_stub_install	@ get into SVC mode, reversibly
 #endif
 /**
- * ½«boot´«µİµÄÌåÏµ½á¹¹IDºÍatagsÖ¸Õë±£´æµ½¼Ä´æÆ÷r7,r8ÖĞ
+ * å°†bootä¼ é€’çš„ä½“ç³»ç»“æ„IDå’ŒatagsæŒ‡é’ˆä¿å­˜åˆ°å¯„å­˜å™¨r7,r8ä¸­
  */
 		mov	r7, r1			@ save architecture ID
 		mov	r8, r2			@ save atags pointer
@@ -207,7 +207,7 @@ not_angel:
 		add	r4, r4, #TEXT_OFFSET
 #else
 /**
- * ÄÚºË´úÂë¼ÓÔØµØÖ·
+ * å†…æ ¸ä»£ç åŠ è½½åœ°å€
  */
 		ldr	r4, =zreladdr
 #endif
@@ -522,7 +522,7 @@ wont_overwrite:
 #endif
 
 /**
- * Çå¿ÕBSS
+ * æ¸…ç©ºBSS
  */
 not_relocated:	mov	r0, #0
 1:		str	r0, [r2], #4		@ clear bss
@@ -540,7 +540,7 @@ not_relocated:	mov	r0, #0
 		tst	r4, #1
 		bic	r4, r4, #1
 /**
- * ÆôÓÃ»º´æ
+ * å¯ç”¨ç¼“å­˜
  */
 		blne	cache_on
 
@@ -552,19 +552,19 @@ not_relocated:	mov	r0, #0
  *   r8  = atags pointer
  */
 /**
- * ÎªCÔËĞĞ»·¾³ÉèÖÃ¶ÑÕ»Ö¸Õë
+ * ä¸ºCè¿è¡Œç¯å¢ƒè®¾ç½®å †æ ˆæŒ‡é’ˆ
  */
 		mov	r0, r4
 		mov	r1, sp			@ malloc space above stack
 		add	r2, sp, #0x10000	@ 64k max
 		mov	r3, r7
 /**
- * ¿ªÊ¼½âÑ¹ÄÚºË
- * r0:zImage½âÑ¹Î»ÖÃ£¬r1:Î»ÓÚ¶ÑÕ»ÉÏ·½µÄ¶¯Ì¬ÄÚ´æ£¬r2:¶¯Ì¬ÄÚ´æ´óĞ¡£¬r3:ÌåÏµ¼Ü¹¹±àºÅ
+ * å¼€å§‹è§£å‹å†…æ ¸
+ * r0:zImageè§£å‹ä½ç½®ï¼Œr1:ä½äºå †æ ˆä¸Šæ–¹çš„åŠ¨æ€å†…å­˜ï¼Œr2:åŠ¨æ€å†…å­˜å¤§å°ï¼Œr3:ä½“ç³»æ¶æ„ç¼–å·
  */
 		bl	decompress_kernel
 /**
- * Çå³ı»º´æ£¬²¢¹Ø±Õ»º´æ
+ * æ¸…é™¤ç¼“å­˜ï¼Œå¹¶å…³é—­ç¼“å­˜
  */
 		bl	cache_clean_flush
 		bl	cache_off
@@ -590,7 +590,7 @@ not_relocated:	mov	r0, #0
 .L__hyp_reentry_vectors_offset:	.long	__hyp_reentry_vectors - .
 #else
 /**
- * ½âÑ¹Íê±Ï£¬×¼±¸Æô¶¯ÄÚºË
+ * è§£å‹å®Œæ¯•ï¼Œå‡†å¤‡å¯åŠ¨å†…æ ¸
  */
 		b	__enter_kernel
 #endif
@@ -635,7 +635,7 @@ params:		ldr	r0, =0x10000100		@ params_phys for RPC
  */
 		.align	5
 /**
- * 8ÊÇ´ò¿ª»º´æº¯ÊıÔÚproc_typeÖĞµÄÆ«ÒÆ
+ * 8æ˜¯æ‰“å¼€ç¼“å­˜å‡½æ•°åœ¨proc_typeä¸­çš„åç§»
  */
 cache_on:	mov	r3, #8			@ cache_on function
 		b	call_cache_fn
@@ -709,12 +709,12 @@ __armv3_mpu_cache_on:
 #endif
 
 /**
- * ÉèÖÃ½âÑ¹¹ı³ÌĞèÒªµÄMMU
+ * è®¾ç½®è§£å‹è¿‡ç¨‹éœ€è¦çš„MMU
  */
 __setup_mmu:	sub	r3, r4, #16384		@ Page directory size
 		bic	r3, r3, #0xff		@ Align the pointer
 /*
-r3ÊÇÒ³Ä¿Â¼ÆğÊ¼µØÖ·£¬Î»ÓÚzimage´úÂëÇ°
+r3æ˜¯é¡µç›®å½•èµ·å§‹åœ°å€ï¼Œä½äºzimageä»£ç å‰
 */
 		bic	r3, r3, #0x3f00
 /*
@@ -723,8 +723,8 @@ r3ÊÇÒ³Ä¿Â¼ÆğÊ¼µØÖ·£¬Î»ÓÚzimage´úÂëÇ°
  */
 		mov	r0, r3
 /**
- * 4096Ïî£¬Ã¿Ïî1M
- * ÆäÖĞ256MÆôÓÃ»º´æ
+ * 4096é¡¹ï¼Œæ¯é¡¹1M
+ * å…¶ä¸­256Må¯ç”¨ç¼“å­˜
  */
 		mov	r9, r0, lsr #18
 		mov	r9, r9, lsl #18		@ start of RAM
@@ -794,7 +794,7 @@ __armv4_mmu_cache_on:
 
 __armv7_mmu_cache_on:
 /**
- * ÒòÎªÒªµ÷ÓÃ__setup_mmu£¬Òò´ËĞèÒª½«lr±£´æÆğÀ´
+ * å› ä¸ºè¦è°ƒç”¨__setup_mmuï¼Œå› æ­¤éœ€è¦å°†lrä¿å­˜èµ·æ¥
  */
 		mov	r12, lr
 #ifdef CONFIG_MMU
@@ -803,18 +803,18 @@ __armv7_mmu_cache_on:
 		movne	r6, #CB_BITS | 0x02	@ !XN
 		blne	__setup_mmu
 /**
- * Çå¿ÕËùÓĞĞ´»º³å
+ * æ¸…ç©ºæ‰€æœ‰å†™ç¼“å†²
  */
 		mov	r0, #0
 		mcr	p15, 0, r0, c7, c10, 4	@ drain write buffer
 		tst	r11, #0xf		@ VMSA
 /**
- * Ë¢ĞÂÖ¸Áî¡¢Êı¾İTLB
+ * åˆ·æ–°æŒ‡ä»¤ã€æ•°æ®TLB
  */
 		mcrne	p15, 0, r0, c8, c7, 0	@ flush I,D TLBs
 #endif
 /**
- * ÉèÖÃÖ¸Áî»º´æ¼¤»î£¬»º´æÌæ»»²ßÂÔ
+ * è®¾ç½®æŒ‡ä»¤ç¼“å­˜æ¿€æ´»ï¼Œç¼“å­˜æ›¿æ¢ç­–ç•¥
  */
 		mrc	p15, 0, r0, c1, c0, 0	@ read control reg
 		bic	r0, r0, #1 << 28	@ clear SCTLR.TRE
@@ -889,7 +889,7 @@ __common_mmu_cache_on:
 
 call_cache_fn:	adr	r12, proc_types
 /**
- * »ñÈ¡´¦ÀíÆ÷ID
+ * è·å–å¤„ç†å™¨ID
  */
 #ifdef CONFIG_CPU_CP15
 		mrc	p15, 0, r9, c0, c0	@ get processor ID
@@ -907,14 +907,14 @@ call_cache_fn:	adr	r12, proc_types
 		ldr	r9, =CONFIG_PROCESSOR_ID
 #endif
 /**
- * ÔÚproc_typeÖĞ²éÕÒÓë´¦ÀíÆ÷Æ¥ÅäµÄproc
+ * åœ¨proc_typeä¸­æŸ¥æ‰¾ä¸å¤„ç†å™¨åŒ¹é…çš„proc
  */
 1:		ldr	r1, [r12, #0]		@ get value
 		ldr	r2, [r12, #4]		@ get mask
 		eor	r1, r1, r9		@ (real ^ match)
 		tst	r1, r2			@       & mask
 /**
- * r3ÖĞ±£´æµÄº¯ÊıÆ«ÒÆ£¬´Ë´¦¿ÉÄÜµ÷ÓÃ´ò¿ª¡¢¹Ø±Õ¡¢Çå³ıcacheµÄº¯Êı
+ * r3ä¸­ä¿å­˜çš„å‡½æ•°åç§»ï¼Œæ­¤å¤„å¯èƒ½è°ƒç”¨æ‰“å¼€ã€å…³é—­ã€æ¸…é™¤cacheçš„å‡½æ•°
  */
  ARM(		addeq	pc, r12, r3		) @ call cache function
  THUMB(		addeq	r12, r3			)
@@ -1102,7 +1102,7 @@ proc_types:
  */
 		.align	5
 /**
- * ¹Ø±ÕcacheµÄº¯ÊıÎ»ÓÚproc_typeÆ«ÒÆ12´¦
+ * å…³é—­cacheçš„å‡½æ•°ä½äºproc_typeåç§»12å¤„
  */
 cache_off:	mov	r3, #12			@ cache_off function
 		b	call_cache_fn
@@ -1166,7 +1166,7 @@ __armv7_mmu_cache_off:
 		.align	5
 cache_clean_flush:
 /**
- * Çå³ı»º´æµÄº¯ÊıÎ»ÓÚproc_typeÆ«ÒÆ16Î»ÖÃ
+ * æ¸…é™¤ç¼“å­˜çš„å‡½æ•°ä½äºproc_typeåç§»16ä½ç½®
  */
 		mov	r3, #16
 		b	call_cache_fn
@@ -1416,8 +1416,8 @@ __hyp_reentry_vectors:
 __enter_kernel:
 		mov	r0, #0			@ must be 0
 /**
- * Ìø×ªµ½½âÑ¹ÄÚºËÆğÊ¼µØÖ·´¦Ö´ĞĞ¡£
- * ´úÂëÎ»ÓÚarch/arm/kernel/head.S
+ * è·³è½¬åˆ°è§£å‹å†…æ ¸èµ·å§‹åœ°å€å¤„æ‰§è¡Œã€‚
+ * ä»£ç ä½äºarch/arm/kernel/head.S
  */
  ARM(		mov	pc, r4		)	@ call kernel
  M_CLASS(	add	r4, r4, #1	)	@ enter in Thumb mode for M class

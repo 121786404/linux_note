@@ -510,7 +510,7 @@ void usb_stor_invoke_transport(struct scsi_cmnd *srb, struct us_data *us)
 	/* send the command to the transport layer */
 	srb->resid = 0;
 	/**
-	 * 瀵筓鐩樻潵璇达紝transport鎸囧悜usb_stor_Bulk_transport
+	 * 鐎电瓝閻╂ɑ娼电拠杈剧礉transport閹稿洤鎮渦sb_stor_Bulk_transport
 	 */
 	result = us->transport(srb, us);
 

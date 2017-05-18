@@ -19,16 +19,16 @@
 	.globl __kernel_sigreturn
 	.type __kernel_sigreturn,@function
 /**
- * ÓÃ»§Ì¬ĞÅºÅ´¦Àíº¯Êı·µ»ØµØÖ·£¬Í¨¹ıÕâ¶Î´úÂë»Øµ½ÄÚºË¡£
+ * ç”¨æˆ·æ€ä¿¡å·å¤„ç†å‡½æ•°è¿”å›åœ°å€ï¼Œé€šè¿‡è¿™æ®µä»£ç å›åˆ°å†…æ ¸ã€‚
  */
 __kernel_sigreturn:
 .LSTART_sigreturn:
 	/**
-	 * ¶ªÆú´«¸øĞÅºÅ´¦Àíº¯ÊıµÄsig²ÎÊı
+	 * ä¸¢å¼ƒä¼ ç»™ä¿¡å·å¤„ç†å‡½æ•°çš„sigå‚æ•°
 	 */
 	popl %eax		/* XXX does this mean it needs unwind info? */
 	/**
-	 * µ÷ÓÃsigreturn»Øµ½ÄÚºË¡£sigreturnÓÖ»áµ÷ÓÃsys_sigreturn. 
+	 * è°ƒç”¨sigreturnå›åˆ°å†…æ ¸ã€‚sigreturnåˆä¼šè°ƒç”¨sys_sigreturn. 
 	 */
 	movl $__NR_sigreturn, %eax
 	int $0x80

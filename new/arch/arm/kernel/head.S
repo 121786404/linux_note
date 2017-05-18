@@ -48,16 +48,16 @@
 #define PMD_ORDER	2
 #endif
 /*
-swapper_pg_dir±»¶¨ÒåÎªPAGE_OFFSETÏòÉÏÆ«ÒÆTEXT_OFFSET¡£T
-EXT_OFFSET´ú±íÄÚºË´úÂë¶ÎµÄÏà¶ÔÓÚPAGE_OFFSETµÄÆ«ÒÆ¡£
+swapper_pg_dirè¢«å®šä¹‰ä¸ºPAGE_OFFSETå‘ä¸Šåç§»TEXT_OFFSETã€‚T
+EXT_OFFSETä»£è¡¨å†…æ ¸ä»£ç æ®µçš„ç›¸å¯¹äºŽPAGE_OFFSETçš„åç§»ã€‚
 
-KERNEL_RAM_VADDRµÄÖµÓë_stextµÄÖµÏàÍ¬£¬´ú±íÁËÄÚºË´úÂëµÄÆðÊ¼µØÖ·¡£
-swapper_pg_dirÎªKERNEL_RAM_VADDR - 0x4000£¬Ò²¼´ÏòµÍµØÖ··½ÏòÆ«ÒÆÁË16K¡£
-ARM LinuxÖÐµÄÖ÷ÄÚ´æÒ³±í£¬Ê¹ÓÃ¶Î±í¡£
-Ã¿¸öÒ³±íÓ³Éä1MµÄÄÚ´æ´óÐ¡£¬ÓÉÓÚ16K / 4 * 1M = 4G£¬Õâ16KµÄÖ÷Ò³±í¿Õ¼äÕýºÃÓ³Éä4GµÄÐéÄâ¿Õ¼ä¡£
-ÄÚºËÒ³±í»úÖÆÔÚÏµÍ³Æô¶¯¹ý³ÌÖÐµÄpaging_initº¯ÊýÖÐÊ¹ÄÜ£¬
-ÆäÖÐ¶ÔÄÚºËÖ÷Ò³±íµÄ³õÊ¼»¯µÈ²Ù×÷¾ùÊÇÍ¨¹ýinit_mm.pgdµÄÒýÓÃÀ´½øÐÐµÄ¡£
-¾­¹ýÉÏÊö¼ÆËãµÃµ½swapper_pg_dirµÄÐéÄâµØÖ·Îª0xc0004000.
+KERNEL_RAM_VADDRçš„å€¼ä¸Ž_stextçš„å€¼ç›¸åŒï¼Œä»£è¡¨äº†å†…æ ¸ä»£ç çš„èµ·å§‹åœ°å€ã€‚
+swapper_pg_dirä¸ºKERNEL_RAM_VADDR - 0x4000ï¼Œä¹Ÿå³å‘ä½Žåœ°å€æ–¹å‘åç§»äº†16Kã€‚
+ARM Linuxä¸­çš„ä¸»å†…å­˜é¡µè¡¨ï¼Œä½¿ç”¨æ®µè¡¨ã€‚
+æ¯ä¸ªé¡µè¡¨æ˜ å°„1Mçš„å†…å­˜å¤§å°ï¼Œç”±äºŽ16K / 4 * 1M = 4Gï¼Œè¿™16Kçš„ä¸»é¡µè¡¨ç©ºé—´æ­£å¥½æ˜ å°„4Gçš„è™šæ‹Ÿç©ºé—´ã€‚
+å†…æ ¸é¡µè¡¨æœºåˆ¶åœ¨ç³»ç»Ÿå¯åŠ¨è¿‡ç¨‹ä¸­çš„paging_initå‡½æ•°ä¸­ä½¿èƒ½ï¼Œ
+å…¶ä¸­å¯¹å†…æ ¸ä¸»é¡µè¡¨çš„åˆå§‹åŒ–ç­‰æ“ä½œå‡æ˜¯é€šè¿‡init_mm.pgdçš„å¼•ç”¨æ¥è¿›è¡Œçš„ã€‚
+ç»è¿‡ä¸Šè¿°è®¡ç®—å¾—åˆ°swapper_pg_dirçš„è™šæ‹Ÿåœ°å€ä¸º0xc0004000.
 */
 	.globl	swapper_pg_dir
 	.equ	swapper_pg_dir, KERNEL_RAM_VADDR - PG_DIR_SIZE
@@ -85,7 +85,7 @@ ARM LinuxÖÐµÄÖ÷ÄÚ´æÒ³±í£¬Ê¹ÓÃ¶Î±í¡£
  * crap here - that's what the boot loader (or in extreme, well justified
  * circumstances, zImage) is for.
  *   
- * stextµÄ¹¦ÄÜÊÇ»ñÈ¡´¦ÀíÆ÷ÀàÐÍºÍ»úÆ÷ÀàÐÍÐÅÏ¢£¬²¢´´½¨ÁÙÊ±µÄÒ³±í£¬È»ºó¿ªÆôMMU¹¦ÄÜ£¬²¢Ìø½øµÚÒ»¸öCÓïÑÔº¯Êýstart_kernel
+ * stextçš„åŠŸèƒ½æ˜¯èŽ·å–å¤„ç†å™¨ç±»åž‹å’Œæœºå™¨ç±»åž‹ä¿¡æ¯ï¼Œå¹¶åˆ›å»ºä¸´æ—¶çš„é¡µè¡¨ï¼Œç„¶åŽå¼€å¯MMUåŠŸèƒ½ï¼Œå¹¶è·³è¿›ç¬¬ä¸€ä¸ªCè¯­è¨€å‡½æ•°start_kernel
  */
 	.arm
 
@@ -93,7 +93,7 @@ ARM LinuxÖÐµÄÖ÷ÄÚ´æÒ³±í£¬Ê¹ÓÃ¶Î±í¡£
 ENTRY(stext)
  ARM_BE8(setend	be )			@ ensure we are in BE8 mode
 /*
-¼ì²ékernelÊÇARMÄ£Ê½»¹ÊÇthumÄ£Ê½
+æ£€æŸ¥kernelæ˜¯ARMæ¨¡å¼è¿˜æ˜¯thumæ¨¡å¼
 */
  THUMB(	badr	r9, 1f		)	@ Kernel is always entered in ARM.
  THUMB(	bx	r9		)	@ If this is a Thumb-2 kernel,
@@ -106,17 +106,17 @@ ENTRY(stext)
 	@ ensure svc mode and all interrupts masked
 	safe_svcmode_maskall r9
 /*
-@ ´ÓarmÐ­´¦ÀíÆ÷ÀïÃæ¶Áµ½CPU ID´æ´¢µ½r9£¬ÕâÀïµÄCPUÖ÷ÒªÊÇÖ¸arm¼Ü¹¹Ïà¹ØµÄCPUÐÍºÅ£¬±ÈÈçARM9£¬ARM11µÈµÈ
+@ ä»Žarmåå¤„ç†å™¨é‡Œé¢è¯»åˆ°CPU IDå­˜å‚¨åˆ°r9ï¼Œè¿™é‡Œçš„CPUä¸»è¦æ˜¯æŒ‡armæž¶æž„ç›¸å…³çš„CPUåž‹å·ï¼Œæ¯”å¦‚ARM9ï¼ŒARM11ç­‰ç­‰
 */
 	mrc	p15, 0, r9, c0, c0		@ get processor id
 /*
-	OUT r5=procinfo IN r9=cpuid  ÔÚprocinfoÖÐ£¬¸ù¾ÝCPUID²éÕÒ¶ÔÓ¦µÄproc
+	OUT r5=procinfo IN r9=cpuid  åœ¨procinfoä¸­ï¼Œæ ¹æ®CPUIDæŸ¥æ‰¾å¯¹åº”çš„proc
 */
 	bl	__lookup_processor_type		@ r5=procinfo r9=cpuid
 	movs	r10, r5				@ invalid processor (r5=0)?
  THUMB( it	eq )		@ force fixup-able long branch encoding
  /*
- CPUIDÓëproc²»Æ¥Åä£¬Ö»ºÃ´òÓ¡´íÎóÐÅÏ¢²¢Í£Ö¹ÁË
+ CPUIDä¸Žprocä¸åŒ¹é…ï¼Œåªå¥½æ‰“å°é”™è¯¯ä¿¡æ¯å¹¶åœæ­¢äº†
  */
 	beq	__error_p			@ yes, error 'p'
 
@@ -130,15 +130,15 @@ ENTRY(stext)
 
 #ifndef CONFIG_XIP_KERNEL
 /*
-r3¼Ä´æÆ÷ÖÐ±£´æ±êºÅ2´¦µÄÎïÀíµØÖ·Öµ
+r3å¯„å­˜å™¨ä¸­ä¿å­˜æ ‡å·2å¤„çš„ç‰©ç†åœ°å€å€¼
 */
 	adr	r3, 2f
 /* 
-r4±£´æ±êºÅ2´¦µÄÐéÄâµØÖ·Öµ£¬r8±£´æPAGE_OFFSETÖµ 
+r4ä¿å­˜æ ‡å·2å¤„çš„è™šæ‹Ÿåœ°å€å€¼ï¼Œr8ä¿å­˜PAGE_OFFSETå€¼ 
 */
 	ldmia	r3, {r4, r8}
 /* 
-¼ÆËãRAMÎïÀíµØÖ·ºÍÐéÄâµØÖ·µÄÆ«ÒÆÖµ --> r4 
+è®¡ç®—RAMç‰©ç†åœ°å€å’Œè™šæ‹Ÿåœ°å€çš„åç§»å€¼ --> r4 
 */
 	sub	r4, r3, r4			@ (PHYS_OFFSET - PAGE_OFFSET)
 	add	r8, r8, r4			@ PHYS_OFFSET
@@ -149,7 +149,7 @@ r4±£´æ±êºÅ2´¦µÄÐéÄâµØÖ·Öµ£¬r8±£´æPAGE_OFFSETÖµ
 	/*
 	 * r1 = machine no, r2 = atags or dtb,
 	 * r8 = phys_offset, r9 = cpuid, r10 = procinfo
-	 * ¼ì²éatags parameterµÄÓÐÐ§ÐÔ
+	 * æ£€æŸ¥atags parameterçš„æœ‰æ•ˆæ€§
 	 */
 	bl	__vet_atags
 #ifdef CONFIG_SMP_ON_UP
@@ -159,15 +159,15 @@ r4±£´æ±êºÅ2´¦µÄÐéÄâµØÖ·Öµ£¬r8±£´æPAGE_OFFSETÖµ
 	bl	__fixup_pv_table
 #endif
 /*
-´´½¨ÁÙÊ±Ò³±í£¬ËüËùÒª×öµÄ¹¤×÷¾ÍÊÇ½«RAM»ùµØÖ·¿ªÊ¼µÄ4M¿Õ¼äµÄÎïÀíµØÖ·Ó³Éäµ½0xC0000000¿ªÊ¼µÄÐéÄâµØÖ·´¦
+åˆ›å»ºä¸´æ—¶é¡µè¡¨ï¼Œå®ƒæ‰€è¦åšçš„å·¥ä½œå°±æ˜¯å°†RAMåŸºåœ°å€å¼€å§‹çš„4Mç©ºé—´çš„ç‰©ç†åœ°å€æ˜ å°„åˆ°0xC0000000å¼€å§‹çš„è™šæ‹Ÿåœ°å€å¤„
 */
 	bl	__create_page_tables
 /*
-±£´æ__mmap_switchedÐéÄâµØÖ·µ½sp¼Ä´æÆ÷½¨Á¢³õÊ¼»¯Ò³±íÒÔºó£¬
-»áÊ×ÏÈ½«__mmap_switchedÕâ¸ösymbolµÄÁ´½ÓµØÖ··ÅÔÚspÀïÃæ£¬
-È»ºó»áÌøµ½__proc_info_listÀïÃæµÄINITFUNCÖ´ÐÐ.
-Õâ¸öÆ«ÒÆÊÇ¶¨ÒåÔÚarch/arm/kernel/asm-offset.cÀïÃæ£¬
-Êµ¼ÊÉÏ¾ÍÊÇÈ¡µÃ__proc_info_listÀïÃæµÄ__cpu_flushÕâ¸öº¯ÊýÖ´ÐÐ¡£
+ä¿å­˜__mmap_switchedè™šæ‹Ÿåœ°å€åˆ°spå¯„å­˜å™¨å»ºç«‹åˆå§‹åŒ–é¡µè¡¨ä»¥åŽï¼Œ
+ä¼šé¦–å…ˆå°†__mmap_switchedè¿™ä¸ªsymbolçš„é“¾æŽ¥åœ°å€æ”¾åœ¨spé‡Œé¢ï¼Œ
+ç„¶åŽä¼šè·³åˆ°__proc_info_listé‡Œé¢çš„INITFUNCæ‰§è¡Œ.
+è¿™ä¸ªåç§»æ˜¯å®šä¹‰åœ¨arch/arm/kernel/asm-offset.cé‡Œé¢ï¼Œ
+å®žé™…ä¸Šå°±æ˜¯å–å¾—__proc_info_listé‡Œé¢çš„__cpu_flushè¿™ä¸ªå‡½æ•°æ‰§è¡Œã€‚
 */
 	/*
 	 * The following calls CPU specific code in a position independent
@@ -189,12 +189,12 @@ r4±£´æ±êºÅ2´¦µÄÐéÄâµØÖ·Öµ£¬r8±£´æPAGE_OFFSETÖµ
 	 * r9 will be preserved.  r5 will also be preserved if LPAE.
 	 */
 /**
- * ÆôÓÃMMUºó£¬»áµ÷ÓÃ__mmap_switched
-/* r13ÖÐ´æÏÂ__mmap_switchedµØÖ·£¬ÐèÒª×¢ÒâµÄÊÇ¸ÃµØÖ·ÊÇVMA(ÐéÄâµØÖ·) */
+ * å¯ç”¨MMUåŽï¼Œä¼šè°ƒç”¨__mmap_switched
+/* r13ä¸­å­˜ä¸‹__mmap_switchedåœ°å€ï¼Œéœ€è¦æ³¨æ„çš„æ˜¯è¯¥åœ°å€æ˜¯VMA(è™šæ‹Ÿåœ°å€) */
 	ldr	r13, =__mmap_switched		@ address to jump to after
 						@ mmu has been enabled
 /**
- * ·µ»ØµØÖ·£¬µ÷ÓÃprocinfoÖÐµÄ³õÊ¼»¯º¯ÊýºóÖ´ÐÐ__enable_mmu
+ * è¿”å›žåœ°å€ï¼Œè°ƒç”¨procinfoä¸­çš„åˆå§‹åŒ–å‡½æ•°åŽæ‰§è¡Œ__enable_mmu
  */
 	badr	lr, 1f				@ return (PIC) address
 #ifdef CONFIG_ARM_LPAE
@@ -202,23 +202,23 @@ r4±£´æ±êºÅ2´¦µÄÐéÄâµØÖ·Öµ£¬r8±£´æPAGE_OFFSETÖµ
 	mov	r8, r4, lsr #12			@ TTBR1 is swapper_pg_dir pfn
 #else
 /* 
-¶ÔÓÚARMÖ¸Áî(²»ÊÇTHUMBÖ¸Áî)£¬Ìø×ªµ½¶ÔÓ¦Ð¾Æ¬½á¹¹µÄ__cpu_flushÖ´ÐÐ 
+å¯¹äºŽARMæŒ‡ä»¤(ä¸æ˜¯THUMBæŒ‡ä»¤)ï¼Œè·³è½¬åˆ°å¯¹åº”èŠ¯ç‰‡ç»“æž„çš„__cpu_flushæ‰§è¡Œ 
 */
 	mov	r8, r4				@ set TTBR1 to swapper_pg_dir
 #endif
 /**
- * r10ÖÐ±£´æÁËprocinfo£¬µ÷ÓÃËüµÄinitº¯Êý
- * ¶ÔV7À´Ëµ£¬µ÷ÓÃµÄÊÇ__v7_setup
+ * r10ä¸­ä¿å­˜äº†procinfoï¼Œè°ƒç”¨å®ƒçš„initå‡½æ•°
+ * å¯¹V7æ¥è¯´ï¼Œè°ƒç”¨çš„æ˜¯__v7_setup
  */
 	ldr	r12, [r10, #PROCINFO_INITFUNC]
 	add	r12, r12, r10
 /**
- * ·µ»Øºó£¬»áÖ´ÐÐlrÖÐ±£´æµÄ·µ»ØµØÖ·£¬¼´1f£¬µ÷ÓÃ__enable_mmu
+ * è¿”å›žåŽï¼Œä¼šæ‰§è¡Œlrä¸­ä¿å­˜çš„è¿”å›žåœ°å€ï¼Œå³1fï¼Œè°ƒç”¨__enable_mmu
  */
 	ret	r12
 /*
-´ò¿ªMMUÒÔºóÎÒÃÇ¾Í¿ÉÒÔÊ¹ÓÃÐéÄâµØÖ·ÁË£¬¶ø²»ÐèÒªÎÒÃÇ×Ô¼ºÀ´½øÐÐµØÖ·µÄÖØ¶¨Î»£¬
-ARMÓ²¼þ»áÍê³ÉÕâ²¿·ÖµÄ¹¤×÷¡£´ò¿ªMMUÒÔºó£¬»á½«SPµÄÖµ¸³¸øPC£¬ÕâÑù´úÂë¾Í»áÌøµ½__mmap_switched´¦Ö´ÐÐµÄ¡£
+æ‰“å¼€MMUä»¥åŽæˆ‘ä»¬å°±å¯ä»¥ä½¿ç”¨è™šæ‹Ÿåœ°å€äº†ï¼Œè€Œä¸éœ€è¦æˆ‘ä»¬è‡ªå·±æ¥è¿›è¡Œåœ°å€çš„é‡å®šä½ï¼Œ
+ARMç¡¬ä»¶ä¼šå®Œæˆè¿™éƒ¨åˆ†çš„å·¥ä½œã€‚æ‰“å¼€MMUä»¥åŽï¼Œä¼šå°†SPçš„å€¼èµ‹ç»™PCï¼Œè¿™æ ·ä»£ç å°±ä¼šè·³åˆ°__mmap_switchedå¤„æ‰§è¡Œçš„ã€‚
 */
 1:	b	__enable_mmu
 ENDPROC(stext)
@@ -242,38 +242,38 @@ ENDPROC(stext)
 __create_page_tables:
 /*
 add r4,r8,#TEXT_OFFSET;sub r4,r4,#PG_DIR_SIZE
-ÉèÖÃr4ÎªÄÚºËÒ³±íÆðÊ¼µØÖ·£¬ÎïÀíµØÖ·:ÄÚºË´úÂë¶ÎÆðÊ¼Î»ÖÃTEXT_OFFSET(0x8000)Ç°ÒÆPG_DIR_SIZE(0x4000)
+è®¾ç½®r4ä¸ºå†…æ ¸é¡µè¡¨èµ·å§‹åœ°å€ï¼Œç‰©ç†åœ°å€:å†…æ ¸ä»£ç æ®µèµ·å§‹ä½ç½®TEXT_OFFSET(0x8000)å‰ç§»PG_DIR_SIZE(0x4000)
 arch/arm/Makefile   textofs-y:= 0x00008000  TEXT_OFFSET := $(textofs-y)
 
-kernel±àÒëÁ´½ÓÊ±µÄÈë¿ÚµØÖ·ÔÚ0xc0008000(PAGE_OFFSET + TEXT_OFFSET)£¬
-µ«ÆäÎïÀíµØÖ·²»µÈÓÚÆäÁ´½ÓµÄÐéÄâµØÖ·£¬imageµÄÏßÐÔÓ³ÉäÊµÏÖÆäÔËÐÐµØÖ·µÈÓÚÁ´½ÓµØÖ·¡£
-kernelµÄÃ¿Ò»Ò³±íÓ³Éä1M£¬ËùÒÔÈë¿Ú´¦ÔÚ(0x80200000-->0xc0000000)Ó³ÉäÒ³±íÖÐÍê³ÉÓ³Éä¡£
-ÎïÀíµØÖ·ºÍÐéÄâµØÖ·µÄ1MÄÚÆ«ÒÆ±ØÐëÒ»ÖÂÑ½¡£kernel¶¨ÒåµÄTEXT_OFFSET = 0x8000.
-ËùÒÔ¼ÓÔØµÄÎïÀíµØÖ·±ØÐëÎª0x****8000. ÕâÑù£¬¿ªÆôMMUºó£¬·ÃÎÊ0xc0008000¸½½üÖ¸Áî£¬MMU¸ù¾ÝTLB²ÅÄÜÕýÈ·Ó³ÉäÕÒµ½0x****8000¸½½üµÄÖ¸Áî¡£
+kernelç¼–è¯‘é“¾æŽ¥æ—¶çš„å…¥å£åœ°å€åœ¨0xc0008000(PAGE_OFFSET + TEXT_OFFSET)ï¼Œ
+ä½†å…¶ç‰©ç†åœ°å€ä¸ç­‰äºŽå…¶é“¾æŽ¥çš„è™šæ‹Ÿåœ°å€ï¼Œimageçš„çº¿æ€§æ˜ å°„å®žçŽ°å…¶è¿è¡Œåœ°å€ç­‰äºŽé“¾æŽ¥åœ°å€ã€‚
+kernelçš„æ¯ä¸€é¡µè¡¨æ˜ å°„1Mï¼Œæ‰€ä»¥å…¥å£å¤„åœ¨(0x80200000-->0xc0000000)æ˜ å°„é¡µè¡¨ä¸­å®Œæˆæ˜ å°„ã€‚
+ç‰©ç†åœ°å€å’Œè™šæ‹Ÿåœ°å€çš„1Må†…åç§»å¿…é¡»ä¸€è‡´å‘€ã€‚kernelå®šä¹‰çš„TEXT_OFFSET = 0x8000.
+æ‰€ä»¥åŠ è½½çš„ç‰©ç†åœ°å€å¿…é¡»ä¸º0x****8000. è¿™æ ·ï¼Œå¼€å¯MMUåŽï¼Œè®¿é—®0xc0008000é™„è¿‘æŒ‡ä»¤ï¼ŒMMUæ ¹æ®TLBæ‰èƒ½æ­£ç¡®æ˜ å°„æ‰¾åˆ°0x****8000é™„è¿‘çš„æŒ‡ä»¤ã€‚
 
-Îªkernel½¨Á¢ÁÙÊ±Ò³±í, kernelÀïÃæµÄËùÓÐ·ûºÅÔÚÁ´½ÓÊ±£¬¶¼Ê¹ÓÃÁËÐéÄâµØÖ·Öµ¡£
-ÔÚÍê³É»ù±¾µÄ³õÊ¼»¯ºó£¬kernel´úÂë½«Ìøµ½µÚÒ»¸öCÓïÑÔº¯Êýstart_kernlÀ´Ö´ÐÐ£¬
-ÔÚÄÄ¸öÊ±ºò£¬ÕâÐ©ÐéÄâµØÖ·±ØÐëÄÜ¹»¶ÔËüËù´æ·ÅÔÚÕæÕýÄÚ´æÎ»ÖÃ£¬·ñÔòÔËÐÐ½«Îª³ö´í¡£
-Îª´Ë£¬CPU±ØÐë¿ªÆôMMU£¬µ«ÔÚ¿ªÆô MMUÇ°£¬±ØÐëÎªÐéÄâµØÖ·µ½ÎïÀíµØÖ·µÄÓ³Éä½¨Á¢ÏàÓ¦µÄÒ³±í¡£
-ÔÚ¿ªÆôMMUºó£¬kernelÖ¸²¢²»ÂíÉÏ½«PCÖµÖ¸Ïòstart_kernl£¬¶øÊÇÒª×öÒ»Ð©CÓïÑÔÔËÐÐÆÚµÄÉèÖÃ£¬Èç¶ÑÕ»£¬ÖØ¶¨ÒåµÈ¹¤×÷ºó²ÅÌøµ½start_kernelÈ¥Ö´ÐÐ¡£
-ÔÚ´Ë¹ý³ÌÖÐ£¬PCÖµ»¹ÊÇÎïÀíµØÖ·£¬Òò´Ë»¹ÐèÒªÎªÕâ¶ÎÄÚ´æ¿Õ¼ä½¨Á¢va = paµÄÄÚ´æÓ³Éä¹ØÏµ¡£
-µ±È»£¬±¾º¯Êý½¨Á¢µÄËùÓÐÒ³±í¶¼»áÔÚ½«À´paging_initÏú»ÙÔÙÖØ½¨£¬ÕâÊÇÁÙÊ±¹ý¶ÈÐÔµÄÓ³Éä¹ØÏµºÍÒ³±í¡£
-¼ÆËãÒ³±íÆðÊ¼ÎïÀíµØÖ·±£´æµ½r4¼Ä´æÆ÷
+ä¸ºkernelå»ºç«‹ä¸´æ—¶é¡µè¡¨, kernelé‡Œé¢çš„æ‰€æœ‰ç¬¦å·åœ¨é“¾æŽ¥æ—¶ï¼Œéƒ½ä½¿ç”¨äº†è™šæ‹Ÿåœ°å€å€¼ã€‚
+åœ¨å®ŒæˆåŸºæœ¬çš„åˆå§‹åŒ–åŽï¼Œkernelä»£ç å°†è·³åˆ°ç¬¬ä¸€ä¸ªCè¯­è¨€å‡½æ•°start_kernlæ¥æ‰§è¡Œï¼Œ
+åœ¨å“ªä¸ªæ—¶å€™ï¼Œè¿™äº›è™šæ‹Ÿåœ°å€å¿…é¡»èƒ½å¤Ÿå¯¹å®ƒæ‰€å­˜æ”¾åœ¨çœŸæ­£å†…å­˜ä½ç½®ï¼Œå¦åˆ™è¿è¡Œå°†ä¸ºå‡ºé”™ã€‚
+ä¸ºæ­¤ï¼ŒCPUå¿…é¡»å¼€å¯MMUï¼Œä½†åœ¨å¼€å¯ MMUå‰ï¼Œå¿…é¡»ä¸ºè™šæ‹Ÿåœ°å€åˆ°ç‰©ç†åœ°å€çš„æ˜ å°„å»ºç«‹ç›¸åº”çš„é¡µè¡¨ã€‚
+åœ¨å¼€å¯MMUåŽï¼ŒkernelæŒ‡å¹¶ä¸é©¬ä¸Šå°†PCå€¼æŒ‡å‘start_kernlï¼Œè€Œæ˜¯è¦åšä¸€äº›Cè¯­è¨€è¿è¡ŒæœŸçš„è®¾ç½®ï¼Œå¦‚å †æ ˆï¼Œé‡å®šä¹‰ç­‰å·¥ä½œåŽæ‰è·³åˆ°start_kernelåŽ»æ‰§è¡Œã€‚
+åœ¨æ­¤è¿‡ç¨‹ä¸­ï¼ŒPCå€¼è¿˜æ˜¯ç‰©ç†åœ°å€ï¼Œå› æ­¤è¿˜éœ€è¦ä¸ºè¿™æ®µå†…å­˜ç©ºé—´å»ºç«‹va = paçš„å†…å­˜æ˜ å°„å…³ç³»ã€‚
+å½“ç„¶ï¼Œæœ¬å‡½æ•°å»ºç«‹çš„æ‰€æœ‰é¡µè¡¨éƒ½ä¼šåœ¨å°†æ¥paging_inité”€æ¯å†é‡å»ºï¼Œè¿™æ˜¯ä¸´æ—¶è¿‡åº¦æ€§çš„æ˜ å°„å…³ç³»å’Œé¡µè¡¨ã€‚
+è®¡ç®—é¡µè¡¨èµ·å§‹ç‰©ç†åœ°å€ä¿å­˜åˆ°r4å¯„å­˜å™¨
 
-r8¼Ä´æÆ÷±£´æµÄÊÇÎïÀíÄÚ´æµÄÆðÊ¼µØÖ·(ÔÚÕâÀïÎÒÃÇÊÇ0x80200000),TEXT_OFFSETÊÇ0x8000, PG_DIR_SIZEÊÇ0x4000£¬
-¸ù¾Ýºêpgtbl¼ÆËãµÃµ½µÄÒ³±íÆðÊ¼µØÖ·Îª0x80204000,¶økernel imageÆðÊ¼µØÖ·Îª0x80208000,
-¼´Ò³±íÊÇ´æ·ÅÔÚkernelÆäÊµµØÖ·ÏÂ16KBµÄµØ·½(0x80204000 ~ 0x80208000 | 0xc0004000 ~ 0xc0008000).
+r8å¯„å­˜å™¨ä¿å­˜çš„æ˜¯ç‰©ç†å†…å­˜çš„èµ·å§‹åœ°å€(åœ¨è¿™é‡Œæˆ‘ä»¬æ˜¯0x80200000),TEXT_OFFSETæ˜¯0x8000, PG_DIR_SIZEæ˜¯0x4000ï¼Œ
+æ ¹æ®å®pgtblè®¡ç®—å¾—åˆ°çš„é¡µè¡¨èµ·å§‹åœ°å€ä¸º0x80204000,è€Œkernel imageèµ·å§‹åœ°å€ä¸º0x80208000,
+å³é¡µè¡¨æ˜¯å­˜æ”¾åœ¨kernelå…¶å®žåœ°å€ä¸‹16KBçš„åœ°æ–¹(0x80204000 ~ 0x80208000 | 0xc0004000 ~ 0xc0008000).
 
-create_page_tableÍê³ÉÁË3ÖÖµØÖ·Ó³ÉäµÄÒ³±í¿Õ¼äÌîÐ´£º
-* turn_mmu_onËùÔÚ1M¿Õ¼äµÄÆ½Ó³Éä
-* kernel imageµÄÏßÐÔÓ³Éä
-* atagsËùÔÚ1M¿Õ¼äµÄÏßÐÔÓ³Éä
+create_page_tableå®Œæˆäº†3ç§åœ°å€æ˜ å°„çš„é¡µè¡¨ç©ºé—´å¡«å†™ï¼š
+* turn_mmu_onæ‰€åœ¨1Mç©ºé—´çš„å¹³æ˜ å°„
+* kernel imageçš„çº¿æ€§æ˜ å°„
+* atagsæ‰€åœ¨1Mç©ºé—´çš„çº¿æ€§æ˜ å°„
 */
 	pgtbl	r4, r8				@ page table address
 
 	/*
 	 * Clear the swapper page table
-     * Çå¿Õ16KBÒ³±í¿Õ¼ä
+     * æ¸…ç©º16KBé¡µè¡¨ç©ºé—´
 	 */
 	mov	r0, r4
 	mov	r3, #0
@@ -313,42 +313,42 @@ create_page_tableÍê³ÉÁË3ÖÖµØÖ·Ó³ÉäµÄÒ³±í¿Õ¼äÌîÐ´£º
 #endif
 #endif
 /*
-»ñµÃproc_info_listµÄ__cpu_mm_mmu_flagsµÄÖµ£¬²¢´æ´¢µ½r7ÖÐ
-r10 = proc_info_listÀàÐÍ½á¹¹ÌåµÄ»ùµØÖ·.
+èŽ·å¾—proc_info_listçš„__cpu_mm_mmu_flagsçš„å€¼ï¼Œå¹¶å­˜å‚¨åˆ°r7ä¸­
+r10 = proc_info_listç±»åž‹ç»“æž„ä½“çš„åŸºåœ°å€.
 */
 	ldr	r7, [r10, #PROCINFO_MM_MMUFLAGS] @ mm_mmuflags
 
 	/*
 	 * Create identity mapping to cater for __enable_mmu.
 	 * This identity mapping will be removed by paging_init().
-     * Ê×ÏÈ½¨Á¢°üº¬__turn_mmu_onº¯Êý1M¿Õ¼äµÄÆ½Ó³Éä(virt addr = phy addr)
+     * é¦–å…ˆå»ºç«‹åŒ…å«__turn_mmu_onå‡½æ•°1Mç©ºé—´çš„å¹³æ˜ å°„(virt addr = phy addr)
 	 */
 	adr	r0, __turn_mmu_on_loc
 	ldmia	r0, {r3, r5, r6}
 /* 
-¼ÆËãº¯Êý__turn_mmu_onºÍ__turn_mmu_on_endº¯ÊýµÄÎïÀíµØÖ·. 
+è®¡ç®—å‡½æ•°__turn_mmu_onå’Œ__turn_mmu_on_endå‡½æ•°çš„ç‰©ç†åœ°å€. 
 */
 	sub	r0, r0, r3			@ virt->phys offset
 	add	r5, r5, r0			@ phys __turn_mmu_on
 	add	r6, r6, r0			@ phys __turn_mmu_on_end
 /* 
-Òò1Ò³(4KB)Ó³Éä1M¿Õ¼ä£¬ËùÒÔSECTION_SHIFTÎª20, ÓÒÒÆ20Î»ºó£¬     
-r5£¬r6´ú±í¸Ã¶ÎµØÖ·¿Õ¼äµÄÎïÀíµØÖ·(Ò³ÄÚÆ«ÒÆÖµ)
+å› 1é¡µ(4KB)æ˜ å°„1Mç©ºé—´ï¼Œæ‰€ä»¥SECTION_SHIFTä¸º20, å³ç§»20ä½åŽï¼Œ     
+r5ï¼Œr6ä»£è¡¨è¯¥æ®µåœ°å€ç©ºé—´çš„ç‰©ç†åœ°å€(é¡µå†…åç§»å€¼)
 */
 	mov	r5, r5, lsr #SECTION_SHIFT
 	mov	r6, r6, lsr #SECTION_SHIFT
 
 /* 
-r5×óÒÆ20Î»£¬»ñÈ¡¸ÃÒ³»ùµØÖ·£¬»òÉÏCPUµÄmmuflags£¬´æÔÚr3ÖÐ 
+r5å·¦ç§»20ä½ï¼ŒèŽ·å–è¯¥é¡µåŸºåœ°å€ï¼Œæˆ–ä¸ŠCPUçš„mmuflagsï¼Œå­˜åœ¨r3ä¸­ 
 */
 1:	orr	r3, r7, r5, lsl #SECTION_SHIFT	@ flags + kernel base
 /*
-½«r3Öµ´æ´¢ÔÚÒ³Ä¿Â¼±í¿Õ¼ä£¨r4ÆðÊ¼£©µÄ£¨r5<<2£©µÄÒ³±íÖÐ, ÒòÒ»Ò³ÓÃ4bytes±íÊ¾£¬ËùÒÔPMD_ORDER=2 
+å°†r3å€¼å­˜å‚¨åœ¨é¡µç›®å½•è¡¨ç©ºé—´ï¼ˆr4èµ·å§‹ï¼‰çš„ï¼ˆr5<<2ï¼‰çš„é¡µè¡¨ä¸­, å› ä¸€é¡µç”¨4bytesè¡¨ç¤ºï¼Œæ‰€ä»¥PMD_ORDER=2 
 */
 	str	r3, [r4, r5, lsl #PMD_ORDER]	@ identity mapping
 /* 
-r5Óër6Ö®Ç°Ïà¾à¶à¸ö1M£¬ÔòÐèÒªÌîÐ´¶à¸öÒ³±í¡£     
-Òòturn_mmu_onº¯ÊýºÜ¶Ì£¬ËùÒÔ¿Ï¶¨ÔÚ1MÄÚ£¬¸Ã´¦r5=r6 
+r5ä¸Žr6ä¹‹å‰ç›¸è·å¤šä¸ª1Mï¼Œåˆ™éœ€è¦å¡«å†™å¤šä¸ªé¡µè¡¨ã€‚     
+å› turn_mmu_onå‡½æ•°å¾ˆçŸ­ï¼Œæ‰€ä»¥è‚¯å®šåœ¨1Må†…ï¼Œè¯¥å¤„r5=r6 
 */
 	cmp	r5, r6
 	addlo	r5, r5, #1			@ next section
@@ -373,14 +373,14 @@ r5Óër6Ö®Ç°Ïà¾à¶à¸ö1M£¬ÔòÐèÒªÌîÐ´¶à¸öÒ³±í¡£
 #define XIP_START XIP_VIRT_ADDR(CONFIG_XIP_PHYS_ADDR)
 	mov	r3, pc
 /* 
-¼ÆËãµ±Ç°kernelÔËÐÐµÄÎïÀíµØÖ·ËùÔÚÎïÀíÒ³ÃæµÄÆðÊ¼µØÖ· 
+è®¡ç®—å½“å‰kernelè¿è¡Œçš„ç‰©ç†åœ°å€æ‰€åœ¨ç‰©ç†é¡µé¢çš„èµ·å§‹åœ°å€ 
 */
 	mov	r3, r3, lsr #SECTION_SHIFT
 	orr	r3, r7, r3, lsl #SECTION_SHIFT
 /* 
-ÒòÎªKERNEL_STARTÊÇÄÚºËµÄÆðÊ¼ÐéÄâµØÖ·(0xC0008000)£¬KERNEL_ENDÎªÄÚºËµÄ½áÊøÐéÄâµØÖ·£¬     
-ËùÒÔÏÂÃæµÄ´úÂëÊµ¼ÊÉÏÊÇ½«ÎïÀíµØÖ·ÎªkernelµÄÆðÊ¼µØÖ·(0x80208000)µÄÒ»¶ÎÄÚ´æ¿Õ¼ä     
-(´óÐ¡ÎªÄÚºËÓ³ÏñÎÄ¼þµÄ´óÐ¡)Ó³Éäµ½ÐéÄâµØÖ·0xC0008000¡£
+å› ä¸ºKERNEL_STARTæ˜¯å†…æ ¸çš„èµ·å§‹è™šæ‹Ÿåœ°å€(0xC0008000)ï¼ŒKERNEL_ENDä¸ºå†…æ ¸çš„ç»“æŸè™šæ‹Ÿåœ°å€ï¼Œ     
+æ‰€ä»¥ä¸‹é¢çš„ä»£ç å®žé™…ä¸Šæ˜¯å°†ç‰©ç†åœ°å€ä¸ºkernelçš„èµ·å§‹åœ°å€(0x80208000)çš„ä¸€æ®µå†…å­˜ç©ºé—´     
+(å¤§å°ä¸ºå†…æ ¸æ˜ åƒæ–‡ä»¶çš„å¤§å°)æ˜ å°„åˆ°è™šæ‹Ÿåœ°å€0xC0008000ã€‚
 */
 	add	r0, r4,  #(XIP_START & 0xff000000) >> (SECTION_SHIFT - PMD_ORDER)
 	str	r3, [r0, #((XIP_START & 0x00f00000) >> SECTION_SHIFT) << PMD_ORDER]!
@@ -398,11 +398,11 @@ r5Óër6Ö®Ç°Ïà¾à¶à¸ö1M£¬ÔòÐèÒªÌîÐ´¶à¸öÒ³±í¡£
 	 * We map 2 sections in case the ATAGs/DTB crosses a section boundary.
 	 */
 /*
-½«atagsµÄ1MµØÖ·¿Õ¼ä×öÏßÐÔÓ³Éä£¬·½±ãstart_kernelÖÐ¶Ôargs½øÐÐ·ÖÎö
-kernel image¿ÉÒÔ¼ÓÔØµ½ÈÎºÎsdramµØÖ·¿Õ¼äµÄ0x****8000¼´¿É¡£atagsµØÖ·ÊÇÓÐbootloaderÖÐÖ¸¶¨£¬È»ºó¸æËßkernel¡£
-ÄÇ¾ÍÓÐÕâÑùÒ»ÖÖÇé¿ö£¬¼ÓÈësdramÆðÊ¼µØÖ·Îª0x80200000£¬atagsÆðÊ¼µØÖ·Îª0x80200100¡£
-µ«kernel imageÎÒ¼ÓÔØµ½0x81008000£¬¿ÉÒÔ¿´³ö£¬ÕâÊ±atags¸úkernel image¾ÍÔÚ²»Í¬Ò»1M¿Õ¼äÀ²
-atagsµ¥¶ÀµÄÏßÐÔÓ³Éä²Ù×÷»¹ÊÇºÜÓÐ±ØÒªµÄ¡£
+å°†atagsçš„1Måœ°å€ç©ºé—´åšçº¿æ€§æ˜ å°„ï¼Œæ–¹ä¾¿start_kernelä¸­å¯¹argsè¿›è¡Œåˆ†æž
+kernel imageå¯ä»¥åŠ è½½åˆ°ä»»ä½•sdramåœ°å€ç©ºé—´çš„0x****8000å³å¯ã€‚atagsåœ°å€æ˜¯æœ‰bootloaderä¸­æŒ‡å®šï¼Œç„¶åŽå‘Šè¯‰kernelã€‚
+é‚£å°±æœ‰è¿™æ ·ä¸€ç§æƒ…å†µï¼ŒåŠ å…¥sdramèµ·å§‹åœ°å€ä¸º0x80200000ï¼Œatagsèµ·å§‹åœ°å€ä¸º0x80200100ã€‚
+ä½†kernel imageæˆ‘åŠ è½½åˆ°0x81008000ï¼Œå¯ä»¥çœ‹å‡ºï¼Œè¿™æ—¶atagsè·Ÿkernel imageå°±åœ¨ä¸åŒä¸€1Mç©ºé—´å•¦
+atagså•ç‹¬çš„çº¿æ€§æ˜ å°„æ“ä½œè¿˜æ˜¯å¾ˆæœ‰å¿…è¦çš„ã€‚
 */
 	mov	r0, r2, lsr #SECTION_SHIFT
 	movs	r0, r0, lsl #SECTION_SHIFT
@@ -575,11 +575,11 @@ __secondary_data:
  *  r13 = *virtual* address to jump to upon completion
  */
 /**
- * ÆôÓÃMMU£¬r13ÖÐ±£´æµÄÊÇ__mmap_switched
+ * å¯ç”¨MMUï¼Œr13ä¸­ä¿å­˜çš„æ˜¯__mmap_switched
  */
 __enable_mmu:
 /**
- * ÉèÖÃCR_AÎ»£¬¸ÃÎ»¿ØÖÆalignment_abortÒì³£
+ * è®¾ç½®CR_Aä½ï¼Œè¯¥ä½æŽ§åˆ¶alignment_abortå¼‚å¸¸
  */
 #if defined(CONFIG_ALIGNMENT_TRAP) && __LINUX_ARM_ARCH__ < 6
 	orr	r0, r0, #CR_A
@@ -587,19 +587,19 @@ __enable_mmu:
 	bic	r0, r0, #CR_A
 #endif
 /**
- * ÉèÖÃÊý¾Ý»º´æ¿ØÖÆÎ»
+ * è®¾ç½®æ•°æ®ç¼“å­˜æŽ§åˆ¶ä½
  */
 #ifdef CONFIG_CPU_DCACHE_DISABLE
 	bic	r0, r0, #CR_C
 #endif
 /**
- * ½ûÓÃ·ÖÖ§Ô¤²â
+ * ç¦ç”¨åˆ†æ”¯é¢„æµ‹
  */
 #ifdef CONFIG_CPU_BPREDICT_DISABLE
 	bic	r0, r0, #CR_Z
 #endif
 /**
- * ½ûÓÃÖ¸Áîcache
+ * ç¦ç”¨æŒ‡ä»¤cache
  */
 #ifdef CONFIG_CPU_ICACHE_DISABLE
 	bic	r0, r0, #CR_I
@@ -608,22 +608,22 @@ __enable_mmu:
 	mcrr	p15, 0, r4, r5, c2		@ load TTBR0
 #else
 /**
- * ÉèÖÃÓò£¬ÓÃÓÚ¿ØÖÆ²»Í¬Ä£Ê½ÏÂÄÜ·ÃÎÊµÄÐéÄâµØÖ·¿Õ¼ä·¶Î§
+ * è®¾ç½®åŸŸï¼Œç”¨äºŽæŽ§åˆ¶ä¸åŒæ¨¡å¼ä¸‹èƒ½è®¿é—®çš„è™šæ‹Ÿåœ°å€ç©ºé—´èŒƒå›´
  */
 	mov	r5, #DACR_INIT
 /**
- * ½«ÓòÉèÖÃ×Ö¶Î¼ÓÔØµ½CP15µÄC3¼Ä´æÆ÷
- * ÅäÖÃCP15 c3¼Ä´æÆ÷£¬ÅäÖÃARMÓòµÄ·ÃÎÊÈ¨ÏÞ
+ * å°†åŸŸè®¾ç½®å­—æ®µåŠ è½½åˆ°CP15çš„C3å¯„å­˜å™¨
+ * é…ç½®CP15 c3å¯„å­˜å™¨ï¼Œé…ç½®ARMåŸŸçš„è®¿é—®æƒé™
  */
 	mcr	p15, 0, r5, c3, c0, 0		@ load domain access register
 /**
- * ¼ÓÔØÒ³±í×ª»»±íÖ¸Õëµ½CP15¼Ä´æÆ÷
- * r4¼Ä´æÆ÷±£´æÒ³±íÎïÀíµØÖ·,ÅäÖÃCP15 c2¼Ä´æÆ÷£¬Ö¸¶¨ÄÚ´æÒ³±íµØÖ·
+ * åŠ è½½é¡µè¡¨è½¬æ¢è¡¨æŒ‡é’ˆåˆ°CP15å¯„å­˜å™¨
+ * r4å¯„å­˜å™¨ä¿å­˜é¡µè¡¨ç‰©ç†åœ°å€,é…ç½®CP15 c2å¯„å­˜å™¨ï¼ŒæŒ‡å®šå†…å­˜é¡µè¡¨åœ°å€
  */
 	mcr	p15, 0, r4, c2, c0, 0		@ load page table pointer
 #endif
 /**
- * ´ò¿ªMMU
+ * æ‰“å¼€MMU
  */
 	b	__turn_mmu_on
 ENDPROC(__enable_mmu)
@@ -643,46 +643,46 @@ ENDPROC(__enable_mmu)
  * other registers depend on the function called upon completion
  */
 /*
-turn_mmu_on£¬Ö÷ÒªÊÇÍê³É¿ªÆôMMUµÄ²Ù×÷¡£ÄÇÎªÊ²Ã´½«turn_mmu_on´¦×öÒ»¸öÆ½Ó³Éä£¿
-¿ÉÒÔÏëÏó£¬Ö´ÐÐ¿ªÆôMMUÖ¸ÁîÖ®Ç°£¬CPUÈ¡Ö¸ÊÇÔÚ0x80208000¸½½üturn_mmu_onÖÐ¡£
-Èç¹ûÖ»ÊÇ×ökernel imageµÄÏßÐÔÓ³Éä£¬Ö´ÐÐ¿ªÆôMMUÖ¸Áîºó£¬CPUËù¿´µ½µÄµØÖ·¾ÍÈ«±äÀ²¡£
-turn_mmu_on¶ÔÓÚCPUÀ´ËµÔÚ0xc0008000¸½½ü£¬0x80208000¸½½ü¶ÔÓÚCPUÀ´ËµÒÑ¾­²»¿ÉÔ¤ÖªÁË¡£
-µ«ÊÇCPU²»ÖªµÀÕâÐ©£¬ËüÖ»¹Ü°´ÕÕµØÖ·Ò»ÌõÌõÈ¡Ö¸Áî£¬Ö´ÐÐÖ¸Áî¡£
-ËùÒÔ²»×öturn_mmu_onµÄÆ½Ó³Éä(virt addr = phy addr)£¬turn_mmu_onÔÚ¿ªÆôMMUºóµÄÔËÐÐÊÇÍêÈ«²»¿ÉÖª¡£
-Íê³Éturn_mmu_onµÄÆ½Ó³Éä£¬ÎÒÃÇ¿ÉÒÔÔÚturn_mmu_onÄ©Î²MMUÒÑ¾­¿ªÆôÎÈ¶¨ºó£¬ÐÞ¸ÄPCµ½0xc0008000¸½½ü£¬¾Í¿ÉÒÔ½â¾ö´Ó0x8xxxxxxxµ½0xcxxxxxxxµÄÌø×ª¡£
+turn_mmu_onï¼Œä¸»è¦æ˜¯å®Œæˆå¼€å¯MMUçš„æ“ä½œã€‚é‚£ä¸ºä»€ä¹ˆå°†turn_mmu_onå¤„åšä¸€ä¸ªå¹³æ˜ å°„ï¼Ÿ
+å¯ä»¥æƒ³è±¡ï¼Œæ‰§è¡Œå¼€å¯MMUæŒ‡ä»¤ä¹‹å‰ï¼ŒCPUå–æŒ‡æ˜¯åœ¨0x80208000é™„è¿‘turn_mmu_onä¸­ã€‚
+å¦‚æžœåªæ˜¯åškernel imageçš„çº¿æ€§æ˜ å°„ï¼Œæ‰§è¡Œå¼€å¯MMUæŒ‡ä»¤åŽï¼ŒCPUæ‰€çœ‹åˆ°çš„åœ°å€å°±å…¨å˜å•¦ã€‚
+turn_mmu_onå¯¹äºŽCPUæ¥è¯´åœ¨0xc0008000é™„è¿‘ï¼Œ0x80208000é™„è¿‘å¯¹äºŽCPUæ¥è¯´å·²ç»ä¸å¯é¢„çŸ¥äº†ã€‚
+ä½†æ˜¯CPUä¸çŸ¥é“è¿™äº›ï¼Œå®ƒåªç®¡æŒ‰ç…§åœ°å€ä¸€æ¡æ¡å–æŒ‡ä»¤ï¼Œæ‰§è¡ŒæŒ‡ä»¤ã€‚
+æ‰€ä»¥ä¸åšturn_mmu_onçš„å¹³æ˜ å°„(virt addr = phy addr)ï¼Œturn_mmu_onåœ¨å¼€å¯MMUåŽçš„è¿è¡Œæ˜¯å®Œå…¨ä¸å¯çŸ¥ã€‚
+å®Œæˆturn_mmu_onçš„å¹³æ˜ å°„ï¼Œæˆ‘ä»¬å¯ä»¥åœ¨turn_mmu_onæœ«å°¾MMUå·²ç»å¼€å¯ç¨³å®šåŽï¼Œä¿®æ”¹PCåˆ°0xc0008000é™„è¿‘ï¼Œå°±å¯ä»¥è§£å†³ä»Ž0x8xxxxxxxåˆ°0xcxxxxxxxçš„è·³è½¬ã€‚
 */
 	.align	5
 	.pushsection	.idmap.text, "ax"
 ENTRY(__turn_mmu_on)
 /**
- * r0ÖÐÒÑ¾­°üº¬MMUÓ²¼þÏà¹ØµÄÎ»ÁË
+ * r0ä¸­å·²ç»åŒ…å«MMUç¡¬ä»¶ç›¸å…³çš„ä½äº†
  */
 	mov	r0, r0
 	instr_sync
 /**
- * ½«ÆäÐ´Èë¿ØÖÆÆ÷¼Ä´æÆ÷c1£¬¼¤»îMMU
+ * å°†å…¶å†™å…¥æŽ§åˆ¶å™¨å¯„å­˜å™¨c1ï¼Œæ¿€æ´»MMU
  */
 /* 
-* ½«r0ÖµÐ´ÈëCP15µÄc0¼Ä´æÆ÷£¬²é¿´CP15ËµÃ÷£¬c0¼Ä´æÆ÷µÄµÚ0Î»±íÕ÷MMUµÄ¿ªÆô£¬     
-* ¸Õ²Å__v7_setupÖÐv7_crval¸ø³öµÄmmusetÖµÒÑ¾­½«µÚ0Î»ÖÃ1ÁË£¬Òò´ËÐ´Èëc0ºóMMU¾Í¿ªÆôÁË 
+* å°†r0å€¼å†™å…¥CP15çš„c0å¯„å­˜å™¨ï¼ŒæŸ¥çœ‹CP15è¯´æ˜Žï¼Œc0å¯„å­˜å™¨çš„ç¬¬0ä½è¡¨å¾MMUçš„å¼€å¯ï¼Œ     
+* åˆšæ‰__v7_setupä¸­v7_crvalç»™å‡ºçš„mmusetå€¼å·²ç»å°†ç¬¬0ä½ç½®1äº†ï¼Œå› æ­¤å†™å…¥c0åŽMMUå°±å¼€å¯äº† 
 */
 	mcr	p15, 0, r0, c1, c0, 0		@ write control reg
 /* 
-* ½ÓÏÂÀ´CPUÈ¡Ö¸µØÖ·ÊÇµ±Ç°pc+4,ÓÉÓÚ×öÁËÆ½Ó³Éä£¬ËäÈ»½ÓÏÂÀ´ÊÇÐéÄâµØÖ·£¬     
-* µ«ÊÇ¸ÃÐéÄâµØÖ·¸úÖ®Ç°µÄÎïÀíµØÖ·ÊÇÍêÈ«Ò»ÖÂµÄ£¬pc+4¿ÉÒÔÈ¡µ½     
-* mrc p15, 0, r3, c0, c0, 0Ö¸Áî£¬²¢²»»áµ¼ÖÂCPUÈ¡Ö¸ÉÏµÄÎÊÌâ 
+* æŽ¥ä¸‹æ¥CPUå–æŒ‡åœ°å€æ˜¯å½“å‰pc+4,ç”±äºŽåšäº†å¹³æ˜ å°„ï¼Œè™½ç„¶æŽ¥ä¸‹æ¥æ˜¯è™šæ‹Ÿåœ°å€ï¼Œ     
+* ä½†æ˜¯è¯¥è™šæ‹Ÿåœ°å€è·Ÿä¹‹å‰çš„ç‰©ç†åœ°å€æ˜¯å®Œå…¨ä¸€è‡´çš„ï¼Œpc+4å¯ä»¥å–åˆ°     
+* mrc p15, 0, r3, c0, c0, 0æŒ‡ä»¤ï¼Œå¹¶ä¸ä¼šå¯¼è‡´CPUå–æŒ‡ä¸Šçš„é—®é¢˜ 
 */
 	mrc	p15, 0, r3, c0, c0, 0		@ read id reg
 	instr_sync
 /**
- * ÕâÌõÖ¸ÁîÏàµ±ÓÚNOPÖ¸Áî£¬¸ÕÇÐ»»ÁËMMU£¬±ØÐëÔÚCPUÁ÷Ë®ÏßÖÐ·ÅÕâÑùµÄÖ¸Áî
+ * è¿™æ¡æŒ‡ä»¤ç›¸å½“äºŽNOPæŒ‡ä»¤ï¼Œåˆšåˆ‡æ¢äº†MMUï¼Œå¿…é¡»åœ¨CPUæµæ°´çº¿ä¸­æ”¾è¿™æ ·çš„æŒ‡ä»¤
  */
 	mov	r3, r3
 /**
- * r13ÖÐ±£´æµÄÊÇ__mmap_switchedº¯ÊýµÄµØÖ·£¬Ìø¹ýÈ¥Ö´ÐÐ°É¡£
- * ¿ªÆôMMUÖ®ÂÃ:)
+ * r13ä¸­ä¿å­˜çš„æ˜¯__mmap_switchedå‡½æ•°çš„åœ°å€ï¼Œè·³è¿‡åŽ»æ‰§è¡Œå§ã€‚
+ * å¼€å¯MMUä¹‹æ—…:)
  */
-/* ¿ªÆôMMUºó£¬ÐÞ¸ÄPCÖµÎªr13Ö´ÐÐ£¬Ò²¾ÍÊÇ__mmap_switched£¬¸Ãº¯ÊýÒÑ¾­ÊÇÔËÐÐÔÚMMUÖ®ÉÏµÄÐéÄâµØÖ·ÁË */
+/* å¼€å¯MMUåŽï¼Œä¿®æ”¹PCå€¼ä¸ºr13æ‰§è¡Œï¼Œä¹Ÿå°±æ˜¯__mmap_switchedï¼Œè¯¥å‡½æ•°å·²ç»æ˜¯è¿è¡Œåœ¨MMUä¹‹ä¸Šçš„è™šæ‹Ÿåœ°å€äº† */
 	mov	r3, r13
 	ret	r3
 __turn_mmu_on_end:

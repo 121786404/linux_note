@@ -158,44 +158,44 @@ ENTRY(ret_from_fork)
 	ALIGN
 ret_from_exception:
 	/**
-	 * ���жϷ���ǰ��handle_IRQ_event����local_irq_disable��ֹ���ж�
-	 * �������жϷ���ʱ�����ù��жϣ��������쳣����ʱ����Ҫ���жϹرա�
+	 * 在中断返回前，handle_IRQ_event调用local_irq_disable禁止了中断
+	 * 所以在中断返回时，不用关中断，但是在异常返回时，需要将中断关闭。
 	 */
 	preempt_stop
 ret_from_intr:
 	/**
-	 * �ѵ�ǰthread_info��ص�ebp�С�
+	 * 把当前thread_info半截到ebp中。
 	 */
 	GET_THREAD_INFO(%ebp)
 	/**
-	 * �������ж�EFLAGS��CS��ȷ���Ƿ��������û�̬���Ƿ���VMģʽ��
+	 * 接下来判断EFLAGS和CS，确定是否运行在用户态，是否是VM模式。
 	 */
 	movl EFLAGS(%esp), %eax		# mix EFLAGS and CS
 	movb CS(%esp), %al
 	testl $(VM_MASK | 3), %eax
 	/**
-	 * ������������ں�̬�����Ҳ���VMģʽ��������resume_kernel��
-	 * ������ת��resume_userspace
+	 * 如果是运行在内核态，并且不是VM模式，就跳到resume_kernel，
+	 * 否则跳转到resume_userspace
 	 */
 	jz resume_kernel		# returning to kernel or vm86-space
 /**
- * �ָ��û�̬�����������ڡ�
+ * 恢复用户态程序的流程入口。
  */
 ENTRY(resume_userspace)
 	/**
-	 * �����Ϊʲô��Ҫ�����ж�
+	 * 不清楚为什么还要禁用中断
 	 */
  	cli				# make sure we don't miss an interrupt
 					# setting need_resched or sigpending
 					# between sampling and the iret
 	/**
-	 * ���thread_info��flag
+	 * 检查thread_info的flag
 	 */
 	movl TI_flags(%ebp), %ecx
 	/**
-	 * ���������_TIF_WORK_MASK���κ�һλ���ͱ�ʾ�еȴ�����������
-	 * ����work_pending������Щ������¼���
-	 * �������restore_all�ص��û�̬��
+	 * 如果设置了_TIF_WORK_MASK中任何一位，就表示有等待处理的事情
+	 * 跳到work_pending处理这些挂起的事件。
+	 * 否则调用restore_all回到用户态。
 	 */
 	andl $_TIF_WORK_MASK, %ecx	# is there any work to be done on
 					# int/exception return?
@@ -204,43 +204,43 @@ ENTRY(resume_userspace)
 
 #ifdef CONFIG_PREEMPT
 /**
- * �����쳣�����жϷ���ʱ����Ҫ���ص��ںˣ�����ת���˴���
+ * 当从异常或者中断返回时，需要返回到内核，则跳转到此处。
  */
 ENTRY(resume_kernel)
 	/**
-	 * ��֪���˴�Ϊ����Ҫ�ټ�cli,����Ǵ��жϻ����쳣��ת�������ô�Ѿ��ǹ��ж�״̬�ˡ�
-	 * Ҳ���ǻ��������ط���������ɡ�
+	 * 不知道此处为何需要再加cli,如果是从中断或者异常跳转到这里，那么已经是关中断状态了。
+	 * 也许是还有其他地方跳到这里吧。
 	 */
 	cli
 	/**
-	 * �����ж��ں��Ƿ�������ռ�������סebp�б������thread_info
+	 * 首先判断内核是否允许抢占，请请记住ebp中保存的是thread_info
 	 */
 	cmpl $0,TI_preempt_count(%ebp)	# non-zero preempt_count ?
 	/**
-	 * ��ǰ��������ռ���ͼ���ִ���ں˴��롣
+	 * 当前不允许抢占，就继续执行内核代码。
 	 */
 	jnz restore_all
 	/**
-	 * ������ռ����Ϊ0�����ж��Ƿ��е�������
+	 * 否则抢占计数为0，就判断是否有调度需求。
 	 */
 need_resched:
 	movl TI_flags(%ebp), %ecx	# need_resched set ?
 	/**
-	 * �ж��Ƿ��е�������
+	 * 判断是否有调度需求。
 	 */
 	testb $_TIF_NEED_RESCHED, %cl
 	/**
-	 * ����Ҫ���ȣ��ͼ���ִ���ں˴��롣
+	 * 不需要调度，就继续执行内核代码。
 	 */
 	jz restore_all
 	/**
-	 * ��Ȼ�е������󣬵��ǵ�ǰ�ǹ��ж�״̬����Ȼ�����ǲ������ġ�
-	 * ��ʱ�ص��û�̬��ʲô�أ�timer�ж϶����ܱ����ˡ�ϵͳ��ô������
+	 * 虽然有调度需求，但是当前是关中断状态，显然，这是不合理的。
+	 * 这时回到用户态做什么呢？timer中断都可能被关了。系统怎么工作？
 	 */
 	testl $IF_MASK,EFLAGS(%esp)     # interrupts off (exception path) ?
 	jz restore_all
 	/**
-	 * preempt_schedule_irq������PREEMPT_ACTIVE��־�����Ѵ��ں�����ʱ����Ϊ-1��Ȼ���жϲ�����schedule��
+	 * preempt_schedule_irq会设置PREEMPT_ACTIVE标志，并把大内核锁暂时设置为-1。然后开中断并调用schedule。
 	 */
 	call preempt_schedule_irq
 	jmp need_resched
@@ -320,33 +320,33 @@ restore_all:
 	# perform work that needs to be done immediately before resumption
 	ALIGN
 /**
- * �ڻص��û�̬ǰ������й�������񣬾ʹ�����Щ���������
+ * 在回到用户态前，如果有挂起的任务，就处理这些挂起的任务。
  */
 work_pending:
 	/**
-	 * ����Ƿ���Ҫ���µ��ȡ�
+	 * 检查是否需要重新调度。
 	 */
 	testb $_TIF_NEED_RESCHED, %cl
 	/**
-	 * ����Ҫ���µ��ȣ���Ҫ�ص��û�̬���ڻص��û�̬ǰ���ȼ����������ź�
+	 * 不需要重新调度，需要回到用户态，在回到用户态前，先检查待处理的信号
 	 */
 	jz work_notifysig
 /**
- * �����е�����Ҫ���������ȡ�
+ * 否则，有调度需要，处理调度。
  */
 work_resched:
 	/**
-	 * ����һ�¡�����û�е���ȥ��Ҳ���ܳ�ȥ���ֵ��Ȼ����ˡ�
+	 * 调度一下。可能没有调出去，也可能出去后又调度回来了。
 	 */
 	call schedule
 	/**
-	 * ��Ϊ�����ǵ��ȳ�ȥ���ֻ����ˣ�������Ҫ���¹��жϡ�
+	 * 因为可能是调度出去后，又回来了，所以需要重新关中断。
 	 */
 	cli				# make sure we don't miss an interrupt
 					# setting need_resched or sigpending
 					# between sampling and the iret
 	/**
-	 * ������������Ƿ��е������أ���
+	 * 这个处理流程是否有点眼熟呢？？
 	 */
 	movl TI_flags(%ebp), %ecx
 	andl $_TIF_WORK_MASK, %ecx	# is there any work to be done other
@@ -356,13 +356,13 @@ work_resched:
 	jnz work_resched
 
 /**
- * ���ˣ����е����˵��û�����µ��ȵ�Ҫ��
- * ����˵�е���Ҫ�󣬵��ǵ��ȳ������ֻ����ˡ�
- * ��֮��������û�е���Ҫ���ˡ��ڻص��û�̬ǰ�������źš�
- * ��Ҫע����ǣ��������в�ֹ��һ���ط����롣
- * һ�Ǵ���������ת�룬���ǴӸ������jmp���롣
- * �������������¼���Ҫ������һ���źţ�����VM86ģʽ��
- * ����VM86ģʽ���ǲ�̫���ġ��ź��أ��ܸ��ӵ����̣�������Ҫһ�²�˵�����Ҳ�Թ���
+ * 好了，运行到这里，说明没有重新调度的要求。
+ * 或者说有调度要求，但是调度出动后，又回来了。
+ * 总之，现在是没有调度要求了。在回到用户态前，处理信号。
+ * 需要注意的是：这个入口有不止从一个地方进入。
+ * 一是从上面两句转入，二是从更上面的jmp跳入。
+ * 接下来有两个事件需要处理：一是信号，二是VM86模式。
+ * 其中VM86模式我们不太关心。信号呢，很复杂的流程，至少需要一章才说清楚。也略过。
  */
 work_notifysig:				# deal with pending signals and
 					# notify-resume requests
@@ -449,9 +449,9 @@ common_interrupt:
 	jmp ret_from_intr
 
 /**
- * ����������жϴ�������Ļ�����Դ�������BUILD_INTERRUPT������ġ�
- * ������Ĵ�������ջ��ѹ�������ż�256��ֵ��Ȼ����ø߼�C�����������־��ǵͼ�������������ּ�ǰ׺smp_����
- * �磬CALL_FUNCTION_VECTOR���͵Ĵ��������жϵĵͼ�����������call_function_interrupt��������smp_call_function_interrupt�ĸ߼���������
+ * 处理器间的中断处理程序的汇编语言代码是由BUILD_INTERRUPT宏产生的。
+ * 它保存寄存器，从栈顶压入向量号减256的值，然后调用高级C函数（其名字就是低级处理程序的名字加前缀smp_）。
+ * 如，CALL_FUNCTION_VECTOR类型的处理器间中断的低级处理程序是call_function_interrupt，它调用smp_call_function_interrupt的高级处理程序。
  */
 #define BUILD_INTERRUPT(name, nr)	\
 ENTRY(name)				\
@@ -465,8 +465,8 @@ ENTRY(name)				\
 #include "entry_arch.h"
 
 /**
- * ����-0
- * ��һ��������ͼִ��������0������ʱ������
+ * 故障-0
+ * 当一个程序试图执行整数被0除操作时产生。
  */
 ENTRY(divide_error)
 	pushl $0			# no error code
@@ -474,7 +474,7 @@ ENTRY(divide_error)
 	ALIGN
 error_code:
 	/**
-	 * ����߼�C�������õ��ļĴ�����ջ�У���μ��߼�C������
+	 * 保存高级C函数会用到的寄存器到栈中，请参见高级C函数的
 	 */
 	pushl %ds
 	pushl %eax
@@ -487,38 +487,38 @@ error_code:
 	pushl %ecx
 	pushl %ebx
 	/**
-	 * cldָ����eflags�����־DF����Ҫ����movs������ָ�
+	 * cld指令清eflags方向标志DF，主要用于movs这样的指令。
 	 */
 	cld
 	movl %es, %ecx
 	/**
-	 * ��esp+32���ĸ߼�C������ַ����edi.
+	 * 将esp+32处的高级C函数地址载入edi.
 	 */
 	movl ES(%esp), %edi		# get the function address
 	/**
-	 * ��esp+36���ĳ����븴�Ƶ�edx�У�����-1д��ջ�С�
-	 * ��ע��ǰ��xorl %eax, %eax��decl %eaxһ�䣬����eax����-1
-	 * ������������쳣�����λ�þ���-1������ͱ�ʾ��0x80ϵͳ���á�
+	 * 将esp+36处的出错码复制到edx中，将将-1写到栈中。
+	 * 请注意前面xorl %eax, %eax和decl %eax一句，它将eax中置-1
+	 * 这样，如果是异常，这个位置就是-1，否则就表示是0x80系统调用。
 	 */
 	movl ORIG_EAX(%esp), %edx	# get the error code
 	movl %eax, ORIG_EAX(%esp)
 	movl %ecx, ES(%esp)
 	/**
-	 * ���û����ݶ�ѡ���������ds��es�Ĵ����С�
+	 * 把用户数据段选择符复制以ds和es寄存器中。
 	 */
 	movl $(__USER_DS), %ecx
 	movl %ecx, %ds
 	movl %ecx, %es
 	/**
-	 * ���ں�ջ�ĵ�ǰջ�����Ƶ�eax������һ���ڴ浥Ԫ�ĵ�ַ��
-	 * ���ĵ�ַ�����pushl��ջ�е�ֵ�ĵ�ַ��ͨ�������ַ�Ϳ��Է������б���ļĴ����ˡ�
-	 * Ҳ����pt_regs�ṹ��
+	 * 把内核栈的当前栈顶复制到eax。这是一个内存单元的地址。
+	 * 它的地址是最后被pushl到栈中的值的地址。通过这个地址就可以访问所有保存的寄存器了。
+	 * 也就是pt_regs结构。
 	 */
 	movl %esp,%eax			# pt_regs pointer
 	/**
-	 * ���ø߼�C�����������ú����Ĳ�����ͨ��eax��edx���ݡ�
-	 * ��μ�fastcall void do_page_fault(struct pt_regs *regs, unsigned long error_code)
-	 * ���е�fastcall��ʾ�ɼĴ������Σ�regs��ֵ��eax��error_code��ֵ��edx�С�
+	 * 调用高级C函数，被调用函数的参数是通过eax和edx传递。
+	 * 请参见fastcall void do_page_fault(struct pt_regs *regs, unsigned long error_code)
+	 * 其中的fastcall表示由寄存器传参，regs的值在eax，error_code的值在edx中。
 	 */
 	call *%edi
 	jmp ret_from_exception
@@ -535,8 +535,8 @@ ENTRY(simd_coprocessor_error)
 	jmp error_code
 
 /**
- * ����-7
- * cr0��TS��־�����ã�ESCAPE��MMX����XMMָ�ִ��
+ * 故障-7
+ * cr0的TS标志被设置，ESCAPE、MMX或者XMM指令被执行
  */
 ENTRY(device_not_available)
 	pushl $-1			# mark this as an int
@@ -576,8 +576,8 @@ label:						\
 	pushl $sysenter_past_esp
 
 /**
- * ��������-1
- * �����ڣ�����eflags��TF��־ʱ����һ��ָ����߲������ĵ�ַ����һ���DEBUG�Ĵ����ķ�Χ֮�ڡ�
+ * 陷阱或故障-1
+ * 产生于：设置eflags的TF标志时，或当一条指令或者操作数的地址落在一个活动DEBUG寄存器的范围之内。
  */
 ENTRY(debug)
 	cmpl $sysenter_entry,(%esp)
@@ -602,8 +602,8 @@ debug_stack_correct:
  * fault happened on the sysenter path.
  */
 /**
- * δ��-2
- * Ϊ�������жϱ���(����NMI���ŵ��ж�)
+ * 未用-2
+ * 为非屏蔽中断保留(利用NMI引脚的中断)
  */
 ENTRY(nmi)
 	cmpl $sysenter_entry,(%esp)
@@ -642,8 +642,8 @@ nmi_debug_stack_fixup:
 	jmp nmi_stack_correct
 
 /**
- * ����-0
- * ��int3�ϵ�ָ��(ͨ����debugger����)����
+ * 陷阱-0
+ * 由int3断点指令(通常由debugger插入)引起
  */
 ENTRY(int3)
 	pushl $-1			# mark this as an int
@@ -656,8 +656,8 @@ ENTRY(int3)
 	jmp ret_from_exception
 
 /**
- * ����-4
- * ��eflags��OF(overflow)��־������ʱ��into(������)ָ�ִ��
+ * 陷阱-4
+ * 当eflags的OF(overflow)标志被设置时，into(检查溢出)指令被执行
  */
 ENTRY(overflow)
 	pushl $0
@@ -665,8 +665,8 @@ ENTRY(overflow)
 	jmp error_code
 
 /**
- * ����-5
- * ������Ч��Χ֮��Ĳ�������bound(����ַ�߽�)ָ�ִ��
+ * 故障-5
+ * 对于有效范围之外的操作数，bound(检查地址边界)指令被执行
  */
 ENTRY(bounds)
 	pushl $0
@@ -674,8 +674,8 @@ ENTRY(bounds)
 	jmp error_code
 
 /**
- * ����-6
- * CPUִ�е�Ԫ��⵽һ����Ч�Ĳ����롣
+ * 故障-6
+ * CPU执行单元检测到一个无效的操作码。
  */
 ENTRY(invalid_op)
 	pushl $0
@@ -683,8 +683,8 @@ ENTRY(invalid_op)
 	jmp error_code
 
 /**
- * �쳣��ֹ-9
- * ���ⲿ����ѧЭ��������������⣨��������80386��
+ * 异常中止-9
+ * 因外部的数学协处理器引起的问题（仅适用于80386）
  */
 ENTRY(coprocessor_segment_overrun)
 	pushl $0
@@ -692,47 +692,47 @@ ENTRY(coprocessor_segment_overrun)
 	jmp error_code
 
 /**
- * ����-10
- * CPU��ͼ��һ���������л�����Ч��TSS���̡�
+ * 故障-10
+ * CPU试图让一个上下文切换到无效的TSS进程。
  */
 ENTRY(invalid_TSS)
 	pushl $do_invalid_TSS
 	jmp error_code
 
 /**
- * ����-11
- * ����һ�������ڵ��ڴ�Σ�����������Segment-Present��־����0��
+ * 故障-11
+ * 引用一个不存在的内存段（段描述符的Segment-Present标志被清0）
  */
 ENTRY(segment_not_present)
 	pushl $do_segment_not_present
 	jmp error_code
 
 /**
- * ����-12
- * ��ͼ����ջ�ν��޵�ָ�������SS��ʶ�Ķβ����ڴ档
+ * 故障-12
+ * 试图超过栈段界限的指令。或者由SS标识的段不在内存。
  */
 ENTRY(stack_segment)
 	pushl $do_stack_segment
 	jmp error_code
 
 /**
- * ����-13
- * Υ���˱���ģʽ�µı�������֮һ��
+ * 故障-13
+ * 违反了保护模式下的保护规则之一。
  */
 ENTRY(general_protection)
 	pushl $do_general_protection
 	jmp error_code
 
 /**
- * �������ĵ�ַû�б���ȷ�Ķ��루���磬һ���������ĵ�ַ����4�ı�����
+ * 操作数的地址没有被正确的对齐（例如，一个长整数的地址不是4的倍数）
  */
 ENTRY(alignment_check)
 	pushl $do_alignment_check
 	jmp error_code
 
 /**
- * ����-14
- * Ѱַ��ҳ�����ڴ棬��Ӧ��ҳ����Ϊ�ա�����Υ����һ�ַ�ҳ�������ơ�
+ * 故障-14
+ * 寻址的页不在内存，相应的页表项为空。或者违反了一种分页保护机制。
  */
 ENTRY(page_fault)
 	pushl $do_page_fault
@@ -740,8 +740,8 @@ ENTRY(page_fault)
 
 #ifdef CONFIG_X86_MCE
 /**
- * �쳣��ֹ-18
- * ���������Ƽ�⵽һ��CPU����������ߴ���
+ * 异常中止-18
+ * 机器检查机制检测到一个CPU错误或者总线错误
  */
 ENTRY(machine_check)
 	pushl $0

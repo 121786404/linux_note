@@ -451,7 +451,7 @@ __v7_pj4b_setup:
 #endif /* CONFIG_CPU_PJ4B */
 
 /**
- * ÔÚ´´½¨³õÊ¼Ò³±íºó£¬µ÷ÓÃ´Ëº¯Êı½øĞĞ´¦ÀíÆ÷³õÊ¼»¯¡£
+ * åœ¨åˆ›å»ºåˆå§‹é¡µè¡¨åï¼Œè°ƒç”¨æ­¤å‡½æ•°è¿›è¡Œå¤„ç†å™¨åˆå§‹åŒ–ã€‚
  */
 __v7_setup:
 	adr	r0, __v7_setup_stack_ptr
@@ -531,7 +531,7 @@ __errata_finish:
 	orr	r0, r0, r6			@ set them
  THUMB(	orr	r0, r0, #1 << 30	)	@ Thumb exceptions
  /**
-  * ·µ»Øµ½head.S:__enable_mmu
+  * è¿”å›åˆ°head.S:__enable_mmu
   */
 	ret	lr				@ return to head.S:__ret
 

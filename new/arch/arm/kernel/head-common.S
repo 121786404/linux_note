@@ -45,17 +45,17 @@
  *  r5, r6 corrupted
  */
 /**
- * ¼ì²éBOOT´«ÈëµÄATAGSÊÇ·ñºÏ·¨£¬ATAGS±»BOOTÖĞµÄsetup_start_tagº¯ÊıÉèÖÃ¡£
+ * æ£€æŸ¥BOOTä¼ å…¥çš„ATAGSæ˜¯å¦åˆæ³•ï¼ŒATAGSè¢«BOOTä¸­çš„setup_start_tagå‡½æ•°è®¾ç½®ã€‚
  */
 __vet_atags:
 /**
- * ¼ì²éatagsÊÇ·ñËÄ×Ö½Ú¶ÔÆë£¬²»¶ÔÆëµÄ»°Ö±½Ó·µ»Ø´íÎó
+ * æ£€æŸ¥atagsæ˜¯å¦å››å­—èŠ‚å¯¹é½ï¼Œä¸å¯¹é½çš„è¯ç›´æ¥è¿”å›é”™è¯¯
  */
 	tst	r2, #0x3			@ aligned?
 	bne	1f
 
 /**
- * ¶ÁÈëÆä³¤¶È£¬Èç¹ûÆä³¤¶È²»µÈÓÚATAG_CORE_SIZE£¬±íÊ¾´æ´¢µÄÄÚÈİ²»ÊÇATAG
+ * è¯»å…¥å…¶é•¿åº¦ï¼Œå¦‚æœå…¶é•¿åº¦ä¸ç­‰äºATAG_CORE_SIZEï¼Œè¡¨ç¤ºå­˜å‚¨çš„å†…å®¹ä¸æ˜¯ATAG
  */
 	ldr	r5, [r2, #0]
 #ifdef CONFIG_OF_FLATTREE
@@ -67,7 +67,7 @@ __vet_atags:
 	cmpne	r5, #ATAG_CORE_SIZE_EMPTY
 	bne	1f
 /**
- * ÅĞ¶ÏÆä±êÖ¾ÊÇ·ñÊÇATAG_CORE£¬µÚÒ»¸öÔªËØ±ØĞëÊÇ´ËÀàĞÍ
+ * åˆ¤æ–­å…¶æ ‡å¿—æ˜¯å¦æ˜¯ATAG_COREï¼Œç¬¬ä¸€ä¸ªå…ƒç´ å¿…é¡»æ˜¯æ­¤ç±»å‹
  */
 	ldr	r5, [r2, #4]
 	ldr	r6, =ATAG_CORE
@@ -91,28 +91,28 @@ ENDPROC(__vet_atags)
  */
 	__INIT
 /**
- * ´ÓÕâÀï¿ªÊ¼£¬´úÂëÔËĞĞÔÚMMUµØÖ·¿Õ¼äÖĞ¡£ÒÔ¾ø¶ÔµØÖ·µÄ·½Ê½Ö´ĞĞ£¬²»±ØÓÃPIC·½Ê½Ö´ĞĞÁË¡£
- * Îªstart_kernel×¼±¸CÔËĞĞ»·¾³¡£
+ * ä»è¿™é‡Œå¼€å§‹ï¼Œä»£ç è¿è¡Œåœ¨MMUåœ°å€ç©ºé—´ä¸­ã€‚ä»¥ç»å¯¹åœ°å€çš„æ–¹å¼æ‰§è¡Œï¼Œä¸å¿…ç”¨PICæ–¹å¼æ‰§è¡Œäº†ã€‚
+ * ä¸ºstart_kernelå‡†å¤‡Cè¿è¡Œç¯å¢ƒã€‚
  */
 __mmap_switched:
 /**
- * ¼ÆËãPCÏà¶ÔÓÚ__mmap_switched_dataµØÖ·µÄ²îÒì£¬¼ÆËãPC¼õÈ¥Ïà¶ÔµØÖ·µÄ½á¹û¡£
- * ÕâÀï¿ÉÒÔ²»ÓÃÕâÖÖPICµÄ·½Ê½£¬µ«ÊÇÕâÑù×öÓ¦¸Ã¿ÉÒÔ½ÚÔ¼Ò»ÌõÖ¸Áî¡£
+ * è®¡ç®—PCç›¸å¯¹äº__mmap_switched_dataåœ°å€çš„å·®å¼‚ï¼Œè®¡ç®—PCå‡å»ç›¸å¯¹åœ°å€çš„ç»“æœã€‚
+ * è¿™é‡Œå¯ä»¥ä¸ç”¨è¿™ç§PICçš„æ–¹å¼ï¼Œä½†æ˜¯è¿™æ ·åšåº”è¯¥å¯ä»¥èŠ‚çº¦ä¸€æ¡æŒ‡ä»¤ã€‚
  */
 	adr	r3, __mmap_switched_data
 
 /**
- * ´Ó__mmap_switched_data¼ÓÔØ__data_loc£¬_data£¬__bss_start£¬__end±äÁ¿µ½¼Ä´æÆ÷ÖĞ
+ * ä»__mmap_switched_dataåŠ è½½__data_locï¼Œ_dataï¼Œ__bss_startï¼Œ__endå˜é‡åˆ°å¯„å­˜å™¨ä¸­
  */
 	ldmia	r3!, {r4, r5, r6, r7}
 /**
- * __data_locÖ¸Ïò¶ş½øÖÆÎÄ¼şÖĞ³õÊ¼»¯Êı¾İµÄÆğÊ¼Î»ÖÃ£¬__dataÖ¸ÏòÄÚ´æÖĞ³õÊ¼»¯Êı¾İµÄÆğÊ¼Î»ÖÃ
- * ¶şÕßÒ»°ãÏàµÈ£¬Ò²ĞíXIP·½Ê½ÏÂ¶şÕß»á²»ÏàµÈ¡£
- * Èç¹ûÓĞ±ØÒªÔò½øĞĞdata¶ÎµÄ¿½±´°áÒÆ
+ * __data_locæŒ‡å‘äºŒè¿›åˆ¶æ–‡ä»¶ä¸­åˆå§‹åŒ–æ•°æ®çš„èµ·å§‹ä½ç½®ï¼Œ__dataæŒ‡å‘å†…å­˜ä¸­åˆå§‹åŒ–æ•°æ®çš„èµ·å§‹ä½ç½®
+ * äºŒè€…ä¸€èˆ¬ç›¸ç­‰ï¼Œä¹Ÿè®¸XIPæ–¹å¼ä¸‹äºŒè€…ä¼šä¸ç›¸ç­‰ã€‚
+ * å¦‚æœæœ‰å¿…è¦åˆ™è¿›è¡Œdataæ®µçš„æ‹·è´æ¬ç§»
  */
 	cmp	r4, r5				@ Copy data segment if needed
 /**
- * _data£¬__bss_start¶şÕßÖ®¼ä¼´Îª³õÊ¼»¯Êı¾İ£¬±éÀú¸´ÖÆËü
+ * _dataï¼Œ__bss_startäºŒè€…ä¹‹é—´å³ä¸ºåˆå§‹åŒ–æ•°æ®ï¼Œéå†å¤åˆ¶å®ƒ
  */
 1:	cmpne	r5, r6
 	ldrne	fp, [r4], #4
@@ -120,7 +120,7 @@ __mmap_switched:
 	bne	1b
 
 /**
- * Çå¿ÕBSS¶Î
+ * æ¸…ç©ºBSSæ®µ
  */
 	mov	fp, #0				@ Clear BSS (and zero fp)
 1:	cmp	r6, r7
@@ -128,30 +128,30 @@ __mmap_switched:
 	bcc	1b
 
 /**
- * Ç°ÃæµÄldmiaÖ¸Áî¼ÓÁË£¡£¬Òò´Ë´ËÊ±r3ÒÑ¾­Ö¸Ïòprocessor_id×Ö¶Î
- * ×¢ÒâÕâÀï½«init½ø³ÌµÄSPÖ¸Õë¶ÁÈëµ½SP¼Ä´æÆ÷ÁË¡£
+ * å‰é¢çš„ldmiaæŒ‡ä»¤åŠ äº†ï¼ï¼Œå› æ­¤æ­¤æ—¶r3å·²ç»æŒ‡å‘processor_idå­—æ®µ
+ * æ³¨æ„è¿™é‡Œå°†initè¿›ç¨‹çš„SPæŒ‡é’ˆè¯»å…¥åˆ°SPå¯„å­˜å™¨äº†ã€‚
  */
  ARM(	ldmia	r3, {r4, r5, r6, r7, sp})
  THUMB(	ldmia	r3, {r4, r5, r6, r7}	)
  THUMB(	ldr	sp, [r3, #16]		)
  /**
-  * ´æ´¢´¦ÀíÆ÷IDµ½È«¾Öprocessor_id±äÁ¿ÖĞ
+  * å­˜å‚¨å¤„ç†å™¨IDåˆ°å…¨å±€processor_idå˜é‡ä¸­
   */
 	str	r9, [r4]			@ Save processor ID
 /**
- * ´æ´¢»úÆ÷ÀàĞÍµ½__machine_arch_type×Ö¶Î
+ * å­˜å‚¨æœºå™¨ç±»å‹åˆ°__machine_arch_typeå­—æ®µ
  */
 	str	r1, [r5]			@ Save machine type
 /**
- * ´æ´¢atagsÖ¸Õë
+ * å­˜å‚¨atagsæŒ‡é’ˆ
  */
 	str	r2, [r6]			@ Save atags pointer
 	cmp	r7, #0
 	strne	r0, [r7]			@ Save control register values
 /**
- * Ìø×ªµ½CÔËĞĞ»·¾³
-__mmap_switched×îºóÌø×ªµ½start_kernel¿ªÊ¼½øÈëCº¯ÊıÔËĞĞ»·¾³£¬
-ÕâÊ±Õû¸ökernel imageÒÑ¾­ÔËĞĞÔÚĞéÄâµØÖ·Ö®ÉÏ£¬ÔËĞĞµØÖ·ºÍÁ´½ÓµØÖ·±£³ÖÁËÒ»ÖÂ.
+ * è·³è½¬åˆ°Cè¿è¡Œç¯å¢ƒ
+__mmap_switchedæœ€åè·³è½¬åˆ°start_kernelå¼€å§‹è¿›å…¥Cå‡½æ•°è¿è¡Œç¯å¢ƒï¼Œ
+è¿™æ—¶æ•´ä¸ªkernel imageå·²ç»è¿è¡Œåœ¨è™šæ‹Ÿåœ°å€ä¹‹ä¸Šï¼Œè¿è¡Œåœ°å€å’Œé“¾æ¥åœ°å€ä¿æŒäº†ä¸€è‡´.
  */
 	b	start_kernel
 ENDPROC(__mmap_switched)
@@ -172,9 +172,9 @@ __mmap_switched_data:
 	.long	0				@ r7
 #endif
 /*
-sp = init_thread_union + THREAD_START_SP(8K-8)£¬ÉèÖÃÕ»Ö¸Õë£¬Îª½ÓÏÂÀ´µÄCº¯ÊıÔËĞĞ×ö×¼±¸¡£
-¶ÔÓÚarm-linuxÀ´Ëµ£¬start_kernelÖ®Ç°È«²¿¶¼ÊÇ»ã±à´úÂë¡£
-init_thread_union´ú±íµÄÊÇÄÚºËµÚÒ»¸ö½ø³Ì£¬pid = 0£¬¸Ã½ø³ÌÊÇÄÚºËÈËÎªÔì³öÀ´µÄ£¬¶ø²»ÊÇfork³öÀ´µÄ.
+sp = init_thread_union + THREAD_START_SP(8K-8)ï¼Œè®¾ç½®æ ˆæŒ‡é’ˆï¼Œä¸ºæ¥ä¸‹æ¥çš„Cå‡½æ•°è¿è¡Œåšå‡†å¤‡ã€‚
+å¯¹äºarm-linuxæ¥è¯´ï¼Œstart_kernelä¹‹å‰å…¨éƒ¨éƒ½æ˜¯æ±‡ç¼–ä»£ç ã€‚
+init_thread_unionä»£è¡¨çš„æ˜¯å†…æ ¸ç¬¬ä¸€ä¸ªè¿›ç¨‹ï¼Œpid = 0ï¼Œè¯¥è¿›ç¨‹æ˜¯å†…æ ¸äººä¸ºé€ å‡ºæ¥çš„ï¼Œè€Œä¸æ˜¯forkå‡ºæ¥çš„.
 */
 	.long	init_thread_union + THREAD_START_SP @ sp
 	.size	__mmap_switched_data, . - __mmap_switched_data
@@ -207,40 +207,40 @@ ENDPROC(lookup_processor_type)
  *	r9 = cpuid (preserved)
  */
 /*
-Kernel ´úÂë½«ËùÓĞCPUĞÅÏ¢µÄ¶¨Òå¶¼·Åµ½.proc.info.init¶ÎÖĞ£¬Òò´Ë¿ÉÒÔÈÏÎª.proc.info.init¶Î¾ÍÊÇÒ»¸öÊı×é£¬
-Ã¿¸öÔªËØ¶¼¶¨ÒåÁËÒ»¸ö»òÒ»ÖÖCPUµÄĞÅÏ¢¡£Ä¿Ç°__lookup_processor_typeÊ¹ÓÃ¸ÃÔªËØµÄÇ°Á½¸ö×Ö¶ÎcpuidºÍmaskÀ´Æ¥Åäµ±Ç°CPUID£¬
-Èç¹ûÂú×ã CPUID & mask == cpuid£¬ÔòÕÒµ½µ±Ç°cpuµÄ¶¨Òå²¢·µ»Ø¡£
+Kernel ä»£ç å°†æ‰€æœ‰CPUä¿¡æ¯çš„å®šä¹‰éƒ½æ”¾åˆ°.proc.info.initæ®µä¸­ï¼Œå› æ­¤å¯ä»¥è®¤ä¸º.proc.info.initæ®µå°±æ˜¯ä¸€ä¸ªæ•°ç»„ï¼Œ
+æ¯ä¸ªå…ƒç´ éƒ½å®šä¹‰äº†ä¸€ä¸ªæˆ–ä¸€ç§CPUçš„ä¿¡æ¯ã€‚ç›®å‰__lookup_processor_typeä½¿ç”¨è¯¥å…ƒç´ çš„å‰ä¸¤ä¸ªå­—æ®µcpuidå’Œmaskæ¥åŒ¹é…å½“å‰CPUIDï¼Œ
+å¦‚æœæ»¡è¶³ CPUID & mask == cpuidï¼Œåˆ™æ‰¾åˆ°å½“å‰cpuçš„å®šä¹‰å¹¶è¿”å›ã€‚
 */
 __lookup_processor_type:
 /* 
 r3=(phys)__lookup_processor_type_data
-adrÊÇÏà¶ÔÑ°Ö·£¬ËüµÄÑ°¼ÆËã½á¹ûÊÇ½«µ±Ç°PCÖµ¼ÓÉÏ__lookup_processor_type_data·ûºÅÓëPCµÄÆ«ÒÆÁ¿£¬     
-¶øPCÊÇÎïÀíµØÖ·£¬Òò´Ër3µÄ½á¹ûÒ²ÊÇ·ûºÅ__lookup_processor_type_dataµÄÎïÀíµØÖ·
+adræ˜¯ç›¸å¯¹å¯»å€ï¼Œå®ƒçš„å¯»è®¡ç®—ç»“æœæ˜¯å°†å½“å‰PCå€¼åŠ ä¸Š__lookup_processor_type_dataç¬¦å·ä¸PCçš„åç§»é‡ï¼Œ     
+è€ŒPCæ˜¯ç‰©ç†åœ°å€ï¼Œå› æ­¤r3çš„ç»“æœä¹Ÿæ˜¯ç¬¦å·__lookup_processor_type_dataçš„ç‰©ç†åœ°å€
 */
 	adr	r3, __lookup_processor_type_data  
 /*
 	@ r4=(virt). r5=(virt)__proc_info_begin r6=(virt)__proc_info_end
 */
 /*
-r5ÖµÎª__proc_info_bein, r6ÖµÎª__proc_ino_end£¬¶ør4ÖµÎª.£¬     
-Ò²¼´·ûºÅ__lookup_processor_type_dataµÄĞéÄâµØÖ·¡£
-Çë×¢Òâ£¬ÔÚÁ´½ÓÆÚ¼ä£¬__proc_info_beginºÍ__proc_info_endÒÔ¼°.¾ùÊÇĞéÖ´µØÖ·
+r5å€¼ä¸º__proc_info_bein, r6å€¼ä¸º__proc_ino_endï¼Œè€Œr4å€¼ä¸º.ï¼Œ     
+ä¹Ÿå³ç¬¦å·__lookup_processor_type_dataçš„è™šæ‹Ÿåœ°å€ã€‚
+è¯·æ³¨æ„ï¼Œåœ¨é“¾æ¥æœŸé—´ï¼Œ__proc_info_beginå’Œ__proc_info_endä»¥åŠ.å‡æ˜¯è™šæ‰§åœ°å€
 */
 	ldmia	r3, {r4 - r6}	
 /*
-	r3=(phys)r3-(virt)r4 (½ÓÏÂÀ´Á½ĞĞ°Ñvirt×ª»»³ÉphysµÄÊ±ºòÊ¹ÓÃ)
+	r3=(phys)r3-(virt)r4 (æ¥ä¸‹æ¥ä¸¤è¡ŒæŠŠvirtè½¬æ¢æˆphysçš„æ—¶å€™ä½¿ç”¨)
 */      
 /* 
-r3Îª__lookup_processor_type_dataµÄÎïÀíµØÖ·£¬      
-r4Îª__lookup_processor_type_dataµÄĞéÄâµØÖ·.     
-½á¹ûÊÇr3ÎªÎïÀíµØÖ·ÓëĞéÄâµØÖ·µÄ²îÖµ£¬¼´PHYS_OFFSET - PAGE_OFFSET
+r3ä¸º__lookup_processor_type_dataçš„ç‰©ç†åœ°å€ï¼Œ      
+r4ä¸º__lookup_processor_type_dataçš„è™šæ‹Ÿåœ°å€.     
+ç»“æœæ˜¯r3ä¸ºç‰©ç†åœ°å€ä¸è™šæ‹Ÿåœ°å€çš„å·®å€¼ï¼Œå³PHYS_OFFSET - PAGE_OFFSET
 */       
 	sub	r3, r3, r4			@ get offset between virt&phys
 /*
 	(phys)r5=(virt)r5+r3
 */
 /* 
-½«r5ºÍr6×ª»»Îª__proc_info_beginºÍ__proc_info_endµÄÎïÀíµØÖ· 
+å°†r5å’Œr6è½¬æ¢ä¸º__proc_info_beginå’Œ__proc_info_endçš„ç‰©ç†åœ°å€ 
 */
 	add	r5, r5, r3			@ convert virt addresses to
 /*
@@ -248,51 +248,51 @@ r4Îª__lookup_processor_type_dataµÄĞéÄâµØÖ·.
 */
 	add	r6, r6, r3			@ physical address space
 /*
-	r3=value r4=mask (²Î¿¼struct proc_info_list)
+	r3=value r4=mask (å‚è€ƒstruct proc_info_list)
 */
 /* 
-¶ÁÈ¡r5Ö¸ÏòµÄ__proc_infoÊı×éÔªËØµÄCPUIDºÍmaskÖµ·Ö±ğ±£´æµ½r3ºÍr4¼Ä´æÆ÷ 
+è¯»å–r5æŒ‡å‘çš„__proc_infoæ•°ç»„å…ƒç´ çš„CPUIDå’Œmaskå€¼åˆ†åˆ«ä¿å­˜åˆ°r3å’Œr4å¯„å­˜å™¨ 
 */
 1:	ldmia	r5, {r3, r4}			@ value, mask
 /*
-¶Ôprocessor id½øĞĞmask
+å¯¹processor idè¿›è¡Œmask
 */
 /* 
-½«µ±Ç°CPUIDºÍmaskÏàÓë£¬²¢ÓëÊı×éÔªËØÖĞµÄCPUID±È½ÏÊÇ·ñÏàÍ¬     
-ÈôÏàÍ¬£¬ÔòÕÒµ½µ±Ç°CPUµÄ__proc_info¶¨Òå£¬r5Ö¸Ïò·ÃÔªËØ²¢·µ»Ø 
+å°†å½“å‰CPUIDå’Œmaskç›¸ä¸ï¼Œå¹¶ä¸æ•°ç»„å…ƒç´ ä¸­çš„CPUIDæ¯”è¾ƒæ˜¯å¦ç›¸åŒ     
+è‹¥ç›¸åŒï¼Œåˆ™æ‰¾åˆ°å½“å‰CPUçš„__proc_infoå®šä¹‰ï¼Œr5æŒ‡å‘è®¿å…ƒç´ å¹¶è¿”å› 
 */                  
 	and	r4, r4, r9			@ mask wanted bits
 /*
-	±È½Ïcpu_val
+	æ¯”è¾ƒcpu_val
 */
 	teq	r3, r4
 /*
-	 Æ¥Åä³É¹¦¼´ÍË³ö
+	 åŒ¹é…æˆåŠŸå³é€€å‡º
 */
 	beq	2f
 /*
-	r5ÍùºóÆ«ÒÆsizeof(struct proc_info_list)
+	r5å¾€ååç§»sizeof(struct proc_info_list)
 */
 /* 
-r5Ö¸ÏòÏÂÒ»¸ö__proc_infoÔªËØ 
+r5æŒ‡å‘ä¸‹ä¸€ä¸ª__proc_infoå…ƒç´  
 */
 	add	r5, r5, #PROC_INFO_SZ		@ sizeof(proc_info_list)
 /*
-	r6ÊÇ´æ·Åproc_info_listµÄÄ©Î²
-    ÊÇ·ñ±éÀúÍêËùÓĞ__proc_infoÔªËØ 
+	r6æ˜¯å­˜æ”¾proc_info_listçš„æœ«å°¾
+    æ˜¯å¦éå†å®Œæ‰€æœ‰__proc_infoå…ƒç´  
 */
 	cmp	r5, r6
 /*
-	Ğ¡ÓÚ__proc_info_end ,¼ÌĞø²éÕÒ
+	å°äº__proc_info_end ,ç»§ç»­æŸ¥æ‰¾
 */   
 	blo	1b
 /*
-	Èç¹ûÃ»ÓĞÆ¥Åä³É¹¦½á¹ûÊÇunknown processor(r5=0)
-    ÕÒ²»µ½Ôò·µ»ØNULL
+	å¦‚æœæ²¡æœ‰åŒ¹é…æˆåŠŸç»“æœæ˜¯unknown processor(r5=0)
+    æ‰¾ä¸åˆ°åˆ™è¿”å›NULL
 */
 	mov	r5, #0				@ unknown processor
 /*
-	lrÖĞ±£´æµÄµØÖ·ÊÇ__enable_mmu
+	lrä¸­ä¿å­˜çš„åœ°å€æ˜¯__enable_mmu
 */
 2:	ret	lr
 ENDPROC(__lookup_processor_type)

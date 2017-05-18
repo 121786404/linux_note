@@ -292,22 +292,22 @@
 	.endm
 
 /*
-restore_user_regs��������vector_swi��������ˡ�
-ע��restore_user_regs���һ����룬mov�����s����Ŀ��Ĵ�����pc��
-����һ��������÷���CPU�Ὣ��ǰspsr�е�ֵд��cpsr�У������ͻص����û�̬��
-���Ͼ���ϵͳ����ʱ��CPU�Ĵ����ı����ͻ�ԭ���̡�
+restore_user_regs基本上是vector_swi的逆过程了。
+注意restore_user_regs最后一句代码，mov后面带s，且目标寄存器是pc。
+这是一种特殊的用法，CPU会将当前spsr中的值写入cpsr中，这样就回到了用户态。
+以上就是系统调用时的CPU寄存器的保护和还原过程。
 
-ϵͳ���øս��뵽�ں�̬���ͻὫ��ǰ�ļĴ����鱣�����ں�̬��ջ�У�
-��ϵͳ����ִ�����ں�̬ʱ���Ὣ�ں�̬ջ�еļĴ���������װ�ؽ�����
-������ģʽ�л�Ҳ����ͬ��ԭ����
+系统调用刚进入到内核态，就会将当前的寄存器组保存在内核态的栈中；
+当系统调用执行完内核态时，会将内核态栈中的寄存器组重新装载进来。
+其他的模式切换也是相同的原理。
 
-ret_slow_syscall��ret_fast_syscall��࣬���ڵ���restore_user_regs����һ�����ǲ���fast��
-������ʲô�����أ�
-�������̵���fork()�����ӽ��̺󣺸����̻��ret_fast_syscall����������ص��û�̬,
-���ӽ������ǵ���ret_from_fork���ٵ���ret_slow_syscall�����ص��û�̬:
-���ߵ�������ǲ���fast��������fastֻ�ǿ���Ҫ��Ҫ���ں�ջ�б����r0ֵд�뵽CPU r0�Ĵ����
-* ��fast = 1ʱ�����ֵ�ǰ�����е�r0ֵ�����r0ֵ�Ǹ����̵�do_fork()����ֵ��Ҳ�����ӽ��̵�pid��
-* ��fast = 0ʱ������ջ�е�r0ֵ�滻��ǰ��r0ֵ������֪��copy_thread()�У����ջ�е�r0ֵ������Ϊ0��  �����ӽ��̷���ֵ������0��
+ret_slow_syscall和ret_fast_syscall差不多，都在调用restore_user_regs，不一样的是参数fast。
+两者有什么区别呢？
+当父进程调用fork()创建子进程后：父进程会从ret_fast_syscall这个函数返回到用户态,
+而子进程则是调用ret_from_fork，再调用ret_slow_syscall来返回到用户态:
+两者的区别就是参数fast，而参数fast只是控制要不要把内核栈中保存的r0值写入到CPU r0寄存器里。
+* 当fast = 1时，保持当前流程中的r0值，这个r0值是父进程的do_fork()返回值，也就是子进程的pid。
+* 而fast = 0时，会用栈中的r0值替换当前的r0值，我们知道copy_thread()中，这个栈中的r0值被设置为0，  所以子进程返回值将会是0。
 */
 	.macro	restore_user_regs, fast = 0, offset = 0
 	uaccess_enable r1, isb=0
@@ -315,8 +315,8 @@ ret_slow_syscall��ret_fast_syscall��࣬���ڵ���restore_user_regs����һ�����ǲ
 	@ ARM mode restore
 	mov	r2, sp
 /*
-��ȡsp_svc�б����PCָ��,Ҳ����ϵͳ�����û�̬���ص�ַ.       
-ע��:������ں��̣߳���ֵΪkernel_thread_helper������ַ.
+获取sp_svc中保存的PC指针,也就是系统调用用户态返回地址.       
+注意:如果是内核线程，该值为kernel_thread_helper函数地址.
 */
 	ldr	r1, [r2, #\offset + S_PSR]	@ get calling cpsr
 	ldr	lr, [r2, #\offset + S_PC]!	@ get pc
@@ -327,7 +327,7 @@ ret_slow_syscall��ret_fast_syscall��࣬���ڵ���restore_user_regs����һ�����ǲ
 #endif
 	.if	\fast
 /*
-�����^��־��ʾ��pt_regs�б����ģʽ�����Ļָ����û�̬ģʽ
+这里的^标志表示将pt_regs中保存的模式上下文恢复到用户态模式
 */
 	ldmdb	r2, {r1 - lr}^			@ get calling r1 - lr
 	.else
