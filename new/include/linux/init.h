@@ -169,7 +169,17 @@ extern bool initcall_debug;
  * and remove that completely, so the initcall sections have to be marked
  * as KEEP() in the linker script.
  */
+/*
+可以看到在驱动中对*_initcall的调用实际都是对__define_initcall的调用，按照id从0到7s共分了17种
 
+subsys_initcall(fbmem_init);
+    __define_initcall(fbmem_init, 4)
+
+static initcall_t __initcall_fbmem_init4
+__attribute__((__section__(".initcall4.init"))) = fbmem_init;
+
+定义一个initcall_t类型的变量__initcall_fbmem_init4 = fbmem_init，放在.initcall4.init段里
+*/
 #define __define_initcall(fn, id) \
 	static initcall_t __initcall_##fn##id __used \
 	__attribute__((__section__(".initcall" #id ".init"))) = fn;

@@ -475,9 +475,9 @@ static int __disable_irq_nosync(unsigned int irq)
  */
 
 /*
-disable_irq_no sync与disable_irq的区别在于前者立即返回，而后者等待目前的中断处理完成。
+disable_irq_nosync与disable_irq的区别在于前者立即返回，而后者等待目前的中断处理完成。
 由于disable_irq会等待指定的中断被处理完，因此如果在n号中断的顶半部调用disable_irq(n)，会引起系统的死锁，
-这种情况下，只能调用disable_irq_nosync(n)。
+这种情况下，只能调用disable_irq_nosync。
 */
 void disable_irq_nosync(unsigned int irq)
 {
@@ -503,6 +503,11 @@ EXPORT_SYMBOL(disable_irq_nosync);
 这两个函数的区别是disable_irq函数只有在当前正在执行的所有处理程序完成后才会返回，
 而disable_irq_nosync函数会立即返回（不管当前是否还有没执行完的处理程序〉。
 disable_irq 函数就是依靠disable_irq_nosync 和synchronize_irq 函数共同来实现的
+
+由于在disable_irq中会调用synchronize_irq函数等待中断返回, 
+进入中断处理函数前IRQ_INPROGRESS会被__setup_irq设置, 
+synchronize_irq->__synchronize_hardirq->irqd_irq_inprogress 会一直为true。
+所以程序会一直陷在while循环中, 而此时内核已经被独占, 这就导致系统死掉.
 */
 void disable_irq(unsigned int irq)
 {
@@ -1482,7 +1487,17 @@ EXPORT_SYMBOL_GPL(setup_irq);
 如果是共享中断线，则判断此中断处理程序是否中断线上的最后一个中断处理程序， 
 是最后一个中断处理程序 -> 删除中断线和中断处理程序
 不是最后一个中断处理程序 -> 删除中断处理程序
+
+如果中断线不是共享的。free_irq函数会在注销dev 指定的中断处理函数的同时释放这条中断线
+（其他的内核程序就可以再次请求该中断线了）。
+如果中断线是共享的，free_irq函数只会注销dev 指定的中断处理函数。
+除非该中断处理函数是中断线上的最后一个中断处理函数，否则free_irq函数不会释放这条中断线。
+
+由此可见dev 参数的重要性。对于共享中断线， dev 是唯一可以区分中断线中不同中断处理函数的标识。
+不管中断线是否共享，只要dev 是非空值，就必须与一个中断处理函数对应。
+而free_irq函数必须从中断上下文调用。
 */
+
 static struct irqaction *__free_irq(unsigned int irq, void *dev_id)
 {
 	struct irq_desc *desc = irq_to_desc(irq);
@@ -1604,16 +1619,6 @@ EXPORT_SYMBOL_GPL(remove_irq);
  *
  *	This function must not be called from interrupt context.
  */
- /*
-如果中断线不是共享的。free_irq函数会在注销dev 指定的中断处理函数的同时释放这条中断线
-（其他的内核程序就可以再次请求该中断线了）。
-如果中断线是共享的，free_irq函数只会注销dev 指定的中断处理函数。
-除非该中断处理函数是中断线上的最后一个中断处理函数，否则free_irq函数不会释放这条中断线。
-
-由此可见dev 参数的重要性。对于共享中断线， dev 是唯一可以区分中断线中不同中断处理函数的标识。
-不管中断线是否共享，只要dev 是非空值，就必须与一个中断处理函数对应。
-而free_irq函数必须从中断上下文调用。
-*/
 void free_irq(unsigned int irq, void *dev_id)
 {
 	struct irq_desc *desc = irq_to_desc(irq);
@@ -1695,7 +1700,7 @@ request_threaded_irq 多了一个参数thread_fn。用这个API 申请中断的�
 参数handler 对应的函数执行于中断上下文， thread fn 参数对应的函数则执行于内核线程。
 如果handler 结束的时候，返回值是IRQ_WAKE_THREAD ，内核会调度对应线程执行thread fn 对应的函数。
 
-request_ threaded_ irq 和devm_request_ threaded_ irq 支持在irqflags 中设置IRQF_ONESHOT标记，
+request_threaded_irq 和devm_request_threaded_irq 支持在irqflags 中设置IRQF_ONESHOT标记，
 这样内核会自动帮助我们在中断上下文中屏蔽对应的中断号，而在内核调度thread fn 执行后，重新使能该中断号。
 对于我们无法在上半部清除中断的情况， IRQF_ ONESHOT 特别有用，避免了中断服务程序一退出，中断就洪泛的情况。
 

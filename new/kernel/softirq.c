@@ -243,8 +243,11 @@ static inline void lockdep_softirq_end(bool in_hardirq)
 static inline bool lockdep_softirq_start(void) { return false; }
 static inline void lockdep_softirq_end(bool in_hardirq) { }
 #endif
-/*函数的核心思想是:从CPU本地的_softirq_pending的最低位开始,依次往高位扫描,如果发现某位为1,说明对应该位有个等待中的softirq需要处理,那么就调用soft_vec数组中对应项的action函数,这个过程会一直持续下去,知道__softirq_pending为0*/
-
+/*
+函数的核心思想是:从CPU本地的_softirq_pending的最低位开始,
+依次往高位扫描,如果发现某位为1,说明对应该位有个等待中的softirq需要处理,
+那么就调用soft_vec数组中对应项的action函数,这个过程会一直持续下去,知道__softirq_pending为0
+*/
 asmlinkage __visible void __softirq_entry __do_softirq(void)
 {
 	unsigned long end = jiffies + MAX_SOFTIRQ_TIME;
@@ -308,13 +311,20 @@ restart:
 	rcu_bh_qs();
 	local_irq_disable();
 
+/* 
+历完成后，会再次获取__softirq_pending，如果在遍历softirq_vec期间又产生了softirq，
+__do_softirq会跳转到restart再次遍历处理softirq。
+*/
 	pending = local_softirq_pending();
 	if (pending) {
+	    // 最多执行 MAX_SOFTIRQ_RESTART（10） 次
+	    // 最多执行 MAX_SOFTIRQ_TIME 2ms
+	    // 上次的softirq中没有设定TIF_NEED_RESCHED，也就是说没有有高优先级任务需要调度
 		if (time_before(jiffies, end) && !need_resched() &&
 		    --max_restart)
 			goto restart;
 
-        // 唤醒softirqd 线程
+        // 如果还有softirq的pending，则唤醒ksoftirqd内核线程来处理剩余的softirq
 		wakeup_softirqd();
 	}
 
@@ -355,7 +365,11 @@ asmlinkage __visible void do_softirq(void)
 /*
  * Enter an interrupt context.
  */
-/*HARDIRQ部分的开始,告诉系统进入冲断处理的上半部分，与irq_enter对应的是irq_exit,irq_enter会更新系统中的一些统计量，同时会把当前栈中的preemtp_count变量加上HARDIRQ_OFFSET来标识一个HARDIRQ中上下文*/
+/*
+HARDIRQ部分的开始,告诉系统进入冲断处理的上半部分，
+与irq_enter对应的是irq_exit,irq_enter会更新系统中的一些统计量，
+同时会把当前栈中的preemtp_count变量加上HARDIRQ_OFFSET来标识一个HARDIRQ中上下文
+*/
 void irq_enter(void)
 {
 	rcu_irq_enter();
@@ -425,6 +439,7 @@ void irq_exit(void)
 
 	account_irq_exit_time(current);
 	preempt_count_sub(HARDIRQ_OFFSET);
+	/* 检查__softirq_pending是否有置位，有则invoke_softirq调用do_softirq */
 	if (!in_interrupt() && local_softirq_pending())
 		invoke_softirq();
 
@@ -473,6 +488,7 @@ void raise_softirq(unsigned int nr)
 void __raise_softirq_irqoff(unsigned int nr)
 {
 	trace_softirq_raise(nr);
+	/* 触发softirq都是调用or_softirq_pending，将内核变量__softirq_pending的nr位置位 */
 	or_softirq_pending(1UL << nr);
 }
 /*注册软中断处理程序*/

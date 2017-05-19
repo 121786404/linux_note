@@ -58,8 +58,21 @@
 /* preempt_count() and related functions, depends on PREEMPT_NEED_RESCHED */
 #include <asm/preempt.h>
 
+/*
+top half的处理是被irq_enter()和irq_exit()所包围，
+在irq_enter函数中会调用preempt_count_add(HARDIRQ_OFFSET)，为hardirq count的bit field增加1。
+在irq_exit函数中，会调用preempt_count_sub(HARDIRQ_OFFSET)，为hardirq count的bit field减去1。
+因此，只要in_irq非零，则说明在中断上下文并且处于top half部分。
+*/
 #define hardirq_count()	(preempt_count() & HARDIRQ_MASK)
 #define softirq_count()	(preempt_count() & SOFTIRQ_MASK)
+
+/* 
+HARDIRQ_MASK定义了hard interrupt contxt，
+NMI_MASK定义了NMI（对于ARM是FIQ）类型的hard interrupt context，
+SOFTIRQ_MASK包括software interrupt context加上禁止softirq情况下的进程上下文。
+因此，in_interrupt()除了包括了中断上下文的场景，还包括了进程上下文禁止softirq的场景
+*/
 #define irq_count()	(preempt_count() & (HARDIRQ_MASK | SOFTIRQ_MASK \
 				 | NMI_MASK))
 

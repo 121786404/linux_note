@@ -342,6 +342,35 @@ static inline unsigned int work_static(struct work_struct *work) { return 0; }
  * Documentation/core-api/workqueue.rst.
  */
 enum {
+    /*
+    在kernel中，有两种线程池，一种是线程池是per cpu的，也就是说，系统中有多少个cpu，就会创建多少个线程池，
+    cpu x上的线程池创建的worker线程也只会运行在cpu x上。
+    另外一种是unbound thread pool，该线程池创建的worker线程可以调度到任意的cpu上去。
+    由于cache locality的原因，per cpu的线程池的性能会好一些，但是对power saving有一些影响。
+    设计往往如此，workqueue需要在performance和power saving之间平衡，想要更好的性能，
+    那么最好让一个cpu上的worker thread来处理work，这样的话，cache命中率会比较高，性能会更好。
+    
+    但是，从电源管理的角度来看，最好的策略是让idle状态的cpu尽可能的保持idle，
+    而不是反复idle，working，idle again。
+    
+    我们来一个例子辅助理解上面的内容。在t1时刻，work被调度到CPU A上执行，t2时刻work执行完毕，
+    CPU A进入idle，t3时刻有一个新的work需要处理，这时候调度work到那个CPU会好些呢？
+    是处于working状态的CPU B还是处于idle状态的CPU A呢？如果调度到CPU A上运行，那么，
+    由于之前处理过work，其cache内容新鲜热辣，处理起work当然是得心应手，速度很快，
+    但是，这需要将CPU A从idle状态中唤醒。选择CPU B呢就不存在将CPU 从idle状态唤醒，
+    从而获取power saving方面的好处。
+    
+    了解了上面的基础内容之后，我们再来检视per cpu thread pool和unbound thread pool。
+    当workqueue收到一个要处理的work，如果该workqueue是unbound类型的话，
+    那么该work由unbound thread pool处理并把调度该work去哪一个CPU执行这样的策略交给系统的调度器模块来完成，
+    对于scheduler而言，它会考虑CPU core的idle状态，从而尽可能的让CPU保持在idle状态，从而节省了功耗。
+    
+    因此，如果一个workqueue有WQ_UNBOUND这样的flag，则说明该workqueue上挂入的work处理是考虑到power saving的。
+    如果workqueue没有WQ_UNBOUND flag，则说明该workqueue是per cpu的，这时候，
+    调度哪一个CPU core运行worker thread来处理work已经不是scheduler可以控制的了，这样，也就间接影响了功耗。
+
+    如果没有标记WQ_UNBOUND，那么缺省workqueue会创建per cpu thread pool来处理work
+    */
 	WQ_UNBOUND		= 1 << 1, /* not bound to any cpu */
 	WQ_FREEZABLE		= 1 << 2, /* freeze during suspend */
 	WQ_MEM_RECLAIM		= 1 << 3, /* may be used for memory reclaim */
@@ -373,6 +402,11 @@ enum {
 	 * performance disadvantage.
 	 *
 	 * http://thread.gmane.org/gmane.linux.kernel/1480396
+	 */
+	 /*
+     各个workqueue需要通过WQ_POWER_EFFICIENT来标记自己在功耗方面的属性
+     使用workqueue的用户知道自己在电源管理方面的特点，如果该workqueue在unbound的时候会极大的降低功耗，
+     那么就需要加上WQ_POWER_EFFICIENT的标记。
 	 */
 	WQ_POWER_EFFICIENT	= 1 << 7,
 

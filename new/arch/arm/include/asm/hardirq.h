@@ -8,7 +8,7 @@
 #define NR_IPI	7
 
 typedef struct {
-	unsigned int __softirq_pending;
+	unsigned int __softirq_pending; // 软中断状态变量
 #ifdef CONFIG_SMP
 	unsigned int ipi_irqs[NR_IPI];
 #endif

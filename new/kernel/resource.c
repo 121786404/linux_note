@@ -233,12 +233,33 @@ static struct resource * __request_resource(struct resource *root, struct resour
 
 	//待申请的空间确实位于空间内。
 	p = &root->child;
+	//root下的第一个链表元素*p.[child链表是以I/O资源物理地址从低到高的顺序排列的]
 	for (;;) {//遍历所有子节点
 		tmp = *p;
 		//找到合适的区间，将它插入到子节点链表中
 		if (!tmp || tmp->start > end) {
 			new->sibling = tmp;
 			*p = new;
+			/*
+			可以从root->child=null开始我们的分析考虑,此时tmp=null,那么第一个申请将以!tmp条件满足而进入
+            这时root->child的值为new指针,new->sibling = tmp = null;当第二次申请发生时:如果tmp->start > end成立,
+            那么,root->child的值为new指针,new->sibling = tmp;这样就链接上了，空间分布图如:
+            child=[start,end]-->[tmp->start,tmp->end](1);
+            如果条件tmp->start > end不成立，那么只能是!tmp条件进入
+            那么,root->child的值不变,tmp->sibling = new;new->sibling = tmp = null这样就链接上了，空间分布图如:
+            child=[child->start,child->end]-->[start,end](2);
+            当第三次申请发生时:如果start在(2)中的[child->end,end]之间,那么tmp->end < start将成立,继而continue,
+            此时tmp = (2)中的[start,end],因为tmp->start < end,所以继续执行p = &tmp->slibing = null,
+            因为tmp->end > start,所以资源冲突,返回(2)中的[start,end]域
+            综上的两个边界值情况和一个中间值情况的分析,可以知道代码实现了一个从地地址到高地址的顺序链表
+            模型图:childe=[a,b]-->[c,d]-->[e,f],此时有一个[x,y]需要插入进去,tmp作为sibling指针游动
+            tmp指向child=[a,b],
+            tmp指向[a,b],当tmp->start>y时,插入后的链接图为:child=[x,y]-->[a,b]-->[c,d]-->[e,f]-->null;当tmp->end>=x时,冲突返回tmp
+            tmp指向[c,d],当tmp->start>y时,插入后的链接图为:child=[a,b]-->[x,y]-->[c,d]-->[e,f]-->null;当tmp->end>=x时,冲突返回tmp
+            tmp指向[e,f],当tmp->start>y时,插入后的链接图为:child=[a,b]-->[c,d]-->[x,y]-->[e,f]-->null;当tmp->end>=x时,冲突返回tmp
+            tmp指向null                  ,插入后的链接图为:child=[a,b]-->[c,d]-->[e,f]-->[x,y]-->null;
+            顺利的达到了检测冲突,顺序链接的目的
+            */
 			new->parent = root;
 			return NULL;
 		}
@@ -1133,6 +1154,10 @@ static DECLARE_WAIT_QUEUE_HEAD(muxed_resource_wait);
  * @name: reserving caller's ID string
  * @flags: IO resource flags
  */
+ /*
+检查是否可以安全占用起始物理地址start之后的连续n字节大小空间
+__request_region函数并没有做实际性的映射工作，只是告诉内核要使用一块内存地址，声明占有，也方便内核管理这些资源
+*/
 struct resource * __request_region(struct resource *parent,
 				   resource_size_t start, resource_size_t n,
 				   const char *name, int flags)
@@ -1157,8 +1182,9 @@ struct resource * __request_region(struct resource *parent,
 		res->desc = parent->desc;
 
 		conflict = __request_resource(parent, res);
+		//sibling parent下的所有单元,检测申请部分是否存在交叠冲突
 		if (!conflict)
-			break;
+			break; //conflict=0;申请成功,正常安置了[start,end]到相应位置
 		if (conflict != parent) {
 			if (!(conflict->flags & IORESOURCE_BUSY)) {
 				parent = conflict;
@@ -1176,6 +1202,7 @@ struct resource * __request_region(struct resource *parent,
 		}
 		/* Uhhuh, that didn't work out.. */
 		free_resource(res);
+		 //检测到了资源交叠冲突,kfree归还kmalloc申请的内存
 		res = NULL;
 		break;
 	}

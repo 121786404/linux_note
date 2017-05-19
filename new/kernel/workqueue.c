@@ -274,7 +274,9 @@ struct workqueue_struct {
 
 	/* hot fields used during command issue, aligned to cacheline */
 	unsigned int		flags ____cacheline_aligned; /* WQ: WQ_* flags */
+	/* 指向per cpu的pool workqueue */
 	struct pool_workqueue __percpu *cpu_pwqs; /* I: per-cpu pwqs */
+	/* 指向per node的pool workqueue */
 	struct pool_workqueue __rcu *numa_pwq_tbl[]; /* PWR: unbound pwqs indexed by node */
 };
 
@@ -3942,6 +3944,10 @@ struct workqueue_struct *__alloc_workqueue_key(const char *fmt,
 	struct pool_workqueue *pwq;
 
 	/* see the comment above the definition of WQ_POWER_EFFICIENT */
+    /*
+    如果wq_power_efficient设定为true，那么WQ_POWER_EFFICIENT的标记的workqueue就会强制按照unbound workqueue来处理，
+    即使没有标记WQ_UNBOUND。
+    */
 	if ((flags & WQ_POWER_EFFICIENT) && wq_power_efficient)
 		flags |= WQ_UNBOUND;
 

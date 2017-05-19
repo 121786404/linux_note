@@ -1143,16 +1143,17 @@ __kuser_helper_end:
  * SP points to a minimal amount of processor-private memory, the address
  * of which is copied into r0 for the mode specific abort handler.
  */
-/**
- * correction是异常地址与返回地址之间的修正量。
+/*
+  * 生成通用中断、异常处理代码的宏。
+  * correction用于调整lr的值。这是因为进入异常时，pc指针是发生异常时的指针后面8个字节或者12个字节处。
+  * 不同的异常需要跳转到不同的返回地址。有的需要重新执行指令，有的则需要跳到下一条指令处。
  */
 	.macro	vector_stub, name, mode, correction=0
+	/* 将异常入口强制进行32字节对齐，32字节是一个缓存行的大小。这应当是出于性能的考虑。 */
 	.align	5
 
 vector_\name:
-/**
- * 调整返回值
- */
+	/* 需要调整返回值，则递减lr寄存器 */
 	.if \correction
 	sub	lr, lr, #\correction
 	.endif
@@ -1161,14 +1162,18 @@ vector_\name:
 	@ Save r0, lr_<exception> (parent PC) and spsr_<exception>
 	@ (parent CPSR)
 	@
-/**
- * 保存r0,lr,和spsr
- * 注意堆栈空间只有几个字节，以后应该会再切换堆栈的。
- */
+
+ 	/**
+     * 将r0,lr保存到堆栈中。这里并没有移动堆栈指针。
+     * 这是因为:每种处理器模式都有自己的堆栈。接下来系统会切换到svc模式，将堆栈切换到每个任务的系统堆栈去。
+     * 执行后，[sp] = r0, [sp+4]=lr，这里保存r0和lr是因为后面要使用这两个寄存器，即这两个寄存器会被破坏。
+     * 请注意:中断和异常并不会保存所有寄存器。
+     */
 	stmia	sp, {r0, lr}		@ save r0, lr
-/**
- * 后四位应该是异常时CPU所处的模式
- */
+	/**
+     * spsr是异常发生前的状态寄存器，退出异常后，需要根据它恢复现场，因此需要将它保存起来。
+     * 首先将它装载到lr寄存器，再将它存储到[sp+8]处。
+    */
 	mrs	lr, spsr
 	str	lr, [sp, #8]		@ save spsr
 
@@ -1177,7 +1182,7 @@ vector_\name:
 	@
 /**
  * 仍然禁用中断。
- * 准备进入SVC模式。
+ * 准备将处理器模式设置为SVC32模式。这样，当前堆栈也会切换到SVC32模式下的堆栈。
  */
 	mrs	r0, cpsr
 	eor	r0, r0, #(\mode ^ SVC_MODE | PSR_ISETSTATE)
@@ -1186,10 +1191,9 @@ vector_\name:
 	@
 	@ the branch table must immediately follow this code
 	@
-/**
- * 异常时CPU所处的模式
- */
+	/* lr中保存了异常前的状态，与0x0f and后，可以得到异常前的处理器模式 */
 	and	lr, lr, #0x0f
+	/* 1f就是宏生成的代码后面的跳转表，这里根据异常前的处理器模式，决定跳转到哪一个处理代码 */
  THUMB(	adr	r0, 1f			)
  THUMB(	ldr	lr, [r0, lr, lsl #2]	)
 	mov	r0, sp
@@ -1214,8 +1218,8 @@ ENDPROC(vector_\name)
 	.word	vector_swi
 
 vector_rst:
- ARM(	swi	SYS_ERROR0	)
- THUMB(	svc	#0		)
+ ARM(	swi	SYS_ERROR0	) /* reset异常，简单的调用SYS_ERROR0系统调用即可 */
+ THUMB(	svc	#0		) /* 应该不会运行到这里，呵呵，这仅仅是我的猜想 */
  THUMB(	nop			)
 	b	vector_und
 
@@ -1362,14 +1366,18 @@ vector_addrexcptn:
  * 这些代码由vector_stub生成
  */
 .L__vectors_start:
-	W(b)	vector_rst
-	W(b)	vector_und
-	W(ldr)	pc, .L__vectors_start + 0x1000
-	W(b)	vector_pabt
-	W(b)	vector_dabt
-	W(b)	vector_addrexcptn
-	W(b)	vector_irq
-	W(b)	vector_fiq
+	W(b)	vector_rst /* reset异常 */
+	W(b)	vector_und /* 未定义指令 */
+	/*
+由于系统调用异常的代码编译在其他文件中，其入口地址与异常向量相隔较远，使用b指令无法跳转过去。 
+因此将其地址存放到LCvswi中，并从内存地址中加载其入口地址。这样，系统调用的速度稍微慢一点
+	*/
+	W(ldr)	pc, .L__vectors_start + 0x1000 /* 系统调用 */
+	W(b)	vector_pabt /* 指令预取异常 */
+	W(b)	vector_dabt /* 数据访问中止异常 */
+	W(b)	vector_addrexcptn /* 保留 */
+	W(b)	vector_irq /* 中断 */
+	W(b)	vector_fiq /* 快速中断 */
 
 	.data
 
