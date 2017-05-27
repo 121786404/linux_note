@@ -279,11 +279,6 @@ static void create_kthread(struct kthread_create_info *create)
 	current->pref_node_fork = create->node;
 #endif
 	/* We want our own signal handler (we take no signals by default). */
-	/*
-    调用首先构造一个假的上下文执行环境，最后调用 do_fork()
-    返回进程 id, 创建后的线程执行 kthread 函数
-    任何一个内核线程入口都是 kthread
-    */
 	pid = kernel_thread(kthread, create, CLONE_FS | CLONE_FILES | SIGCHLD);
 	if (pid < 0) {
 		/* If user was SIGKILLed, I release the structure. */

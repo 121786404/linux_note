@@ -80,6 +80,9 @@ static void __unhash_process(struct task_struct *p, bool group_dead)
 /*
  * This function expects the tasklist_lock write-locked.
  */
+/*
+释放目前僵死进程所使用的所有剩余资源，并进行最终统计和记录。
+*/
 static void __exit_signal(struct task_struct *tsk)
 {
 	struct signal_struct *sig = tsk->signal;
@@ -205,6 +208,9 @@ repeat:
 		 * exited already, and the leader's parent ignores SIGCHLD,
 		 * then we are the one who should release the leader.
 		 */
+		/*
+        如果这个进程是线程组最后一个进程，并且领头进程已经死掉，通知僵死的领头进程的父进程。
+		*/
 		zap_leader = do_notify_parent(leader, leader->exit_signal);
 		if (zap_leader)
 			leader->exit_state = EXIT_DEAD;

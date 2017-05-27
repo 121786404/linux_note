@@ -8,20 +8,17 @@
 /* 共享内存描述符和所有页面*/
 #define CLONE_VM	0x00000100	/* set if VM shared between processes */
 /*
-CLONE_FS flag是用来控制父子进程是否共享文件系统信息
-（例如文件系统的root、当前工作目录等），
+CLONE_FS 父子进程共享文件系统信息，（例如文件系统的root、当前工作目录等），
 如果设定了该flag，那么父子进程共享文件系统信息，
-如 果不设定该flag，那么子进程则copy父进程的文件系统信息，
-之后，子进程调用chroot，chdir，umask来改变文件系统信息将不会影响到 父进程
+如果不设定该flag，那么子进程则copy父进程的文件系统信息，
+之后，子进程调用chroot，chdir，umask来改变文件系统信息将不会影响到父进程
 */
 #define CLONE_FS	0x00000200	/* set if fs info shared between processes */
 /*
-子进程与父进程共享相同的文件描述符（file descriptor）表
+子进程与父进程共享相同的文件描述符（file descriptor）表,即共享打开的文件
 */
 #define CLONE_FILES	0x00000400	/* set if open files shared between processes */
-/* 如果设定CLONE_SIGHAND这个flag，
-则表示创建的子进程与父进程共享相同的信号处理（signal handler）表 
-必须同时设置CLONE_VM标志*/
+/* 表示创建的子进程与父进程共享相同的信号处理（signal handler）表 ，必须同时设置CLONE_VM标志*/
 #define CLONE_SIGHAND	0x00000800	/* set if signal handlers and blocked signals shared */
 /* 如果父进程被追踪，那么子进程也被追踪*/
 #define CLONE_PTRACE	0x00002000	/* set if we want to let tracing continue on the child too */
@@ -58,7 +55,11 @@ mount Namespace为进程提供了一个文件层次视图。
 该flag配合pivot_root系统调用，可以为进程创建一个独立的目录空间
 */
 #define CLONE_NEWNS	0x00020000	/* New mount namespace group */
+/* 父子进程共享system V SEM_UNDO 语义*/
 #define CLONE_SYSVSEM	0x00040000	/* share system V SEM_UNDO semantics */
+/*
+为子进程创建新的TLS
+*/
 #define CLONE_SETTLS	0x00080000	/* create a new TLS for the child */
 #define CLONE_PARENT_SETTID	0x00100000	/* set the TID in the parent */
 #define CLONE_CHILD_CLEARTID	0x00200000	/* clear the TID in the child */
@@ -68,6 +69,7 @@ mount Namespace为进程提供了一个文件层次视图。
 那么该进程则不能被trace。
 */
 #define CLONE_UNTRACED		0x00800000	/* set if the tracing process can't force CLONE_PTRACE on this clone */
+/* 将TID 回写至用户空间 */
 #define CLONE_CHILD_SETTID	0x01000000	/* set the TID in the child */
 
 /*
@@ -168,10 +170,10 @@ PID Namespace是层次性，新创建的Namespace将会是创建该Namespace的�
 调度器将其放到队列末尾，这样每个实时进程都可以执行一段时间。
 适用于每次运行时间比较长的实时进程
 
-轮流调度算法（实时调度策略），后 者提供 Roound-Robin 语义，
+轮流调度算法（实时调度策略），后者提供 Roound-Robin 语义，
 采用时间片，相同优先级的任务当用完时间片会被放到队列尾部，
 以保证公平性，同样，高优先级的任务可以抢占低优先级的任务。
-不同要求的实时任务可以根据需要用sched_setscheduler()API 设置策略
+不同要求的实时任务可以根据需要用sched_setscheduler设置策略
 */
 #define SCHED_RR		2
 /* 

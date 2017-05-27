@@ -3273,6 +3273,7 @@ static inline void schedule_debug(struct task_struct *prev)
 /*
  * Pick up the highest-prio task:
  */
+ // 以优先级为序，选择最高优先级的进程
 static inline struct task_struct *
 pick_next_task(struct rq *rq, struct task_struct *prev, struct rq_flags *rf)
 {
@@ -3283,6 +3284,7 @@ pick_next_task(struct rq *rq, struct task_struct *prev, struct rq_flags *rf)
 	 * Optimization: we know that if all tasks are in
 	 * the fair class we can call that function directly:
 	 */
+	 // 我们知道如果所有任务都在公平类中，那么我们就可以直接调用那个函数
 	if (likely(rq->nr_running == rq->cfs.h_nr_running)) {
 		p = fair_sched_class.pick_next_task(rq, prev, rf);
 		if (unlikely(p == RETRY_TASK))
@@ -3296,6 +3298,7 @@ pick_next_task(struct rq *rq, struct task_struct *prev, struct rq_flags *rf)
 	}
 
 again:
+    /*从最高优先级类开始遍历每个调度器类，从第一个非NULL值的类中选择下一个可运行进程*/ 
 	for_each_class(class) {
 		p = class->pick_next_task(rq, prev, rf);
 		if (p) {
@@ -3412,6 +3415,7 @@ static void __sched notrace __schedule(bool preempt)
 	if (task_on_rq_queued(prev))
 		update_rq_clock(rq);
 
+    // 挑选最高优先级的任务
 	next = pick_next_task(rq, prev, &rf);
 	clear_tsk_need_resched(prev);
 	clear_preempt_need_resched();

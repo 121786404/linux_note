@@ -82,9 +82,19 @@
 
 #define __always_inline	inline __attribute__((always_inline))
 #define  noinline	__attribute__((noinline))
-
+/*
+函数标记为deprecated，gcc在编译时会产生警告，提示尽快把这个函数移除。
+*/
 #define __deprecated	__attribute__((deprecated))
+/*
+__packed用于修饰struct，union，enum类型定义，使得修饰后的类型占用最少的内存空间。
+对于类型为enum时，会选择采用最小内存的int指针。
+*/
 #define __packed	__attribute__((packed))
+/*
+__weak修改符会将相应的声明的为弱符号，这经常会用在库函数里面，
+在库函数里面定义的弱函数可以在用户的应用的代码中的实现覆盖它。
+*/
 #define __weak		__attribute__((weak))
 #define __alias(symbol)	__attribute__((alias(#symbol)))
 
@@ -100,8 +110,14 @@
  * GCC 4.[56] currently fail to enforce this, so we must do so ourselves.
  * See GCC PR44290.
  */
+ /*
+ naked属性使编译器不产生函数的入口和出口，只编译函数体。
+ naked把应用程序控制器交给了用户，怎样保存函数的上下文都由用户决定
+*/
 #define __naked		__attribute__((naked)) noinline __noclone notrace
-
+/*
+noruten属性说明该函数不会返回
+*/
 #define __noreturn	__attribute__((noreturn))
 
 /*
@@ -114,11 +130,19 @@
  * would be.
  * [...]
  */
+ /*
+ pure属性修饰函数，说明该函数的输出完全依赖于函数的输入或全局的变量，
+ 这样的函数容易被通用的子表达式替换或优化成数学运算。
+ */
 #define __pure			__attribute__((pure))
+/*  aligend为内存对齐修饰符 */
 #define __aligned(x)		__attribute__((aligned(x)))
 #define __printf(a, b)		__attribute__((format(printf, a, b)))
 #define __scanf(a, b)		__attribute__((format(scanf, a, b)))
 #define __attribute_const__	__attribute__((__const__))
+/*
+__maybe_unused 修饰该函数可能不会被使用，gcc不会为这个函数产生警告。
+*/
 #define __maybe_unused		__attribute__((unused))
 #define __always_unused		__attribute__((unused))
 
@@ -147,6 +171,10 @@
 这确保调用者适当地检验函数结果，从而能够适当地处理错误。
 也就是说，调用者在拿到结果后必须要进行检查是否返回了正确的结构，
 否则编译器会给出提示信息
+*/
+
+/*
+__must_check宏的作用是告诉编译器当调用者调用这个函数时不使用返回结果产生一个告警。
 */
 #define __must_check		__attribute__((warn_unused_result))
 #define __malloc		__attribute__((__malloc__))
@@ -184,6 +212,10 @@
  * a special section, but I don't see any sense in this right now in
  * the kernel context
  */
+ /*
+ 作用是告诉编译器，这个函数可能不怎么用到，编译器会将这一类的函数放在速度低些的
+ 某个子section里面，而把非__cold函数放在速度比较优的section里。
+*/
 #define __cold			__attribute__((__cold__))
 
 #define __UNIQUE_ID(prefix) __PASTE(__PASTE(__UNIQUE_ID_, prefix), __COUNTER__)

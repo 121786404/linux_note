@@ -1,30 +1,42 @@
 #ifndef __LINUX_COMPILER_H
 #define __LINUX_COMPILER_H
 
+/* 
+这个宏通过在编译器中用-D选项中加入，参数AFLAGS也包含该宏定义。
+在汇编时编译器会定义__ASSEMBLY__为1。
+*/
 #ifndef __ASSEMBLY__
 
 /*
     Documentation/sparse.txt
+    __CHECKER__宏在通过Sparse（Semantic Parser for C）工具对内核代码进行检查时会定义的。
+    在使用make C=1或C=2时便会调用该工具，这个工具可以检查在代码中声明了sparse所能检查到的相关属性的内核函数和变量
 */
 #ifdef __CHECKER__
 /*
-指针地址必须在用户地址空间
+__user特性用来修饰一个变量的地址，该变量必须是非解除参考(no dereference)即地址是有效的，
+并且变量所在的地址空间必须为1，这里为(address_space(1))，用户地址空间。
+sparse把地址空间分为3部分，
+0表示普通地址空间，对内核来说就是地址空间。
+1表示用户地址空间。
+2表示设备地址映射空间，即设备寄存器的地址空间。
 */
 # define __user		__attribute__((noderef, address_space(1)))
 /*
-指针地址必须在内核地址空间
+__kernel特性修饰变量为内核地址，为内核代码里面默认的地址空间。
 */
 # define __kernel	__attribute__((address_space(0)))
 /*
-变量可以为空
+__safe特性声明该变量为安全变量，这是为了避免在内核函数未对传入的参数进行校验就使用的情况下，
+会导致编译器对其报错或输出告警信息。        通过该特性说明该变量不可能为空。
 */
 # define __safe		__attribute__((safe))
 /*
-变量可以进行强制转换
+__force特性声明该变量是可以强制类型转换的。
 */
 # define __force	__attribute__((force))
 /*
-参数类型与实际参数类型必须一致
+__nocast声明该变量参数类型与实际参数类型要一致才可以。
 */
 # define __nocast	__attribute__((nocast))
 /*
@@ -33,23 +45,25 @@
 # define __iomem	__attribute__((noderef, address_space(2)))
 # define __must_hold(x)	__attribute__((context(x,1,1)))
 /*
-参数x 在执行前引用计数必须是0,执行后,引用计数必须为1
+__acquires为函数属性定义的修饰，表示函数内，该参数的引用计数值从1变为0。
 */
 # define __acquires(x)	__attribute__((context(x,0,1)))
 /*
-与 __acquires(x) 相反
+__releases与__acquires相反，这一对修饰符用于Sparse在静态代码检测时，检查调用的次数和匹配请求，
+经常用于检测lock的获取和释放。
 */
 # define __releases(x)	__attribute__((context(x,1,0)))
 /*
-参数x 的引用计数 + 1
+__acquire表示增加变量x的计数，增加量为1。
 */
 # define __acquire(x)	__context__(x,1)
 /*
-与 __acquire(x) 相反
+__release表示减少变量x的计数，减少量为1。这一对与上面的那一对是一样，只是这一对用在函数的执行过程中，
+都用于检查代码中出现不平衡的状况。
 */
 # define __release(x)	__context__(x,-1)
 /*
-参数c 不为0时,引用计数 + 1, 并返回1
+__cond_lock用于表示条件锁，当c这个值不为0时，计数值加1，并返回1。
 */
 # define __cond_lock(x,c)	((c) ? ({ __acquire(x); 1; }) : 0)
 # define __percpu	__attribute__((noderef, address_space(3)))
@@ -59,6 +73,10 @@
 # define __rcu
 #endif /* CONFIG_SPARSE_RCU_POINTER */
 # define __private	__attribute__((noderef))
+/*
+__chk_user_ptr和__chk_io_ptr在这里只声明函数，没有函数体，
+目的就是在编译过程中Sparse能够捕捉到编译错误，检查参数的类型。
+*/
 extern void __chk_user_ptr(const volatile void __user *);
 extern void __chk_io_ptr(const volatile void __iomem *);
 # define ACCESS_PRIVATE(p, member) (*((typeof((p)->member) __force *) &(p)->member))
@@ -98,6 +116,12 @@ extern void __chk_io_ptr(const volatile void __iomem *);
 #include <linux/compiler-gcc.h>
 #endif
 
+/*
+宏notrace的定义，这个宏用于修饰函数，说明该函数不被跟踪。
+这里所说的跟踪是gcc一个很重要的特性，只要在编译时打开相关的跟踪选择，编译器会加入一些特性，
+使得程序在执行完后，可以通过工具（如Graphviz）来查看函数的调用过程。
+而对于内核来说，内部采用了ftrace机制，而不采用trace的特性。
+*/
 #if defined(CC_USING_HOTPATCH) && !defined(__CHECKER__)
 #define notrace __attribute__((hotpatch(0,0)))
 #else
@@ -151,10 +175,20 @@ void ftrace_likely_update(struct ftrace_branch_data *f, int val, int expect);
 /*
 __builtin_expect 用于为编译器提供分支预测信息，
 其返回值是整数表达式EXP 的值，C 的值必须是编译时常数
+
+likely_notrace和unlikely_notrace宏使用__builtin_expect函数，
+__builtin_expect告诉编译器程序设计者期望的比较结果，以便编译器对代码进行优化，
+改变汇编代码中的判断跳转语句
 */
 #define likely_notrace(x)	__builtin_expect(!!(x), 1)
 #define unlikely_notrace(x)	__builtin_expect(!!(x), 0)
+/*
+struct ftrace_branch_data结构体用于记录ftrace branch的trace记录
 
+__branch_check__宏，记录当前trace点，并利用ftrace_likely_update记录likely判断的正确性，
+并将结果保存在ring buffer中，之后用户可以通过ftrace的debugfs接口读取分支预测的相关信息。
+从而优调整代码，优化性能。
+*/
 #define __branch_check__(x, expect) ({					\
 			int ______r;					\
 			static struct ftrace_branch_data		\
@@ -175,6 +209,10 @@ __builtin_expect 用于为编译器提供分支预测信息，
  * value is always the same.  This idea is taken from a similar patch
  * written by Daniel Walker.
  */
+/*
+ __builtin_constant_p也是GCC的内置函数，函数原型为int  __builtin_constant_p(exp)，
+ 用于判断表达式exp在编译时是否是一个常量，如果是则函数的值为整数1，否则为0
+*/
 # ifndef likely
 #  define likely(x)	(__builtin_constant_p(x) ? !!(x) : __branch_check__(x, 1))
 # endif

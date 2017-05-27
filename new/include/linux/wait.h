@@ -175,6 +175,7 @@ extern void add_wait_queue(wait_queue_head_t *q, wait_queue_t *wait);
 extern void add_wait_queue_exclusive(wait_queue_head_t *q, wait_queue_t *wait);
 extern void remove_wait_queue(wait_queue_head_t *q, wait_queue_t *wait);
 
+//将指定的等待队列项new添加到等待队列头head所在的链表头部，该函数假设已经获得锁
 static inline void __add_wait_queue(wait_queue_head_t *head, wait_queue_t *new)
 {
 	list_add(&new->task_list, &head->task_list);
@@ -190,6 +191,8 @@ __add_wait_queue_exclusive(wait_queue_head_t *q, wait_queue_t *wait)
 	__add_wait_queue(q, wait);
 }
 
+//将指定的等待队列项new添加到等待队列头head所在的链表尾部，该函数假设已经获得锁。
+//其实因为队列是个环形队列，所以head是头，head的前一个就可以认为是尾，当然，环形也无所谓头尾了。
 static inline void __add_wait_queue_tail(wait_queue_head_t *head,
 					 wait_queue_t *new)
 {

@@ -61,6 +61,8 @@ struct thread_info {
 	unsigned long		flags;		/* low level flags */
 /*
 	内核抢占计数器
+	该计数器初始值为O. 每当使用锁的时候数值加1.释放锁的时候数值减1 。
+	当数值为0    的时候，内核就可执行抢占。
 */
 	int			preempt_count;	/* 0 => preemptable, <0 => bug */
 /*
