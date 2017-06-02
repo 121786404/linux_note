@@ -208,6 +208,8 @@ extern void cleanup_module(void);
 
 #ifdef MODULE
 /* Creates an alias so file2alias.c can find device table. */
+/* 对于 USB、PCI 等设备驱动，通常会创建一个 MODULE_DEVICE_TABLE，
+设备表*/
 #define MODULE_DEVICE_TABLE(type, name)					\
 extern const typeof(name) __mod_##type##__##name##_device_table		\
   __attribute__ ((unused, alias(__stringify(name))))
@@ -275,8 +277,11 @@ struct module_use {
 };
 
 enum module_state {
+    /* 正常运行 */
 	MODULE_STATE_LIVE,	/* Normal state. */
+	/* 装载期间 */
 	MODULE_STATE_COMING,	/* Full formed, running module_init. */
+	/* 正在移除 */
 	MODULE_STATE_GOING,	/* Going away. */
 	MODULE_STATE_UNFORMED,	/* Still setting it up. */
 };
@@ -311,6 +316,7 @@ struct module_layout {
 #endif
 
 struct mod_kallsyms {
+    /* kallsyms的符号表和字符串表*/
 	Elf_Sym *symtab;
 	unsigned int num_symtab;
 	char *strtab;
@@ -416,18 +422,22 @@ struct module {
 	struct mod_kallsyms core_kallsyms;
 
 	/* Section attributes */
+	/* 模块中各段的属性 */
 	struct module_sect_attrs *sect_attrs;
 
 	/* Notes attributes */
+	/* notes属性 */
 	struct module_notes_attrs *notes_attrs;
 #endif
 
 	/* The command line arguments (may be mangled).  People like
 	   keeping pointers to this stuff */
+	/* 命令行参数（可能已经改编过）。人们喜欢保留指向该数据的指针 */
 	char *args;
 
 #ifdef CONFIG_SMP
 	/* Per-cpu data. */
+	/* pet-CPU数据 */
 	void __percpu *percpu;
 	unsigned int percpu_size;
 #endif

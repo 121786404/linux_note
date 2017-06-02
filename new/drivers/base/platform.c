@@ -1147,7 +1147,7 @@ struct bus_type platform_bus_type = {
 };
 EXPORT_SYMBOL_GPL(platform_bus_type);
 
-/*总线注册函数*/
+/*platform总线注册函数*/
 int __init platform_bus_init(void)
 {
 	int error;

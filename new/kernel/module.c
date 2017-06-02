@@ -869,7 +869,11 @@ static void module_unload_free(struct module *mod)
 	}
 	mutex_unlock(&module_mutex);
 }
-
+/*
+CONFIG_MODULE_FORCE_UNLOAD允许模块从内核强制移除，即使仍然有引用该模块的地方，或其他模
+块正在使用其代码，也是如此。在系统正常运转时，绝不需要这种蛮干法，但它可能在开发
+系统期间用到。
+*/
 #ifdef CONFIG_MODULE_FORCE_UNLOAD
 static inline int try_force_unload(unsigned int flags)
 {
@@ -1290,7 +1294,7 @@ static int check_version(Elf_Shdr *sechdrs,
 			crcval = *crc;
 		if (versions[i].crc == crcval)
 			return 1;
-		pr_err("Found checksum %X vs module %lX\n",
+		pr_debug("Found checksum %X vs module %lX\n",
 			 crcval, versions[i].crc);
 		goto bad_version;
 	}
