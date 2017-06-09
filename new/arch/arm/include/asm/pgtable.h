@@ -61,6 +61,10 @@ VMALLOC_OFFSET 定义了8M的空洞，用于捕捉越界的内存访问。
 但它对开发尚未成熟的新内核特性是有用的。
 */
 #define VMALLOC_OFFSET		(8*1024*1024)
+/*
+VMALLOC_START和VMALLOC_END定义了vmalloc区域的开始和结束，
+该区域用于物理上不连续的内核映射
+*/
 #define VMALLOC_START		(((unsigned long)high_memory + VMALLOC_OFFSET) & ~(VMALLOC_OFFSET-1))
 #define VMALLOC_END		0xff800000UL
 
@@ -261,10 +265,12 @@ static inline pte_t *pmd_page_vaddr(pmd_t pmd)
 #define pfn_pte(pfn,prot)	__pte(__pfn_to_phys(pfn) | pgprot_val(prot))
 /*
 返回页表项 x 所引用页的描述符地址
+获得页表项描述的页对应的page实例地址
 */
 #define pte_page(pte)		pfn_to_page(pte_pfn(pte))
 /*
 接收页描述符地址 p 和一组访问权限 prot 作为参数，并创建相应的页表项 
+创建一个页表项。必须将page实例和所需的页访问权限作为参数传递
 */
 #define mk_pte(page,prot)	pfn_pte(page_to_pfn(page), prot)
 
@@ -275,12 +281,24 @@ static inline pte_t *pmd_page_vaddr(pmd_t pmd)
 #define pte_isclear(pte, val)	(!(pte_val(pte) & (val)))
 
 #define pte_none(pte)		(!pte_val(pte))
+/*
+检查页表项指向的页是否存在于内存中。例如，该函数可以用于检测一页是否已 经换出
+*/
 #define pte_present(pte)	(pte_isset((pte), L_PTE_PRESENT))
 #define pte_valid(pte)		(pte_isset((pte), L_PTE_VALID))
 #define pte_accessible(mm, pte)	(mm_tlb_flush_pending(mm) ? pte_present(pte) : pte_valid(pte))
+/*
+检查内核是否可以写入到页
+*/
 #define pte_write(pte)		(pte_isclear((pte), L_PTE_RDONLY))
+/*
+检查与页表项相关的页是否是脏的，即其内容在上次内核检查之后是否已经修改过。
+要注意，只有在pte_present确认了该页可用的情况下，才能调用该函数
+*/
 #define pte_dirty(pte)		(pte_isset((pte), L_PTE_DIRTY))
+/* 访问位（通常是_PAGE_ACCESS）设置了吗 */
 #define pte_young(pte)		(pte_isset((pte), L_PTE_YOUNG))
+/* 该页中的数据可以作为二进制代码执行吗 */
 #define pte_exec(pte)		(pte_isclear((pte), L_PTE_XN))
 
 #define pte_valid_user(pte)	\
@@ -319,12 +337,12 @@ static inline pte_t set_pte_bit(pte_t pte, pgprot_t prot)
 	pte_val(pte) |= pgprot_val(prot);
 	return pte;
 }
-//清除 Read/Write 标志
+// 清除该页的写权限
 static inline pte_t pte_wrprotect(pte_t pte)
 {
 	return set_pte_bit(pte, __pgprot(L_PTE_RDONLY));
 }
-// 设置 Read/Write 标志
+// 设置写权限
 static inline pte_t pte_mkwrite(pte_t pte)
 {
 	return clear_pte_bit(pte, __pgprot(L_PTE_RDONLY));
@@ -344,12 +362,12 @@ static inline pte_t pte_mkold(pte_t pte)
 {
 	return clear_pte_bit(pte, __pgprot(L_PTE_YOUNG));
 }
-// 设置 Accessed 标志（把此页标记为访问过）
+// 设置 Accessed 标志（把此页标记为访问过） 在大多数体系结构上是_PAGE_ACCESSED
 static inline pte_t pte_mkyoung(pte_t pte)
 {
 	return set_pte_bit(pte, __pgprot(L_PTE_YOUNG));
 }
-// 设置 User/Supervisor 标志
+// 设置 User/Supervisor 标志 允许执行页的内容
 static inline pte_t pte_mkexec(pte_t pte)
 {
 	return clear_pte_bit(pte, __pgprot(L_PTE_XN));

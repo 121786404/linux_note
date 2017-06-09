@@ -3,7 +3,7 @@
 
 #include <asm/kmap_types.h>
 /*
-PKMAP_BASE定义了其起始地址, 
+PKMAP_BASE定义了持久内核映射区域起始地址（这里是相对于固定映射区域进行计算的）。
 */
 #define PKMAP_BASE		(PAGE_OFFSET - PMD_SIZE)
 /*

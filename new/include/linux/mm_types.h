@@ -51,11 +51,9 @@ struct mem_cgroup;
 内核想要跟踪有多少地方映射了该页，
 为此，struct page中有一个计数器用于计算映射的数目。
 
-如果一页用于slab分配器，那么可以确保只有内核会使用该页，
-而不会有其它地方使用，因此映射计数信息就是多余的，
-因此内核可以重新解释该字段，
-用来表示该页被细分为多少个小的内存对象使用，
-联合体就很适用于该问题
+如果一页用于slab分配器，那么可以确保只有内核会使用该页，而不会有其它地方使用，
+因此映射计数信息就是多余的，因此内核可以重新解释该字段，
+用来表示该页被细分为多少个小的内存对象使用，联合体就很适用于该问题
 */
 struct page {
 	/* First double word block */
@@ -136,7 +134,7 @@ struct page {
 				 * See page-flags.h for more details.
 				 */
 /*  
-            被页表映射的次数，也就是说该page同时被多少个进程共享。
+            被页表映射的次数，也就是说该page同时被多少个进程共享。还用于限制逆向映射搜索
             初始值为-1，如果只被一个进程的页表映射了，该值为0. 
             如果该page处于伙伴系统中，该值为PAGE_BUDDY_MAPCOUNT_VALUE（-128），
             内核通过判断该值是否为PAGE_BUDDY_MAPCOUNT_VALUE来确定该page是否属于伙伴系统
@@ -212,6 +210,7 @@ lru：链表头，主要有3个用途：
 						 * when destroying via RCU
 						 */
 		/* Tail pages of compound page */
+		/* 内核可以将多个毗连的页合并为较大的复合页（compound page）*/
 		struct {
 			unsigned long compound_head; /* If bit zero is set */
 
@@ -246,7 +245,7 @@ lru：链表头，主要有3个用途：
 	union {
 	    /* 
         private私有数据指针, 由应用场景确定其具体的含义：
-        如果设置了PG_private标志，则private字段指向struct buffer_head
+        如果设置了PG_private标志，则private字段指向struct buffer_heads
         如果设置了PG_compound，则指向struct page
         如果设置了PG_swapcache标志，private存储了该page在交换分区中对应的位置信息swp_entry_t。
         如果_mapcount = PAGE_BUDDY_MAPCOUNT_VALUE，说明该page位于伙伴系统，private存储该伙伴的阶

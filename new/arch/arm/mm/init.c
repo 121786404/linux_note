@@ -133,7 +133,7 @@ void __init setup_dma_zone(const struct machine_desc *mdesc)
 	arm_dma_pfn_limit = arm_dma_limit >> PAGE_SHIFT;
 #endif
 }
-
+/* 初始化系统中所有结点的pgdat_t实例 */
 static void __init zone_sizes_init(unsigned long min, unsigned long max_low,
 	unsigned long max_high)
 {
@@ -498,7 +498,7 @@ static void __init free_highpages(void)
  * claimed their memory after the kernel image.
  */
 /**
- * 切换到伙伴系统了。
+ * 停用bootmem分配器并迁移到实际的内存管理函数(伙伴系统)
  */
 void __init mem_init(void)
 {

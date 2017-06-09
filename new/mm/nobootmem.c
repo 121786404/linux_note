@@ -37,10 +37,12 @@
 #endif
 
 #ifndef CONFIG_NEED_MULTIPLE_NODES
+/* 管理所有的系统内存 */
 struct pglist_data __refdata contig_page_data;
 EXPORT_SYMBOL(contig_page_data);
 #endif
 
+/* 物理内存数量小于896 MiB的系统上内存页的数目*/
 unsigned long max_low_pfn;
 unsigned long min_low_pfn;
 unsigned long max_pfn;

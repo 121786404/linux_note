@@ -10,7 +10,7 @@
  * us to conceptually access the pgd entry that this pud is folded into
  * without casting.
  */
-typedef struct { pgd_t pgd; } pud_t;
+typedef struct { pgd_t pgd; } pud_t; // 上层页目录项
 
 #define PUD_SHIFT	PGDIR_SHIFT
 #define PTRS_PER_PUD	1

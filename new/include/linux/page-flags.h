@@ -72,10 +72,13 @@
  * SPARSEMEM_EXTREME with !SPARSEMEM_VMEMMAP).
  */
 enum pageflags {
-/*页被锁定 */
+/*
+PG_locked指定了页是否锁定。如果该比特位置位，内核的其他部分不允许访问该页。
+这防止了内存管理出现竞态条件，例如，在从硬盘读取数据到页帧时
+*/
 	PG_locked,		/* Page is locked. Don't touch. */
 /*
-在传输过程中发生I/O错误
+如果在涉及该页的I/O操作期间发生错误，则PG_error置位
 */
 	PG_error,
 /*
@@ -89,10 +92,8 @@ enum pageflags {
 */
 	PG_uptodate,
 /*
-与后备存储器中的数据相比，该page的内容已经被修改. 
-出于性能能的考虑，页并不在每次改变后立即回写, 
-因此内核需要使用该标识来表明页面中的数据已经改变, 
-应该在稍后刷出
+与后备存储器中的数据相比，该page的内容已经被修改. 出于性能能的考虑，页并不在每次改变后立即回写, 
+因此内核需要使用该标识来表明页面中的数据已经改变,应该在稍后刷出
 */
 	PG_dirty,
 /*
@@ -126,7 +127,7 @@ private字段指向struct buffer_head
 	PG_private,		/* If pagecache, has fs-private data */
 	PG_private_2,		/* If pagecache, has fs aux data */
 /*
-page中的数据正在被回写到后备存储器
+页的内容处于向块设备回写的过程中
 */
 	PG_writeback,		/* Page is under writeback */
 	PG_head,		/* A head page */
@@ -135,7 +136,7 @@ page中的数据正在被回写到后备存储器
 */
 	PG_mappedtodisk,	/* Has blocks allocated on-disk */
 /*
-	为回收内存对页已经做了写入磁盘标记
+    在内核决定回收某个特定的页之后，需要设置PG_reclaim标志通知
 */
 	PG_reclaim,		/* To be reclaimed asap */
 	PG_swapbacked,		/* Page is backed by RAM/swap */
@@ -171,6 +172,7 @@ page中的数据正在被回写到后备存储器
 	/* SwapBacked */
 /*
 	页属于对换高速缓存
+	在这种情况下，private包含一个类型为swap_entry_t的项
 */
 	PG_swapcache = PG_owner_priv_1,	/* Swap page: swp_entry_t in private */
 

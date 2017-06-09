@@ -17,6 +17,7 @@
 #endif
 
 /* Places which use this should consider cpumask_var_t. */
+/* 该值并不是系统中实际存在的CPU数目，而是内核支持的CPU的最大数目*/
 #define NR_CPUS		CONFIG_NR_CPUS
 
 #define MIN_THREADS_LEFT_FOR_ROOT 4

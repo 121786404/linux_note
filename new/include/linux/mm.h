@@ -127,6 +127,10 @@ extern int overcommit_kbytes_handler(struct ctl_table *, int, void __user *,
 #define nth_page(page,n) pfn_to_page(page_to_pfn((page)) + (n))
 
 /* to align the pointer to the (next) page boundary */
+/*
+将该地址“舍入”到下一页的起始处
+为用好处理器的高速缓存资源，将地址对齐到页边界是很重要的。
+*/
 #define PAGE_ALIGN(addr) ALIGN(addr, PAGE_SIZE)
 
 /* test whether an address (unsigned long or pointer) is aligned to PAGE_SIZE */

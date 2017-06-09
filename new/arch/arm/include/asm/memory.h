@@ -167,7 +167,10 @@
  */
 
 #if defined(CONFIG_ARM_PATCH_PHYS_VIRT)
-
+/*
+Patch physical to virtual translations at runtime
+对物理-虚拟地址互相转换进行修改，根据内核在系统中的位置自动计算出相应地址
+*/
 /*
  * Constants used to force the right instruction encodings and shifts
  * so that all we need to do is modify the 8-bit constant field.
@@ -183,6 +186,14 @@ extern const void *__pv_table_begin, *__pv_table_end;
 #define PHYS_OFFSET	((phys_addr_t)__pv_phys_pfn_offset << PAGE_SHIFT)
 #define PHYS_PFN_OFFSET	(__pv_phys_pfn_offset)
 
+/*
+插入一条指令到当前文件中，由于__pv_stub这个宏是在代码中被调用的，
+所以这一条插入的指令是在当前.o文件的text段，这里还定义了标号1
+在当前.o文件的.text里插入一个名为.pv_table的段
+这个段的内容是个地址，这个地址指向的前面的标号1（1b表示backword 1，1f表示forword 1，
+1b就表示在本句之前找到标号1，假如这里的1b改成1f，那么就会在本句后面去找标号1）
+.pv_table结束，之后的仍然归于.text段
+*/
 #define __pv_stub(from,to,instr,type)			\
 	__asm__("@ __pv_stub\n"				\
 	"1:	" instr "	%0, %1, %2\n"		\

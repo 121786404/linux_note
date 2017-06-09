@@ -31,9 +31,7 @@
  * need to get a 16k page for level 1
  */
  /*
-分配一个新的页全局目录。如果 PAE 被激活，
-它还分配三个对应用户态线性地址的子页中间目录。
-参数 mm( 内存描述符的地址 )在 80x86 构架上被忽略
+分配并初始化可容纳一个完整页表的内存（不只是一个表项）
 */
 pgd_t *pgd_alloc(struct mm_struct *mm)
 {
@@ -121,6 +119,9 @@ no_pgd:
 	return NULL;
 }
 
+/*
+释放页表占据的内存
+*/
 void pgd_free(struct mm_struct *mm, pgd_t *pgd_base)
 {
 	pgd_t *pgd;

@@ -2469,10 +2469,7 @@ static void __init pcpu_dfl_fc_free(void *ptr, size_t size)
  *   在建立percpu内存管理机制之前要整理出该架构下的处理器信息，包括处理器
  * 如何分组、每组对应的处理器位图、静态定义的percpu变量占用内存区域、
  * 每颗处理器percpu虚拟内存递进基本单位等信息。
- * setup_per_cpu_areas->为每个cpu的per-cpu变量副本分配空间
- */
 
-/*
 给每个CPU分配内存，并拷贝.data.percpu段的数据. 
 为系统中的每个CPU的per_cpu变量申请空间.
 在SMP系统中, setup_per_cpu_areas初始化源代码中(使用per_cpu宏)定义的静态per-cpu变量,

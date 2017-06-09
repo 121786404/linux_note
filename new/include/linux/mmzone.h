@@ -353,11 +353,11 @@ WMARK_MIN所表示的page的数量值，是在内存初始化的过程中调用f
 中文一般就叫高速缓存.
 */
 struct per_cpu_pages {
-	//当前数量
+    /* 列表中页数 */
 	int count;		/* number of pages in the list */
-	//高水线，高于此数将内存还给伙伴系统
+	// 高水线，高于此数将内存还给伙伴系统
 	int high;		/* high watermark, emptying needed */
-	//一次性添加和删除的页面数量
+	// 一次性添加和删除的页面数量
 	int batch;		/* chunk size for buddy add/remove */
 
 	/* Lists of pages, one per migrate type stored on the pcp-lists */
@@ -459,7 +459,7 @@ ARM所有地址都可以进行DMA，所以该值可以很大，
 	 */
 /*
 标记了使用32位地址字可寻址, 适合DMA的内存域. 显然, 
-只有在53位系统中ZONE_DMA32才和ZONE_DMA有区别, 
+只有在64位系统中ZONE_DMA32才和ZONE_DMA有区别, 
 在32位系统中, 本区域是空的, 即长度为0MB, 在Alpha和AMD64系统上, 
 该内存的长度可能是从0到4GB
 
@@ -481,11 +481,9 @@ ARM所有地址都可以进行DMA，所以该值可以很大，
 这是在所有体系结构上保证会存在的唯一内存区域, 
 但无法保证该地址范围对应了实际的物理地址. 
 
-例如, 如果AMD64系统只有两2G内存, 那么所有的内存都属于ZONE_DMA32范围, 
-而ZONE_NORMAL则为空
+例如, 如果AMD64系统只有两2G内存, 那么所有的内存都属于ZONE_DMA32范围, 而ZONE_NORMAL则为空
 
-在64位系统上，如果物理内存小于4G，该内存域为空。
-而在32位系统上，该值最大为896M
+在64位系统上，如果物理内存小于4G，该内存域为空。而在32位系统上，该值最大为896M
 */
 	ZONE_NORMAL,
 #ifdef CONFIG_HIGHMEM
@@ -536,34 +534,25 @@ ARM所有地址都可以进行DMA，所以该值可以很大，
 #ifndef __GENERATING_BOUNDS_H
 /*
 为什么要按cache line进行对齐呢？
-因为zone结构体会被频繁访问到，在多核环境下，
-会有多个CPU同时访问同一个结构体，
+因为zone结构体会被频繁访问到，在多核环境下，会有多个CPU同时访问同一个结构体，
 为了避免彼此间的干扰，必须对每次访问进行加锁。
 
 那么是不是要对整个zone加锁呢？一把锁锁住zone中所有的成员？
-这应该不是最有效的方法。我们知道zone结构体很大，
-访问zone最频繁的有两个两个场景，一是页面分配，二是页面回收，
-这两种场景各自访问结构体zone中不同的成员。
-如果一把锁锁住zone中所有成员的话，
-当一个cpu正在处理页面分配的事情，
-另一个cpu想要进行页面回收的处理，
-却因为第一个cpu锁住了zone中所有成员而只好等待。
-第二个CPU明知道此时可以“安全的”进行回收处理
-（因为第一个CPU不会访问与回收处理相关的成员）
+这应该不是最有效的方法。我们知道zone结构体很大，访问zone最频繁的有两个两个场景，
+一是页面分配，二是页面回收，这两种场景各自访问结构体zone中不同的成员。
+如果一把锁锁住zone中所有成员的话，当一个cpu正在处理页面分配的事情，
+另一个cpu想要进行页面回收的处理，却因为第一个cpu锁住了zone中所有成员而只好等待。
+第二个CPU明知道此时可以“安全的”进行回收处理（因为第一个CPU不会访问与回收处理相关的成员）
 却也只能干着急。可见，我们应该将锁再细分。
-zone中定义了两把锁，lock以及lru_lock，lock与页面分配有关，
-lru_lock与页面回收有关。定义了两把锁，自然，
-每把锁所控制的成员最好跟锁呆在一起，
-最好是跟锁在同一个cache line中。
-当CPU对某个锁进行上锁处理时，CPU会将锁从内存加载到cache中，
-因为是以cache line为单位进行加载，
+zone中定义了两把锁，lock以及lru_lock，lock与页面分配有关，lru_lock与页面回收有关。定义了两把锁，
+自然，每把锁所控制的成员最好跟锁呆在一起，最好是跟锁在同一个cache line中。
+
+当CPU对某个锁进行上锁处理时，CPU会将锁从内存加载到cache中，因为是以cache line为单位进行加载，
 所以与锁紧挨着的成员也被加载到同一cache line中。
 CPU上完锁想要访问相关的成员时，这些成员已经在cache line中了。
 
-增加padding，会额外占用一些字节，
-但内核中zone结构体的实例并不会太多(UMA下只有三个)，
+增加padding，会额外占用一些字节，但内核中zone结构体的实例并不会太多(UMA下只有三个)，
 相比效率的提升，损失这点空间是值得的
-
 */
 struct zone {
 	/* Read-mostly fields */
@@ -618,15 +607,15 @@ struct zone {
 	struct pglist_data	*zone_pgdat;
 	//每CPU的页面缓存。
     /*
-        内核经常请求和释放单个页框. 为了提升性能,
-        每个内存管理区都定义了一个Per-CPU 的页面高速缓存. 
-        所有”每CPU高速缓存”包含一些预先分配的页框, 
-        他们被定义满足本地CPU发出的单一内存请求
+        冷热页帧对应的高速缓存状态不同：有些页帧也很可能仍然在高速缓存中，因此可以快速访问，
+        故称之为热的；未缓存的页帧与此相对，故称之为冷的。
+
+        内核经常请求和释放单个页框. 为了提升性能,        每个内存管理区都定义了一个Per-CPU 的页面高速缓存. 
+        所有”每CPU高速缓存”包含一些预先分配的页框,         他们被定义满足本地CPU发出的单一内存请求
 
         这个数组用于实现每个CPU的热/冷页帧列表。
         内核使用这些列表来保存可用于满足实现的“新鲜”页。
-        但冷热页帧对应的高速缓存状态不同：
-        有些页帧很可能在高速缓存中，因此可以快速访问，故称之为热的；
+        但冷热页帧对应的高速缓存状态不同：        有些页帧很可能在高速缓存中，因此可以快速访问，故称之为热的；
         未缓存的页帧与此相对，称之为冷的。
         
         page管理的数据结构对象，内部有一个page的列表(list)来管理。
@@ -634,6 +623,7 @@ struct zone {
         这个数组的大小和NR_CPUS(CPU的数量）有关，这个值是编译的时候确定的
 
          为什么是per-cpu? 
+         在多处理器系统上每个CPU都有一个或多个高速缓存，各个CPU的管理必须是独立的
          因为每个cpu都可从当前zone中分配内存，而pageset本身实现的一个功能就是批量申请和释放
          修改为per-cpu可减小多个cpu在申请内存时的所竞争
       */
@@ -846,9 +836,8 @@ enum pgdat_flags {
 					 * many pages under writeback
 					 */
 /*
-防止并发回收, 在SMP上系统, 多个CPU可能试图并发的回收亿i个内存域.
- PGDAT_RECLAIM_LOCKED标志可防止这种情况: 
-如果一个CPU在回收某个内存域, 则设置该标识. 这防止了其他CPU的尝试
+在SMP系统上，多个CPU可能试图并发地回收一个内存域。ZONE_RECLAIM_LOCKED标志可防止这种情况：
+如果一个CPU在回收某个内存域，则设置该标志。这防止了其他CPU的尝试。
 */
 	PGDAT_RECLAIM_LOCKED,		/* prevents concurrent reclaim */
 };
@@ -881,6 +870,7 @@ static inline bool zone_is_empty(struct zone *zone)
 #define DEF_PRIORITY 12
 
 /* Maximum number of zones on a zonelist */
+/* 所有结点的所有内存域 */
 #define MAX_ZONES_PER_ZONELIST (MAX_NUMNODES * MAX_NR_ZONES)
 
 enum {
@@ -929,6 +919,7 @@ struct zoneref {
 struct zonelist {
 	/**
 	 * 最大节点数*每个节点的zone数量，对所有zone进行引用。
+	 * 外加一个用于标记列表结束的空指针
 	 */
 	struct zoneref _zonerefs[MAX_ZONES_PER_ZONELIST + 1];
 };
@@ -966,8 +957,8 @@ typedef struct pglist_data {
      当从某个node的某个zone申请内存失败后，会搜索该列表，
      查找一个合适的zone继续分配内存
 
-    当调用free_area_init_core()时，
-    由mm/page_alloc.c文件中的build_zonelists()函数设置
+     当调用free_area_init_core()时，
+     由mm/page_alloc.c文件中的build_zonelists()函数设置
 	*/
 	struct zonelist node_zonelists[MAX_ZONELISTS];
     /*  
@@ -1322,6 +1313,7 @@ UMA结构的机器中, 只有一个node结点即contig_page_data,
 此时NODE_DATA直接指向了全局的contig_page_data, 而与node的编号nid无关
 */
 extern struct pglist_data contig_page_data;
+/* 通过结点编号，来查询与一个NUMA结点相关的pgdata_t 实例*/
 #define NODE_DATA(nid)		(&contig_page_data)
 #define NODE_MEM_MAP(nid)	mem_map
 

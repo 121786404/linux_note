@@ -5859,9 +5859,13 @@ build_all_zonelists_init(void)
  
 /*
 为系统中的zone建立后备zone的列表.
-所有zone的后备列表都在
-pglist_data->node_zonelists[0]中;
-期间也对per-CPU变量boot_pageset做了初始化. 
+所有zone的后备列表都在pglist_data->node_zonelists[0]中;
+期间也对per-CPU变量boot_pageset做了初始化.
+
+build_all_zonelists建立管理结点及其内存域所需的数据结构。
+该函数可以通过宏和抽象机制实现，而不用考虑具体的NUMA或UMA系统。
+因为执行的函数实际上有两种形式，所以这样做是可能的：一种用于NUMA系统，而另一种用于UMA系统。
+
 */
 void __ref build_all_zonelists(pg_data_t *pgdat, struct zone *zone)
 {

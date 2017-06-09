@@ -1664,7 +1664,7 @@ static void __init early_fixmap_shutdown(void)
  * maps, and sets up the zero page, bad page and bad page tables.
  */
 /**
- * 初始化分页
+ * 初始化内核页表并启用内存分页
  */
 void __init paging_init(const struct machine_desc *mdesc)
 {
