@@ -6400,9 +6400,11 @@ static void put_prev_task_fair(struct rq *rq, struct task_struct *prev)
  * The magic of dealing with the ->skip buddy is in pick_next_entity.
  */
 /*
- 璇ユ帴鍙ｇ敤浜庣郴缁熻皟鐢╯ched_yield涓紝杩欐湰韬殑閫昏緫闈炲父绠€鍗曪細
- 鎶婂綋鍓嶈繘绋嬩粠buddies涓垹闄わ紝骞朵笖鏇存柊瀹冪殑鎵ц鏃堕棿update_curr锛屾渶鍚庢妸瀹冭缃负skip_buddy
- 锛堜笂闈㈢殑pick_next_task鎴戜滑璇磋繃濡傛灉鏄痵kip鐨勮瘽锛屽湪閫夋嫨鐨勬椂鍊欎細琚玸kip鐨勶級锛? 杩欓噷鍙妔ched_yield绯荤粺璋冪敤骞舵病鏈夋妸褰撳墠杩涚▼璁剧疆涓篢IF_NEED_RESCHED锛? 杩欐槸鍥犱负鍦╯ched_yield閲岀洿鎺ヨ皟鐢ㄤ簡schedule锛岃€屼笉鍐嶉渶瑕佸湪绯荤粺璋冪敤杩斿洖鏃跺幓妫€鏌?*/
+ 该接口用于系统调用sched_yield中，这本身的逻辑非常简单：把当前进程从buddies中删除，
+ 并且更新它的执行时间update_curr，最后把它设置为skip_buddy（上面的pick_next_task我们说过如果是skip的话，
+ 在选择的时候会被skip的），这里及sched_yield系统调用并没有把当前进程设置为TIF_NEED_RESCHED，
+ 这是因为在sched_yield里直接调用了schedule，而不再需要在系统调用返回时去检查
+*/
 static void yield_task_fair(struct rq *rq)
 {
 	struct task_struct *curr = rq->curr;
