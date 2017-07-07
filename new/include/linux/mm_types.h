@@ -540,6 +540,7 @@ struct mm_struct {
      指向第一级页表即页全局目录的基址，
      当内核运行这个进程时，它就将pgd存放在CR3寄存器内，
      根据它来进行地址转换工作
+     指向进程的页目录
 */
 	pgd_t * pgd;
 /*
@@ -550,15 +551,18 @@ struct mm_struct {
 	内存描述符的主使计数器
 */
 	atomic_t mm_count;			/* How many references to "struct mm_struct" (users count as 1) */
+    // 页表所占(物理〉空间
 	atomic_long_t nr_ptes;			/* PTE page table pages */
 #if CONFIG_PGTABLE_LEVELS > 2
 	atomic_long_t nr_pmds;			/* PMD page table pages */
 #endif
+    // 虚拟区间的个数
 	int map_count;				/* number of VMAs */
-
+    // 保护任务页表和 mm->rss
 	spinlock_t page_table_lock;		/* Protects page tables and some counters */
+	// 对mmap操作的互赤信号量
 	struct rw_semaphore mmap_sem;
-
+    // 所有活动（active）mm的链表
 	struct list_head mmlist;		/* List of maybe swapped mm's.	These are globally strung
 						 * together off init_mm.mmlist, and are protected
 						 * by mmlist_lock
@@ -569,10 +573,12 @@ struct mm_struct {
 	unsigned long hiwater_vm;	/* High-water virtual memory usage */
 
 	unsigned long total_vm;		/* Total pages mapped */
+	// 任务已经锁住的物理内存的大小。锁住的物理内存不能交换到硬盘
 	unsigned long locked_vm;	/* Pages that have PG_mlocked set */
 	unsigned long pinned_vm;	/* Refcount permanently increased */
 	unsigned long data_vm;		/* VM_WRITE & ~VM_SHARED & ~VM_STACK */
 	unsigned long exec_vm;		/* VM_EXEC & ~VM_WRITE & ~VM_STACK */
+    // 任务在用户态的栈的大小
 	unsigned long stack_vm;		/* VM_STACK */
 	unsigned long def_flags;
 /*
@@ -607,6 +613,7 @@ start_data和end_data标记了包含已初始化数据的区域. 请注意,
 	cpumask_var_t cpu_vm_mask_var;
 
 	/* Architecture-specific MM context */
+	// 存放着当前进程使用的段起始地址
 	mm_context_t context;
 
 	unsigned long flags; /* Must use atomic bitops to access the bits */

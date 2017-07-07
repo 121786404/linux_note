@@ -6722,6 +6722,9 @@ static unsigned long __paginginit calc_memmap_size(unsigned long spanned_pages,
  *
  * NOTE: pgdat should get zeroed by caller.
  */
+/*
+初始化一个节点的所有页面.
+*/
 static void __paginginit free_area_init_core(struct pglist_data *pgdat)
 {
 	enum zone_type j;
@@ -7558,6 +7561,18 @@ void __init mem_init_print_info(const char *str)
 	init_data_size = __init_end - __init_begin;
 	init_code_size = _einittext - _sinittext;
 
+/*
+    pr_info("_text:0x%p,_stext:%p,_etext:0x%p",_text,_stext,_etext);
+    pr_info("_data:0x%p,_sdata:%p,_edata:0x%p",_data,_sdata,_edata);
+    pr_info("__start_data_ro_after_init:0x%p,__end_data_ro_after_init:0x%p",__start_data_ro_after_init,__end_data_ro_after_init);
+    pr_info("__per_cpu_load:0x%p,__per_cpu_start:%p,__per_cpu_end:0x%p",__per_cpu_load,__per_cpu_start,__per_cpu_end);
+    pr_info("__kprobes_text_start:%p,__kprobes_text_end:0x%p",__kprobes_text_start,__kprobes_text_end);
+    pr_info("__start_rodata:0x%p,__end_rodata:0x%p",__start_rodata,__end_rodata);
+    pr_info("__bss_start:0x%p,__bss_stop:0x%p",__bss_start,__bss_stop);
+    pr_info("__init_begin:0x%p,__init_end:0x%p",__init_begin,__init_end);
+    pr_info("_sinittext:0x%p,_einittext:0x%p",_sinittext,_einittext);
+*/
+    
 	/*
 	 * Detect special cases and adjust section sizes accordingly:
 	 * 1) .init.* may be embedded into .data sections
@@ -7580,6 +7595,9 @@ void __init mem_init_print_info(const char *str)
 
 #undef	adj_init_size
 
+    /*
+    Memory: 52360K/65536K available (7168K kernel code, 445K rwdata, 2028K rodata, 1024K init, 468K bss, 13176K reserved, 0K cma-reserved)
+    */
 	pr_info("Memory: %luK/%luK available (%luK kernel code, %luK rwdata, %luK rodata, %luK init, %luK bss, %luK reserved, %luK cma-reserved"
 #ifdef	CONFIG_HIGHMEM
 		", %luK highmem"

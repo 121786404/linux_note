@@ -182,6 +182,9 @@ struct worker_pool {
 	 * from other CPUs during try_to_wake_up(), put it in a separate
 	 * cacheline.
 	 */
+	/*
+    nr_running成员就独占了一    个cache line，避免多CPU同时读写该成员时引发其他临近的成员“颠簸”现象
+	*/
 	atomic_t		nr_running ____cacheline_aligned_in_smp;
 
 	/*

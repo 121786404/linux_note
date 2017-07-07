@@ -529,6 +529,17 @@ void __init mem_init(void)
 #define MLM(b, t) b, t, ((t) - (b)) >> 20
 #define MLK_ROUNDUP(b, t) b, t, DIV_ROUND_UP(((t) - (b)), SZ_1K)
 
+/* 
+vector  : 0xffff0000 - 0xffff1000   (   4 kB)
+fixmap  : 0xffc00000 - 0xfff00000   (3072 kB)
+vmalloc : 0x84800000 - 0xff800000   (1968 MB)
+lowmem  : 0x80000000 - 0x84000000   (  64 MB)
+modules : 0x7f000000 - 0x80000000   (  16 MB)
+  .text : 0x80008000 - 0x80800000   (8160 kB)
+  .init : 0x80b00000 - 0x80c00000   (1024 kB)
+  .data : 0x80c00000 - 0x80c6f728   ( 446 kB)
+   .bss : 0x80c71000 - 0x80ce609c   ( 469 kB)
+*/
 	pr_notice("Virtual kernel memory layout:\n"
 			"    vector  : 0x%08lx - 0x%08lx   (%4ld kB)\n"
 #ifdef CONFIG_HAVE_TCM

@@ -67,7 +67,7 @@ extern unsigned long long max_possible_pfn;
 typedef struct bootmem_data {
 	//内存块的最小页帧号
 	unsigned long node_min_pfn;
-	//内存块的低端页帧号，高于此页帧的都被分配了。
+	//内存块的低端页帧号，高于此页帧的都被分配了
 	unsigned long node_low_pfn;
 	//内存块的页面映射位图
 	void *node_bootmem_map;

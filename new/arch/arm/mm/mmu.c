@@ -56,9 +56,20 @@ pmd_t *top_pmd;
 
 pmdval_t user_pmd_table = _PAGE_USER_TABLE;
 
+/* cache策略 */
 #define CPOLICY_UNCACHED	0
 #define CPOLICY_BUFFERED	1
+/*
+write through CPU向cache写入数据时，同时向memory也写一份，使cache和memory的数据保持一致。 
+优点是简单，缺点是每次都要访问memory，速度比较慢
+*/
 #define CPOLICY_WRITETHROUGH	2
+/*
+write back CPU更新cache时，只是把更新的cache区标记一下，并不同步更新memory。
+只是在cache区要被 新进入的数据取代时，才更新memory。
+这样做的原因是考虑到很多时候cache存入的是中间结果， 没有必要同步更新memory。
+优点是CPU执行的效率提高，缺点是实现起来技术比较复杂
+*/
 #define CPOLICY_WRITEBACK	3
 #define CPOLICY_WRITEALLOC	4
 
@@ -426,7 +437,8 @@ void __set_fixmap(enum fixed_addresses idx, phys_addr_t phys, pgprot_t prot)
  * Adjust the PMD section entries according to the CPU in use.
  */
 /**
- * 根据CPU类型，设置不同类型的PMD属性
+ 根据CPU类型，设置mem_types全局数组，mem_types数组保存了页目录和页表的属性，
+ 将来创建页目录和页表时，会用到mem_types
  */
 static void __init build_mem_type_table(void)
 {
@@ -437,6 +449,9 @@ static void __init build_mem_type_table(void)
 	int cpu_arch = cpu_architecture();
 	int i;
 
+    /*
+    根据CPU型号来配置对应cache策略和memory的类型信息.根据当前CPU的特性进一步调整这些访问权限位。
+    */
 	if (cpu_arch < CPU_ARCH_ARMv6) {
 #if defined(CONFIG_CPU_DCACHE_DISABLE)
 		if (cachepolicy > CPOLICY_BUFFERED)
@@ -449,6 +464,7 @@ static void __init build_mem_type_table(void)
 	if (cpu_arch < CPU_ARCH_ARMv5) {
 		if (cachepolicy >= CPOLICY_WRITEALLOC)
 			cachepolicy = CPOLICY_WRITEBACK;
+	    /* ARMv5之前的型号是的以及描述符里面是没有保护标志位设置的 */
 		ecc_mask = 0;
 	}
 
@@ -688,6 +704,9 @@ static void __init build_mem_type_table(void)
 		mem_types[MT_CACHECLEAN].prot_sect |= PMD_SECT_WB;
 		break;
 	}
+
+	/* 打印 Memory policy*/
+	/* Memory policy: Data cache writealloc */
 	pr_info("Memory policy: %sData cache %s\n",
 		ecc_mask ? "ECC enabled, " : "", cp->policy);
 
@@ -1262,6 +1281,15 @@ void __init sanity_check_meminfo(void)
 	memblock_set_current_limit(memblock_limit);
 }
 
+/* 
+清空页目录，有两块地址空间区域是不需要清除的，
+一个是kernel image，另外一个是kernel线性地址映射区 
+
+这里对如下3段地址调用pmd_clear()函数来清除一级页表项的内容。
+0x0～MODULES_VADDR。
+MODULES_VADDR～PAGE_OFFSET。
+arm_lowmem_limit～VMALLOC_START
+*/
 static inline void prepare_page_table(void)
 {
 	unsigned long addr;
@@ -1466,20 +1494,35 @@ static void __init kmap_init(void)
 			_PAGE_KERNEL_TABLE);
 }
 
+/*
+建立低端内存的所有页目录和页表：遍历memory bank，映射那些没有highmem标记的内存bank
+*/
 static void __init map_lowmem(void)
 {
 	struct memblock_region *reg;
+	
+    /* 1.计算kernel的起始物理地址 */
 #ifdef CONFIG_XIP_KERNEL
 	phys_addr_t kernel_x_start = round_down(__pa(_sdata), SECTION_SIZE);
 #else
 	phys_addr_t kernel_x_start = round_down(__pa(_stext), SECTION_SIZE);
 #endif
+    /* 2.计算__init_end的物理地址 */
 	phys_addr_t kernel_x_end = round_up(__pa(__init_end), SECTION_SIZE);
 
 	/* Map all the lowmem memory banks. */
+	/*
+    60000000~64000000
+    80000000~84000000
+	*/
 	for_each_memblock(memory, reg) {
 		phys_addr_t start = reg->base;
 		phys_addr_t end = start + reg->size;
+
+        /*
+        printk(KERN_CRIT "sheldon: %s(%llx~%llx)\n", __FUNCTION__,(unsigned long long)start,(unsigned long long)end);
+        printk(KERN_CRIT "sheldon: %s(%llx~%llx)\n",__FUNCTION__,(unsigned long long)__phys_to_virt(start),(unsigned long long)__phys_to_virt(end));
+        */    
 		struct map_desc map;
 
 		if (memblock_is_nomap(reg))
@@ -1490,6 +1533,7 @@ static void __init map_lowmem(void)
 		if (start >= end)
 			break;
 
+        //映射kernel image区域
 		if (end < kernel_x_start) {
 			map.pfn = __phys_to_pfn(start);
 			map.virtual = __phys_to_virt(start);

@@ -701,7 +701,7 @@ int __init_memblock memblock_add_node(phys_addr_t base, phys_addr_t size,
 {
 	return memblock_add_range(&memblock.memory, base, size, nid, 0);
 }
-// 向memory区中添加内存区域
+// 添加memory region
 int __init_memblock memblock_add(phys_addr_t base, phys_addr_t size)
 {
 	phys_addr_t end = base + size - 1;
@@ -837,6 +837,11 @@ memblock_reserve使用全局变量memblock的reserved域,
 最终将分配到的内存块信息添加到reserved区域中
 
 memblock_add则使用了全局变量的memory域, 最终将内存块添加到了memory区域
+
+
+[0x60100000-0x60ce609b] arm_memblock_init
+[0x60004000-0x60007fff] arm_mm_memblock_reserve
+[0x62000000-0x6200c107] early_init_dt_reserve_memory_arch
 */
 int __init_memblock memblock_reserve(phys_addr_t base, phys_addr_t size)
 {
@@ -1844,6 +1849,11 @@ static void __init_memblock memblock_dump(struct memblock_type *type, char *name
 void __init_memblock __memblock_dump_all(void)
 {
 	pr_info("MEMBLOCK configuration:\n");
+
+	/*
+    memory size   = 0x04000000 
+    reserved size = 0x00bf61a4
+	*/
 	pr_info(" memory size = %pa reserved size = %pa\n",
 		&memblock.memory.total_size,
 		&memblock.reserved.total_size);

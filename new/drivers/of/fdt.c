@@ -1056,6 +1056,7 @@ int __init early_init_dt_scan_memory(unsigned long node, const char *uname,
 		pr_debug(" - %llx ,  %llx\n", (unsigned long long)base,
 		    (unsigned long long)size);
 
+        /* vexpress-v2p-ca9.dts base = 0x60000000   size = 0x40000000*/
 		early_init_dt_add_memory_arch(base, size);
 
 		if (!hotpluggable)

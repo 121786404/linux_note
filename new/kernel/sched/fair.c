@@ -1,4 +1,4 @@
-/*
+ï»¿/*
  * Completely Fair Scheduling (CFS) Class (SCHED_NORMAL/SCHED_BATCH)
  *
  *  Copyright (C) 2007 Red Hat, Inc., Ingo Molnar <mingo@redhat.com>
@@ -3587,7 +3587,7 @@ enqueue_entity(struct cfs_rq *cfs_rq, struct sched_entity *se, int flags)
 	 */
 	if (renorm && curr)
 		se->vruntime += cfs_rq->min_vruntime;
-    /* ¸üĞÂµ±Ç°½ø³ÌÔËĞĞÊ±¼äºÍĞéÄâÔËĞĞÊ±¼ä */
+    /* æ›´æ–°å½“å‰è¿›ç¨‹è¿è¡Œæ—¶é—´å’Œè™šæ‹Ÿè¿è¡Œæ—¶é—´ */
 	update_curr(cfs_rq);
 
 	/*
@@ -3610,22 +3610,22 @@ enqueue_entity(struct cfs_rq *cfs_rq, struct sched_entity *se, int flags)
 	update_load_avg(se, UPDATE_TG);
 	enqueue_entity_load_avg(cfs_rq, se);
 	update_cfs_shares(se);
-    /* ¸üĞÂcfs_rq¶ÓÁĞ×ÜÈ¨ÖØ(¾ÍÊÇÔÚÔ­ÓĞ»ù´¡ÉÏ¼ÓÉÏseµÄÈ¨ÖØ) */
+    /* æ›´æ–°cfs_rqé˜Ÿåˆ—æ€»æƒé‡(å°±æ˜¯åœ¨åŸæœ‰åŸºç¡€ä¸ŠåŠ ä¸Šseçš„æƒé‡) */
 	account_entity_enqueue(cfs_rq, se);
 
-    /* ĞÂ½¨µÄ½ø³ÌflagsÎª0£¬²»»áÖ´ĞĞÕâÀï */
+    /* æ–°å»ºçš„è¿›ç¨‹flagsä¸º0ï¼Œä¸ä¼šæ‰§è¡Œè¿™é‡Œ */
 	if (flags & ENQUEUE_WAKEUP)
 		place_entity(cfs_rq, se, 0);
 
 	check_schedstat_required();
 	update_stats_enqueue(cfs_rq, se, flags);
 	check_spread(cfs_rq, se);
-    /* ½«se²åÈëµ½ÔËĞĞ¶ÓÁĞcfs_rqµÄºìºÚÊ÷ÖĞ */
+    /* å°†seæ’å…¥åˆ°è¿è¡Œé˜Ÿåˆ—cfs_rqçš„çº¢é»‘æ ‘ä¸­ */
 	if (!curr)
 		__enqueue_entity(cfs_rq, se);
-    /* ½«seµÄon_rq±ê¼ÇÎª1 */
+    /* å°†seçš„on_rqæ ‡è®°ä¸º1 */
 	se->on_rq = 1;
-    /* Èç¹ûcfs_rqµÄ¶ÓÁĞÖĞÖ»ÓĞÒ»¸ö½ø³Ì£¬ÕâÀï×ö´¦Àí */
+    /* å¦‚æœcfs_rqçš„é˜Ÿåˆ—ä¸­åªæœ‰ä¸€ä¸ªè¿›ç¨‹ï¼Œè¿™é‡Œåšå¤„ç† */
 	if (cfs_rq->nr_running == 1) {
 		list_add_leaf_cfs_rq(cfs_rq);
 		check_enqueue_throttle(cfs_rq);
@@ -4771,17 +4771,17 @@ enqueue_task_fair(struct rq *rq, struct task_struct *p, int flags)
 	 */
 	if (p->in_iowait)
 		cpufreq_update_this_cpu(rq, SCHED_CPUFREQ_IOWAIT);
-    /* ÕâÀïÊÇÒ»¸öµü´ú£¬ÎÒÃÇÖªµÀ£¬½ø³ÌÓĞ¿ÉÄÜÊÇ´¦ÓÚÒ»¸ö½ø³Ì×éÖĞµÄ£¬
-          ËùÒÔµ±Õâ¸ö´¦ÓÚ½ø³Ì×éÖĞµÄ½ø³Ì¼ÓÈëµ½¸Ã½ø³Ì×éµÄ¶ÓÁĞÖĞÊ±£¬
-          Òª¶Ô´Ë¶ÓÁĞÏòÉÏµü´ú */
+    /* è¿™é‡Œæ˜¯ä¸€ä¸ªè¿­ä»£ï¼Œæˆ‘ä»¬çŸ¥é“ï¼Œè¿›ç¨‹æœ‰å¯èƒ½æ˜¯å¤„äºä¸€ä¸ªè¿›ç¨‹ç»„ä¸­çš„ï¼Œ
+          æ‰€ä»¥å½“è¿™ä¸ªå¤„äºè¿›ç¨‹ç»„ä¸­çš„è¿›ç¨‹åŠ å…¥åˆ°è¯¥è¿›ç¨‹ç»„çš„é˜Ÿåˆ—ä¸­æ—¶ï¼Œ
+          è¦å¯¹æ­¤é˜Ÿåˆ—å‘ä¸Šè¿­ä»£ */
 	for_each_sched_entity(se) {
 		if (se->on_rq)
 			break;
-         /* Èç¹û²»ÊÇCONFIG_FAIR_GROUP_SCHED£¬»ñÈ¡ÆäËùÔÚCPUµÄrqÔËĞĞ¶ÓÁĞµÄcfs_rqÔËĞĞ¶ÓÁĞ
-               * Èç¹ûÊÇCONFIG_FAIR_GROUP_SCHED£¬»ñÈ¡ÆäËùÔÚµÄcfs_rqÔËĞĞ¶ÓÁĞ
+         /* å¦‚æœä¸æ˜¯CONFIG_FAIR_GROUP_SCHEDï¼Œè·å–å…¶æ‰€åœ¨CPUçš„rqè¿è¡Œé˜Ÿåˆ—çš„cfs_rqè¿è¡Œé˜Ÿåˆ—
+               * å¦‚æœæ˜¯CONFIG_FAIR_GROUP_SCHEDï¼Œè·å–å…¶æ‰€åœ¨çš„cfs_rqè¿è¡Œé˜Ÿåˆ—
             */
 		cfs_rq = cfs_rq_of(se);
-         /* ¼ÓÈëµ½¶ÓÁĞÖĞ */
+         /* åŠ å…¥åˆ°é˜Ÿåˆ—ä¸­ */
 		enqueue_entity(cfs_rq, se, flags);
 
 		/*
@@ -4796,7 +4796,7 @@ enqueue_task_fair(struct rq *rq, struct task_struct *p, int flags)
 
 		flags = ENQUEUE_WAKEUP;
 	}
-    /* Ö»ÓĞse²»´¦ÓÚ¶ÓÁĞÖĞ»òÕßcfs_rq_throttled(cfs_rq)·µ»ØÕæ²Å»áÔËĞĞÕâ¸öÑ­»· */
+    /* åªæœ‰seä¸å¤„äºé˜Ÿåˆ—ä¸­æˆ–è€…cfs_rq_throttled(cfs_rq)è¿”å›çœŸæ‰ä¼šè¿è¡Œè¿™ä¸ªå¾ªç¯ */
 	for_each_sched_entity(se) {
 		cfs_rq = cfs_rq_of(se);
 		cfs_rq->h_nr_running++;
@@ -4807,10 +4807,10 @@ enqueue_task_fair(struct rq *rq, struct task_struct *p, int flags)
 		update_load_avg(se, UPDATE_TG);
 		update_cfs_shares(se);
 	}
-    /* µ±Ç°CPUÔËĞĞ¶ÓÁĞ»î¶¯½ø³ÌÊı + 1 */
+    /* å½“å‰CPUè¿è¡Œé˜Ÿåˆ—æ´»åŠ¨è¿›ç¨‹æ•° + 1 */
 	if (!se)
 		add_nr_running(rq, 1);
-    /* ÉèÖÃÏÂ´Îµ÷¶ÈÖĞ¶Ï·¢ÉúÊ±¼ä */
+    /* è®¾ç½®ä¸‹æ¬¡è°ƒåº¦ä¸­æ–­å‘ç”Ÿæ—¶é—´ */
 	hrtick_update(rq);
 }
 
@@ -6399,6 +6399,10 @@ static void put_prev_task_fair(struct rq *rq, struct task_struct *prev)
  *
  * The magic of dealing with the ->skip buddy is in pick_next_entity.
  */
+/*
+ ç’‡ãƒ¦å¸´é™ï½‡æ•¤æµœåº£éƒ´ç¼ç†»çšŸé¢â•¯ched_yieldæ¶“î…¨ç´æ©æ¬æ¹°éŸ¬î‚¤æ®‘é–«æ˜ç·«é—ˆç‚²çˆ¶ç» â‚¬é—æ›ªç´°
+ é¶å©‚ç¶‹é“å¶ˆç¹˜ç»‹å¬©ç² buddiesæ¶“î…å¹é—„ã‚ç´éªæœµç¬–é‡å­˜æŸŠç€¹å†ªæ®‘éµÑ†î”‘éƒå •æ£¿update_curré”›å±¾æ¸¶éšåº¢å¦¸ç€¹å†­î†•ç¼ƒî†»è´Ÿskip_buddy
+ é”›å œç¬‚é—ˆãˆ¢æ®‘pick_next_taské´æˆœæ»‘ç’‡ç£‹ç¹ƒæ¿¡å‚›ç‰é„ç—µkipé¨å‹®ç˜½é”›å±½æ¹ªé–«å¤‹å«¨é¨å‹¬æ¤‚éŠæ¬ç´°çšç¸kipé¨å‹¶ç´šé”›? æ©æ¬“å™·é™å¦”ched_yieldç»¯è¤ç²ºç’‹å†ªæ•¤éªèˆµç—…éˆå¤‹å¦¸è¤°æ’³å¢ æ©æ¶šâ–¼ç’å‰§ç–†æ¶“ç¯¢IF_NEED_RESCHEDé”›? æ©æ¬æ§¸é¥çŠ±è´Ÿé¦â•¯ched_yieldé–²å²€æ´¿éºãƒ¨çšŸé¢ã„¤ç°¡scheduleé”›å²ƒâ‚¬å±¼ç¬‰éå¶‰æ¸¶ç‘•ä½¸æ¹ªç»¯è¤ç²ºç’‹å†ªæ•¤æ©æ–¿æ´–éƒè·ºå¹“å¦«â‚¬éŒ?*/
 static void yield_task_fair(struct rq *rq)
 {
 	struct task_struct *curr = rq->curr;
@@ -8995,25 +8999,25 @@ static void task_tick_fair(struct rq *rq, struct task_struct *curr, int queued)
 static void task_fork_fair(struct task_struct *p)
 {
 	struct cfs_rq *cfs_rq;
-    /* ½ø³ÌpµÄµ÷¶ÈÊµÌåse */
+    /* è¿›ç¨‹pçš„è°ƒåº¦å®ä½“se */
 	struct sched_entity *se = &p->se, *curr;
-    /* »ñÈ¡´ËCPUµÄÔËĞĞ¶ÓÁĞ */
+    /* è·å–æ­¤CPUçš„è¿è¡Œé˜Ÿåˆ— */
 	struct rq *rq = this_rq();
 
 	raw_spin_lock(&rq->lock);
-    /* ¸üĞÂrqÔËĞĞÊ±¼ä */
+    /* æ›´æ–°rqè¿è¡Œæ—¶é—´ */
 	update_rq_clock(rq);
 
 	cfs_rq = task_cfs_rq(current);
-    /* ÉèÖÃµ±Ç°½ø³ÌËùÔÚ¶ÓÁĞÎª¸¸½ø³ÌËùÔÚ¶ÓÁĞ */
+    /* è®¾ç½®å½“å‰è¿›ç¨‹æ‰€åœ¨é˜Ÿåˆ—ä¸ºçˆ¶è¿›ç¨‹æ‰€åœ¨é˜Ÿåˆ— */
 	curr = cfs_rq->curr;
 	if (curr) {
-        /* ¸üĞÂµ±Ç°½ø³ÌÔËĞĞÊ±¼ä */
+        /* æ›´æ–°å½“å‰è¿›ç¨‹è¿è¡Œæ—¶é—´ */
 		update_curr(cfs_rq);
-        /* ½«¸¸½ø³ÌµÄĞéÄâÔËĞĞÊ±¼ä¸³¸øÁËĞÂ½ø³ÌµÄĞéÄâÔËĞĞÊ±¼ä */
+        /* å°†çˆ¶è¿›ç¨‹çš„è™šæ‹Ÿè¿è¡Œæ—¶é—´èµ‹ç»™äº†æ–°è¿›ç¨‹çš„è™šæ‹Ÿè¿è¡Œæ—¶é—´ */
 		se->vruntime = curr->vruntime;
 	}
-    /* µ÷ÕûÁËseµÄĞéÄâÔËĞĞÊ±¼ä */
+    /* è°ƒæ•´äº†seçš„è™šæ‹Ÿè¿è¡Œæ—¶é—´ */
 	place_entity(cfs_rq, se, 1);
 
 	if (sysctl_sched_child_runs_first && curr && entity_before(curr, se)) {
@@ -9024,9 +9028,9 @@ static void task_fork_fair(struct task_struct *p)
 		swap(curr->vruntime, se->vruntime);
 		resched_curr(rq);
 	}
-    /* ±£Ö¤ÁË½ø³ÌpµÄvruntimeÊÇÔËĞĞ¶ÓÁĞÖĞ×îĞ¡µÄ
-          (ÕâÀïÕ¼Ê±²»È·¶¨ÊÇ²»ÊÇÕâ¸öÓÃ·¨£¬
-          ²»¹ıÈ·ÊµÊÇ×îĞ¡µÄÁË) */
+    /* ä¿è¯äº†è¿›ç¨‹pçš„vruntimeæ˜¯è¿è¡Œé˜Ÿåˆ—ä¸­æœ€å°çš„
+          (è¿™é‡Œå æ—¶ä¸ç¡®å®šæ˜¯ä¸æ˜¯è¿™ä¸ªç”¨æ³•ï¼Œ
+          ä¸è¿‡ç¡®å®æ˜¯æœ€å°çš„äº†) */
 	se->vruntime -= cfs_rq->min_vruntime;
 	raw_spin_unlock(&rq->lock);
 }
@@ -9461,14 +9465,14 @@ static unsigned int get_rr_interval_fair(struct rq *rq, struct task_struct *task
  * All the scheduling class methods:
  */
 /*
- ²ÉÓÃCFSËã·¨µ÷¶ÈÆÕÍ¨µÄ·ÇÊµÊ±½ø³Ì
+ é‡‡ç”¨CFSç®—æ³•è°ƒåº¦æ™®é€šçš„éå®æ—¶è¿›ç¨‹
  SCHED_NORMAL, SCHED_BATCH
 */
 const struct sched_class fair_sched_class = {
 /*
-Èç¹ûÏµÍ³ÖĞÃ»ÓĞÆÕÍ¨½ø³Ì£¬ÄÇÃ´»áÑ¡ÔñÏÂ¸öµ÷¶ÈÀàÓÅÏÈ¼¶µÄ½ø³Ì£¬
-¼´Ê¹ÓÃidle_sched_classµ÷¶ÈÀà½øĞĞµ÷¶ÈµÄ½ø³Ì
-µ±ÏµÍ³¿ÕÏĞµÄÊ±ºò£¬×îºó¾ÍÊÇµ÷ÓÃidleµÄpick_next_taskº¯Êı
+å¦‚æœç³»ç»Ÿä¸­æ²¡æœ‰æ™®é€šè¿›ç¨‹ï¼Œé‚£ä¹ˆä¼šé€‰æ‹©ä¸‹ä¸ªè°ƒåº¦ç±»ä¼˜å…ˆçº§çš„è¿›ç¨‹ï¼Œ
+å³ä½¿ç”¨idle_sched_classè°ƒåº¦ç±»è¿›è¡Œè°ƒåº¦çš„è¿›ç¨‹
+å½“ç³»ç»Ÿç©ºé—²çš„æ—¶å€™ï¼Œæœ€åå°±æ˜¯è°ƒç”¨idleçš„pick_next_taskå‡½æ•°
 */
 	.next			= &idle_sched_class,
 	.enqueue_task		= enqueue_task_fair,

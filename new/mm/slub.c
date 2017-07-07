@@ -1,4 +1,4 @@
-/*
+﻿/*
  * SLUB: A slab allocator that limits cache line use instead of queuing
  * objects in per cpu and per node lists.
  *
@@ -3730,13 +3730,13 @@ void *__kmalloc(size_t size, gfp_t flags)
 	struct kmem_cache *s;
 	void *ret;
 /*
-�ж������Ƿ񳬹����cache��С,�������ͨ��kmalloc_large()���з���
+判断申请是否超过最大cache大小,如果是则通过kmalloc_large()进行分配
 */
 	if (unlikely(size > KMALLOC_MAX_CACHE_SIZE))
 		return kmalloc_large(size, flags);
 
 /*
-�������õ�kmem_cache
+查找适用的kmem_cache
 */
 	s = kmalloc_slab(size, flags);
 
@@ -3872,32 +3872,32 @@ void kfree(const void *x)
 	struct page *page;
 	void *object = (void *)x;
 /*
-��¼kfree�켣
+记录kfree轨迹
 */
 	trace_kfree(_RET_IP_, x);
 /*
-�Ե�ַ�������ж�
+对地址做非零判断
 */
 	if (unlikely(ZERO_OR_NULL_PTR(x)))
 		return;
 /*
-�������ַת����ҳ��
+将虚拟地址转换到页面
 */
 	page = virt_to_head_page(x);
 	if (unlikely(!PageSlab(page))) {
 		BUG_ON(!PageCompound(page));
 /*
-		���ͷ�ǰkmemleak����
+		做释放前kmemleak处理
 */
 		kfree_hook(x);
 /*
-		��ҳ���ͷ�
+		将页面释放
 */
 		__free_pages(page, compound_order(page));
 		return;
 	}
 /*
-	����Ϊslab���������תΪͨ��slab_free()�����ͷ�
+	是作为slab分配管理，转为通过slab_free()进行释放
 */
 	slab_free(page->slab_cache, page, object, NULL, 1, _RET_IP_);
 }
@@ -4197,12 +4197,12 @@ void __init kmem_cache_init(void)
 		       SLAB_HWCACHE_ALIGN);
 
     /* 
-          ʹ�����洴��boot cache�������������Ӹ��ٻ�����Ϊ���������ڴ档
-          �����ں˵ĵ�һ��ʹ�ø��ٻ���ĵط���
-          ������create_boot_cache������kmem_cache��kmem_cache_node����Cache��
-          ����Ҫ����bootstrap��Cache��Ϊkmem_cache��kmem_cache_node�����ڴ�ռ�
-          Ȼ�󽫾�̬����boot_kmem_cache��boot_kmem_cache_node�е����ݸ��Ƶ�������ڴ�ռ��У�
-          ���൱�������һ�ζ��������ؽ���
+          使用上面创建boot cache引导自身，即从高速缓存中为自身分配内存。
+          这是内核的第一个使用高速缓存的地方。
+          当调用create_boot_cache创建完kmem_cache和kmem_cache_node两个Cache后，
+          就需要调用bootstrap从Cache中为kmem_cache和kmem_cache_node分配内存空间
+          然后将静态变量boot_kmem_cache和boot_kmem_cache_node中的内容复制到分配的内存空间中，
+          这相当于完成了一次对自身的重建。
     */
 	kmem_cache = bootstrap(&boot_kmem_cache);
 

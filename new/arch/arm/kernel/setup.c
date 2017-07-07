@@ -241,7 +241,7 @@ static int __get_cpu_architecture(void)
 }
 #else
 /**
- * 获取CPU架构，慢慢看不注释了。
+ * 获取CPU架构
  */
 static int __get_cpu_architecture(void)
 {
@@ -274,6 +274,7 @@ static int __get_cpu_architecture(void)
 }
 #endif
 
+//获得架构版本
 int __pure cpu_architecture(void)
 {
 	BUG_ON(__cpu_architecture == CPU_ARCH_UNKNOWN);
@@ -751,7 +752,7 @@ static void __init setup_processor(void)
 #endif
 
 	/**
-	 * balabala，输出一些信息
+	 * 输出CPU信息
 	 */
 	pr_info("CPU: %s [%08x] revision %d (ARMv%s), cr=%08lx\n",
 		cpu_name, read_cpuid_id(), read_cpuid_id() & 15,

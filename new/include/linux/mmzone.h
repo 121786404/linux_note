@@ -154,6 +154,21 @@ __attribute__((__aligned__(1 << (INTERNODE_CACHE_SHIFT))))
 #define CONFIG_ARM_L1_CACHE_SHIFT 6
 表示64对齐
 char x[0] 是一个柔性数组，编译器会根据64字节对齐，自动决定大小
+
+cache和内存交换的最小单位是cache line，若结构体没有和cache line对齐，
+那么一个结构体有可能占用多个cache line。
+假设cache line的大小是32字节，一个本身小于32字节的结构体有可能横跨了两条cache line，
+在SMP中会对系统性能有不小的影响。
+
+举个例子，现在有结构体C1和结构体C2，缓存到L1 Cache时没有按照cache line对齐，
+因此它们有可能同时占用了一条cache line，即C1的后半部以及C2的前半部在一条cache line中。
+根据cache 一致性协议，CPU0修改结构体C1的时会导致CPU1的cache line失效，
+同理，CPU1对结构体C2修改也会导致CPU0的cache line失效。
+
+如果CPU0和CPU1反复修改，那么会导致系统性能下降。这种现象叫做“cache line伪共享”，
+两个CPU原本没有共享访问，因为要共同访问同一个cache line，产生了事实上的共享。
+
+解决上述问题的一个方法，是让结构体按照cache line对齐，典型的以空间换时间。
 */
 struct zone_padding {
 	char x[0];
@@ -547,6 +562,10 @@ ARM所有地址都可以进行DMA，所以该值可以很大，
 zone中定义了两把锁，lock以及lru_lock，lock与页面分配有关，lru_lock与页面回收有关。定义了两把锁，
 自然，每把锁所控制的成员最好跟锁呆在一起，最好是跟锁在同一个cache line中。
 
+数据结构中频繁访问的成员可以单独占用一个cache line，或者相关的成员在cache line中彼此错开，
+以提高访问效率。例如struct zone数据结构中zone->lock和zone->lru_lock这两个频繁被访问的锁，
+可以让它们各自使用不同的cache line，以提高获取锁的效率。
+
 当CPU对某个锁进行上锁处理时，CPU会将锁从内存加载到cache中，因为是以cache line为单位进行加载，
 所以与锁紧挨着的成员也被加载到同一cache line中。
 CPU上完锁想要访问相关的成员时，这些成员已经在cache line中了。
@@ -603,7 +622,7 @@ struct zone {
     /*  指向这个zone所在的pglist_data对象  */
     /**
          * 管理区所属性的节点。通过此字段可以找到同一节点的其他的管理区。
-      */
+    */
 	struct pglist_data	*zone_pgdat;
 	//每CPU的页面缓存。
     /*
@@ -969,7 +988,7 @@ typedef struct pglist_data {
 #ifdef CONFIG_FLAT_NODE_MEM_MAP	/* means !SPARSEMEM */
     /*  
         平坦型的内存模型中，它指向本节点第一个页面的描述符
-         node中的第一个page，它可以指向mem_map中的任何一个page，
+        node中的第一个page，它可以指向mem_map中的任何一个page，
         指向page实例数组的指针，用于描述该节点所拥有的的物理内存页，
 
         linux为每个物理页分配了一个struct page的管理结构体，
@@ -982,10 +1001,12 @@ typedef struct pglist_data {
 #endif
 #endif
 #ifndef CONFIG_NO_BOOTMEM
-    /*  在系统启动boot期间，内存管理子系统初始化之前，
-           内核页需要使用内存（另外，还需要保留部分内存用于初始化内存管理子系统）
-           为解决这个问题，内核使用了自举内存分配器 
-           此结构用于这个阶段的内存管理  */
+    /*  
+        在系统启动boot期间，内存管理子系统初始化之前，
+        内核页需要使用内存（另外，还需要保留部分内存用于初始化内存管理子系统）
+        为解决这个问题，内核使用了自举内存分配器 
+        此结构用于这个阶段的内存管理
+    */
 	struct bootmem_data *bdata;
 #endif
 #ifdef CONFIG_MEMORY_HOTPLUG
@@ -1002,7 +1023,7 @@ typedef struct pglist_data {
     /*
         当系统支持内存热插拨时，用于保护本结构中的与节点大小相关的字段。
         哪调用node_start_pfn，node_present_pages，node_spanned_pages相关的代码时，需要使用该锁。
-      */
+    */
 	spinlock_t node_size_lock;
 #endif
     /*
@@ -1029,16 +1050,17 @@ typedef struct pglist_data {
 	/*  node的等待队列，交换守护列队进程的等待列表*/
 	wait_queue_head_t kswapd_wait; 
 	wait_queue_head_t pfmemalloc_wait;
-	/* 指向负责回收该node中内存的swap内核线程kswapd，
-	一个node对应一个kswapd */
+	/* 
+	指向负责回收该node中内存的swap内核线程kswapd， 一个node对应一个kswapd 
+	*/
 	struct task_struct *kswapd;	/* Protected by   mem_hotplug_begin/end() */
     /*  
         定义需要释放的区域的长度  
-     */
+    */
 	int kswapd_order;              
     /**
-        * 临时变量，用于内存回收时使用。记录上一次回收时，扫描的最后一个区域。
-      */
+        临时变量，用于内存回收时使用。记录上一次回收时，扫描的最后一个区域。
+    */
 	enum zone_type kswapd_classzone_idx;
 
 #ifdef CONFIG_COMPACTION
@@ -1109,9 +1131,9 @@ typedef struct pglist_data {
 	 * The target ratio of ACTIVE_ANON to INACTIVE_ANON pages on
 	 * this node's LRU.  Maintained by the pageout code.
 	 */
-     /**
-          * 将匿名活动页向匿名非活动页中移动的比率。
-       */
+    /**
+       将匿名活动页向匿名非活动页中移动的比率。
+    */
 	unsigned int inactive_ratio;
 
 	unsigned long		flags;
