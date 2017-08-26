@@ -21,11 +21,34 @@ struct mfd_cell;
 struct property_entry;
 
 struct platform_device {
-	const char	* name;	/*设备名*/
-	int		id;	/*设备编号，配合设备名使用*/
+/*
+设备的名称，和struct device结构中的init_name意义相同。
+实际上，该名称在设备注册时，会拷贝到dev.init_name中
+*/
+	const char	* name;
+/*
+用于标识该设备的ID。 内核允许存在多个名称相同的设备。
+而设备驱动的probe，依赖于名称，Linux采取的策略是：在bus的设备链表中查找device，
+和对应的device_driver比对name，如果相同，则查看该设备是否已经绑定了driver
+（查看其dev->driver指针是否为空），如果已绑定，则不会执行probe动作，
+如果没有绑定，则以该device的指针为参数，调用driver的probe接口。 
+因此，在driver的probe接口中，通过判断设备的ID，可以知道此次驱动的设备是哪个。
+*/
+	int		id;
+/*
+	指示在注册设备时，是否自动赋予ID值
+*/
 	bool		id_auto;
+/*
+	真正的设备（Platform设备只是一个特殊的设备，因此其核心逻辑还是由底层的模块实现）
+*/
 	struct device	dev;
 	u32		num_resources;
+/*
+当某个设备需要使用某些资源时，只需利用struct resource组织这些资源（如名称、类型、起始、结束地址等），
+并保存在该设备的resource指针中即可。然后在设备probe时，设备需求会调用资源管理接口，分配、使用这些资源。
+而内核的资源管理逻辑，可以判断这些资源是否已被使用、是否可被使用等等。
+*/
 	struct resource	*resource;
 
 	const struct platform_device_id	*id_entry;
@@ -35,6 +58,9 @@ struct platform_device {
 	struct mfd_cell *mfd_cell;
 
 	/* arch specific additions */
+/*
+	保存一些architecture相关的数据
+*/
 	struct pdev_archdata	archdata;
 };
 

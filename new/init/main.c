@@ -515,8 +515,6 @@ void __init __weak thread_stack_cache_init(void)
  */
 /*
 建立了内核的内存分配器, 
-其中通过mem_init停用bootmem分配器并迁移到实际的内存管理器(比如伙伴系统)
-然后调用kmem_cache_init函数初始化内核内部用于小块内存区的分配器
 */
 static void __init mm_init(void)
 {
@@ -525,7 +523,6 @@ static void __init mm_init(void)
 	 * bigger than MAX_ORDER unless SPARSEMEM.
 	 */
 	page_ext_init_flatmem();
-	//将boot内存管理转换为伙伴内存管理
 	mem_init();
 	/**
 	 * 初始化slab内存分配器

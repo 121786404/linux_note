@@ -653,6 +653,9 @@ struct zone {
       *              避免同一个页面反复被不同的CPU分配，引起缓存行的失效。
       *              避免将管理区中的大块分割成碎片。
       */
+      /*
+            用于维护per-cpu的上的一系列页面，以减少自旋锁的争用
+      */
 	struct per_cpu_pageset __percpu *pageset;
 
 #ifndef CONFIG_SPARSEMEM
@@ -735,7 +738,7 @@ spanned_pages: 和node中的类似的成员含义一样
 	 * adjust_managed_page_count() should be used instead of directly
 	 * touching zone->managed_pages and totalram_pages.
 	 */
-	//该zone管理的页面数量
+	//该伙伴系统管理的页面数量
 	unsigned long		managed_pages;
     /*  总页数，包含空洞  */
 	unsigned long		spanned_pages;
@@ -968,7 +971,7 @@ struct bootmem_data;
 typedef struct pglist_data {
     /*  
     包含了结点中各内存域的数据结构 , 可能的区域类型用zone_type表示
-    每个Node划分为不同的zone，分别为ZONE_DMA，ZONE_NORMAL，ZONE_HIGHMEM
+    每个Node划分为不同的zone，ARM Vexpress 只有ZONE_NORMAL，ZONE_HIGHMEM
     */
 	struct zone node_zones[MAX_NR_ZONES];
 	/*

@@ -1856,6 +1856,8 @@ struct task_struct {
 	指向其所在进程组的领头进程 
 	除了在多线程的模式下指向主线程，还有一个用处， 
 	当一些进程组成一个群组时（PIDTYPE_PGID)， 该域指向该群组的leader
+	全局的会话标识SID        保存在task_struct->group_leader->pids[PIDTYPE_SID].pid 中
+	全局进程组标识PGlD 保存在task_struct->group_leader->pids[PIDTYPE_PGID].pid 中
 	*/
 	struct task_struct *group_leader;	/* threadgroup leader */
 
@@ -2515,6 +2517,9 @@ static inline int is_global_init(struct task_struct *tsk)
 extern struct pid *cad_pid;
 
 extern void free_task(struct task_struct *tsk);
+/*
+增加线程 task_struct->usage 引用计数，确保线程异常退出也不会释放task_struct，
+*/
 #define get_task_struct(tsk) do { atomic_inc(&(tsk)->usage); } while(0)
 
 extern void __put_task_struct(struct task_struct *t);

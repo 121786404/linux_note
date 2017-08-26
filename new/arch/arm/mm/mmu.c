@@ -1380,11 +1380,11 @@ static void __init devicemaps_init(const struct machine_desc *mdesc)
 	/*
 	 * Allocate the vector page early.
 	 */
-	//分配向量表内存
+	//分配向量表内存(2个PAGE)
 	vectors = early_alloc(PAGE_SIZE * 2);
 
 	/**
-	 * 将中断和异常处理代码入口复制到向量表中。
+	 * 将中断和异常处理代码入口复制到向量表中                 0xffff0000。
 	 */
 	early_trap_init(vectors);
 
@@ -1511,10 +1511,6 @@ static void __init map_lowmem(void)
 	phys_addr_t kernel_x_end = round_up(__pa(__init_end), SECTION_SIZE);
 
 	/* Map all the lowmem memory banks. */
-	/*
-    60000000~64000000
-    80000000~84000000
-	*/
 	for_each_memblock(memory, reg) {
 		phys_addr_t start = reg->base;
 		phys_addr_t end = start + reg->size;
@@ -1522,7 +1518,13 @@ static void __init map_lowmem(void)
         /*
         printk(KERN_CRIT "sheldon: %s(%llx~%llx)\n", __FUNCTION__,(unsigned long long)start,(unsigned long long)end);
         printk(KERN_CRIT "sheldon: %s(%llx~%llx)\n",__FUNCTION__,(unsigned long long)__phys_to_virt(start),(unsigned long long)__phys_to_virt(end));
-        */    
+        */  
+        /*
+        start           0x60000000
+        kernel_x_start  0x60000000
+        kernel_x_end    0x61000000
+        end             0x64000000
+        */
 		struct map_desc map;
 
 		if (memblock_is_nomap(reg))
@@ -1558,7 +1560,7 @@ static void __init map_lowmem(void)
 
 				create_mapping(&map);
 			}
-
+            // [0x60000000,0x61000000)--> [0xC0000000,0xC1000000)       rwx
 			map.pfn = __phys_to_pfn(kernel_x_start);
 			map.virtual = __phys_to_virt(kernel_x_start);
 			map.length = kernel_x_end - kernel_x_start;
@@ -1566,6 +1568,7 @@ static void __init map_lowmem(void)
 
 			create_mapping(&map);
 
+            // [0x61000000,0x64000000)--> [0xC1000000,0xC4000000)        rw
 			if (kernel_x_end < end) {
 				map.pfn = __phys_to_pfn(kernel_x_end);
 				map.virtual = __phys_to_virt(kernel_x_end);
@@ -1618,6 +1621,8 @@ void __init early_paging_init(const struct machine_desc *mdesc)
 
 	/* Re-set the phys pfn offset, and the pv offset */
 	__pv_offset += offset;
+
+	// 393216
 	__pv_phys_pfn_offset += PFN_DOWN(offset);
 
 	/* Run the patch stub to update the constants */

@@ -1,4 +1,4 @@
-/*
+﻿/*
  *  linux/fs/namei.c
  *
  *  Copyright (C) 1991, 1992  Linus Torvalds
@@ -2703,10 +2703,10 @@ EXPORT_SYMBOL(kern_path_mountpoint);
 int __check_sticky(struct inode *dir, struct inode *inode)
 {
 	kuid_t fsuid = current_fsuid();
-    /* ��鵱ǰ�ļ���uid�Ƿ��뵱ǰ�û���uid��ͬ */ 
+    /* 检查当前文件的uid是否与当前用户的uid相同 */ 
 	if (uid_eq(inode->i_uid, fsuid))
 		return 0;
-    /* ����ļ�����Ŀ¼��uid�Ƿ��뵱ǰ�û���uid��ͬ */
+    /* 检查文件所处目录的uid是否与当前用户的uid相同 */
 	if (uid_eq(dir->i_uid, fsuid))
 		return 0;
 	return !capable_wrt_inode_uidgid(inode, CAP_FOWNER);
@@ -3894,9 +3894,13 @@ SYSCALL_DEFINE1(rmdir, const char __user *, pathname)
  * be appropriate for callers that expect the underlying filesystem not
  * to be NFS exported.
  */
+ /*
+删除dentry，即就是硬链接
+ */
 int vfs_unlink(struct inode *dir, struct dentry *dentry, struct inode **delegated_inode)
 {
 	struct inode *target = dentry->d_inode;
+	/*权限检查，是否有删除权限*/
 	int error = may_delete(dir, dentry, 0);
 
 	if (error)
@@ -3914,6 +3918,7 @@ int vfs_unlink(struct inode *dir, struct dentry *dentry, struct inode **delegate
 			error = try_break_deleg(target, delegated_inode);
 			if (error)
 				goto out;
+			/*调用具体文件系统的unlink函数，如ext3_unlink()*/
 			error = dir->i_op->unlink(dir, dentry);
 			if (!error) {
 				dont_mount(dentry);
@@ -3927,6 +3932,7 @@ out:
 	/* We don't d_delete() NFS sillyrenamed files--they still exist. */
 	if (!error && !(dentry->d_flags & DCACHE_NFSFS_RENAMED)) {
 		fsnotify_link_count(target);
+		/* 若dentry的使用计数为 1，说明没有其他进程引用该dentry，就尝试把该dentry的inode删除 */
 		d_delete(dentry);
 	}
 
@@ -3940,6 +3946,20 @@ EXPORT_SYMBOL(vfs_unlink);
  * writeout happening, and we don't want to prevent access to the directory
  * while waiting on the I/O.
  */
+ /*
+ * 确保文件的实际截断发生在其目录的i_mutex之外，如果有很多写操作发生截断需要很长时间
+ * 在等待I/O发生时，我们不想阻止目录的访问
+
+ 该函数中首先使用user_path_parent（）函数获取要删除文件的父目录信息，
+ 成功会返回0，并且将父目录信息保存在nameidata类型的结构体nd中，
+
+ 然后通过lookup_hash函数在当前目录中找寻要删除文件的目录项信息，if语句判断获取的dentry是否有错误，
+ 有错误就使用path_put()和putname()释放前几步获取到的数据，然后返回，结束；
+
+ 若没有错误，得到该文件的inode，增加其i_count进程引用计数，判断当前挂载点是否有可写权限，
+ 有可写权限就调用vfs_unlink函数执行文件dentry的删除，释放dentry结构体，并释放资源，
+ 最后调用iput函数截断inode。
+ */
 static long do_unlinkat(int dfd, const char __user *pathname)
 {
 	int error;
@@ -3952,6 +3972,7 @@ static long do_unlinkat(int dfd, const char __user *pathname)
 	struct inode *delegated_inode = NULL;
 	unsigned int lookup_flags = 0;
 retry:
+    /* 获取父目录信息，成功保存在nd结构体中，并返回0*/
 	name = filename_parentat(dfd, getname(pathname), lookup_flags,
 				&path, &last, &type);
 	if (IS_ERR(name))
@@ -3961,6 +3982,7 @@ retry:
 	if (type != LAST_NORM)
 		goto exit1;
 
+    /*判断mnt对象是否有可写权限，是返回0*/
 	error = mnt_want_write(path.mnt);
 	if (error)
 		goto exit1;
@@ -3970,17 +3992,25 @@ retry_deleg:
 	error = PTR_ERR(dentry);
 	if (!IS_ERR(dentry)) {
 		/* Why not before? Because we want correct error value */
+		/*
+    		last域代表路径名中的最后一个分量，在LOOKUP_PARENT标志设置时使用，
+    		因为上边已经做了清除标志操作，此处这样做可以判断是否清除成功，否的话，返回正确的错误码
+		*/
 		if (last.name[last.len])
 			goto slashes;
 		inode = dentry->d_inode;
 		if (d_is_negative(dentry))
 			goto slashes;
 		ihold(inode);
+		/*
+		    检查权限允许删除一个到文件的硬链接，调用path_unlink是一个函数指针(如果有定义)
+		*/
 		error = security_path_unlink(&path, dentry);
 		if (error)
 			goto exit2;
 		error = vfs_unlink(path.dentry->d_inode, dentry, &delegated_inode);
 exit2:
+        /*释放dentry结构体，并释放资源*/
 		dput(dentry);
 	}
 	inode_unlock(path.dentry->d_inode);
@@ -3994,7 +4024,9 @@ exit2:
 	}
 	mnt_drop_write(path.mnt);
 exit1:
+    /*释放引用的一个path结构体*/
 	path_put(&path);
+    /*释放name*/
 	putname(name);
 	if (retry_estale(error, lookup_flags)) {
 		lookup_flags |= LOOKUP_REVAL;

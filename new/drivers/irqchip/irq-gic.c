@@ -959,11 +959,13 @@ static int gic_irq_domain_map(struct irq_domain *d, unsigned int irq,
 	struct gic_chip_data *gic = d->host_data;
 
 	if (hw < 32) {
+	    // 处理系统预留给SGI和PPI中断
 		irq_set_percpu_devid(irq);
 		irq_domain_set_info(d, irq, hw, &gic->chip, d->host_data,
 				    handle_percpu_devid_irq, NULL, NULL);
 		irq_set_status_flags(irq, IRQ_NOAUTOEN);
 	} else {
+	    // SPI外设中断
 		irq_domain_set_info(d, irq, hw, &gic->chip, d->host_data,
 				    handle_fasteoi_irq, NULL, NULL);
 		irq_set_probe(irq);
@@ -1015,7 +1017,9 @@ static int gic_starting_cpu(unsigned int cpu)
 	gic_cpu_init(&gic_data[0]);
 	return 0;
 }
-
+/*
+进行硬件中断号和软件中断号的映射
+*/
 static int gic_irq_domain_alloc(struct irq_domain *domain, unsigned int virq,
 				unsigned int nr_irqs, void *arg)
 {
@@ -1029,6 +1033,7 @@ static int gic_irq_domain_alloc(struct irq_domain *domain, unsigned int virq,
 		return ret;
 
 	for (i = 0; i < nr_irqs; i++)
+	    //
 		gic_irq_domain_map(domain, virq + i, hwirq + i);
 
 	return 0;

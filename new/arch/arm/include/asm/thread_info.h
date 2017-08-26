@@ -78,7 +78,7 @@ struct thread_info {
 */
 	struct task_struct	*task;		/* main task structure */
 /*
-	进程正在其上执行的CPU数目
+	运行在此CPU 上
 */
 	__u32			cpu;		/* cpu */
 	__u32			cpu_domain;	/* cpu domain */

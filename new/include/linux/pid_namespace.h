@@ -23,7 +23,7 @@ struct fs_pin;
 
 struct pid_namespace {
     /*
-        表示指向pid_namespace的个数
+        被nsproxy 引用计数
     */
 	struct kref kref;
 	/*
@@ -32,12 +32,17 @@ struct pid_namespace {
 	*/
 	struct pidmap pidmap[PIDMAP_ENTRIES];
 	struct rcu_head rcu;
+	/*
+    上一次分配的pid
+	*/
 	int last_pid;
 	unsigned int nr_hashed;
-	/*当前命名空间的init进程，每个命名空间都有一个作用相当于全局init进程的进程*/
+	/*
+	当前命名空间的init进程，每个命名空间都有一个作用相当于全局init进程的进程
+	*/
 	struct task_struct *child_reaper;
 	/*
-      指向分配pid的slab的地址
+      为命名空间分配pid 的slab 缓存
 	*/
 	struct kmem_cache *pid_cachep;
 	/*

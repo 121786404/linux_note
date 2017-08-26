@@ -120,6 +120,7 @@ struct irq_domain *__irq_domain_add(struct fwnode_handle *fwnode, int size,
 	irq_domain_check_hierarchy(domain);
 
 	mutex_lock(&irq_domain_mutex);
+	/* 将该irq domain挂入irq_domain_list的全局列表 */
 	list_add(&domain->link, &irq_domain_list);
 	mutex_unlock(&irq_domain_mutex);
 
@@ -615,8 +616,7 @@ unsigned int irq_create_fwspec_mapping(struct irq_fwspec *fwspec)
 	int virq;
 
     /*
-    这里的代码主要是找到irq domain。这是根据传递进来的参数irq_data的np成员来寻找的，具体定义如下：
-
+    这里的代码主要是找到所属终端控制器的irq_domain。这是根据传递进来的参数irq_data的np成员来寻找的，具体定义如下：
     */
 	if (fwspec->fwnode) {
 		domain = irq_find_matching_fwspec(fwspec, DOMAIN_BUS_WIRED);
@@ -648,6 +648,9 @@ unsigned int irq_create_fwspec_mapping(struct irq_fwspec *fwspec)
 	 */
 	virq = irq_find_mapping(domain, hwirq);
 	if (virq) {
+        /*
+        	 已经映射过了
+        */
 		/*
 		 * If the trigger type is not specified or matches the
 		 * current trigger type then we are done so return the
@@ -752,6 +755,9 @@ EXPORT_SYMBOL_GPL(irq_dispose_mapping);
  * @domain: domain owning this hardware interrupt
  * @hwirq: hardware irq number in that domain space
  */
+/*
+    找到HW interrupt ID对应的irq number
+*/
 unsigned int irq_find_mapping(struct irq_domain *domain,
 			      irq_hw_number_t hwirq)
 {
@@ -938,7 +944,9 @@ const struct irq_domain_ops irq_domain_simple_ops = {
 	.xlate = irq_domain_xlate_onetwocell,
 };
 EXPORT_SYMBOL_GPL(irq_domain_simple_ops);
-
+/*
+返回allocated_irqs位图中第一个空闲的bit位，这是软件中断号
+*/
 int irq_domain_alloc_descs(int virq, unsigned int cnt, irq_hw_number_t hwirq,
 			   int node, const struct cpumask *affinity)
 {
@@ -1112,6 +1120,9 @@ static int irq_domain_alloc_irq_data(struct irq_domain *domain,
  * @domain:	domain to match
  * @virq:	IRQ number to get irq_data
  */
+/*
+通过中断号获取irq_data
+*/
 struct irq_data *irq_domain_get_irq_data(struct irq_domain *domain,
 					 unsigned int virq)
 {
@@ -1138,11 +1149,13 @@ int irq_domain_set_hwirq_and_chip(struct irq_domain *domain, unsigned int virq,
 				  irq_hw_number_t hwirq, struct irq_chip *chip,
 				  void *chip_data)
 {
+    // 通过中断号获取irq_data
 	struct irq_data *irq_data = irq_domain_get_irq_data(domain, virq);
 
 	if (!irq_data)
 		return -ENOENT;
 
+    // 设置hwirq 完成硬件中断号到软件中断号的映射
 	irq_data->hwirq = hwirq;
 	irq_data->chip = chip ? chip : &no_irq_chip;
 	irq_data->chip_data = chip_data;
@@ -1162,12 +1175,17 @@ EXPORT_SYMBOL_GPL(irq_domain_set_hwirq_and_chip);
  * @handler_data:	The interrupt flow handler data
  * @handler_name:	The interrupt handler name
  */
+/*
+ 设置一些重要参数到中断描述符
+*/
 void irq_domain_set_info(struct irq_domain *domain, unsigned int virq,
 			 irq_hw_number_t hwirq, struct irq_chip *chip,
 			 void *chip_data, irq_flow_handler_t handler,
 			 void *handler_data, const char *handler_name)
 {
+    //
 	irq_domain_set_hwirq_and_chip(domain, virq, hwirq, chip, chip_data);
+    // 设置中断描述符 handle_irq 的
 	__irq_set_handler(virq, handler, 0, handler_name);
 	irq_set_handler_data(virq, handler_data);
 }
@@ -1256,6 +1274,7 @@ int irq_domain_alloc_irqs_recursive(struct irq_domain *domain,
 	if (ret < 0)
 		return ret;
 
+    // gic_irq_domain_alloc 进行硬件中断号和软件中断号的映射
 	ret = domain->ops->alloc(domain, irq_base, nr_irqs, arg);
 	if (ret < 0 && recursive)
 		irq_domain_free_irqs_recursive(parent, irq_base, nr_irqs);
@@ -1305,6 +1324,7 @@ int __irq_domain_alloc_irqs(struct irq_domain *domain, int irq_base,
 	if (realloc && irq_base >= 0) {
 		virq = irq_base;
 	} else {
+	    //
 		virq = irq_domain_alloc_descs(irq_base, nr_irqs, 0, node,
 					      affinity);
 		if (virq < 0) {
@@ -1321,12 +1341,14 @@ int __irq_domain_alloc_irqs(struct irq_domain *domain, int irq_base,
 	}
 
 	mutex_lock(&irq_domain_mutex);
+	// 
 	ret = irq_domain_alloc_irqs_recursive(domain, virq, nr_irqs, arg);
 	if (ret < 0) {
 		mutex_unlock(&irq_domain_mutex);
 		goto out_free_irq_data;
 	}
 	for (i = 0; i < nr_irqs; i++)
+	    //
 		irq_domain_insert_irq(virq + i);
 	mutex_unlock(&irq_domain_mutex);
 

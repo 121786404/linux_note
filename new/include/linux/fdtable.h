@@ -47,6 +47,7 @@ struct files_struct {
   /*
    * read mostly part
    */
+   /* count为文件表files struct的引用计数 */
 	atomic_t count;
 	bool resize_in_progress;
 	wait_queue_head_t resize_wait;
@@ -66,10 +67,9 @@ struct files_struct {
   /*
    * written part on a separate cache line in SMP
    */
-   /* 
-     使用____cacheline_aligned_in_smp可以保证file_lock是以cache
-     line 对齐的, 避免了false sharing 
-     */
+    /* 
+     使用____cacheline_aligned_in_smp可以保证file_lock是以cache      line 对齐的, 避免了false sharing 
+    */
 	spinlock_t file_lock ____cacheline_aligned_in_smp;
 	/* 用于查找下一个空闲的fd */
 	unsigned int next_fd;

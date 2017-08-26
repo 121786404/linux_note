@@ -94,6 +94,9 @@ enum irq_domain_bus_token {
  * whatever internal data structures management is required. It also needs
  * to setup the irq_desc when returning from map().
  */
+/*
+ domain_ops  domain映射操作方法集合
+*/
 struct irq_domain_ops {
     /*
     判断一个指定的interrupt controller（node参数）是否和一个irq domain匹配（d参数），如果匹配的话，返回1。
@@ -118,7 +121,9 @@ struct irq_domain_ops {
 	void (*unmap)(struct irq_domain *d, unsigned int virq);
 	/*
 	xlate是translate的意思，在DTS文件中，各个使用中断的device node会通过一些属性
-	（例如interrupts和interrupt-parent属性）来提供中断信息给kernel以便kernel可以正确的进行driver的初始化动作。
+	（例如interrupts和interrupt-parent属性）来提供中断信息(中断号、中断触发类型等)
+	给kernel以便kernel可以正确的进行driver的初始化动作。
+
 	这里，interrupts属性所表示的interrupt specifier只能由具体的interrupt controller（也就是irq domain）来解析。
 	而xlate函数就是将指定的设备（node参数）上若干个（intsize参数）中断属性（intspec参数）
 	翻译成HW interrupt ID（out_hwirq参数）和trigger类型（out_type）。 
@@ -168,8 +173,12 @@ struct irq_domain_chip_generic;
  * @revmap_tree: Radix map tree for hwirqs that don't fit in the linear map
  * @linear_revmap: Linear table of hwirq->virq reverse mappings
  */
+/*
+ GIC中断控制器在初始化时解析DTS信息中定义了几个GIC控制器，每一个控制器注册一个irq_domain数据结构
+ DTS中定义"interrupt controller"属性的设备表示一个中断控制器
+*/
 struct irq_domain {
-	struct list_head link;  // 挂载在irq_domain_list
+	struct list_head link;  // 用于将irq_domain链接到全局链表irq_domain_list中
 	const char *name;
 	const struct irq_domain_ops *ops; // callback函数 
     /*

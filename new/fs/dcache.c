@@ -754,6 +754,7 @@ void dput(struct dentry *dentry)
 		return;
 
 repeat:
+    /*提醒用户调用该函数的函数可能会sleep*/
 	might_sleep();
 
 	rcu_read_lock();
@@ -767,6 +768,7 @@ repeat:
 
 	WARN_ON(d_in_lookup(dentry));
 
+    /*dentry从dcache hash链上移除了，表示该元数据对应的对象已经被删除，此时可以释放该元数据*/
 	/* Unreachable? Get rid of it */
 	if (unlikely(d_unhashed(dentry)))
 		goto kill_it;

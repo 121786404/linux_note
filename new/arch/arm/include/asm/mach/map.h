@@ -38,7 +38,13 @@ enum {
 	MT_UNCACHED = 4,
 	MT_CACHECLEAN,
 	MT_MINICLEAN,
+/*
+	对应0地址开始的向量
+*/
 	MT_LOW_VECTORS,
+/*
+    对应高地址开始的向量，它有vector_base宏决定。
+*/
 	MT_HIGH_VECTORS,
 	MT_MEMORY_RWX,
 	MT_MEMORY_RW,

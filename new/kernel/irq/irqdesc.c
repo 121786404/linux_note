@@ -120,6 +120,10 @@ int nr_irqs = NR_IRQS;
 EXPORT_SYMBOL_GPL(nr_irqs);
 
 static DEFINE_MUTEX(sparse_irq_lock);
+/*
+如果没有设置CONFIG_SPARSE_IRQ，IRQ_BITMAP_BITS = NR_IRQS
+位图变量allocated_irqs分配NR_IRQS个比特位，每一位表示一个中断号
+*/
 static DECLARE_BITMAP(allocated_irqs, IRQ_BITMAP_BITS);
 
 #ifdef CONFIG_SPARSE_IRQ
@@ -305,7 +309,9 @@ static void irq_insert_desc(unsigned int irq, struct irq_desc *desc)
 {
 	radix_tree_insert(&irq_desc_tree, irq, desc);
 }
-
+/*
+    用中断号获取中断描述符irq_desc
+*/
 struct irq_desc *irq_to_desc(unsigned int irq)
 {
 	return radix_tree_lookup(&irq_desc_tree, irq);
@@ -500,7 +506,9 @@ int __init early_irq_init(void)
 }
 
 #else /* !CONFIG_SPARSE_IRQ */
-
+/*
+irq_desc下标是中段号，可以通过中断号找到相应的中断描述符
+*/
 struct irq_desc irq_desc[NR_IRQS] __cacheline_aligned_in_smp = {
 	[0 ... NR_IRQS-1] = {
 		.handle_irq	= handle_bad_irq,
@@ -739,6 +747,7 @@ __irq_alloc_descs(int irq, unsigned int from, unsigned int cnt, int node,
 
 	mutex_lock(&sparse_irq_lock);
 
+    // 从allocated_irqs位图中查找连续cnt个为0的bit位区域
 	start = bitmap_find_next_zero_area(allocated_irqs, IRQ_BITMAP_BITS,
 					   from, cnt, 0);
 	ret = -EEXIST;
@@ -750,7 +759,7 @@ __irq_alloc_descs(int irq, unsigned int from, unsigned int cnt, int node,
 		if (ret)
 			goto err;
 	}
-
+    // 标记占用
 	bitmap_set(allocated_irqs, start, cnt);
 	mutex_unlock(&sparse_irq_lock);
 	return alloc_descs(start, cnt, node, affinity, owner);

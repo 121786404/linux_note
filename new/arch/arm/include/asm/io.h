@@ -124,6 +124,10 @@ static inline u32 __raw_readl(const volatile void __iomem *addr)
 /*
  * Architecture ioremap implementation.
  */
+/*
+ 系统中定义了多个映射类型，最常用的是MT_MEMORY，它对应RAM
+ MT_DEVICE则对应了其他I/O设备，应用于ioremap;
+*/
 #define MT_DEVICE		0
 #define MT_DEVICE_NONSHARED	1
 #define MT_DEVICE_CACHED	2

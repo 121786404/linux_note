@@ -311,7 +311,10 @@ struct pid *alloc_pid(struct pid_namespace *ns)
 
 	tmp = ns;
 	pid->level = ns->level;
+
+	// 初始化 pid->numbers[] 结构体
 	for (i = ns->level; i >= 0; i--) {
+	    //分配一个局部ID
 		nr = alloc_pidmap(tmp);
 		if (nr < 0) {
 			retval = nr;
@@ -322,7 +325,7 @@ struct pid *alloc_pid(struct pid_namespace *ns)
 		pid->numbers[i].ns = tmp;
 		tmp = tmp->parent;
 	}
-
+	
 	if (unlikely(is_child_reaper(pid))) {
 		if (pid_ns_prepare_proc(ns))
 			goto out_free;
@@ -330,9 +333,12 @@ struct pid *alloc_pid(struct pid_namespace *ns)
 
 	get_pid_ns(ns);
 	atomic_set(&pid->count, 1);
+
+    // 初始化 pid->task[] 结构体
 	for (type = 0; type < PIDTYPE_MAX; ++type)
 		INIT_HLIST_HEAD(&pid->tasks[type]);
 
+    // 将每个命名空间经过哈希之后加入到散列表中
 	upid = pid->numbers + ns->level;
 	spin_lock_irq(&pidmap_lock);
 	if (!(ns->nr_hashed & PIDNS_HASH_ADDING))
@@ -365,15 +371,19 @@ void disable_pid_allocation(struct pid_namespace *ns)
 	spin_unlock_irq(&pidmap_lock);
 }
 
+/*
+获得 pid 实体。根据局部PID以及命名空间计算在 pid_hash 数组中的索引，然后遍历散列表找到所要的 upid， 
+再根据内核的 container_of 机制找到 pid 实例
+*/
 struct pid *find_pid_ns(int nr, struct pid_namespace *ns)
 {
 	struct upid *pnr;
 
 	hlist_for_each_entry_rcu(pnr,
-			&pid_hash[pid_hashfn(nr, ns)], pid_chain)
-		if (pnr->nr == nr && pnr->ns == ns)
+			&pid_hash[pid_hashfn(nr, ns)], pid_chain)//pid_hashfn() 获得hash的索引
+		if (pnr->nr == nr && pnr->ns == ns)  //比较 nr 与 ns 是否都相同
 			return container_of(pnr, struct pid,
-					numbers[ns->level]);
+					numbers[ns->level]); //根据container_of机制取得pid 实体
 
 	return NULL;
 }
@@ -434,6 +444,7 @@ void transfer_pid(struct task_struct *old, struct task_struct *new,
 	hlist_replace_rcu(&old->pids[type].node, &new->pids[type].node);
 }
 
+// 根据ID类型取得task_struct 结构体
 struct task_struct *pid_task(struct pid *pid, enum pid_type type)
 {
 	struct task_struct *result = NULL;

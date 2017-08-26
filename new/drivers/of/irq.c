@@ -46,6 +46,8 @@
  对于一个使用Device tree的普通驱动程序（我们推荐这样做），
  基本上初始化需要调用irq_of_parse_and_map获取IRQ number，
  然后调用request_threaded_irq申请中断handler
+
+ 根据DTS解析硬件中断号，返回Linux内核的IRQ中断号
  */
 unsigned int irq_of_parse_and_map(struct device_node *dev, int index)
 {
@@ -303,6 +305,9 @@ EXPORT_SYMBOL_GPL(of_irq_parse_raw);
  * finding which interrupt controller node it is attached to, and returning the
  * interrupt specifier that can be used to retrieve a Linux IRQ number.
  */
+/*
+    分析device node中的reg interrupt等相关属性 
+*/
 int of_irq_parse_one(struct device_node *device, int index, struct of_phandle_args *out_irq)
 {
 	struct device_node *p;
@@ -359,6 +364,9 @@ int of_irq_parse_one(struct device_node *device, int index, struct of_phandle_ar
 	intspec += index * intsize;
 	out_irq->np = p;
 	out_irq->args_count = intsize;
+    /*
+    	"interrupts"的值放在args中
+    */
 	for (i = 0; i < intsize; i++)
 		out_irq->args[i] = be32_to_cpup(intspec++);
 

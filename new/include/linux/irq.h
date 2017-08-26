@@ -90,12 +90,25 @@ enum {
 	IRQ_LEVEL		= (1 <<  8),
 	IRQ_PER_CPU		= (1 <<  9),
 	IRQ_NOPROBE		= (1 << 10),
+/*
+	系统预留，外设不可使用
+*/
 	IRQ_NOREQUEST		= (1 << 11),
 	IRQ_NOAUTOEN		= (1 << 12),
 	IRQ_NO_BALANCING	= (1 << 13),
 	IRQ_MOVE_PCNTXT		= (1 << 14),
+/*
+	中断嵌套，没有primary handler(使用默认的irq_nested_primary_handler),
+	必须设置中断线程化处理函数thread_fn
+*/
 	IRQ_NESTED_THREAD	= (1 << 15),
+/*
+	不允许线程化
+*/
 	IRQ_NOTHREAD		= (1 << 16),
+/*
+	预留给IRQF_PERCPU类型的中断
+*/
 	IRQ_PER_CPU_DEVID	= (1 << 17),
 	IRQ_IS_POLLED		= (1 << 18),
 	IRQ_DISABLE_UNLAZY	= (1 << 19),
@@ -174,9 +187,9 @@ struct irq_common_data {
 struct irq_data {
 	//预先计算好的，访问寄存器的位图。
 	u32			mask;
-	//中断编号
+	//软件中断号
 	unsigned int		irq;
-	//硬件中断编号
+	//硬件中断号
 	unsigned long		hwirq;
 	//指向所有中断芯片共享数据的指针
 	struct irq_common_data	*common;
@@ -213,7 +226,13 @@ struct irq_data {
  * IRQD_FORWARDED_TO_VCPU	- The interrupt is forwarded to a VCPU
  * IRQD_AFFINITY_MANAGED	- Affinity is auto-managed by the kernel
  */
+/*
+ 底层中断状态
+*/
 enum {
+/*
+    触发类型
+*/
 	IRQD_TRIGGER_MASK		= 0xf,
 	IRQD_SETAFFINITY_PENDING	= (1 <<  8),
 	IRQD_ACTIVATED			= (1 <<  9),
@@ -223,8 +242,14 @@ enum {
 	IRQD_LEVEL			= (1 << 13),
 	IRQD_WAKEUP_STATE		= (1 << 14),
 	IRQD_MOVE_PCNTXT		= (1 << 15),
+/*
+	关闭状态
+*/
 	IRQD_IRQ_DISABLED		= (1 << 16),
 	IRQD_IRQ_MASKED			= (1 << 17),
+/*
+	正在被处理
+*/
 	IRQD_IRQ_INPROGRESS		= (1 << 18),
 	IRQD_WAKEUP_ARMED		= (1 << 19),
 	IRQD_FORWARDED_TO_VCPU		= (1 << 20),
@@ -401,23 +426,40 @@ struct irq_chip {
 	void		(*irq_shutdown)(struct irq_data *data);
 	/*使能中断*/
 	void		(*irq_enable)(struct irq_data *data);
-		/*禁止中断*/
+	/*禁止中断*/
 	void		(*irq_disable)(struct irq_data *data);
-        /* 中断应答函数，就是清除中观标志*/
+    /* 中断应答函数，就是清除中断标志*/
 	void		(*irq_ack)(struct irq_data *data);
+	/*屏蔽中断源*/
 	void		(*irq_mask)(struct irq_data *data);
-	/*屏蔽中断应答函数，一般用于电瓶触发方式，需要先屏蔽再应答*/
+	/*屏蔽中断应答函数，一般用于电平触发方式，需要先屏蔽再应答*/
 	void		(*irq_mask_ack)(struct irq_data *data);
-	/*开启中断*/
+	/*解除屏蔽中断*/
 	void		(*irq_unmask)(struct irq_data *data);
+    /*
+    	发送EOI信号给中断控制器，表示硬件中断处理已经完成
+    */
 	void		(*irq_eoi)(struct irq_data *data);
-
+    /*
+        绑定一个中断到某个CPU
+    */
 	int		(*irq_set_affinity)(struct irq_data *data, const struct cpumask *dest, bool force);
+    /*
+        重发中断到CPU
+    */
 	int		(*irq_retrigger)(struct irq_data *data);
-		/* 设置中断类型，其中包括设置GPIO口为中断输入*/
+	/* 
+	    设置中断触发类型，其中包括设置GPIO口为中断输入
+	*/
 	int		(*irq_set_type)(struct irq_data *data, unsigned int flow_type);
+    /*
+	    使能/关闭中断在电源管理中的唤醒功能
+    */
 	int		(*irq_set_wake)(struct irq_data *data, unsigned int on);
-    /*上锁函数*/
+    /*
+      上锁函数
+      保护低速设备访问
+    */
 	void		(*irq_bus_lock)(struct irq_data *data);
 		/*解锁*/
 	void		(*irq_bus_sync_unlock)(struct irq_data *data);
@@ -467,6 +509,9 @@ enum {
 	IRQCHIP_MASK_ON_SUSPEND		= (1 <<  2),
 	IRQCHIP_ONOFFLINE_ENABLED	= (1 <<  3),
 	IRQCHIP_SKIP_SET_WAKE		= (1 <<  4),
+/*
+	中断控制器只支持ONE_SHOT，不支持嵌套
+*/
 	IRQCHIP_ONESHOT_SAFE		= (1 <<  5),
 	IRQCHIP_EOI_THREADED		= (1 <<  6),
 };

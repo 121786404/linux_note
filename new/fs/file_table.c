@@ -108,16 +108,12 @@ struct file *get_empty_filp(void)
 	int error;
 
 /*
-对于file的个数，Linux内核使用两种方式来计数。
-一是使用全局变量，另外一个是使用per cpu变量。
-更新全局变量时，为了避免竞争，不得不使用锁，
-所以Linux使用了一种折中的解决方案。
+对于file的个数，Linux内核使用两种方式来计数。一是使用全局变量，另外一个是使用per cpu变量。
+更新全局变量时，为了避免竞争，不得不使用锁，所以Linux使用了一种折中的解决方案。
 
 当per cpu变量的个数变化不超过正负percpu_counter_batch（默认为32）的范围时，
-就不更新全局变量。这样就减少了对全局变量的更新，
-可是也造成了全局变量的值不准确的问题。
-于是在全局变量的file个数超过限制时，会再对所有的per cpu变量求和，
-再次与系统的限制相比较
+就不更新全局变量。这样就减少了对全局变量的更新，可是也造成了全局变量的值不准确的问题。
+于是在全局变量的file个数超过限制时，会再对所有的per_cpu变量求和，再次与系统的限制相比较
 */
 	/*
 	 * Privileged users can go above max_files
@@ -128,6 +124,7 @@ struct file *get_empty_filp(void)
 		 * percpu_counters are inaccurate.  Do an expensive check before
 		 * we go and fail.
 		 */
+		/* 再次检查per cpu 的文件个数的总和， 为什么要做两次检查呢。后文会详细介绍 */
 		if (percpu_counter_sum_positive(&nr_files) >= files_stat.max_files)
 			goto over;
 	}

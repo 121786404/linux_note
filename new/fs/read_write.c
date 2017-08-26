@@ -645,6 +645,7 @@ SYSCALL_DEFINE3(read, unsigned int, fd, char __user *, buf, size_t, count)
 		if (ret >= 0)
 		/* 更新文件偏移量 */  
 			file_pos_write(f.file, pos);
+		/* 归还管理结构file . 如有必要，就进行引用计数操作 */
 		fdput_pos(f);
 	}
 	return ret;
@@ -664,6 +665,7 @@ SYSCALL_DEFINE3(write, unsigned int, fd, const char __user *, buf,
 		if (ret >= 0)
 		    /* 更新文件偏移量 */ 
 			file_pos_write(f.file, pos);
+		/* 释放文件管理指针file */
 		fdput_pos(f);
 	}
 

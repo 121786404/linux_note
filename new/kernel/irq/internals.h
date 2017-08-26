@@ -49,13 +49,37 @@ enum {
  * IRQS_SUSPENDED		- irq is suspended
  */
 enum {
+/*
+    自动侦测状态
+*/
 	IRQS_AUTODETECT		= 0x00000001,
+/*
+    视为“伪中断”并被禁用
+*/	
 	IRQS_SPURIOUS_DISABLED	= 0x00000002,
+/*
+	处于轮询调用action
+*/
 	IRQS_POLL_INPROGRESS	= 0x00000008,
+/*
+	只执行一次
+*/
 	IRQS_ONESHOT		= 0x00000020,
+/*
+	重新发一次中断
+*/
 	IRQS_REPLAY		= 0x00000040,
+/*
+    等待状态
+*/	
 	IRQS_WAITING		= 0x00000080,
+/*
+	中断被挂起
+*/
 	IRQS_PENDING		= 0x00000200,
+/*
+    中断被暂停	
+*/
 	IRQS_SUSPENDED		= 0x00000800,
 };
 

@@ -310,6 +310,7 @@ struct files_struct *dup_fd(struct files_struct *oldf, int *errorp)
 	new_fdt->close_on_exec = newf->close_on_exec_init;
 	new_fdt->open_fds = newf->open_fds_init;
 	new_fdt->full_fds_bits = newf->full_fds_bits_init;
+	// new_fdt->fd 指向其本身的成员变量fdtab 和fd_array
 	new_fdt->fd = &newf->fd_array[0];
 
 	spin_lock(&oldf->file_lock);
@@ -595,7 +596,11 @@ static void __put_unused_fd(struct files_struct *files, unsigned int fd)
 	struct fdtable *fdt = files_fdtable(files);
 	/* 清除fd在open_fds位图的位 */
 	__clear_open_fd(fd, fdt);
-	/* 如果fd小于next_fd, 重置next_fd为释放的fd */
+	/* 
+	如果fd小于next_fd, 重置next_fd为释放的fd 
+    当某个文件描述符关闭时，如果其小于next_fd，则next_fd就重置为这个描述符，
+    这样下一次分配就会立刻重用这个文件描述符
+	*/
 	if (fd < files->next_fd)
 		files->next_fd = fd;
 }
@@ -685,6 +690,7 @@ int __close_fd(struct files_struct *files, unsigned fd)
 		goto out_unlock;
 	/* 将对应的filp置为0*/
 	rcu_assign_pointer(fdt->fd[fd], NULL);
+	/* 清除fd在close_on_exec位图中的位 */
 	__clear_close_on_exec(fd, fdt);
 	/* 释放该fd, 或者说将其置为unused。*/
 	__put_unused_fd(files, fd);
@@ -735,11 +741,13 @@ void do_close_on_exec(struct files_struct *files)
 
 static struct file *__fget(unsigned int fd, fmode_t mask)
 {
+    //获得当前进程的打开文件表
 	struct files_struct *files = current->files;
 	struct file *file;
 
 	rcu_read_lock();
 loop:
+    //根据fd从打开文件表files里取出相应的file结构变量
 	file = fcheck_files(files, fd);
 	if (file) {
 		/* File object ref couldn't be taken.
@@ -945,6 +953,20 @@ out_unlock:
 	return err;
 }
 
+/*
+话说在很久以前，程序员在写daemon 服务程序时，基本上都有这样的流程:
+首先关闭标准输出stdout 、标准出错stderr ，然后进行dup 操作，将stdout 或stderr重定向。
+但是在多线程程序成为主流以后，由于close 和dup 操作不是原子的，这就造成了在某些情况下，重定向会失败。
+因此就引入了dup2 将close 和dup 合为一个系统调用，以保证原子性，然而这依然有问题。
+在多线程中进行fork操作时， dup2 同样会有让相同的文件描述符暴露的风险， dup3 也就随之诞生了。
+*/
+/*
+只有定义了feature 宏"-GNU-SOURCE" 才可以使用，
+它比dup2 多了一个参数，可以指定标志一一不过目前仅仅支持O_CLOEXEC标志，
+可在newfd上设置O_CLOEXEC标志。
+定义dup3 的原因与open 类似，可以在进行dup 操作的同时原子地将: 
+fd 设置为O_CLOEXEC ，从而避免将文件内容暴露给子进程。
+*/
 SYSCALL_DEFINE3(dup3, unsigned int, oldfd, unsigned int, newfd, int, flags)
 {
 	int err = -EBADF;
@@ -966,7 +988,7 @@ SYSCALL_DEFINE3(dup3, unsigned int, oldfd, unsigned int, newfd, int, flags)
     /*  
         检查oldfd，如果是非法的，就直接返回  
         不过我更倾向于先检查oldfd后扩展文件表，如果是非法的，就不需要扩展文件表了  
-        */
+    */
 	file = fcheck(oldfd);
 	if (unlikely(!file))
 		goto Ebadf;
@@ -984,6 +1006,10 @@ out_unlock:
 	return err;
 }
 
+/*
+是使用用户指定的文件描述符newfd 来复制oldfd 的。
+如果newfd 已经是打开的文件描述符， Linux 会先关闭newfd ，然后再复制oldfd
+*/
 SYSCALL_DEFINE2(dup2, unsigned int, oldfd, unsigned int, newfd)
 {
     /* 如果oldfd与newfd相等，这是一种特殊的情况 */
@@ -991,9 +1017,9 @@ SYSCALL_DEFINE2(dup2, unsigned int, oldfd, unsigned int, newfd)
 		struct files_struct *files = current->files;
 		int retval = oldfd;
         /*  
-                 检查oldfd的合法性，如果是合法的fd，则直接返回oldfd的值；  
-                 如果是不合法的，则返回EBADF  
-            */  
+         检查oldfd的合法性，如果是合法的fd，则直接返回oldfd的值；  
+         如果是不合法的，则返回EBADF  
+        */
 		rcu_read_lock();
 		if (!fcheck_files(files, oldfd))
 			retval = -EBADF;
@@ -1004,6 +1030,9 @@ SYSCALL_DEFINE2(dup2, unsigned int, oldfd, unsigned int, newfd)
 	return sys_dup3(oldfd, newfd, 0);
 }
 
+/*
+使用一个最小的未用文件描述符作为复制后的文件描述符
+*/
 SYSCALL_DEFINE1(dup, unsigned int, fildes)
 {
 	int ret = -EBADF;

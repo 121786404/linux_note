@@ -171,11 +171,9 @@ ENTRY(vector_swi)
 	stmia	sp, {r0 - r12}			@ Calling r0 - r12
 /*
 将用户态的sp、lr压入内核栈中
-*/
- ARM(	add	r8, sp, #S_PC		)
-/*
 {sp, lr}^中的"^"表示这里的sp和lr是用户态的寄存器
 */
+ ARM(	add	r8, sp, #S_PC		)
  ARM(	stmdb	r8, {sp, lr}^		)	@ Calling sp, lr
  THUMB(	mov	r8, sp			)
  THUMB(	store_user_sp_lr r8, r10, S_SP	)	@ calling sp, lr

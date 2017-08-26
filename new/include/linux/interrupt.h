@@ -20,6 +20,26 @@
 #include <asm/irq.h>
 
 /*
+但外设有事情需要报告Soc时，会通过和Soc连接的中断引脚发送中断信号，
+根据信号类型的不同，发送不同的波形，例如上升沿、高电平触发等。
+
+中断控制器感知到中断信号，里面的仲裁单元（Distributor）会在众多CPU核心中选择一个
+并把该中断分发给CPU
+
+GIC控制器和CPU之间通过nIRQ信号来通知CPU，CPU感知到后，硬件会执行以下动作
+1) 保存中断发生时CSPR 到  CSPR_irq
+2）修改CSPR的M域，使CPU进入IRQ模式
+3) CPSR中的IRQ位或FIQ位置1  ，关闭中断IRQ和FIQ
+4）保存返回地址到LR_irq
+5) 跳转到irq 中断处理vector
+
+当中断返回时，需要软件实现
+1) 从CSPR_irq恢复CSPR
+2) 从LR_irq恢复PC
+
+
+*/
+/*
  * These correspond to the IORESOURCE_IRQ_* defines in
  * linux/ioport.h to select the interrupt line behaviour.  When
  * requesting an interrupt without specifying a IRQF_TRIGGER, the
@@ -72,11 +92,11 @@
 IRQF_SHARED：
 这是flag用来描述一个interrupt line是否允许在多个设备中共享。如果中断控制器可以支持足够多的interrupt source，
 那么在两个外设间共享一个interrupt request line是不推荐的，毕竟有一些额外的开销
+大部分ARM SOC都能提供足够的中断源，因此不推荐使用共享中断源
 
 在中断到来时， 会遍历执行共享此中断的所有中断处理程序，直到某一个函数返回IRQ_HANDLED 。
 在中断处理程序顶半部中， 应根据硬件寄存器中的信息比照传人的dev_id 参数迅速地判断是否为本设备的中断， 
 若不是， 应迅速返回IRQ_NONE表示这个中断不归我管。 
-
 
 早期PC时代，使用8259中断控制器，级联的8259最多支持15个外部中断，但是PC外设那么多，因此需要irq share。
 现在，ARM平台上的系统设计很少会采用外设共享IRQ方式，毕竟一般ARM SOC提供的有中断功能的GPIO非常的多，足够用的。 
@@ -91,7 +111,6 @@ IRQF_SHARED用来表示该interrupt action descriptor是允许和其他device共
 这时候，如果即便是不能和其他的驱动程序share这个interrupt line，我也没有关系，我就是想scan看看情况。
 这时候，caller其实可以预见sharing mismatche的发生，因此，不需要内核打印“Flags mismatch irq……“这样冗余的信息
 */
-
 #define IRQF_SHARED		0x00000080
 /*
 IRQF_SHARED用来表示该interrupt action descriptor是允许和其他device共享一个interrupt line（IRQ number），
@@ -120,14 +139,22 @@ interrupt controller可以把这个中断送达多个处理器。当然，在具
 每个CPU看到的是不同的控制寄存器。在具体实现中，这些寄存器组有两种形态，一种是banked，
 所有CPU操作同样的寄存器地址，硬件系统会根据访问的cpu定向到不同的寄存器，
 另外一种是non banked，也就是说，对于该interrupt source，每个cpu都有自己独特的访问地址。
+
+使用request_percpu_irq注册中断
+
+IRQF_PERCPU是特殊的中断，不是一般意义上的外设中断，不适合强制线程化
 */
 #define IRQF_PERCPU		0x00000400
 /*
+禁止多CPU之间的中断均衡
 这也是和multi-processor相关的一个flag。对于那些可以在多个CPU之间共享的中断，
 具体送达哪一个processor是有策略的，我们可以在多个CPU之间进行平衡。
 如果你不想让你的中断参与到irq balancing的过程中那么就设定这个flag
 */
 #define IRQF_NOBALANCING	0x00000800
+/*
+中断被用作轮询
+*/
 #define IRQF_IRQPOLL		0x00001000
 /*
 one shot本身的意思的只有一次的，结合到中断这个场景，则表示中断是一次性触发的，不能嵌套。
@@ -136,6 +163,16 @@ one shot本身的意思的只有一次的，结合到中断这个场景，则表
 
 一旦mask该interrupt source，那么该interrupt source的中断在整个threaded interrupt handler
 处理过程中都是不会再次触发的，也就是one shot了。这种handler不需要考虑重入问题。 
+
+在中断线程化中保持中断关闭状态，直到该中断源上所有thread_fn完成之后才能打开中断
+对于共享中断，当所有共享中断的线程都执行完毕，并且desc->thread_active等于0后，才算中断处理完成，
+才可以解除中断源的屏蔽操作
+
+如果request_thread_irq时primary handler为NULL且中断控制器不支持硬件ONESHOT功能，应该显示设置IRQF_ONESHOT
+否则内核报错
+
+因为irq_default_primary_handler仅仅IRQ_WAKE_THREAD，但是中断还是enable的，
+对于电平触发的中断，一定要实现primary handler（实现清中断动作），否则电平没有改变，中断将会一直被触发
 
 具体是否要设定one shot的flag是和硬件系统有关的，我们举一个例子，比如电池驱动，电池里面有一个电量计，
 是使用HDQ协议进行通信的，电池驱动会注册一个threaded interrupt handler，
@@ -216,15 +253,34 @@ struct irqaction {
 /* 指向下一个action对象,用于多个设备共享一个irq
 	 			 * 的情形，此时action通过next构成一个链表*/
 	struct irqaction	*next;
-/* 当驱动程序调用request_threaded_irq函数
-				   * 来安装中断处理例程时，用来实现irq_thread机制*/
+/*  当驱动程序调用request_threaded_irq函数
+    来安装中断处理例程时，用来实现irq_thread机制*/
 	irq_handler_t		thread_fn;
+/*
+	中断线程的task_struct数据结构
+*/
 	struct task_struct	*thread;
 	struct irqaction	*secondary;
+/*
+	软中断号
+*/
 	unsigned int		irq;
+/*
+	注册中断时用的标志位  IRQF*
+*/
 	unsigned int		flags;
+/*
+    中断线程相关的标志位
+*/
 	unsigned long		thread_flags;
+/*
+    跟踪中断线程活动的位图
+      在共享中断中，每一个action有一个bit来表示
+*/
 	unsigned long		thread_mask;
+/*
+	注册中断的名称
+*/
 	const char		*name;
 	/*中断处理函数中用来创建在proc文件系统中的目录项*/
 	struct proc_dir_entry	*dir;

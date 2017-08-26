@@ -201,7 +201,6 @@ SYSCALL_DEFINE1(syncfs, int, fd)
 int vfs_fsync_range(struct file *file, loff_t start, loff_t end, int datasync)
 {
 	struct inode *inode = file->f_mapping->host;
-    /* 调用具体操作系统的同步操作 */ 
 	if (!file->f_op->fsync)
 		return -EINVAL;
 	if (!datasync && (inode->i_state & I_DIRTY_TIME)) {
@@ -210,6 +209,7 @@ int vfs_fsync_range(struct file *file, loff_t start, loff_t end, int datasync)
 		spin_unlock(&inode->i_lock);
 		mark_inode_dirty_sync(inode);
 	}
+    /* 调用具体操作系统的同步操作 */ 
 	return file->f_op->fsync(file, start, end, datasync);
 }
 EXPORT_SYMBOL(vfs_fsync_range);
@@ -228,6 +228,9 @@ int vfs_fsync(struct file *file, int datasync)
 }
 EXPORT_SYMBOL(vfs_fsync);
 
+/*
+datasync = 1 不仅会将文件的数据部分还会将文件的属性更新到磁盘中
+*/
 static int do_fsync(unsigned int fd, int datasync)
 {
 	struct fd f = fdget(fd);
@@ -240,6 +243,17 @@ static int do_fsync(unsigned int fd, int datasync)
 	return ret;
 }
 
+/*
+fdatasync 的性能会优于fsync 。在
+不需要同步所有元数据的情况下，选择fdatasync会得到更好的性能。
+只有在inode 被设置了I_DIRTY_DATASYNC标志时. fdatasync 才需要同步inode 的元数据。
+
+那么inode 何时会被设置I_DIRTY_DATASYNC这个标志呢?比如使用文件截断truncate 或ftruncate 时;
+通过在源码中搜索I_DIRTY_DATASYNC或mark_inode_dirty 时也会给inode 设置该标志位。
+
+sync 、fsync 和fdatasync 只能保证Linux 内核对文件的缓冲被冲刷了，
+并不能保证数据被具正写到磁盘上，因为磁盘也有自己的缓存。
+*/
 SYSCALL_DEFINE1(fsync, unsigned int, fd)
 {
 	return do_fsync(fd, 0);

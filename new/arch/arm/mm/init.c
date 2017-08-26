@@ -295,6 +295,7 @@ void __init bootmem_init(void)
 	max_low = max_high = 0;
 
 	//计算所有内存块的pfn上下限。
+	// min = 0x6000    max_low = 0x64000    max_high = 0x64000
 	find_limits(&min, &max_low, &max_high);
 
 	//内存测试，这个可以有
@@ -330,7 +331,9 @@ void __init bootmem_init(void)
 	 * more, but is used by ll_rw_block.  If we can get rid of it, we
 	 * also get rid of some of the stuff above as well.
 	 */
+	// 0x60000
 	min_low_pfn = min;
+	// 0x64000
 	max_low_pfn = max_low;
 	max_pfn = max_high;
 }
@@ -508,6 +511,9 @@ void __init mem_init(void)
 	extern u32 itcm_end;
 #endif
 
+    // max_pfn  = 409600
+    // mem_map = 0xc3f7a000
+    // max_mapnr = max_pfn - ARCH_PFN_OFFSET =  16384
 	set_max_mapnr(pfn_to_page(max_pfn) - mem_map);
 
 	/* this will put all unused low memory onto the freelists */

@@ -365,14 +365,22 @@ int platform_device_add(struct platform_device *pdev)
 	if (!pdev)
 		return -EINVAL;
 
-	/*如果没父设备，就设置platform_bus为父设备*/
+	/*
+	如果该设备没有指定父设备，将其父设备设置为platform_bus，即“/sys/devices/platform/”所代表的设备，
+	这时该设备的sysfs目录即为“/sys/devices/platform/xxx_device”
+	*/
 	if (!pdev->dev.parent)
 		pdev->dev.parent = &platform_bus;
 
-	/*设置设备的bus为platform_bus_type*/
+	/*
+    将该设备的bus指定为platform_bus_type（pdev->dev.bus = &platform_bus_type）
+	*/
 	pdev->dev.bus = &platform_bus_type;
 
-	/*设置设备的名字*/
+	/*
+    根据设备的ID，修改或者设置设备的名称。
+    对于多个同名的设备，可以使用ID区分，在这里将实际名称修改为“name.id”的形式
+	*/
 	switch (pdev->id) {
 	default:
 		dev_set_name(&pdev->dev, "%s.%d", pdev->name,  pdev->id);
@@ -394,7 +402,7 @@ int platform_device_add(struct platform_device *pdev)
 		dev_set_name(&pdev->dev, "%s.%d.auto", pdev->name, pdev->id);
 		break;
 	}
-	/*吧设备I/O端口和I/O内存资源注册到系统*/
+
 	for (i = 0; i < pdev->num_resources; i++) {
 		struct resource *p, *r = &pdev->resource[i];
 
@@ -408,7 +416,12 @@ int platform_device_add(struct platform_device *pdev)
 			else if (resource_type(r) == IORESOURCE_IO)
 				p = &ioport_resource;
 		}
-
+        /*
+        调用resource模块的insert_resource接口，
+        将该设备需要使用的resource统一管理起来
+        我们知道，在这之前，只是声明了本设备需要使用哪些resource，
+        但resource模块并不知情，也就无从管理，因此需要告知）。
+        */
 		if (p && insert_resource(p, r)) {
 			dev_err(&pdev->dev, "failed to claim resource %d: %pR\n", i, r);
 			ret = -EBUSY;
@@ -419,7 +432,9 @@ int platform_device_add(struct platform_device *pdev)
 	pr_debug("Registering platform device '%s'. Parent at %s\n",
 		 dev_name(&pdev->dev), dev_name(pdev->dev.parent));
 
-	/*增加一个设备对象*/
+	/*
+    将内嵌的struct device变量添加到内核中
+	*/
 	ret = device_add(&pdev->dev);
 	if (ret == 0)
 		return ret;
@@ -637,11 +652,16 @@ int __platform_driver_register(struct platform_driver *drv,
 				struct module *owner)
 {
 	drv->driver.owner = owner;
+/*
+	将该driver的bus指定为platform_bus_type（drv->driver.bus = &platform_bus_type）
+*/
 	drv->driver.bus = &platform_bus_type;
 	drv->driver.probe = platform_drv_probe;
 	drv->driver.remove = platform_drv_remove;
 	drv->driver.shutdown = platform_drv_shutdown;
-
+/*
+    将内嵌的struct driver变量添加到内核中
+*/
 	return driver_register(&drv->driver);
 }
 EXPORT_SYMBOL_GPL(__platform_driver_register);
@@ -741,6 +761,11 @@ EXPORT_SYMBOL_GPL(__platform_driver_probe);
  *
  * Returns &struct platform_device pointer on success, or ERR_PTR() on error.
  */
+/*
+只要提供一个platform_driver（要把driver的probe接口显式的传入），并告知该设备占用的资源信息，
+platform模块就会帮忙分配资源，并执行probe操作。
+对于那些不需要热拔插的设备来说，这种方式是最省事的了。
+*/
 struct platform_device * __init_or_module __platform_create_bundle(
 			struct platform_driver *driver,
 			int (*probe)(struct platform_device *),
@@ -1152,11 +1177,25 @@ int __init platform_bus_init(void)
 {
 	int error;
 
+/*
+执行到这里的时候，证明系统已经完成了Early阶段的启动，
+转而进行正常的设备初始化、启动操作，所以不再需要Early Platform相关的东西。
+*/
 	early_platform_cleanup();
-
+/*
+注册一个名称为platform_bus的设备，该设备的定义非常简单，只包含init_name（为“platform”）。
+该步骤会在sysfs中创建“/sys/devices/platform/”目录，所有的Platform设备，都会包含在此目录下
+*/
 	error = device_register(&platform_bus);
 	if (error)
 		return error;
+/*
+注册一个名称为platform_bus_type的bus 
+该步骤会在sysfs中创建“/sys/bus/platform/”目录，同时，
+会在“/sys/bus/platform/”目录下，创建uevent attribute（/sys/bus/platform/uevent）、
+devices目录、drivers目录、drivers_probe和drivers_autoprobe
+两个attribute（/sys/bus/platform/drivers_probe和/sys/bus/platform/drivers_autoprobe）。
+*/
 	error =  bus_register(&platform_bus_type);
 	if (error)
 		device_unregister(&platform_bus);
@@ -1189,6 +1228,14 @@ EXPORT_SYMBOL_GPL(dma_get_required_mask);
 static __initdata LIST_HEAD(early_platform_driver_list);
 static __initdata LIST_HEAD(early_platform_device_list);
 
+/*
+内核启动时，要完成一定的初始化操作之后，才会处理device和driver的注册及probe，
+因此在这之前，常规的platform设备是无法使用的。
+
+但是在Linux中，有些设备需要尽早使用（如在启动过程中充当console输出的serial设备），
+所以platform模块提供了一种称作Early platform device/driver的机制，
+允许驱动开发人员，在开发驱动时，向内核注册可在内核早期启动过程中使用的driver。
+*/
 /**
  * early_platform_driver_register - register early platform driver
  * @epdrv: early_platform driver structure
@@ -1459,6 +1506,9 @@ int __init early_platform_driver_probe(char *class_str,
 /**
  * early_platform_cleanup - clean up early platform code
  */
+/*
+ 清除所有和Early device/driver相关的代码。
+*/
 void __init early_platform_cleanup(void)
 {
 	struct platform_device *pd, *pd2;

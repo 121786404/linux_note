@@ -1364,6 +1364,8 @@ vector_addrexcptn:
 /**
  * 复制到向量地址表中的代码，各种中断和异常的处理入口。
  * 这些代码由vector_stub生成
+ * ARM异常向量表可以放在0x0地址(normal vectors) 也可以放在0xffff0000处(high vectors)
+ * Linux使用high vectors,因为0x0属于用户空间，同时也避免空指针误操作
  */
 .L__vectors_start:
 	W(b)	vector_rst /* reset异常 */

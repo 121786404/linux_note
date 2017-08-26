@@ -22,6 +22,10 @@
 #include "internals.h"
 
 #ifdef CONFIG_IRQ_FORCED_THREADING
+/*
+    如果系统配置了CONFIG_IRQ_FORCED_THREADING 而且启动参数包含threadirqs，force_irqthreads会设置为true
+    强制中断线程化是一个过渡方案，目前还有很多驱动使用旧版本的request_irq，这些中断处理使用上下半部的方式
+*/
 __read_mostly bool force_irqthreads;
 
 static int __init setup_forced_irqthreads(char *arg)
@@ -755,6 +759,10 @@ EXPORT_SYMBOL_GPL(irq_set_parent);
  * assigned as primary handler when request_threaded_irq is called
  * with handler == NULL. Useful for oneshot interrupts.
  */
+/*
+对于不是IRQF_ONESHOT类型的中断，且中断注册时没有指定  primary handler 的情况，
+默认会irq_default_primary_handler
+*/
 static irqreturn_t irq_default_primary_handler(int irq, void *dev_id)
 {
 	return IRQ_WAKE_THREAD;
@@ -1049,9 +1057,16 @@ static int irq_setup_forced_threading(struct irqaction *new)
 {
 	if (!force_irqthreads)
 		return 0;
+
+/*
+      这些Flag不适合线程化
+*/
 	if (new->flags & (IRQF_NO_THREAD | IRQF_PERCPU | IRQF_ONESHOT))
 		return 0;
 
+/*
+    上半部分通常在关中断的状态下运行，所以中断不会嵌套
+*/
 	new->flags |= IRQF_ONESHOT;
 
 	/*
@@ -1071,6 +1086,11 @@ static int irq_setup_forced_threading(struct irqaction *new)
 		new->secondary->name = new->name;
 	}
 	/* Deal with the primary handler */
+/*
+	将primary handler放在中断线程里面执行
+	原来的primary handler 直接返回IRQ_WAKE_THREAD
+	并设置IRQTF_FORCED_THREAD标志，表示该中断已经被强制线程化
+*/
 	set_bit(IRQTF_FORCED_THREAD, &new->thread_flags);
 	new->thread_fn = new->handler;
 	new->handler = irq_default_primary_handler;
@@ -1099,6 +1119,7 @@ setup_irq_thread(struct irqaction *new, unsigned int irq, bool secondary)
 {
 	struct task_struct *t;
 	struct sched_param param = {
+	    // 优先级50
 		.sched_priority = MAX_USER_RT_PRIO/2,
 	};
 
@@ -1114,6 +1135,7 @@ setup_irq_thread(struct irqaction *new, unsigned int irq, bool secondary)
 	if (IS_ERR(t))
 		return PTR_ERR(t);
 
+    // 调度策略SCHED_FIFO
 	sched_setscheduler_nocheck(t, SCHED_FIFO, &param);
 
 	/*
@@ -1121,6 +1143,10 @@ setup_irq_thread(struct irqaction *new, unsigned int irq, bool secondary)
 	 * the thread dies to avoid that the interrupt code
 	 * references an already freed task_struct.
 	 */
+/*
+	增加线程 task_struct->usage 引用计数
+    防止中断线程化的处理程序访问了空指针
+*/
 	get_task_struct(t);
 	new->thread = t;
 	/*
@@ -1151,6 +1177,9 @@ __setup_irq(unsigned int irq, struct irq_desc *desc, struct irqaction *new)
 	if (!desc)
 		return -EINVAL;
 
+/*
+    还没有正确初始化中断控制器
+*/
 	if (desc->irq_data.chip == &no_irq_chip)
 		return -ENOSYS;
 	if (!try_module_get(desc->owner))
@@ -1169,8 +1198,15 @@ __setup_irq(unsigned int irq, struct irq_desc *desc, struct irqaction *new)
 	 * Check whether the interrupt nests into another interrupt
 	 * thread.
 	 */
+/*
+	 
+*/
 	nested = irq_settings_is_nested_thread(desc);
 	if (nested) {
+/*
+	中断嵌套，没有primary handler(使用默认的irq_nested_primary_handler),
+	必须设置中断线程化处理函数thread_fn    
+*/
 		if (!new->thread_fn) {
 			ret = -EINVAL;
 			goto out_mput;
@@ -1194,12 +1230,17 @@ __setup_irq(unsigned int irq, struct irq_desc *desc, struct irqaction *new)
 	 * and the interrupt does not nest into another interrupt
 	 * thread.
 	 */
-	 /*通过request_threaded_irq函数安装一个中断*/
+	 /*
+        没有嵌套的线程化中断
+	*/
 	if (new->thread_fn && !nested) {
 		ret = setup_irq_thread(new, irq, false);
 		if (ret)
 			goto out_mput;
 		if (new->secondary) {
+/*
+		    设置irq_thread，
+*/
 			ret = setup_irq_thread(new->secondary, irq, true);
 			if (ret)
 				goto out_thread;
@@ -1227,8 +1268,15 @@ __setup_irq(unsigned int irq, struct irq_desc *desc, struct irqaction *new)
 	 * The following block of code has to be executed atomically
 	 */
 	raw_spin_lock_irqsave(&desc->lock, flags);
+
+/*
+    对于非共享中断，old_ptr指向desc->action指针本身的地址
+*/
 	old_ptr = &desc->action;
 	old = *old_ptr;
+/*
+	desc->action不为空，说明是一个共享中断
+*/
 	if (old) {
 		/*
 		 * Can't share interrupts unless both agree to and are
@@ -1255,9 +1303,13 @@ __setup_irq(unsigned int irq, struct irq_desc *desc, struct irqaction *new)
 			 * new action.
 			 */
 			thread_mask |= old->thread_mask;
+/*
+            对于共享中断，old_ptr指向irqaction链表末尾最后一个元素的next指针本身的地址
+*/
 			old_ptr = &old->next;
 			old = *old_ptr;
 		} while (old);
+		// 标记这是一个共享中断
 		shared = 1;
 	}
 
@@ -1314,6 +1366,12 @@ __setup_irq(unsigned int irq, struct irq_desc *desc, struct irqaction *new)
 		 * has. The type flags are unreliable as the
 		 * underlying chip implementation can override them.
 		 */
+/*
+        如果request_thread_irq时primary handler为NULL且中断控制器不支持硬件ONESHOT功能，
+        应该显示设置IRQF_ONESHOT        否则内核报错
+
+        对于中断控制器本身支持one shot功能（IRQCHIP_ONESHOT_SAFE）的情况，没有这个限制
+*/
 		pr_err("Threaded irq requested with handler=NULL and !ONESHOT for irq %d\n",
 		       irq);
 		ret = -EINVAL;
@@ -1341,6 +1399,9 @@ __setup_irq(unsigned int irq, struct irq_desc *desc, struct irqaction *new)
 
 		desc->istate &= ~(IRQS_AUTODETECT | IRQS_SPURIOUS_DISABLED | \
 				  IRQS_ONESHOT | IRQS_WAITING);
+/*
+		清除	IRQD_IRQ_INPROGRESS标志位
+*/
 		irqd_clear(&desc->irq_data, IRQD_IRQ_INPROGRESS);
 
 		if (new->flags & IRQF_PERCPU) {
@@ -1376,6 +1437,9 @@ __setup_irq(unsigned int irq, struct irq_desc *desc, struct irqaction *new)
 				irq, omsk, nmsk);
 	}
 
+/*
+      把新的中断action描述符new ，添加到中断描述符desc的链表中
+*/
 	*old_ptr = new;
 
 	irq_pm_install_action(desc, new);
@@ -1399,6 +1463,9 @@ __setup_irq(unsigned int irq, struct irq_desc *desc, struct irqaction *new)
 	 * Strictly no need to wake it up, but hung_task complains
 	 * when no hard interrupt wakes the thread up.
 	 */
+/*
+	 如果该中断被线程话，就唤醒该内核线程
+*/
 	if (new->thread)
 		wake_up_process(new->thread);
 	if (new->secondary)
@@ -1677,7 +1744,9 @@ EXPORT_SYMBOL(free_irq);
  *	IRQF_TRIGGER_*		Specify active edge(s) or level
  *
  */
- /*这个函数被request_irq直接调用来安装ISR,
+ /*
+
+ 这个函数被request_irq直接调用来安装ISR,
  用request_thread_irq函数来安装一个中断时，
  需要在struct irqaction对象中实现他的thread_fn成员，
  request_thread_irq函数内部会生成一个irq_thread的独立线程
@@ -1693,7 +1762,7 @@ request_threaded_irq 函数可能引起休眠，因此，不能在中断上下�
 在请求中断时，需要在虚拟目录／proc/irq 中建立一个与中断对应的虚拟目录
 （虚拟目录名就是中断号，例如Nexus S 手机上的308 ).
 proc_mkdir函数用来创建虚拟目录．该函数通过调用proc_create 函数对这个新的虚拟目录进行设置。
-而proc_create 会调用krnalloc 函数请求分配内存。问题就出在kmalloc函数上，该函数是可以引起休眠的
+而proc_create 会调用kmalloc 函数请求分配内存。问题就出在kmalloc函数上，该函数是可以引起休眠的
 
 request_threaded_irq 多了一个参数thread_fn。用这个API 申请中断的时候，内核会为相应的中断号分配一个对应的内核线程。
 注意这个线程只针对这个中断号，如果其他中断也通过request_threaded_ irq申请，自然会得到新的内核线程。
@@ -1732,6 +1801,7 @@ int request_threaded_irq(unsigned int irq, irq_handler_t handler,
 	    ((irqflags & IRQF_NO_SUSPEND) && (irqflags & IRQF_COND_SUSPEND)))
 		return -EINVAL;
 
+    // 用中断号获取中断描述符irq_desc
 	desc = irq_to_desc(irq);
 	if (!desc)
 		return -EINVAL;
@@ -1741,8 +1811,10 @@ int request_threaded_irq(unsigned int irq, irq_handler_t handler,
 		return -EINVAL;
 
 	if (!handler) {
+	    // 不能handler和thread_fn都是NULL
 		if (!thread_fn)
 			return -EINVAL;
+		// 默认的handler 直接返回 IRQ_WAKE_THREAD
 		handler = irq_default_primary_handler;
 	}
 
@@ -1765,7 +1837,7 @@ int request_threaded_irq(unsigned int irq, irq_handler_t handler,
 	}
 
 	chip_bus_lock(desc);
-	/*安装中断处理函数*/
+	/*注册中断*/
 	retval = __setup_irq(irq, desc, action);
 	chip_bus_sync_unlock(desc);
 

@@ -572,6 +572,7 @@ struct inode {
 #endif
 
 	/* Stat data, not accessed from path walking */
+	/* 索引节点号 */
 	unsigned long		i_ino;
 	/*
 	 * Filesystems may only read i_nlink directly.  They shall use the
@@ -605,6 +606,7 @@ struct inode {
 	unsigned long		dirtied_when;	/* jiffies of first dirtying */
 	unsigned long		dirtied_time_when;
 
+    /* hash链表的指针 */
 	struct hlist_node	i_hash;
 	struct list_head	i_io_list;	/* backing dev IO list */
 #ifdef CONFIG_CGROUP_WRITEBACK
@@ -616,13 +618,16 @@ struct inode {
 	u16			i_wb_frn_history;
 #endif
 	struct list_head	i_lru;		/* inode LRU list */
+    /* 超级块的inode链表 */
 	struct list_head	i_sb_list;
 	struct list_head	i_wb_list;	/* backing dev writeback list */
 	union {
+        /* 引用inode的目录项对象链表头 */
 		struct hlist_head	i_dentry;
 		struct rcu_head		i_rcu;
 	};
 	u64			i_version;
+	/* 引用计数器 */
 	atomic_t		i_count;
 	atomic_t		i_dio_count;
 	atomic_t		i_writecount;
@@ -1975,6 +1980,7 @@ static inline void inode_inc_link_count(struct inode *inode)
 
 static inline void inode_dec_link_count(struct inode *inode)
 {
+    /*drop_nlink()将i_nlink数减1 */
 	drop_nlink(inode);
 	mark_inode_dirty(inode);
 }
@@ -3119,7 +3125,9 @@ static inline bool is_sxid(umode_t mode)
 {
 	return (mode & S_ISUID) || ((mode & S_ISGID) && (mode & S_IXGRP));
 }
-
+/*
+检查文件的sticky 标志位
+*/
 static inline int check_sticky(struct inode *dir, struct inode *inode)
 {
 	if (!(dir->i_mode & S_ISVTX))
