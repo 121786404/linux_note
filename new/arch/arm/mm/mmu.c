@@ -1430,7 +1430,7 @@ static void __init devicemaps_init(const struct machine_desc *mdesc)
 	 * location (0xffff0000).  If we aren't using high-vectors, also
 	 * create a mapping at the low-vectors virtual address.
 	 */
-	//创建一个映射项，将向量表映射到0xffff0000(实际上可能使用0x00000000)
+	//vectors_base的物理页面映射到虚拟地址0xffff0000
 	map.pfn = __phys_to_pfn(virt_to_phys(vectors));
 	map.virtual = 0xffff0000;
 	map.length = PAGE_SIZE;

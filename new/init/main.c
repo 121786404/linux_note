@@ -388,9 +388,9 @@ static noinline void __ref rest_init(void)
 {
 	int pid;
 /*
-最后就是设定rcu_scheduler_active=1启动RCU机制. 
+最后就是设定rcu_scheduler_active=1启动RCU机制.
 RCU在多核心架构下,不同的行程要读取同一笔资料内容/结构,
-可以提供高效率的同步与正确性. 
+可以提供高效率的同步与正确性.
 在这之后就可以使用 rcu_read_lock/rcu_read_unlock了
 */
 	rcu_scheduler_starting();
@@ -432,7 +432,7 @@ RCU在多核心架构下,不同的行程要读取同一笔资料内容/结构,
 	init_idle_bootup_task(current);
 
 
-	/* 
+	/*
       调用schedule()函数切换当前进程，在调用该函数之前，
       Linux系统中只有两个进程，即0号进程init_task和1号进程kernel_init，
       其中kernel_init进程也是刚刚被创建的。调用该函数后，
@@ -514,7 +514,7 @@ void __init __weak thread_stack_cache_init(void)
  * Set up kernel memory allocators
  */
 /*
-建立了内核的内存分配器, 
+建立了内核的内存分配器,
 */
 static void __init mm_init(void)
 {
@@ -525,7 +525,7 @@ static void __init mm_init(void)
 	page_ext_init_flatmem();
 	mem_init();
 	/**
-	 * 初始化slab内存分配器
+	 * 初始化slab/slub内存分配器
 	 */
 	kmem_cache_init();
 	percpu_init_late();
@@ -561,12 +561,12 @@ asmlinkage __visible void __init start_kernel(void)
 	 * 在堆栈中放入"金丝雀"，这种小动物对矿山上的有毒物质很敏感
 	 * 用于侦测堆栈攻击，防止攻击代码修改返回地址。
 	 * 這邊的 stack canary (金絲雀) 和上面 stack end magic 是同樣作用，
-	 * 都是放在 stack 後面用來檢查是否發生 stack overflow。 
+	 * 都是放在 stack 後面用來檢查是否發生 stack overflow。
 	 * 內核這邊的 boot_init_stack_canary() 函式的功用是設定一個不固定的 stack canary 值，
 	 * 用以防止 stack overflow 的攻擊，不過內核這邊也僅僅是設定一個不固定的 canary 值，
-	 * 真正的檢查 stack overflow 的機制是由 gcc 實現。 
-	 * gcc 提供 -fstack-protector 編譯選項，它會參考這個 canary 值， 
-	 * 加入用來檢查的程式碼，在函式返回前檢查這個值是否被覆寫。 
+	 * 真正的檢查 stack overflow 的機制是由 gcc 實現。
+	 * gcc 提供 -fstack-protector 編譯選項，它會參考這個 canary 值，
+	 * 加入用來檢查的程式碼，在函式返回前檢查這個值是否被覆寫。
 	 */
 	boot_init_stack_canary();
 
@@ -1070,7 +1070,7 @@ static void __init do_basic_setup(void)
 	shmem_init();
     // init driver model. (kobject, kset)
 	driver_init();
-	//初始化 “/proc/irq”与其下的File Nodes. 
+	//初始化 “/proc/irq”与其下的File Nodes.
 	init_irq_proc();
     /* 执行位於Symbol ctors_start 到 ctors_end间属於Section “.ctors” 的Constructor函式 */
 	do_ctors();
@@ -1159,7 +1159,7 @@ static inline void mark_readonly(void)
 init进程应该是一个用户空间的进程, 但是这里却是通过
 kernel_thread的方式创建的, 哪岂不是式一个永远运行在内核态的
 内核线程么, 它是怎么演变为真正意义上用户空间的init进程的？
- 
+
  1号kernel_init进程完成linux的各项配置(包括启动AP)后，
 就会在/sbin,/etc,/bin寻找init程序来运行。
 该init程序会替换kernel_init进程（注意：并不是创建一个新的进程来运行init程序，
@@ -1184,7 +1184,7 @@ static int __ref kernel_init(void *unused)
 	kernel_init_freeable();
 	/* need to finish all async __init code before freeing the memory */
     /* 用以同步所有非同步函式呼叫的执行,在这函数中会等待
-          List async_running与async_pending都清空后,才会返回. 
+          List async_running与async_pending都清空后,才会返回.
           Asynchronously called functions主要设计用来加速Linux Kernel开机的效率,
           避免在开机流程中等待硬体反应延迟,影响到开机完成的时间 */
     // waits until all asynchronous function calls have been done
@@ -1200,7 +1200,7 @@ static int __ref kernel_init(void *unused)
 	flush_delayed_fput();
 
 	rcu_end_inkernel_boot();
-	
+
 	//根据boot参数，确定init进程是谁，并启动它。
 	if (ramdisk_execute_command) {
 		ret = run_init_process(ramdisk_execute_command);
@@ -1243,7 +1243,7 @@ static noinline void __init kernel_init_freeable(void)
 
 	/* Now the scheduler is fully set up and can do blocking allocations */
     /*
-    __GFP_BITS_MASK;设置bitmask, 使得init进程可以使用PM并且允许I/O阻塞操作 
+    __GFP_BITS_MASK;设置bitmask, 使得init进程可以使用PM并且允许I/O阻塞操作
     */
 	gfp_allowed_mask = __GFP_BITS_MASK;
 
@@ -1257,15 +1257,15 @@ static noinline void __init kernel_init_freeable(void)
 	 * init can run on any cpu.
 	 */
 	//允许进程运行在任何cpu中。
-    /* 通过设置cpu_bit_mask, 可以限定task只能在特定的处理器上运行, 
+    /* 通过设置cpu_bit_mask, 可以限定task只能在特定的处理器上运行,
           而initcurrent进程此时必然是init进程，
           设置其cpu_all_mask即使得init进程可以在任意的cpu上运行 */
 	set_cpus_allowed_ptr(current, cpu_all_mask);
 
 	//保存能执行cad的进程id,安全方面的考虑。
     /* 设置到目前运行进程init的pid号给cad_pid
-        (cad_pid是用来接收ctrl-alt-del reboot signal的进程, 
-        如果设置C_A_D=1就表示可以处理来自ctl-alt-del的动作)， 
+        (cad_pid是用来接收ctrl-alt-del reboot signal的进程,
+        如果设置C_A_D=1就表示可以处理来自ctl-alt-del的动作)，
         最后会调用 ctrl_alt_del(void)并确认C_A_D是否为1,
         确认完成后将执行cad_work=deferred_cad,执行kernel_restart */
 	cad_pid = task_pid(current);
@@ -1292,13 +1292,13 @@ static noinline void __init kernel_init_freeable(void)
 	do_basic_setup();
 
 	/* Open the /dev/console on the rootfs, this should never fail */
-    /* 
+    /*
     实例在fs/fcntl.c中,”SYSCALL_DEFINE1(dup, unsigned int, fildes)”,
     在这会连续执行两次sys_dup,复制两个sys_open开啟/dev/console所產生的档案描述0 (也就是会多生出两个1与2),
     只是都对应到”/dev/console”,我们在System V streams下的Standard Stream一般而言会有如下的对应
     0:Standard input (stdin)
     1:Standard output (stdout)
-    2:Standard error (stderr) 
+    2:Standard error (stderr)
     */
 	if (sys_open((const char __user *) "/dev/console", O_RDWR, 0) < 0)
 		pr_err("Warning: unable to open an initial console.\n");

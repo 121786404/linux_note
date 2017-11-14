@@ -76,9 +76,23 @@ void delayed_work_timer_fn(unsigned long __data);
 #define work_data_bits(work) ((unsigned long *)(&(work)->data))
 
 enum {
+/*
+    正在pending执行
+*/
 	WORK_STRUCT_PENDING_BIT	= 0,	/* work item is pending execution */
+/*
+	被延时执行了
+*/
 	WORK_STRUCT_DELAYED_BIT	= 1,	/* work item is delayed */
+/*
+	work的data成员指向pwqs数据结构的指针，
+	其中pwqs需要按照256Byte对齐，这样pwqs指针的低8位可以忽略
+	只需要其余的bit就可以找回pwqs指针
+*/
 	WORK_STRUCT_PWQ_BIT	= 2,	/* data points to pwq */
+/*
+	下一个work连接到该work上
+*/
 	WORK_STRUCT_LINKED_BIT	= 3,	/* next work is linked to this one */
 #ifdef CONFIG_DEBUG_OBJECTS_WORK
 	WORK_STRUCT_STATIC_BIT	= 4,	/* static initializer (debugobjects) */
@@ -107,6 +121,9 @@ enum {
 	WORK_NO_COLOR		= WORK_NR_COLORS,
 
 	/* not bound to any CPU, prefer the local CPU */
+/*
+	不绑定到任何CPU上
+*/
 	WORK_CPU_UNBOUND	= NR_CPUS,
 
 	/*
@@ -266,7 +283,6 @@ static inline unsigned int work_static(struct work_struct *work) { return 0; }
  * to generate better code.
  */
 #ifdef CONFIG_LOCKDEP
-/* 初始化一个工作队列节点,INIT_WORK初始化struct work_struct中的每个成员*/
 #define __INIT_WORK(_work, _func, _onstack)				\
 	do {								\
 		static struct lock_class_key __key;			\
@@ -278,6 +294,9 @@ static inline unsigned int work_static(struct work_struct *work) { return 0; }
 		(_work)->func = (_func);				\
 	} while (0)
 #else
+/* 
+初始化一个工作队列节点,INIT_WORK初始化struct work_struct中的每个成员
+*/
 #define __INIT_WORK(_work, _func, _onstack)				\
 	do {								\
 		__init_work((_work), _onstack);				\
@@ -372,9 +391,23 @@ enum {
     如果没有标记WQ_UNBOUND，那么缺省workqueue会创建per cpu thread pool来处理work
     */
 	WQ_UNBOUND		= 1 << 1, /* not bound to any cpu */
+/*
+	标记 WQ_FREEZABLE 的工作队列会参与到系统的suspend过程中，这会让工作线程处理完成当前多有的work
+	才完成进程冻结，并且这个过程不会再新开始一个work的执行，直到进程被解冻
+*/
 	WQ_FREEZABLE		= 1 << 2, /* freeze during suspend */
+/*
+	当内存紧张时，创建新的工作进程可能会失败，系统的rescuer进程会接管
+*/
 	WQ_MEM_RECLAIM		= 1 << 3, /* may be used for memory reclaim */
+/*
+	高优先级
+*/
 	WQ_HIGHPRI		= 1 << 4, /* high priority */
+/*
+	CPU消耗型，这类work执行会得到系统进程调度器的监管
+	排在这类work后面的non-CPU-intensive类型的work可能会推迟
+*/
 	WQ_CPU_INTENSIVE	= 1 << 5, /* cpu intensive workqueue */
 	WQ_SYSFS		= 1 << 6, /* visible in sysfs, see wq_sysfs_register() */
 
@@ -409,8 +442,13 @@ enum {
      那么就需要加上WQ_POWER_EFFICIENT的标记。
 	 */
 	WQ_POWER_EFFICIENT	= 1 << 7,
-
+/*
+    销毁workqueue
+*/
 	__WQ_DRAINING		= 1 << 16, /* internal: workqueue is draining */
+/*
+	同一时间只能执行一个work item
+*/
 	__WQ_ORDERED		= 1 << 17, /* internal: workqueue is ordered */
 	__WQ_LEGACY		= 1 << 18, /* internal: create*_workqueue() */
 
@@ -451,11 +489,32 @@ enum {
  * system_power_efficient_wq is identical to system_wq if
  * 'wq_power_efficient' is disabled.  See WQ_POWER_EFFICIENT for more info.
  */
+/*
+系统中所有的工作队列，共享一组worker-pool
+对于BOUND类型的工作队列，每个CPU只有两个工作线程池
+每个工作线程池可以和多个workqueue对应
+每个workqueue也只能对应这几个工作线程池
+*/
+/*
+    普通优先级BOUND类型的工作队列 system_wq ， 名字为 "event",默认工作队列
+*/
 extern struct workqueue_struct *system_wq;
+/*
+    高优先级BOUND类型的工作队列 system_highpri_wq 名称为  "event_highpri"   
+*/
 extern struct workqueue_struct *system_highpri_wq;
 extern struct workqueue_struct *system_long_wq;
+/*
+    UNBOUND类型的工作队列 
+*/
 extern struct workqueue_struct *system_unbound_wq;
+/*
+    Freezable类型的工作队列 
+*/
 extern struct workqueue_struct *system_freezable_wq;
+/*
+    省电类型的工作队列 
+*/
 extern struct workqueue_struct *system_power_efficient_wq;
 extern struct workqueue_struct *system_freezable_power_efficient_wq;
 
@@ -636,6 +695,9 @@ static inline bool schedule_work_on(int cpu, struct work_struct *work)
  * queued and leaves it in the same position on the kernel-global
  * workqueue otherwise.
  */
+/*
+    将worj挂载入系统默认的workqueue
+*/
 static inline bool schedule_work(struct work_struct *work)
 {
 	return queue_work(system_wq, work);

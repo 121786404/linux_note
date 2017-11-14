@@ -269,7 +269,7 @@ static inline pte_t *pmd_page_vaddr(pmd_t pmd)
 */
 #define pte_page(pte)		pfn_to_page(pte_pfn(pte))
 /*
-接收页描述符地址 p 和一组访问权限 prot 作为参数，并创建相应的页表项 
+接收页描述符地址 p 和一组访问权限 prot 作为参数，并创建相应的页表项
 创建一个页表项。必须将page实例和所需的页访问权限作为参数传递
 */
 #define mk_pte(page,prot)	pfn_pte(page_to_pfn(page), prot)
@@ -311,7 +311,9 @@ static inline void __sync_icache_dcache(pte_t pteval)
 #else
 extern void __sync_icache_dcache(pte_t pteval);
 #endif
-
+/*
+    把pte设置到子进程对应的页表项dst_pte中
+*/
 static inline void set_pte_at(struct mm_struct *mm, unsigned long addr,
 			      pte_t *ptep, pte_t pteval)
 {
@@ -337,7 +339,7 @@ static inline pte_t set_pte_bit(pte_t pte, pgprot_t prot)
 	pte_val(pte) |= pgprot_val(prot);
 	return pte;
 }
-// 清除该页的写权限
+// 设置页只读
 static inline pte_t pte_wrprotect(pte_t pte)
 {
 	return set_pte_bit(pte, __pgprot(L_PTE_RDONLY));

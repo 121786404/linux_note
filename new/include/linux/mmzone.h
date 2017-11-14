@@ -42,14 +42,14 @@ enum {
 */
 	MIGRATE_UNMOVABLE,
 /*
-不能够直接移动,但是可以删除,
-而内容则可以从某些源重新生成.如文件数据映射的页面则归属此类
-*/
-	MIGRATE_MOVABLE,
-/*
 可以移动。分配给用户态程序运行的用户空间页面则为该类.
 由于是通过页面映射而得,将其复制到新位置后,
 更新映射表项,重新映射,应用程序是不感知的.
+*/
+	MIGRATE_MOVABLE,
+/*
+不能够直接移动,但是可以删除,
+而内容则可以从某些源重新生成.如文件数据映射的页面则归属此类
 */
 	MIGRATE_RECLAIMABLE,
 /*
@@ -82,12 +82,14 @@ enum {
      用于避免预留大块内存导致系统可用内存减少而实现的，
      即当驱动不使用内存时，将其分配给用户使用，
      而需要时则通过回收或者迁移的方式将内存腾出来。
+
+     只有可移动的页面可以从MIGRATE_CMA的pageblock中分配
 */
 	MIGRATE_CMA,
 #endif
 #ifdef CONFIG_MEMORY_ISOLATION
 /*
-是一个特殊的虚拟区域, 用于跨越NUMA结点移动物理内存页. 
+是一个特殊的虚拟区域, 用于跨越NUMA结点移动物理内存页.
 在大型系统上, 它有益于将物理内存页移动到接近于使用该页最频繁的CPU
 */
 	MIGRATE_ISOLATE,	/* can't allocate from here */
@@ -126,7 +128,7 @@ struct free_area {
 /*
 是用于连接空闲页的链表. 页链表包含大小相同的连续内存区
 */
-	struct list_head	free_list[MIGRATE_TYPES]; 
+	struct list_head	free_list[MIGRATE_TYPES];
 /*
 指定了当前内存区中空闲页块的数目（
 对0阶内存区逐页计算，
@@ -269,13 +271,13 @@ enum lru_list {
       anonymous pages 与文件无关的内存（比如进程的堆栈，用malloc申请的内存）
       anonymous pages 在发生换页时，是对交换区进行读/写操作
 	*/
-	LRU_ACTIVE_ANON = LRU_BASE + LRU_ACTIVE,  
+	LRU_ACTIVE_ANON = LRU_BASE + LRU_ACTIVE,
 	LRU_INACTIVE_FILE = LRU_BASE + LRU_FILE,
     /*
         File-backed pages 与文件关联的内存（比如程序文件、数据文件所对应的内存页）
         File-backed pages 在发生换页(page-in或page-out)时，是从它对应的文件读入或写出
       */
-	LRU_ACTIVE_FILE = LRU_BASE + LRU_FILE + LRU_ACTIVE, 
+	LRU_ACTIVE_FILE = LRU_BASE + LRU_FILE + LRU_ACTIVE,
 	LRU_UNEVICTABLE,
 	NR_LRU_LISTS
 };
@@ -339,7 +341,7 @@ typedef unsigned __bitwise isolate_mode_t;
 
 enum zone_watermarks {
 /*
-当空闲页面的数量达到page_min所标定的数量的时候， 
+当空闲页面的数量达到page_min所标定的数量的时候，
 说明页面数非常紧张, 分配页面的动作和kswapd线程同步运行.
 WMARK_MIN所表示的page的数量值，是在内存初始化的过程中调用free_area_init_core
 中计算的。这个数值是根据zone中的page的数量除以一个>1的系数来确定的。
@@ -352,7 +354,7 @@ WMARK_MIN所表示的page的数量值，是在内存初始化的过程中调用f
 */
 	WMARK_LOW,
 /*
-当空闲页面的数量达到page_high所标定的数量的时候， 
+当空闲页面的数量达到page_high所标定的数量的时候，
 说明内存页面数充足, 不需要回收, kswapd线程将重新休眠，
 通常这个数值是page_min的3倍
 */
@@ -364,7 +366,7 @@ WMARK_MIN所表示的page的数量值，是在内存初始化的过程中调用f
 #define low_wmark_pages(z) (z->watermark[WMARK_LOW])
 #define high_wmark_pages(z) (z->watermark[WMARK_HIGH])
 /*
-每个zone都会有一个这个结构用于缓存页的分配, 
+每个zone都会有一个这个结构用于缓存页的分配,
 中文一般就叫高速缓存.
 */
 struct per_cpu_pages {
@@ -402,31 +404,31 @@ struct per_cpu_nodestat {
 #endif /* !__GENERATING_BOUNDS.H */
 
 /*
-实际的计算机体系结构有硬件的诸多限制, 这限制了页框可以使用的方式. 
+实际的计算机体系结构有硬件的诸多限制, 这限制了页框可以使用的方式.
 尤其是, Linux内核必须处理80x86体系结构的两种硬件约束.
 ISA总线的直接内存存储DMA处理器有一个严格的限制 : 他们只能对RAM的前16MB进行寻址
-在具有大容量RAM的现代32位计算机中, CPU不能直接访问所有的物理地址, 
-因为线性地址空间太小, 内核不可能直接映射所有物理内存到线性地址空间, 
-因此Linux内核对不同区域的内存需要采用不同的管理方式和映射方式, 
+在具有大容量RAM的现代32位计算机中, CPU不能直接访问所有的物理地址,
+因为线性地址空间太小, 内核不可能直接映射所有物理内存到线性地址空间,
+因此Linux内核对不同区域的内存需要采用不同的管理方式和映射方式,
 因此内核将物理地址或者成用zone_t表示的不同地址区域
 
-传统X86_32位系统中, 前16M划分给ZONE_DMA, 
+传统X86_32位系统中, 前16M划分给ZONE_DMA,
 该区域包含的页框可以由老式的基于ISAS的设备通过DMA使用”直接内存访问(DMA)”,
- ZONE_DMA和ZONE_NORMAL区域包含了内存的常规页框, 
-通过把他们线性的映射到现行地址的第4个GB, 内核就可以直接进行访问, 
-相反ZONE_HIGHME包含的内存页不能由内核直接访问, 
-尽管他们也线性地映射到了现行地址空间的第4个GB. 
+ ZONE_DMA和ZONE_NORMAL区域包含了内存的常规页框,
+通过把他们线性的映射到现行地址的第4个GB, 内核就可以直接进行访问,
+相反ZONE_HIGHME包含的内存页不能由内核直接访问,
+尽管他们也线性地映射到了现行地址空间的第4个GB.
 
 
 64位系统中, 并不需要高端内存, 因为AM64的linux采用4级页表，
 支持的最大物理内存为64TB, 对于虚拟地址空间的划分，
 将0x0000,0000,0000,0000 – 0x0000,7fff,ffff,f000这128T地址用于用户空间；
-而0xffff,8000,0000,0000以上的128T为系统空间地址, 
-这远大于当前我们系统中的内存空间, 
-因此所有的物理地址都可以直接映射到内核中, 
+而0xffff,8000,0000,0000以上的128T为系统空间地址,
+这远大于当前我们系统中的内存空间,
+因此所有的物理地址都可以直接映射到内核中,
 不需要高端内存的特殊映射.
 
-对于Arm 实际上只有ZONE_NORMAL和ZONE_MOVABLE 
+对于Arm 实际上只有ZONE_NORMAL和ZONE_MOVABLE
 */
 enum zone_type {
 #ifdef CONFIG_ZONE_DMA
@@ -454,7 +456,7 @@ enum zone_type {
 	 */
 /*
 标记了适合DMA的内存域. 该区域的长度依赖于处理器类型.
- 这是由于古老的ISA设备强加的边界. 
+ 这是由于古老的ISA设备强加的边界.
 但是为了兼容性, 现代的计算机也可能受此影响
 
 ARM所有地址都可以进行DMA，所以该值可以很大，
@@ -473,9 +475,9 @@ ARM所有地址都可以进行DMA，所以该值可以很大，
 	 * 内存区域
 	 */
 /*
-标记了使用32位地址字可寻址, 适合DMA的内存域. 显然, 
-只有在64位系统中ZONE_DMA32才和ZONE_DMA有区别, 
-在32位系统中, 本区域是空的, 即长度为0MB, 在Alpha和AMD64系统上, 
+标记了使用32位地址字可寻址, 适合DMA的内存域. 显然,
+只有在64位系统中ZONE_DMA32才和ZONE_DMA有区别,
+在32位系统中, 本区域是空的, 即长度为0MB, 在Alpha和AMD64系统上,
 该内存的长度可能是从0到4GB
 
 只在64位系统上有效，为一些32位外设DMA时分配内存。
@@ -492,9 +494,9 @@ ARM所有地址都可以进行DMA，所以该值可以很大，
 	 * 作内存访问，也可以使用本区域
 	 */
 /*
-标记了可直接映射到内存段的普通内存域. 
-这是在所有体系结构上保证会存在的唯一内存区域, 
-但无法保证该地址范围对应了实际的物理地址. 
+标记了可直接映射到内存段的普通内存域.
+这是在所有体系结构上保证会存在的唯一内存区域,
+但无法保证该地址范围对应了实际的物理地址.
 
 例如, 如果AMD64系统只有两2G内存, 那么所有的内存都属于ZONE_DMA32范围, 而ZONE_NORMAL则为空
 
@@ -516,11 +518,11 @@ ARM所有地址都可以进行DMA，所以该值可以很大，
 	 * 区域
 	 */
 /*
-标记了超出内核虚拟地址空间的物理内存段, 
+标记了超出内核虚拟地址空间的物理内存段,
 因此这段地址不能被内核直接映射
 
-32位系统中, Linux内核虚拟地址空间只有1G, 
-而0~895M这个986MB被用于DMA和直接映射, 剩余的物理内存被成为高端内存. 
+32位系统中, Linux内核虚拟地址空间只有1G,
+而0~895M这个986MB被用于DMA和直接映射, 剩余的物理内存被成为高端内存.
 那内核是如何借助剩余128MB高端内存地址空间是如何实现访问可以所有物理内存？
 当内核想访问高于896MB物理地址内存时，从0xF8000000 ~ 0xFFFFFFFF地址空间范围
 内找一段相应大小空闲的逻辑地址空间，借用一会。
@@ -532,7 +534,7 @@ ARM所有地址都可以进行DMA，所以该值可以很大，
 #endif
 /*
 伪内存域
-在防止物理内存碎片的机制memory migration中需要使用该内存域. 
+在防止物理内存碎片的机制memory migration中需要使用该内存域.
 可以将虚拟地址对应的物理地址进行迁移
 */
 	ZONE_MOVABLE,
@@ -597,7 +599,7 @@ struct zone {
 	 * changes.
 	 */
     /*
-      为各个内存域指定的保留内存，用于分配不能失败的关键性内存分配 
+      为各个内存域指定的保留内存，用于分配不能失败的关键性内存分配
       当高端内存、normal内存区域中无法分配到内存时，需要从normal、DMA区域中分配内存。
       为了避免DMA区域被消耗光，需要额外保留一些内存供驱动使用。
       该字段就是指从上级内存区退到回内存区时，需要额外保留的内存数量。
@@ -617,7 +619,7 @@ struct zone {
 
 #ifdef CONFIG_NUMA
     /* 该zone所属的node的node id */
-	int node;  
+	int node;
 #endif
     /*  指向这个zone所在的pglist_data对象  */
     /**
@@ -629,19 +631,19 @@ struct zone {
         冷热页帧对应的高速缓存状态不同：有些页帧也很可能仍然在高速缓存中，因此可以快速访问，
         故称之为热的；未缓存的页帧与此相对，故称之为冷的。
 
-        内核经常请求和释放单个页框. 为了提升性能,        每个内存管理区都定义了一个Per-CPU 的页面高速缓存. 
+        内核经常请求和释放单个页框. 为了提升性能,        每个内存管理区都定义了一个Per-CPU 的页面高速缓存.
         所有”每CPU高速缓存”包含一些预先分配的页框,         他们被定义满足本地CPU发出的单一内存请求
 
         这个数组用于实现每个CPU的热/冷页帧列表。
         内核使用这些列表来保存可用于满足实现的“新鲜”页。
         但冷热页帧对应的高速缓存状态不同：        有些页帧很可能在高速缓存中，因此可以快速访问，故称之为热的；
         未缓存的页帧与此相对，称之为冷的。
-        
+
         page管理的数据结构对象，内部有一个page的列表(list)来管理。
         每个CPU维护一个page list，避免自旋锁的冲突。
         这个数组的大小和NR_CPUS(CPU的数量）有关，这个值是编译的时候确定的
 
-         为什么是per-cpu? 
+         为什么是per-cpu?
          在多处理器系统上每个CPU都有一个或多个高速缓存，各个CPU的管理必须是独立的
          因为每个cpu都可从当前zone中分配内存，而pageset本身实现的一个功能就是批量申请和释放
          修改为per-cpu可减小多个cpu在申请内存时的所竞争
@@ -692,7 +694,7 @@ struct zone {
     // 只内存域的第一个页帧
 /*
 和node_start_pfn的含义一样。
-这个成员是用于表示zone中的开始那个page在物理内存中的位置的present_pages， 
+这个成员是用于表示zone中的开始那个page在物理内存中的位置的present_pages，
 spanned_pages: 和node中的类似的成员含义一样
 */
 	unsigned long		zone_start_pfn;
@@ -743,7 +745,7 @@ spanned_pages: 和node中的类似的成员含义一样
     /*  总页数，包含空洞  */
 	unsigned long		spanned_pages;
 	/*  可用页数，不包含空洞  */
-	unsigned long		present_pages;  
+	unsigned long		present_pages;
     // zone的名字，字符串表示： “DMA”，”Normal” 和”HighMem”
 	const char		*name;
 
@@ -776,7 +778,7 @@ spanned_pages: 和node中的类似的成员含义一样
            以下是供页帧回收扫描器(page reclaim scanner)访问的字段
            scanner会跟据页帧的活动情况对内存域中使用的页进行编目
            如果页帧被频繁访问，则是活动的，相反则是不活动的，
-           在需要换出页帧时，这样的信息是很重要的：  
+           在需要换出页帧时，这样的信息是很重要的：
       */
     /**
       * 伙伴系统的主要变量。这个数组定义了11个队列，每个队列中的元素都是大小为2^n的页面块。
@@ -969,7 +971,7 @@ struct bootmem_data;
  * 在NUMA系统中，一般表示一个NUMA节点。
  */
 typedef struct pglist_data {
-    /*  
+    /*
     包含了结点中各内存域的数据结构 , 可能的区域类型用zone_type表示
     每个Node划分为不同的zone，ARM Vexpress 只有ZONE_NORMAL，ZONE_HIGHMEM
     */
@@ -983,13 +985,13 @@ typedef struct pglist_data {
      由mm/page_alloc.c文件中的build_zonelists()函数设置
 	*/
 	struct zonelist node_zonelists[MAX_ZONELISTS];
-    /*  
+    /*
     当前节点中不同内存域zone的数量，1到3个之间。
-    并不是所有的node都有3个zone的，比如一个CPU簇就可能没有ZONE_DMA区域 
+    并不是所有的node都有3个zone的，比如一个CPU簇就可能没有ZONE_DMA区域
     */
 	int nr_zones;
 #ifdef CONFIG_FLAT_NODE_MEM_MAP	/* means !SPARSEMEM */
-    /*  
+    /*
         平坦型的内存模型中，它指向本节点第一个页面的描述符
         node中的第一个page，它可以指向mem_map中的任何一个page，
         指向page实例数组的指针，用于描述该节点所拥有的的物理内存页，
@@ -1004,10 +1006,10 @@ typedef struct pglist_data {
 #endif
 #endif
 #ifndef CONFIG_NO_BOOTMEM
-    /*  
+    /*
         在系统启动boot期间，内存管理子系统初始化之前，
         内核页需要使用内存（另外，还需要保留部分内存用于初始化内存管理子系统）
-        为解决这个问题，内核使用了自举内存分配器 
+        为解决这个问题，内核使用了自举内存分配器
         此结构用于这个阶段的内存管理
     */
 	struct bootmem_data *bdata;
@@ -1032,8 +1034,8 @@ typedef struct pglist_data {
     /*
         起始页面帧号，指出该节点在全局mem_map中的偏移
         系统中所有的页帧是依次编号的，
-        每个页帧的号码都是全局唯一的（不只是结点内唯一）  
-        
+        每个页帧的号码都是全局唯一的（不只是结点内唯一）
+
         pfn是page frame number的缩写。
         这个成员是用于表示node中的开始那个page在物理内存中的位置的。
         是当前NUMA节点的第一个页帧的编号，系统中所有的页帧是依次进行编号的，
@@ -1042,7 +1044,7 @@ typedef struct pglist_data {
      */
 	unsigned long node_start_pfn;
 /*
-	node中的真正可以使用的page数量 
+	node中的真正可以使用的page数量
 */
 	unsigned long node_present_pages; /* total number of physical pages  */
 /*
@@ -1051,16 +1053,16 @@ typedef struct pglist_data {
 	unsigned long node_spanned_pages; /* total size of physical page  range, including holes*/
 	int node_id; /*  全局结点ID，系统中的NUMA结点都从0开始编号  */
 	/*  node的等待队列，交换守护列队进程的等待列表*/
-	wait_queue_head_t kswapd_wait; 
+	wait_queue_head_t kswapd_wait;
 	wait_queue_head_t pfmemalloc_wait;
-	/* 
-	指向负责回收该node中内存的swap内核线程kswapd， 一个node对应一个kswapd 
+	/*
+	指向负责回收该node中内存的swap内核线程kswapd， 一个node对应一个kswapd
 	*/
 	struct task_struct *kswapd;	/* Protected by   mem_hotplug_begin/end() */
-    /*  
-        定义需要释放的区域的长度  
+    /*
+        定义需要释放的区域的长度
     */
-	int kswapd_order;              
+	int kswapd_order;
     /**
         临时变量，用于内存回收时使用。记录上一次回收时，扫描的最后一个区域。
     */
@@ -1092,7 +1094,7 @@ typedef struct pglist_data {
 #ifdef CONFIG_NUMA
 	/*
 	 * zone reclaim becomes active if more unmapped pages exist.
-	 对应的page个数大于这两个值时，开始进行回收 
+	 对应的page个数大于这两个值时，开始进行回收
 	*/
 	unsigned long		min_unmapped_pages;
 	/**
@@ -1109,9 +1111,9 @@ typedef struct pglist_data {
 	/**
       * lru相关的字段用于内存回收。这个字段用于保护这几个回收相关的字段。
       * lru用于确定哪些字段是活跃的，哪些不是活跃的，并据此确定应当被写回到磁盘以释放内存。
-      * LRU(最近最少使用算法)活动以及非活动链表使用的自旋锁  
+      * LRU(最近最少使用算法)活动以及非活动链表使用的自旋锁
       */
-	spinlock_t		lru_lock; 
+	spinlock_t		lru_lock;
 
 #ifdef CONFIG_DEFERRED_STRUCT_PAGE_INIT
 	/*
@@ -1296,7 +1298,7 @@ static inline int is_highmem_idx(enum zone_type idx)
 }
 
 /**
- * is_highmem - helper function to quickly check if a struct zone is a 
+ * is_highmem - helper function to quickly check if a struct zone is a
  *              highmem zone or not.  This is an attempt to keep references
  *              to ZONE_{DMA/NORMAL/HIGHMEM/etc} in general code to a minimum.
  * @zone - pointer to struct zone variable
@@ -1334,7 +1336,7 @@ extern char numa_zonelist_order[];
 #ifndef CONFIG_NEED_MULTIPLE_NODES
 
 /*
-UMA结构的机器中, 只有一个node结点即contig_page_data, 
+UMA结构的机器中, 只有一个node结点即contig_page_data,
 此时NODE_DATA直接指向了全局的contig_page_data, 而与node的编号nid无关
 */
 extern struct pglist_data contig_page_data;

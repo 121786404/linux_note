@@ -221,12 +221,20 @@
 
 #ifndef CONFIG_THUMB2_KERNEL
 	@ ARM mode SVC restore
+/*
+    将中断现场的SPSR_irq保存到SPSR,准备返回中断发生的现场
+*/
 	msr	spsr_cxsf, \rpsr
 #if defined(CONFIG_CPU_V6) || defined(CONFIG_CPU_32v6K)
 	@ We must avoid clrex due to Cortex-A15 erratum #830321
 	sub	r0, sp, #4			@ uninhabited address
 	strex	r1, r2, [r0]			@ clear the exclusive monitor
 #endif
+/*
+    从栈中恢复15个寄存器，其中包括pc，这实际上就完成了中断返回
+    ^符号，表示在改变pc内容的同时要将SPSR的内容复制到CPSR中,
+    实际上完成了一次中断返回，并完整的恢复了中断现场
+*/
 	ldmia	sp, {r0 - pc}^			@ load r0 - pc, cpsr
 #else
 	@ Thumb mode SVC restore

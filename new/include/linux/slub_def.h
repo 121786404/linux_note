@@ -45,15 +45,25 @@ Slub分配器的分配机制是：
 否则会从partial list上或者node节点中获取可用的内存
 */
 struct kmem_cache_cpu {
-    // 下一空闲对象
+    /* 空闲对象队列的指针 */
 	void **freelist;	/* Pointer to next available object */
 	// transaction ID，保证操作的一致性
+	/*
+    	用于保证cmpxchg_double计算发生在正确的CPU上，
+    	并且可作为一个锁保证不会同时申请这个kmem_cache_cpu的对象
+	*/
 	unsigned long tid;	/* Globally unique transaction id */
-	// 当前cpu分配对象所用的page
+    /*
+        指向slab对象来源的内存页面
+    */
 	struct page *page;	/* The slab from which we are allocating */
 	// 当前cpu上被冻结的部分空page链表
+    /*
+        指向曾分配完所有的对象，但当前已回收至少一个对象的page
+    */
 	struct page *partial;	/* Partially allocated frozen slabs */
 #ifdef CONFIG_SLUB_STATS
+    /*用以记录slab的状态*/
 	unsigned stat[NR_SLUB_STAT_ITEMS];
 #endif
 };
@@ -81,56 +91,90 @@ struct kmem_cache {
     */
     struct kmem_cache_cpu __percpu *cpu_slab;
 	/* Used for retriving partial slabs etc */
-	/* 高速缓存永久属性的标识，如果SLAB描述符放在外部(不放在SLAB中)，
-	则CFLAGS_OFF_SLAB置1 */
+	/*
+    	高速缓存永久属性的标识，如果SLAB描述符放在外部(不放在SLAB中)，
+    	则CFLAGS_OFF_SLAB置1
+	*/
 	unsigned long flags;
-	/*  
-	    node节点中部分空缓存区数量最小值；
-          如果缓冲区数量大于此值时，
-          多余的缓冲区将会被free到伙伴系统中
+	/*
+        node结点中部分空slab缓冲区数量不能小于这个值,如果小于这个值,
+        空闲slab缓冲区则不能够进行释放,而是将空闲slab加入到node结点的部分空slab链表中
 	*/
 	unsigned long min_partial;
-	/* 缓冲区中单个对象的所占内存空间大小，包括meta data。
-	    size = object size + meta data size */
+	/*
+	    缓冲区中单个对象的所占内存空间大小，包括meta data。
+	    size = object size + meta data size
+	*/
 	int size;		/* The size of an object including meta data */
-    /* 对象的实际大小 */
+    /*
+        对象的实际大小
+    */
 	int object_size;	/* The size of an object without meta data */
-    /* free pointer的offset。Page被分为一个个内存块，
-          各个内存块通过指针串接成链表，
-          offset即指针在单个内存块中的偏移量 */
+    /*
+        free pointer的offset。Page被分为一个个内存块，
+        各个内存块通过指针串接成链表，
+        offset即free pointer在单个内存块中的偏移量
+    */
 	int offset;		/* Free pointer offset. */
-    /* cpu_slab中部分空对象的最大个数。
-          当cpu_slab中部分空对象大于此值时，
-          多出的对象将被放到node节点或者free到伙伴系统中 */
+    /*
+        cpu_slab中部分空对象的最大个数。
+        当cpu_slab中部分空对象大于此值时，
+        多出的对象将被放到node节点或者free到伙伴系统中
+
+        每个CPU在partial链表中的最多对象个数
+
+        该数据决定了：
+        1）当使用到了极限时，每个CPU的partial slab释放到每个管理节点链表的个数；
+        2）当使用完每个CPU的对象数时，CPU的partial slab来自每个管理节点的对象数。
+    */
 	int cpu_partial;	/* Number of per cpu partial objects to keep around */
-    /* 保存slab缓冲区需要的页框数量的order值和objects数量的值，
+    /*
+        保存slab缓冲区需要的页框数量的order值和objects数量的值，
         通过这个值可以计算出需要多少页框，这个是默认值，
-        初始化时会根据经验计算这个值 */
+        初始化时会根据经验计算这个值
+        存放分配给slab的页框的阶数(高16位)和slab中的对象数量(低16位)
+    */
 	struct kmem_cache_order_objects oo;
 
 	/* Allocation and freeing of slabs */
-	/* 保存slab缓冲区需要的页框数量的order值和objects数量的值，
-	这个是最大值 */
+	/*
+    	保存slab缓冲区需要的页框数量的order值和objects数量的值，这个是最大值
+	*/
 	struct kmem_cache_order_objects max;
-	/* 保存slab缓冲区需要的页框数量的order值和objects数量的值，
-	这个是最小值，当默认值oo分配失败时，
-	会尝试用最小值去分配连续页框 */
+	/*
+    	保存slab缓冲区需要的页框数量的order值和objects数量的值，
+    	这个是最小值，当默认值oo分配失败时，会尝试用最小值去分配连续页框
+	*/
 	struct kmem_cache_order_objects min;
-	/* 每一次分配时所使用的标志 */
+	/*
+	    每一次分配时所使用的标志
+	*/
 	gfp_t allocflags;	/* gfp flags to use on each alloc */
-	/* 重用计数器，当用户请求创建新的SLUB种类时，
-	SLUB 分配器重用已创建的相似大小的SLUB，从而减少SLUB种类的个数。 */
+	/*
+    	重用计数器，当用户请求创建新的SLUB种类时，
+    	SLUB 分配器重用已创建的相似大小的SLUB，从而减少SLUB种类的个数。
+	*/
 	int refcount;		/* Refcount for slab cache destroy */
-	/* 创建slab时的构造函数 */
+	/*
+	    创建slab时的构造函数
+	*/
 	void (*ctor)(void *);
-	/* 元数据的偏移量 */
+	/*
+	    元数据的偏移量
+	*/
 	int inuse;		/* Offset to metadata */
-	/* 对齐 */
+	/*
+	    对齐
+	*/
 	int align;		/* Alignment */
 	int reserved;		/* Reserved bytes at the end of slabs */
-	/* 高速缓存名字 */
+	/*
+	    高速缓存名字
+	*/
 	const char *name;	/* Name (only for display!) */
-	/* 所有的 kmem_cache 结构都会链入这个链表，链表头是 slab_caches */
+	/*
+	    所有的 kmem_cache 结构都会链入这个链表，链表头是 slab_caches
+	*/
 	struct list_head list;	/* List of slab caches */
 	int red_left_pad;	/* Left redzone padding size */
 #ifdef CONFIG_SYSFS
@@ -148,6 +192,9 @@ struct kmem_cache {
 	/*
 	 * Defragmentation by allocating from a remote node.
 	 */
+	/*
+	    该值越小，越倾向于从本节点分配对象
+	*/
 	int remote_node_defrag_ratio;
 #endif
 
@@ -158,7 +205,9 @@ struct kmem_cache {
 #ifdef CONFIG_KASAN
 	struct kasan_cache kasan_info;
 #endif
-    /* 创建缓冲区的节点的 slab 信息 */
+    /*
+        创建缓冲区的节点的 slab 信息
+    */
 	struct kmem_cache_node *node[MAX_NUMNODES];
 };
 

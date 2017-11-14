@@ -46,7 +46,13 @@
 #include <trace/events/cma.h>
 
 #include "cma.h"
+/*
+每一个struct cma抽象了一个CMA area，标识了一个物理地址连续的memory area。
+调用cma_alloc分配的连续内存就是从CMA area中获得的。
 
+具体有多少个CMA area是编译时决定了，而具体要配置多少个CMA area是和系统设计相关，
+你可以为特定的驱动准备一个CMA area，也可以只建立一个通用的CMA area，供多个驱动使用。
+*/
 struct cma cma_areas[MAX_CMA_AREAS];
 unsigned cma_area_count;
 static DEFINE_MUTEX(cma_mutex);
@@ -104,8 +110,15 @@ static void cma_clear_bitmap(struct cma *cma, unsigned long pfn,
 
 static int __init cma_activate_area(struct cma *cma)
 {
+/*
+    CMA area有一个bitmap来管理各个page的状态，
+    bitmap_size给出了bitmap需要多少的内存。
+*/
 	int bitmap_size = BITS_TO_LONGS(cma_bitmap_maxno(cma)) * sizeof(long);
 	unsigned long base_pfn = cma->base_pfn, pfn = base_pfn;
+/*
+    该CMA area有多少个pageblock
+*/
 	unsigned i = cma->count >> pageblock_order;
 	struct zone *zone;
 
@@ -117,10 +130,17 @@ static int __init cma_activate_area(struct cma *cma)
 	WARN_ON_ONCE(!pfn_valid(pfn));
 	zone = page_zone(pfn_to_page(pfn));
 
+/*
+    遍历该CMA area中的所有的pageblock
+*/
 	do {
 		unsigned j;
 
 		base_pfn = pfn;
+/*
+		确保CMA area中的所有page都是在一个memory zone内，同时累加了pfn，
+		从而得到下一个pageblock的初始page frame number
+*/
 		for (j = pageblock_nr_pages; j; --j, pfn++) {
 			WARN_ON_ONCE(!pfn_valid(pfn));
 			/*
@@ -132,6 +152,9 @@ static int __init cma_activate_area(struct cma *cma)
 			if (page_zone(pfn_to_page(pfn)) != zone)
 				goto err;
 		}
+/*
+		将该pageblock导入到伙伴系统，并且将migrate type设定为MIGRATE_CMA
+*/
 		init_cma_reserved_pageblock(pfn_to_page(base_pfn));
 	} while (--i);
 

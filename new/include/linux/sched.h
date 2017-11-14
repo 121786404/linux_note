@@ -203,7 +203,7 @@ extern void proc_sched_set_task(struct task_struct *p);
  * modifying one set can't modify the other one by
  * mistake.
  */
- /* 
+ /*
  表示进程要么正在执行，要么正要准备执行（已经就绪），
  正在等待cpu时间片的调度
  */
@@ -212,7 +212,7 @@ extern void proc_sched_set_task(struct task_struct *p);
 /*
 Linux 内核提供了两种方法将进程置为睡眠状态。
 将进程置为睡眠状态的普通方法是
-将进程状态设置为 TASK_INTERRUPTIBLE 或 TASK_UNINTERRUPTIBLE 
+将进程状态设置为 TASK_INTERRUPTIBLE 或 TASK_UNINTERRUPTIBLE
 并调用调度程序的 schedule() 函数。这样会将进程从 CPU 运行队列中移除。
 
 如果进程处于可中断模式的睡眠状态(TASK_INTERRUPTIBLE)
@@ -264,19 +264,19 @@ Linux 内核提供了两种方法将进程置为睡眠状态。
 /* in tsk->exit_state */
 #define EXIT_DEAD		16
 
-/* 
+/*
 进程的执行被终止，但是其父进程还没有使用wait()
 等系统调用来获知它的终止信息，
-此时进程成为僵尸进程 
+此时进程成为僵尸进程
 */
 #define EXIT_ZOMBIE		32
 #define EXIT_TRACE		(EXIT_ZOMBIE | EXIT_DEAD)
 /* in tsk->state again */
 /* 进程的最终状态 */
 /*
-在设置了进程状态为TASK_DEAD后, 进程进入僵死状态, 
-进程已经无法被再次调度, 
-因为对应用程序或者用户空间来说此进程已经死了, 
+在设置了进程状态为TASK_DEAD后, 进程进入僵死状态,
+进程已经无法被再次调度,
+因为对应用程序或者用户空间来说此进程已经死了,
 但是尽管进程已经不能再被调度，
 但系统还是保留了它的进程描述符，这样做是为了让系统有办法在进程终止后仍能获得它的信息。
 */
@@ -1347,8 +1347,8 @@ struct pipe_inode_info;
 struct uts_namespace;
 
 struct load_weight {
-	unsigned long weight;
-	u32 inv_weight;
+	unsigned long weight; // 调度实体权重
+	u32 inv_weight; // inverse weight ，权重计算的中间结果
 };
 
 /*
@@ -1403,6 +1403,9 @@ struct load_weight {
  * Then it is the load_weight's responsibility to consider overflow
  * issues.
  */
+/*
+ 进程负载
+*/
 struct sched_avg {
 	u64 last_update_time, load_sum;
 	u32 util_sum, period_contrib;
@@ -1445,27 +1448,27 @@ struct sched_statistics {
 };
 #endif
 
-/* 
+/*
 一个调度实体(红黑树的一个结点)，其包含一组或一个指定的进程，
 包含一个自己的运行队列，一个父亲指针，
-一个指向需要调度的运行队列指针 
+一个指向需要调度的运行队列指针
 */
 struct sched_entity {
-/* 
-    权重，在数组prio_to_weight[]包含优先级转权重的数值 
+/*
+    权重，在数组prio_to_weight[]包含优先级转权重的数值
     通过优先级转换而成，是vruntime计算的关键。
 */
 	struct load_weight	load;		/* for load-balancing */
-/* 
-    实体在红黑树对应的结点信息 
+/*
+    实体在红黑树对应的结点信息
 */
 	struct rb_node		run_node;
-/* 
-    实体所在的进程组 
+/*
+    实体所在的进程组
 */
 	struct list_head	group_node;
-/* 
-实体是否处于红黑树运行队列中 
+/*
+实体是否处于红黑树运行队列中
 表明是否处于CFS红黑树运行队列中，需要明确一个观点就是，
 CFS运行队列里面包含有一个红黑树，
 但这个红黑树并不是CFS运行队列的全部，
@@ -1480,7 +1483,7 @@ CFS运行队列的on_rq为假。
 	u64			exec_start;
 /* 总运行时间 */
 	u64			sum_exec_runtime;
-/* 
+/*
 虚拟运行时间，调度的关键，其计算公式：
 一次调度间隔的虚拟运行时间 = 实际运行时间 * (NICE_0_LOAD / 权重)。
 可以看出跟实际运行时间和权重有关，
@@ -1662,23 +1665,28 @@ struct task_struct {
 	unsigned int wakee_flips;
 	unsigned long wakee_flip_decay_ts;
 	struct task_struct *last_wakee;
+/*
 
+*/
 	int wake_cpu;
 #endif
     /* 是否在运行队列 */
 	int on_rq;
     /*
         prio: 动态优先级，范围为100~139，与静态优先级和补偿(bonus)有关
+              比如实时互斥量，需要暂时提高进程的优先级
         static_prio: 静态优先级，static_prio = 100 + nice + 20 (nice值为-20~19,所以static_prio值为100~139)
-                        是进程启动时分配的优先级, 可以通过nice和sched_setscheduler系统调用来进行修改, 否则在进程运行期间会一直保持恒定
-        normal_prio 表示基于进程的静态优先级static_prio和调度策略计算出的优先级. 
-                          因此即使普通进程和实时进程具有相同的静态优先级, 
-                          其普通优先级也是不同的, 进程分叉(fork)时, 
-                          子进程会继承父进程的普通优先级
+                    是进程启动时分配的优先级, 可以通过nice和sched_setscheduler系统调用来进行修改, 否则在进程运行期间会一直保持恒定
+                    内核不存储nice值，用static_prio表示
+        normal_prio 表示基于进程的静态优先级static_prio和调度策略计算出的优先级.
+                    普通进程 normal_prio = static_prio
+                    实时进程，会根据rt_priority 重新计算normal_prio
+                    因此即使普通进程和实时进程具有相同的静态优先级,                    其普通优先级也是不同的,
+                    进程分叉(fork)时, 子进程会继承父进程的普通优先级
     */
 	int prio, static_prio, normal_prio;
-	/* 
-	实时优先级
+	/*
+	    实时优先级
 	*/
 	unsigned int rt_priority;
 	/* 调度类
@@ -1743,9 +1751,9 @@ struct task_struct {
 	struct rb_node pushable_dl_tasks;
 #endif
 
-    /* 进程所拥有的用户空间内存描述符，内核线程无的mm为NULL 
+    /* 进程所拥有的用户空间内存描述符，内核线程无的mm为NULL
 
-     active_mm指向进程运行时所使用的内存描述符， 
+     active_mm指向进程运行时所使用的内存描述符，
     对于普通进程而言，这两个指针变量的值相同。
     但是内核线程kernel thread是没有进程地址空间的，
     所以内核线程的tsk->mm域是空（NULL）。
@@ -1765,10 +1773,10 @@ struct task_struct {
 #endif
 /* task state */
 	int exit_state;
-	/* 
+	/*
 	exit_code 用于设置进程的终止代号，这个值要么是_exit()或
 	exit_group()系统调用参数（正常终止），
-	要么是由内核提供的一个错误代号（异常终止） 
+	要么是由内核提供的一个错误代号（异常终止）
 
 	exit_signal 被置为-1时表示是某个线程组中的一员。
 	只有当线程组的最后一个成员终止时，才会产生一个信号，
@@ -1783,7 +1791,7 @@ struct task_struct {
 	unsigned int personality;
 
 	/* scheduler bits, serialized by scheduler locks */
-	/* 用于判断是否恢复默认的优先级或调度策略 */
+	/* fork子进程的时候让子进程恢复到默认的优先级或调度策略 */
 	unsigned sched_reset_on_fork:1;
 	unsigned sched_contributes_to_load:1;
 	unsigned sched_migrated:1;
@@ -1826,7 +1834,7 @@ struct task_struct {
     系统中每个进程都对应了该命名空间的一个PID，叫全局ID，保证在整个系统中唯一。
     */
 	pid_t pid;
-	/* 
+	/*
 	当前进程所在线程组的线程组ID
 	*/
 	pid_t tgid;
@@ -1852,9 +1860,9 @@ struct task_struct {
 	struct list_head children;	/* list of my children */
     /* 兄弟进程链表*/
 	struct list_head sibling;	/* linkage in my parent's children list */
-	/* 
-	指向其所在进程组的领头进程 
-	除了在多线程的模式下指向主线程，还有一个用处， 
+	/*
+	指向其所在进程组的领头进程
+	除了在多线程的模式下指向主线程，还有一个用处，
 	当一些进程组成一个群组时（PIDTYPE_PGID)， 该域指向该群组的leader
 	全局的会话标识SID        保存在task_struct->group_leader->pids[PIDTYPE_SID].pid 中
 	全局进程组标识PGlD 保存在task_struct->group_leader->pids[PIDTYPE_PGID].pid 中
@@ -1876,13 +1884,16 @@ struct task_struct {
 	/* 线程组中所有进程的链表*/
 	struct list_head thread_group;
 	struct list_head thread_node;
-    /* 
+    /*
     do_fork函数
     在执行do_fork()时，如果给定特别标志，则vfork_done会指向一个特殊地址。
     如果copy_process函数的clone_flags参数的值被置为CLONE_CHILD_SETTID或CLONE_CHILD_CLEARTID，
     则会把child_tidptr参数的值分别复制到set_child_tid和clear_child_tid成员。
     这些标志说明必须改变子进程用户态地址空间的child_tidptr所指向的变量的值
     */
+/*
+    保证子进程先运行的 completion
+*/
 	struct completion *vfork_done;		/* for vfork() */
 	int __user *set_child_tid;		/* CLONE_CHILD_SETTID */
 	int __user *clear_child_tid;		/* CLONE_CHILD_CLEARTID */
@@ -1939,7 +1950,7 @@ struct task_struct {
 					 * credentials (COW) */
 	const struct cred __rcu *cred;	/* effective (overridable) subjective task
 					 * credentials (COW) */
-	/* 相应的程序名*/				 
+	/* 相应的程序名*/
 	char comm[TASK_COMM_LEN]; /* executable name excluding path
 				     - access with [gs]et_task_comm (which lock
 				       it with task_lock())
@@ -1988,7 +1999,7 @@ struct task_struct {
 	struct audit_context *audit_context;
 #ifdef CONFIG_AUDITSYSCALL
 /*
-进程审计 
+进程审计
 */
 	kuid_t loginuid;
 	unsigned int sessionid;
@@ -2591,13 +2602,18 @@ PF_WQ_WORKER是用来标识该task是一个workqueue worker。
 /* 进程刚创建，但还没执行*/
 #define PF_FORKNOEXEC	0x00000040	/* forked but didn't exec */
 #define PF_MCE_PROCESS  0x00000080      /* process policy on mce errors */
-/* 
+/*
 标识进程曾经使用了super-user privileges（并不表示该进程有超级用户的权限）。
 */
 #define PF_SUPERPRIV	0x00000100	/* used super-user privileges */
 #define PF_DUMPCORE	0x00000200	/* dumped core */
 /* 进程被信号(signal)杀出 */
 #define PF_SIGNALED	0x00000400	/* killed by a signal */
+/*
+    两处使用
+   1) direct compaction 内存压缩
+   2) Linux 3.6 为解决网络磁盘设备 network block device 使用交换分区时出现死锁的问题而引入
+*/
 #define PF_MEMALLOC	0x00000800	/* Allocating memory */
 #define PF_NPROC_EXCEEDED 0x00001000	/* set_user noticed that RLIMIT_NPROC was exceeded */
 #define PF_USED_MATH	0x00002000	/* if unset the fpu must be initialized before use */
@@ -2605,21 +2621,27 @@ PF_WQ_WORKER是用来标识该task是一个workqueue worker。
 #define PF_NOFREEZE	0x00008000	/* this thread should not be frozen */
 #define PF_FROZEN	0x00010000	/* frozen for system suspend */
 #define PF_FSTRANS	0x00020000	/* inside a filesystem transaction */
+/*
+
+*/
 #define PF_KSWAPD	0x00040000	/* I am kswapd */
 #define PF_MEMALLOC_NOIO 0x00080000	/* Allocating memory without IO involved */
 #define PF_LESS_THROTTLE 0x00100000	/* Throttle me less: I clean memory */
 #define PF_KTHREAD	0x00200000	/* I am a kernel thread */
 /*
 内核不会为栈和内存映射的起点选择固定位置,
-而是在每次新进程启动时随机改变这些值的设置. 
+而是在每次新进程启动时随机改变这些值的设置.
 
-这引入了一些复杂性, 例如, 使得攻击因缓冲区溢出导致的安全漏洞更加困难. 
+这引入了一些复杂性, 例如, 使得攻击因缓冲区溢出导致的安全漏洞更加困难.
 如果攻击者无法依靠固定地址找到栈
-,那么想要构建恶意代码, 通过缓冲器溢出获得栈内存区域的访问权, 
+,那么想要构建恶意代码, 通过缓冲器溢出获得栈内存区域的访问权,
 而后恶意操纵栈的内容,将会困难得多.
 */
 #define PF_RANDOMIZE	0x00400000	/* randomize virtual address space */
 #define PF_SWAPWRITE	0x00800000	/* Allowed to write to swap */
+/*
+    不允许用户程序修改其CPU亲和性
+*/
 #define PF_NO_SETAFFINITY 0x04000000	/* Userland is not allowed to meddle with cpus_allowed */
 #define PF_MCE_EARLY    0x08000000      /* Early kill for mce process policy */
 #define PF_MUTEX_TESTER	0x20000000	/* Thread belongs to the rt mutex tester */
@@ -3018,8 +3040,8 @@ union thread_union {
 
 #ifndef __HAVE_ARCH_KSTACK_END
 /*
-在内核的某个特定组建使用了较多的栈空间时, 
-内核栈会溢出到thread_info部分, 
+在内核的某个特定组建使用了较多的栈空间时,
+内核栈会溢出到thread_info部分,
 因此内核提供了kstack_end函数来判断给出的地址是否位于栈的有效部分
 */
 static inline int kstack_end(void *addr)
@@ -3551,7 +3573,7 @@ static inline unsigned long *end_of_stack(const struct task_struct *task)
 /*
 stack指向了内核栈的地址(其实也就是thread_info和thread_union的地址),
 因为联合体中stack和thread_info都在起始地址, 因此可以很方便的转型
-task_thread_info用于通过task_struct来查找其thread_info的信息, 
+task_thread_info用于通过task_struct来查找其thread_info的信息,
 只需要一次指针类型转换即可
 */
 #define task_thread_info(task)	((struct thread_info *)(task)->stack)

@@ -5,10 +5,10 @@
  * cloning flags:
  */
 #define CSIGNAL		0x000000ff	/* signal mask to be sent at exit */
-/* 共享内存描述符和所有页面*/
+/* 父子进程共享内存空间*/
 #define CLONE_VM	0x00000100	/* set if VM shared between processes */
 /*
-CLONE_FS 父子进程共享文件系统信息，（例如文件系统的root、当前工作目录等），
+父子进程共享文件系统信息，（例如文件系统的root、当前工作目录等），
 如果设定了该flag，那么父子进程共享文件系统信息，
 如果不设定该flag，那么子进程则copy父进程的文件系统信息，
 之后，子进程调用chroot，chdir，umask来改变文件系统信息将不会影响到父进程
@@ -17,13 +17,13 @@ CLONE_FS 父子进程共享文件系统信息，（例如文件系统的root、�
 /*
 子进程与父进程共享相同的文件描述符（file descriptor）表,即共享打开的文件
 */
-#define CLONE_FILES	0x00000400	/* set if open files shared between processes */
+#define CLONE_FILES 0x00000400	/* set if open files shared between processes */
 /* 表示创建的子进程与父进程共享相同的信号处理（signal handler）表 ，必须同时设置CLONE_VM标志*/
 #define CLONE_SIGHAND	0x00000800	/* set if signal handlers and blocked signals shared */
 /* 如果父进程被追踪，那么子进程也被追踪*/
 #define CLONE_PTRACE	0x00002000	/* set if we want to let tracing continue on the child too */
 /* 在发出vfork系统调用时设置*/
-#define CLONE_VFORK	0x00004000	/* set if the parent wants the child to wake it up on mm_release */
+#define CLONE_VFORK 0x00004000	/* set if the parent wants the child to wake it up on mm_release */
 /* 创建的子进程的父进程是调用者的父进程，
      新进程与创建它的进程成了“兄弟”而不是“父子” */
 #define CLONE_PARENT	0x00008000	/* set if we want to have the same parent as the cloner */
@@ -54,7 +54,7 @@ mount Namespace为进程提供了一个文件层次视图。
 就可以调用mount或umount建立一份新的文件层次视图。
 该flag配合pivot_root系统调用，可以为进程创建一个独立的目录空间
 */
-#define CLONE_NEWNS	0x00020000	/* New mount namespace group */
+#define CLONE_NEWNS 0x00020000	/* New mount namespace group */
 /* 父子进程共享system V SEM_UNDO 语义*/
 #define CLONE_SYSVSEM	0x00040000	/* share system V SEM_UNDO semantics */
 /*
@@ -176,7 +176,7 @@ PID Namespace是层次性，新创建的Namespace将会是创建该Namespace的�
 不同要求的实时任务可以根据需要用sched_setscheduler设置策略
 */
 #define SCHED_RR		2
-/* 
+/*
 SCHED_NORMAL普通进程策略的分化版本。采用分时策略，
 根据动态优先级(可用nice()API设置），分配 CPU 运算资源。
 注意：这类进程比上述两类实时进程优先级低，

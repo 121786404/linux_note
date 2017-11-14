@@ -93,11 +93,16 @@ SOFTIRQ_MASK包括software interrupt context加上禁止softirq情况下的进�
 返回非0,说明内核确实正在执行中断处理程序
 */
 #define in_irq()		(hardirq_count())
+/*
+    是否正处于软中断处理过程
+*/
 #define in_softirq()		(softirq_count())
-/* 主要用意是根据当前栈中的preempt_count变量,
- * 来判断当前是否在一个中断上下文中执行.preempt_count的低8位与PREEMPT相关,
- 8-15位留给SOFTIRQ使用,16-25位给HARDIRQ使用,NMI占据1位
- 返回非0,说明内核此刻正在执行中断处理程序，或者正在执行底半部处理程序
+/* 
+主要用意是根据当前栈中的preempt_count变量,
+来判断当前是否在一个中断上下文中执行.preempt_count的低8位与PREEMPT相关,
+
+8-15位留给SOFTIRQ使用,16-25位给HARDIRQ使用,NMI占据1位
+返回非0,说明内核此刻正在执行中断处理程序，或者正在执行底半部处理程序
 
 休眠这样的工作只有在进程上下文中才能做。
 在这种情况下，in_interrupt 宏只要返回0就可以保证自己处于进程上下文，而不是处于中断上下文。

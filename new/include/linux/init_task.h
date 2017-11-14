@@ -213,10 +213,28 @@ extern struct task_group root_task_group;
 /*
  *  INIT_TASK is used to set up the first task table, touch at
  * your own risk!. Base=0, limit=0x1fffff (=2MB)
- * 由于init_task是一个运行在内核空间的内核线程, 
+ * 由于init_task是一个运行在内核空间的内核线程,
  * 因此其虚地址段mm为NULL, 但是必要时他还是需要使用虚拟地址的，
  * 因此avtive_mm被设置为init_mm
  */
+/*
+
+ stack = init_thread_union.stack
+
+ init 进程的stack 是放在kernel image的data段的.data..init_task
+    arch\arm\kernel\vmlinux.lds.S
+
+    INIT_TASK_DATA(THREAD_SIZE)
+
+    #define INIT_TASK_DATA(align)
+        . = ALIGN(align);
+        VMLINUX_SYMBOL(__start_init_task) = .;
+        *(.data..init_task)
+        VMLINUX_SYMBOL(__end_init_task) = .;
+
+    __init_task_data 宏会直接读取.data..init_task段
+*/
+
 #define INIT_TASK(tsk)	\
 {									\
 	INIT_TASK_TI(tsk)						\

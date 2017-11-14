@@ -259,27 +259,27 @@ struct cfs_bandwidth {
  * 用于实现组调度
  */
 struct task_group {
-    /* 
-    用于进程找到其所属进程组结构 
+    /*
+    用于进程找到其所属进程组结构
     */
 	struct cgroup_subsys_state css;
 
 #ifdef CONFIG_FAIR_GROUP_SCHED
 	/* schedulable entities of this group on each cpu */
 /*
-	CFS调度器的进程组变量，在 alloc_fair_sched_group() 中进程初始化及分配内存 
+	CFS调度器的进程组变量，在 alloc_fair_sched_group() 中进程初始化及分配内存
       该进程组在每个CPU上都有对应的一个调度实体，
       因为有可能此进程组同时在两个CPU上运行
-      (它的A进程在CPU0上运行，B进程在CPU1上运行) 
+      (它的A进程在CPU0上运行，B进程在CPU1上运行)
 */
 	struct sched_entity **se;
 	/* runqueue "owned" by this group on each cpu */
 /*
-	进程组在每个CPU上都有一个CFS运行队列(为什么需要，稍后解释) 
+	进程组在每个CPU上都有一个CFS运行队列(为什么需要，稍后解释)
 */
 	struct cfs_rq **cfs_rq;
-/* 
-    用于保存优先级默认为NICE 0的优先级 
+/*
+    用于保存优先级默认为NICE 0的优先级
 */
 	unsigned long shares;
 
@@ -294,8 +294,8 @@ struct task_group {
 #endif
 
 #ifdef CONFIG_RT_GROUP_SCHED
-/* 
-    实时进程调度器的进程组变量，同 CFS 
+/*
+    实时进程调度器的进程组变量，同 CFS
 */
 	struct sched_rt_entity **rt_se;
 	struct rt_rq **rt_rq;
@@ -304,22 +304,22 @@ struct task_group {
 #endif
 
 	struct rcu_head rcu;
-/* 
-    用于建立进程链表(属于此调度组的进程链表) 
+/*
+    用于建立进程链表(属于此调度组的进程链表)
 */
 	struct list_head list;
-/* 
+/*
     指向其上层的进程组，每一层的进程组都是它上一层进程组
     的运行队列的一个调度实体，在同一层中，
-    进程组和进程被同等对待 
+    进程组和进程被同等对待
 */
 	struct task_group *parent;
-/* 
-    进程组的兄弟结点链表 
+/*
+    进程组的兄弟结点链表
 */
 	struct list_head siblings;
-/* 
-    进程组的儿子结点链表 
+/*
+    进程组的儿子结点链表
 */
 	struct list_head children;
 
@@ -410,7 +410,7 @@ struct cfs_bandwidth { };
 
 /* CFS-related fields in a runqueue */
 /* CFS调度的运行队列，每个CPU的rq会包含一个cfs_rq，
-而每个组调度的sched_entity也会有自己的一个cfs_rq队列 
+而每个组调度的sched_entity也会有自己的一个cfs_rq队列
 
 在系统中至少有一个CFS运行队列，其就是根CFS运行队列，
 而其他的进程组和进程都包含在此运行队列中，
@@ -424,8 +424,8 @@ struct cfs_bandwidth { };
 并且包含有一个红黑树进行选择调度进程
 */
 struct cfs_rq {
-    /* 
-          CFS运行队列中所有进程的总负载 
+    /*
+          CFS运行队列中所有进程的总负载
           需要注意子进程计算vruntime时需要用到进程组的load
      */
 	struct load_weight load;
@@ -437,7 +437,7 @@ struct cfs_rq {
 
 	u64 exec_clock;
     /* 当前CFS队列上最小运行时间，单调递增
-       * 两种情况下更新该值: 
+       * 两种情况下更新该值:
        * 1、更新当前运行任务的累计运行时间时
        * 2、当任务从队列删除去，如任务睡眠或退出，
        *        这时候会查看剩下的任务的vruntime是否大于min_vruntime，
@@ -676,7 +676,7 @@ extern void rq_attach_root(struct rq *rq, struct root_domain *rd);
  * (such as the load balancing or the thread migration code), lock
  * acquire operations must be ordered by ascending &runqueue.
  */
-/* CPU运行队列，每个CPU包含一个struct rq */
+/* CPU就绪队列，每个CPU包含一个struct rq */
 struct rq {
 	/* runqueue lock: */
     /* 处于运行队列中所有就绪进程的load之和 */
@@ -693,9 +693,9 @@ struct rq {
 	unsigned int nr_preferred_running;
 #endif
 	#define CPU_LOAD_IDX_MAX 5
-    /* 
+    /*
     根据CPU历史情况计算的负载，cpu_load[0]一直等于load.weight，
-    当达到负载平衡时，cpu_load[1]和cpu_load[2]都应该等于load.weight 
+    当达到负载平衡时，cpu_load[1]和cpu_load[2]都应该等于load.weight
     */
 	unsigned long cpu_load[CPU_LOAD_IDX_MAX];
 #ifdef CONFIG_NO_HZ_COMMON
@@ -748,6 +748,9 @@ struct rq {
 	unsigned int clock_update_flags;
     /* rq运行时间 */
 	u64 clock;
+/*
+    每个tick到来，更新一次
+*/
 	u64 clock_task;
 
 	atomic_t nr_iowait;
@@ -772,7 +775,7 @@ struct rq {
 	int push_cpu;
 	struct cpu_stop_work active_balance_work;
 	/* cpu of this runqueue: */
-    /* 该运行队列所属CPU */	
+    /* 该运行队列所属CPU */
 	int cpu;
 	int online;
 

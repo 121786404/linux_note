@@ -43,6 +43,13 @@
  */
 	.macro	irq_handler
 #ifdef CONFIG_MULTI_IRQ_HANDLER
+/*
+    CONFIG_MULTI_IRQ_HANDLER:允许每个机器在运行时制定irq处理程序
+    对于ARM Soc来说，每一款Soc的芯片设计都不一样，采用的中断控制器以及中断控制器的连接方式也不同，
+    有的Soc可能采用GIC-V2的中断控制器，有的则可能采用GIC-V3的中断控制器，也有的厂商自己设计中断控制器
+    __gic_init_bases中 set_handle_irq(gic_handle_irq) ---> handle_arch_irq = gic_handle_irq
+
+*/
 	ldr	r1, =handle_arch_irq
 	mov	r0, sp
 	badr	lr, 9997f
@@ -155,6 +162,9 @@ ENDPROC(__und_invalid)
 	.macro	svc_entry, stack_hole=0, trace=1, uaccess=1
  UNWIND(.fnstart		)
  UNWIND(.save {r0 - pc}		)
+/*
+ sp减去SVC_REGS_SIZE   - 4，指向 ARM_r1
+*/
 	sub	sp, sp, #(SVC_REGS_SIZE + \stack_hole - 4)
 #ifdef CONFIG_THUMB2_KERNEL
  SPFIX(	str	r0, [sp]	)	@ temporarily saved
@@ -165,16 +175,36 @@ ENDPROC(__und_invalid)
  SPFIX(	tst	sp, #4		)
 #endif
  SPFIX(	subeq	sp, sp, #4	)
+/*
+进入__irq_svc时已经变成SVC模式，当前的栈时当前进程（发生中断的进程）的内核栈
+*/
 	stmia	sp, {r1 - r12}
-
+/*
+    r0还保存这irq模式的栈指针，irq模式的栈空间分别保存这r0、lr_irq和cpsr_irq的内容
+    通过ldmia把irq模式的栈空间复制到SVC模式的r3,r4,r5寄存器中
+*/
 	ldmia	r0, {r3 - r5}
+/*
+    r7指向ARM_sp地址处	
+*/
 	add	r7, sp, #S_SP - 4	@ here for interlock avoidance
+/*
+    r6寄存器赋值-1
+*/
 	mov	r6, #-1			@  ""  ""      ""       ""
+/*
+    将CPSR_svc的内容赋值到r2
+*/
 	add	r2, sp, #(SVC_REGS_SIZE + \stack_hole - 4)
  SPFIX(	addeq	r2, r2, #4	)
+/*
+    刚才已把IRQ模式的r0内容复制到r3，现在重新复制到SVC模式的r0
+*/
 	str	r3, [sp, #-4]!		@ save the "real" r0 copied
 					@ from the exception stack
-
+/*
+    把SVC模式的lr_svc复制到r3
+*/
 	mov	r3, lr
 
 	@
@@ -186,6 +216,15 @@ ENDPROC(__und_invalid)
 	@  r5 - spsr_<exception>
 	@  r6 - orig_r0 (see pt_regs definition in ptrace.h)
 	@
+/*
+	这时r2=SPSR_svc,r3=lr_svc,r4=LR_irq,r5=CPSR_irq,r6=-1
+	通过stmia将这些寄存器保存在栈中的ARM_sp,ARM_lr,ARM_pc,ARM_cpsr,ARM_ORIG_r0中
+	为什么ARM_ORIG_r0要赋值位-1呢？
+	这是ARM处理器在传递参数时的约定。ARM处理器通过通用寄存器来传递参数。
+	系统调用和中断都属于处理器异常范畴，系统调用通常通过r0-r3来传递参数，返回值放入r0，可能会把r0传递
+	的参数覆盖，因此ARM的寄存器中定义了两份r0，ARM_ORIG_r0 在系统调用时传递系统调用号，在返回时用做返回值。
+	中断处理不需要使用 ARM_ORIG_r0，所以赋值-1表示非系统调用
+*/
 	stmia	r7, {r2 - r6}
 
 	get_thread_info tsk
@@ -222,24 +261,29 @@ ENDPROC(__dabt_svc)
  */
 __irq_svc:
 /**
- * 保存中断前的内核态现场
+ * 将中断现场保存在内核栈中
  */
 	svc_entry
 /**
- * 处理中断
+ * 执行中断处理
  */
 	irq_handler
-
+/*
+    如果开启内核抢占，中断返回时回去检查是否可以抢占发生中断时的进程
+*/
 #ifdef CONFIG_PREEMPT
 /**
- * 从r9中取当前线程的threadinfo
+ * 从r9中取当前线程的 threadinfo
  */
 
 /**
  * 读抢占计数
  */
-	ldr	r8, [tsk, #TI_PREEMPT]		@ get preempt count
-	ldr	r0, [tsk, #TI_FLAGS]		@ get flags
+	ldr	r8, [tsk, #TI_PREEMPT]		@ get preempt count  , thread_info->preempt_count
+	ldr	r0, [tsk, #TI_FLAGS]		@ get flags          , thread_info->flags
+/*
+	
+*/
 	teq	r8, #0				@ if preempt count != 0
 	movne	r0, #0				@ force flags to 0
 /**
@@ -1147,6 +1191,12 @@ __kuser_helper_end:
   * 生成通用中断、异常处理代码的宏。
   * correction用于调整lr的值。这是因为进入异常时，pc指针是发生异常时的指针后面8个字节或者12个字节处。
   * 不同的异常需要跳转到不同的返回地址。有的需要重新执行指令，有的则需要跳到下一条指令处。
+    vector_stub	irq, IRQ_MODE, 4
+    vector_stub	dabt, ABT_MODE, 8
+    vector_stub	pabt, ABT_MODE, 4
+    vector_stub	und, UND_MODE
+    vector_stub	fiq, FIQ_MODE, 4
+    
  */
 	.macro	vector_stub, name, mode, correction=0
 	/* 将异常入口强制进行32字节对齐，32字节是一个缓存行的大小。这应当是出于性能的考虑。 */
@@ -1155,6 +1205,10 @@ __kuser_helper_end:
 vector_\name:
 	/* 需要调整返回值，则递减lr寄存器 */
 	.if \correction
+/*
+	由于ARM处理器流水线架构的原因，进入中断响应之前，pc被装入LR_irq,
+	此时pc指向中断点加8，所以减去4才是中断返回地址
+*/
 	sub	lr, lr, #\correction
 	.endif
 
@@ -1167,7 +1221,7 @@ vector_\name:
      * 将r0,lr保存到堆栈中。这里并没有移动堆栈指针。
      * 这是因为:每种处理器模式都有自己的堆栈。接下来系统会切换到svc模式，将堆栈切换到每个任务的系统堆栈去。
      * 执行后，[sp] = r0, [sp+4]=lr，这里保存r0和lr是因为后面要使用这两个寄存器，即这两个寄存器会被破坏。
-     * 请注意:中断和异常并不会保存所有寄存器。
+     * irq模式栈空间只有12字节。中断和异常并不会保存所有寄存器。
      */
 	stmia	sp, {r0, lr}		@ save r0, lr
 	/**
@@ -1181,29 +1235,52 @@ vector_\name:
 	@ Prepare for SVC32 mode.  IRQs remain disabled.
 	@
 /**
- * 仍然禁用中断。
- * 准备将处理器模式设置为SVC32模式。这样，当前堆栈也会切换到SVC32模式下的堆栈。
- */
+    仍然禁用中断
+    
+    准备将处理器模式设置为SVC32模式。这样，当前堆栈也会切换到SVC32模式下的堆栈。
+    eor 异或指令修改CPSR寄存器的控制域为SVC模式，使得中断处理在SVC模式下进行
+
+    msr 将立即数或通用寄存器的内容加载到程序状态寄存器 (PSR) 的指定字段中
+    fields 指定要移动的 SPSR 或 CPSR 字段。fields 可以是以下项中的一个
+    
+	c 控制字段掩码字节， PSR[7:0] （特权模式）
+    x 扩展字段掩码字节， PSR[15:8] （特权模式）
+    s 状态字段掩码字节， PSR[23:16] （特权模式）
+    f 标记字段掩码字节， PSR[31:24] （特权模式）
+*/
 	mrs	r0, cpsr
 	eor	r0, r0, #(\mode ^ SVC_MODE | PSR_ISETSTATE)
+
 	msr	spsr_cxsf, r0
 
 	@
 	@ the branch table must immediately follow this code
 	@
-	/* lr中保存了异常前的状态，与0x0f and后，可以得到异常前的处理器模式 */
+	/* 
+	lr中保存了发生中断时的SPSR（低4位分别表示CPU运行在USR、FIQ、IRQ、SVC模式），
+	与0x0f and后，可以得到SPSR M域的值（中断发生在User Space时位0，发生在Kernel Mode时为3） 
+	*/
 	and	lr, lr, #0x0f
 	/* 1f就是宏生成的代码后面的跳转表，这里根据异常前的处理器模式，决定跳转到哪一个处理代码 */
  THUMB(	adr	r0, 1f			)
  THUMB(	ldr	lr, [r0, lr, lsl #2]	)
+/*
+    通过r0寄存器把irq模式的栈指针sp指向的内容传递给即将跳转的函数
+*/
 	mov	r0, sp
 /**
  * pc应该正好指向随后的label，加上CPU模式，lr中正好保存了异常入口函数。
+ * 根据中断发生点所在的模式给lr赋值，__irq_usr或者 __irq_svc
  */
  ARM(	ldr	lr, [pc, lr, lsl #2]	)
  /**
-  * 将lr的值加载到pc，并将spsr值复制到cpsr。
-  * 跳转到异常入口，如__irq_usr
+  * 将lr的值加载到pc，实现跳转功能。
+  * 这里的mov带s后缀，表示需要根据结果设置cpsr标志位。
+  * 但这里目标寄存器时pc时，又有了特殊的作用，那就是将spsr寄存器的内容
+  * 设置到cpsr寄存器中，从而实现模式切换到SVC模式
+  * 相当于CPU在中断模式之间好似打个照面就退出了。
+  * 从ARM处理器角度来看，中断响应已经结束，但是从linux内核来看，
+  * 只是进入SVC开始响应中断
   */
 	movs	pc, lr			@ branch to handler in SVC mode
 ENDPROC(vector_\name)
@@ -1363,7 +1440,7 @@ vector_addrexcptn:
 	.section .vectors, "ax", %progbits
 /**
  * 复制到向量地址表中的代码，各种中断和异常的处理入口。
- * 这些代码由vector_stub生成
+ * 这些代码由 vector_stub 宏生成
  * ARM异常向量表可以放在0x0地址(normal vectors) 也可以放在0xffff0000处(high vectors)
  * Linux使用high vectors,因为0x0属于用户空间，同时也避免空指针误操作
  */

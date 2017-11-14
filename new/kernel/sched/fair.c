@@ -48,6 +48,9 @@
  *
  * (default: 6ms * (1 + ilog(ncpus)), units: nanoseconds)
  */
+/*
+    默认时间片6ms
+*/
 unsigned int sysctl_sched_latency			= 6000000ULL;
 unsigned int normalized_sysctl_sched_latency		= 6000000ULL;
 
@@ -69,6 +72,9 @@ enum sched_tunable_scaling sysctl_sched_tunable_scaling = SCHED_TUNABLESCALING_L
  *
  * (default: 0.75 msec * (1 + ilog(ncpus)), units: nanoseconds)
  */
+/*
+ 进程最小的调度延时 0.75ms
+*/
 unsigned int sysctl_sched_min_granularity		= 750000ULL;
 unsigned int normalized_sysctl_sched_min_granularity	= 750000ULL;
 
@@ -279,6 +285,9 @@ static inline struct task_struct *task_of(struct sched_entity *se)
 #define for_each_sched_entity(se) \
 		for (; se; se = se->parent)
 
+/*
+    提取当前进程对应的CFS就绪队列
+*/
 static inline struct cfs_rq *task_cfs_rq(struct task_struct *p)
 {
 	return p->se.cfs_rq;
@@ -430,7 +439,9 @@ static inline struct rq *rq_of(struct cfs_rq *cfs_rq)
 }
 
 #define entity_is_task(se)	1
-
+/*
+    如果没定义CONFIG_FAIR_GROUP_SCHED，就是调度实体se
+*/
 #define for_each_sched_entity(se) \
 		for (; se; se = NULL)
 
@@ -652,8 +663,14 @@ int sched_proc_update_handler(struct ctl_table *table, int write,
 /*
  * delta /= w
  */
+/*
+    使用delra_exec 时间差来计算该进程的虚拟时间
+*/
 static inline u64 calc_delta_fair(u64 delta, struct sched_entity *se)
 {
+/*
+    nice = 0 的值是参考进程
+*/
 	if (unlikely(se->load.weight != NICE_0_LOAD))
 		delta = __calc_delta(delta, NICE_0_LOAD, &se->load);
 
@@ -668,11 +685,22 @@ static inline u64 calc_delta_fair(u64 delta, struct sched_entity *se)
  *
  * p = (nr <= nl) ? l : l*nr/nl
  */
+/*
+ 计算CFS就绪队列中的一个调度周期的长度，可以理解为一个调度周期的时间片
+ 根据当前运行进程数目来计算
+*/
 static u64 __sched_period(unsigned long nr_running)
 {
+/*
+    当运行中的进程数目大于8时，按 sysctl_sched_min_granularity * nr_running（进程数目）
+    来计算调度周期时间片
+*/
 	if (unlikely(nr_running > sched_nr_latency))
 		return nr_running * sysctl_sched_min_granularity;
 	else
+/*
+        使用系统默认的调度时间片
+*/
 		return sysctl_sched_latency;
 }
 
@@ -682,6 +710,9 @@ static u64 __sched_period(unsigned long nr_running)
  *
  * s = p*P[w/rw]
  */
+/*
+    根据当前进程的权重来计算在CFS就绪队列总权重中可以瓜分到的调度时间
+*/
 static u64 sched_slice(struct cfs_rq *cfs_rq, struct sched_entity *se)
 {
 	u64 slice = __sched_period(cfs_rq->nr_running + !se->on_rq);
@@ -709,6 +740,10 @@ static u64 sched_slice(struct cfs_rq *cfs_rq, struct sched_entity *se)
  *
  * vs = s/w
  */
+/*
+    sched_vslice计算惩罚值
+    根据sched_slice计算得到的时间来计算可以得到对少虚拟时间
+*/
 static u64 sched_vslice(struct cfs_rq *cfs_rq, struct sched_entity *se)
 {
 	return calc_delta_fair(sched_slice(cfs_rq, se), se);
@@ -842,12 +877,17 @@ static void update_tg_load_avg(struct cfs_rq *cfs_rq, int force)
 static void update_curr(struct cfs_rq *cfs_rq)
 {
 	struct sched_entity *curr = cfs_rq->curr;
+/*
+    获取当前就绪队列保存的 clock_task 值
+*/
 	u64 now = rq_clock_task(rq_of(cfs_rq));
 	u64 delta_exec;
 
 	if (unlikely(!curr))
 		return;
-
+/*
+    该进程从上次调用update_curr函数到现在的时间差
+*/
 	delta_exec = now - curr->exec_start;
 	if (unlikely((s64)delta_exec <= 0))
 		return;
@@ -2731,6 +2771,9 @@ static inline void update_cfs_shares(struct sched_entity *se)
 #endif /* CONFIG_FAIR_GROUP_SCHED */
 
 #ifdef CONFIG_SMP
+/*
+
+*/
 /* Precomputed fixed inverse multiplies for multiplication by y^n */
 static const u32 runnable_avg_yN_inv[] = {
 	0xffffffff, 0xfa83b2da, 0xf5257d14, 0xefe4b99a, 0xeac0c6e6, 0xe5b906e6,
@@ -2745,6 +2788,10 @@ static const u32 runnable_avg_yN_inv[] = {
  * Precomputed \Sum y^k { 1<=k<=n }.  These are floor(true_value) to prevent
  * over-estimates when re-combining.
  */
+ /*
+    runnable_avg_yN_sum[n] = 1024*(y + y^2 + y^3 + y^4 + y^4 + y^5 + y^n)
+    y^n = runnable_avg_yN[n]
+*/
 static const u32 runnable_avg_yN_sum[] = {
 	    0, 1002, 1982, 2941, 3880, 4798, 5697, 6576, 7437, 8279, 9103,
 	 9909,10698,11470,12226,12966,13690,14398,15091,15769,16433,17082,
@@ -2769,6 +2816,9 @@ static __always_inline u64 decay_load(u64 val, u64 n)
 {
 	unsigned int local_n;
 
+/*
+   大于2016 直接为0
+*/
 	if (!n)
 		return val;
 	else if (unlikely(n > LOAD_AVG_PERIOD * 63))
@@ -2784,6 +2834,9 @@ static __always_inline u64 decay_load(u64 val, u64 n)
 	 *
 	 * To achieve constant time decay_load.
 	 */
+/*
+	 每32ms 衰减1/2
+*/
 	if (unlikely(local_n >= LOAD_AVG_PERIOD)) {
 		val >>= local_n / LOAD_AVG_PERIOD;
 		local_n %= LOAD_AVG_PERIOD;
@@ -2800,6 +2853,9 @@ static __always_inline u64 decay_load(u64 val, u64 n)
  * We can compute this reasonably efficiently by combining:
  *   y^PERIOD = 1/2 with precomputed \Sum 1024*y^n {for  n <PERIOD}
  */
+/*
+    计算连续n个PI周期的负载累计贡献值
+*/
 static u32 __compute_runnable_contrib(u64 n)
 {
 	u32 contrib = 0;
@@ -3489,7 +3545,9 @@ static void check_spread(struct cfs_rq *cfs_rq, struct sched_entity *se)
 		schedstat_inc(cfs_rq->nr_spread_over);
 #endif
 }
+/*
 
+*/
 static void
 place_entity(struct cfs_rq *cfs_rq, struct sched_entity *se, int initial)
 {
@@ -3501,6 +3559,12 @@ place_entity(struct cfs_rq *cfs_rq, struct sched_entity *se, int initial)
 	 * little, place the new task so that it fits in the slot that
 	 * stays open at the end.
 	 */
+/*
+    新创建一个进程导致CFS运行队列的权重发生变化
+    对新进程的vruntime做一些惩罚
+    惩罚的时间根据新进程的权重由 sched_vslice 函数计算虚拟时间
+    在某种程度上防止新进程恶意占用CPU时间
+*/
 	if (initial && sched_feat(START_DEBIT))
 		vruntime += sched_vslice(cfs_rq, se);
 
@@ -3519,6 +3583,10 @@ place_entity(struct cfs_rq *cfs_rq, struct sched_entity *se, int initial)
 	}
 
 	/* ensure we never gain time by being placed backwards. */
+/*
+    新进程调度实体的虚拟时间是在调度实体的实际虚拟时间和
+    CFS运行队列中的min_vruntime中取得最大值
+*/
 	se->vruntime = max_vruntime(se->vruntime, vruntime);
 }
 
@@ -3574,7 +3642,9 @@ static inline void check_schedstat_required(void)
  * this way we don't have the most up-to-date min_vruntime on the originating
  * CPU and an up-to-date min_vruntime on the destination CPU.
  */
-
+/*
+把调度实体se添加到cfs_rq就绪队列中
+*/
 static void
 enqueue_entity(struct cfs_rq *cfs_rq, struct sched_entity *se, int flags)
 {
@@ -3585,9 +3655,15 @@ enqueue_entity(struct cfs_rq *cfs_rq, struct sched_entity *se, int flags)
 	 * If we're the current task, we must renormalise before calling
 	 * update_curr().
 	 */
+/*
+	 刚创建的进程，vruntime要加上 min_vruntime
+	 回想之前在 task_fork_fair 函数里vruntime减去min_vruntime
+	 这里又添加回来，因为 task_fork_fair 只是创建进程还没有把该进程添加到调度器
+	 这期间 min_vruntime 已经发生变化 ，因此加上 min_vruntime 比较准确
+*/
 	if (renorm && curr)
 		se->vruntime += cfs_rq->min_vruntime;
-    /* 更新当前进程运行时间和虚拟运行时间 */
+    /* 更新当前进程vruntime和cfs就绪队列的min_vruntime */
 	update_curr(cfs_rq);
 
 	/*
@@ -3608,6 +3684,10 @@ enqueue_entity(struct cfs_rq *cfs_rq, struct sched_entity *se, int flags)
 	 *   - Add its new weight to cfs_rq->load.weight
 	 */
 	update_load_avg(se, UPDATE_TG);
+/*
+    计算该调度实体se的平均负载 load_avg_contrib
+    然后添加到整个CFS就绪队列的总平均负载 cfs_
+*/
 	enqueue_entity_load_avg(cfs_rq, se);
 	update_cfs_shares(se);
     /* 更新cfs_rq队列总权重(就是在原有基础上加上se的权重) */
@@ -4758,6 +4838,9 @@ static inline void hrtick_update(struct rq *rq)
  * increased. Here we update the fair scheduling stats and
  * then put the task into the rbtree:
  */
+/*
+ 把新进程添加到CFS就绪队列中
+*/
 static void
 enqueue_task_fair(struct rq *rq, struct task_struct *p, int flags)
 {
@@ -4804,6 +4887,9 @@ enqueue_task_fair(struct rq *rq, struct task_struct *p, int flags)
 		if (cfs_rq_throttled(cfs_rq))
 			break;
 
+/*
+
+*/
 		update_load_avg(se, UPDATE_TG);
 		update_cfs_shares(se);
 	}
@@ -9010,6 +9096,9 @@ static void task_fork_fair(struct task_struct *p)
     /* 更新rq运行时间 */
 	update_rq_clock(rq);
 
+/*
+    由current获取当前进程对应的CFS调度器就绪队列
+*/
 	cfs_rq = task_cfs_rq(current);
     /* 设置当前进程所在队列为父进程所在队列 */
 	curr = cfs_rq->curr;

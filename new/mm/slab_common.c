@@ -293,6 +293,9 @@ struct kmem_cache *find_mergeable(size_t size, size_t align,
 	if (ctor)
 		return NULL;
 
+/*
+    要创建的slab的align及flags
+*/
 	size = ALIGN(size, sizeof(void *));
 	align = calculate_alignment(flags, align, size);
 	size = ALIGN(size, align);
@@ -301,7 +304,11 @@ struct kmem_cache *find_mergeable(size_t size, size_t align,
 	if (flags & SLAB_NEVER_MERGE)
 		return NULL;
 
+/*
+    遍历整个slab_caches链表
+*/
 	list_for_each_entry_reverse(s, &slab_root_caches, root_caches_node) {
+	    // 是否允许合并
 		if (slab_unmergeable(s))
 			continue;
 
@@ -317,6 +324,9 @@ struct kmem_cache *find_mergeable(size_t size, size_t align,
 		if ((s->size & ~(align - 1)) != s->size)
 			continue;
 
+/*
+        大小相差是否超过指针类型大小
+*/
 		if (s->size - size >= sizeof(void *))
 			continue;
 
@@ -429,7 +439,12 @@ out_free_cache:
  * as davem.
  */
 /**
- * 创建cache
+ * 创建slab描述符
+ * name : 描述符名称
+ * size : 缓存对象的大小
+ * align : 缓存对象需要对齐的字节数
+ * flags : 分配掩码
+ * ctor : 对象的构造函数
  */
 struct kmem_cache *
 kmem_cache_create(const char *name, size_t size, size_t align,
@@ -467,7 +482,7 @@ kmem_cache_create(const char *name, size_t size, size_t align,
 	 */
 	flags &= CACHE_CREATE_MASK;
 
-	//看看是否可以与已经创建的slab合并????臃肿复杂了吧:)
+	//看看是否可以与已经创建的slab合并,如果有则通过别名合并到一个缓存中进行访问
 	s = __kmem_cache_alias(name, size, align, flags, ctor);
 	if (s)
 		goto out_unlock;
@@ -822,6 +837,9 @@ void slab_kmem_cache_release(struct kmem_cache *s)
 	kmem_cache_free(kmem_cache, s);
 }
 
+/*
+    释放slab描述符
+*/
 void kmem_cache_destroy(struct kmem_cache *s)
 {
 	int err;
@@ -876,13 +894,19 @@ int kmem_cache_shrink(struct kmem_cache *cachep)
 	return ret;
 }
 EXPORT_SYMBOL(kmem_cache_shrink);
-
+/*
+    state是UP或者FULL，可以使用 GFP_KERNEL,否则只能使用 GFP_NOWAIT
+*/
 bool slab_is_available(void)
 {
 	return slab_state >= UP;
 }
 
 #ifndef CONFIG_SLOB
+/*
+创建分配算法缓存
+创建各种大小的slab以满足后期内存分配时使用
+*/
 /* Create a cache during boot when no slab services are available yet */
 void __init create_boot_cache(struct kmem_cache *s, const char *name, size_t size,
 		unsigned long flags)
@@ -1093,6 +1117,11 @@ void __init create_kmalloc_caches(unsigned long flags)
 {
 	int i;
 
+    /*
+        使用SLUB时 KMALLOC_SHIFT_LOW =3，KMALLOC_SHIFT_HIGH =13
+        也就是说使用kmalloc能够申请的最小内存是8B，最大内存是8KB
+        申请内存是向上对其2的n次幂，创建对应大小缓存保存在kmalloc_caches[n]
+    */
 	for (i = KMALLOC_SHIFT_LOW; i <= KMALLOC_SHIFT_HIGH; i++) {
 		if (!kmalloc_caches[i])
 			new_kmalloc_cache(i, flags);
@@ -1102,6 +1131,9 @@ void __init create_kmalloc_caches(unsigned long flags)
 		 * These have to be created immediately after the
 		 * earlier power of two caches
 		 */
+		/*
+		有两个例外，大小为64~96B和128B~192B，单独创建了两个缓存		保存在kmalloc_caches [1]和kmalloc_caches [2]
+		*/
 		if (KMALLOC_MIN_SIZE <= 32 && !kmalloc_caches[1] && i == 6)
 			new_kmalloc_cache(1, flags);
 		if (KMALLOC_MIN_SIZE <= 64 && !kmalloc_caches[2] && i == 7)

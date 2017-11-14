@@ -93,6 +93,7 @@ unsigned long get_wchan(struct task_struct *p);
 #endif
 /*
 获取stack中存放用户态寄存器组的偏移地址
+Linux内核的栈顶存放着ARM的通用寄存器 (struct pt_regs)
 */
 #define task_pt_regs(p) \
 	((struct pt_regs *)(THREAD_START_SP + task_stack_page(p)) - 1)

@@ -722,7 +722,7 @@ static void __init setup_processor(void)
 	 * 根据CPUID查找处理器类型
 	 * 还记得初始化过程中，汇编的查找过程么?
 	 * ead_cpuid_id从CP15的寄存器中读取CPU ID，
-	 * 后查找到CPU对应的proc_info_list结构体。      
+	 * 后查找到CPU对应的proc_info_list结构体。
 	 * 然后通过printk打印出CPU的相关信息。
 	 */
 	list = lookup_processor_type(read_cpuid_id());
@@ -802,6 +802,9 @@ void __init dump_machine_table(void)
 		/* can't use cpu_relax() here as it may require MMU setup */;
 }
 
+/*
+将每段内存注册到系统
+*/
 int __init arm_add_memory(u64 start, u64 size)
 {
 	u64 aligned_start;

@@ -288,7 +288,7 @@ static unsigned long __meminitdata nr_all_pages;
 static unsigned long __meminitdata dma_reserve;
 
 #ifdef CONFIG_HAVE_MEMBLOCK_NODE_MAP
-/* 
+/*
 各个内存域可使用的最低内存页帧编号
 */
 static unsigned long __meminitdata arch_zone_lowest_possible_pfn[MAX_NR_ZONES];
@@ -471,7 +471,13 @@ void set_pfnblock_flags_mask(struct page *page, unsigned long flags,
 
 	BUILD_BUG_ON(NR_PAGEBLOCK_BITS != 4);
 
+    /*
+        得到位图的起始地址，即zone->pageblock_flags
+    */
 	bitmap = get_pageblock_bitmap(page, pfn);
+	/*
+	    得到pfn对应的位图区域的偏移量
+	*/
 	bitidx = pfn_to_bitidx(page, pfn);
 	word_bitidx = bitidx / BITS_PER_LONG;
 	bitidx &= (BITS_PER_LONG-1);
@@ -808,7 +814,7 @@ static inline int page_is_buddy(struct page *page, struct page *buddy,
 		 * calculating zone/node ids for pages that could
 		 * never merge.
 		 */
-		 
+
         /* 页的内存域是否相同 */
 		if (page_zone_id(page) != page_zone_id(buddy))
 			return 0;
@@ -884,7 +890,7 @@ static inline void __free_one_page(struct page *page,
 	max_order = min_t(unsigned int, MAX_ORDER, pageblock_order + 1);
 /*
 检查wait_table是否存在来表示zone是否初始化过 里面
-用到了双感叹号表示强制1或者0 
+用到了双感叹号表示强制1或者0
 */
 	VM_BUG_ON(!zone_is_initialized(zone));
 	VM_BUG_ON_PAGE(page->flags & PAGE_FLAGS_CHECK_AT_PREP, page);
@@ -951,9 +957,9 @@ continue_merging:
 		 * We don't want to hit this code for the more frequent
 		 * low-order merging.
 		 */
-		 /* 在这里说明已经超出了pageblock的order, 
+		 /* 在这里说明已经超出了pageblock的order,
 		 可能在不同的migratetype的block边界了,
-		 这里再检查一次是不是isolate,  不允许节点间迁移的page, 
+		 这里再检查一次是不是isolate,  不允许节点间迁移的page,
 		 如果是的话就要结束合并的迭代, 不然继续向上合并 */
 		if (unlikely(has_isolate_pageblock(zone))) {
 			int buddy_mt;
@@ -989,9 +995,9 @@ done_merging:
 	 * so it's less likely to be used soon and more likely to be merged
 	 * as a higher order page
 	 */
-	 /* 这个条件判断没有合并到最大块, 
-	 内核认为很有可能接下来这个块和其他free的块合并, 
-	 从减少碎片的角度来说会更倾向于放到链表的末尾, 
+	 /* 这个条件判断没有合并到最大块,
+	 内核认为很有可能接下来这个块和其他free的块合并,
+	 从减少碎片的角度来说会更倾向于放到链表的末尾,
 	 让这个块的free状态保持久一点, 更有机会被合并成更大的块
 
       如果当前合并后的页不是最大阶的，那么将当前空闲页放到伙伴链表的最后。
@@ -1228,7 +1234,7 @@ static bool bulkfree_pcp_prepare(struct page *page)
  */
 /*
  遍历高速缓存中的migratetype,然后根据指定的count
- 从高速缓存中交还给buddy system的页, 
+ 从高速缓存中交还给buddy system的页,
  当前路径是整个batch个的页都会还回去.
 */
 static void free_pcppages_bulk(struct zone *zone, int count,
@@ -1241,7 +1247,7 @@ static void free_pcppages_bulk(struct zone *zone, int count,
 
     /**
          * 虽然管理区可以按照CPU节点分类，但是也可以跨CPU节点进行内存分配，
-            因此这里需要用自旋锁保护管理区 
+            因此这里需要用自旋锁保护管理区
          * 使用每CPU缓存的目的，也是为了减少使用这把锁。
       */
 	spin_lock(&zone->lock);
@@ -1990,7 +1996,7 @@ inline void post_alloc_hook(struct page *page, unsigned int order,
  * (如PG_locked或PG_buddy)，因为这说明页处于使用中，不应该防止在空闲
  * 列表上。但通常情况下不应该发生错误，否则意味着内核在其他地方出现错误
  */
- 
+
 static void prep_new_page(struct page *page, unsigned int order, gfp_t gfp_flags,
 							unsigned int alloc_flags)
 {
@@ -2123,15 +2129,15 @@ struct page *__rmqueue_smallest(struct zone *zone, unsigned int order,
  * This array describes the order lists are fallen back to when
  * the free lists for the desirable migrate type are depleted
  */
- 
+
 /*
  该数组描述了指定迁移类型的空闲列表耗尽时
  其他空闲列表在备用列表中的次序
- 每一行对应一个类型的备用搜索域的顺序, 
+ 每一行对应一个类型的备用搜索域的顺序,
  在内核想要分配不可移动页MIGRATE_UNMOVABLE时,
  如果对应链表为空, 则遍历fallbacks[MIGRATE_UNMOVABLE],
- 首先后退到可回收页链表MIGRATE_RECLAIMABLE, 
- 接下来到可移动页链表MIGRATE_MOVABLE, 
+ 首先后退到可回收页链表MIGRATE_RECLAIMABLE,
+ 接下来到可移动页链表MIGRATE_MOVABLE,
  最后到紧急分配链表MIGRATE_TYPES
 */
 static int fallbacks[MIGRATE_TYPES][4] = {
@@ -2295,7 +2301,7 @@ static void steal_suitable_fallback(struct zone *zone, struct page *page,
 	/* Take ownership for orders >= pageblock_order */
 /*
 	要分割的页面是一个大页面,则将整个页面全部迁移到
-	当前迁移类型的链表中,这样可以避免过多的碎片 
+	当前迁移类型的链表中,这样可以避免过多的碎片
 */
 	if (current_order >= pageblock_order) {
 		change_pageblock_range(page, current_order, start_type);
@@ -2480,8 +2486,8 @@ __rmqueue_fallback(struct zone *zone, unsigned int order, int start_migratetype)
 
 /*
 和主要分配路径不同的事, 迭代器是从最大的阶数开始迭代的,
-这个代表的意思是说我尽量多迁移一点空间给你, 
-不然你还要迁移的时候我又分配一小块空间给你, 
+这个代表的意思是说我尽量多迁移一点空间给你,
+不然你还要迁移的时候我又分配一小块空间给你,
 你的碎片间接导致了我的碎片产生, 所以从大到小开始迭代.
 */
 	/* Find the largest possible block of pages in the other list */
@@ -2498,7 +2504,7 @@ __rmqueue_fallback(struct zone *zone, unsigned int order, int start_migratetype)
 				--current_order) {
 		/* 该列表没有可用的大块内存 */
 		area = &(zone->free_area[current_order]);
-		/* 遍历fallback table 找到合适的fallback migratetype 要综合考虑: 
+		/* 遍历fallback table 找到合适的fallback migratetype 要综合考虑:
 		是否有超过一定阈值的空闲页,并且是可以退化的页类型 */
 		fallback_mt = find_suitable_fallback(area, current_order,
 				start_migratetype, false, &can_steal);
@@ -2508,7 +2514,7 @@ __rmqueue_fallback(struct zone *zone, unsigned int order, int start_migratetype)
 		/* 取下备用列表的第一个节点，并递减节点计数 */
 		page = list_first_entry(&area->free_list[fallback_mt],
 						struct page, lru);
-		/* 从对应迁类型中"偷取"page 
+		/* 从对应迁类型中"偷取"page
 		TODO:具体如何迁移的 我感觉应该是很抽象的迁移就可以了 */
 		if (can_steal &&
 			get_pageblock_migratetype(page) != MIGRATE_HIGHATOMIC)
@@ -2871,7 +2877,7 @@ void free_hot_cold_page(struct page *page, bool cold)
 /*
      * 只针对unmovable、reclaimable和movable的pcp列表中的页进行处理
      * 而ISOLATE的页作为movable的页返回或者释放给分配器
-      该页面目前不受每CPU的PCP链表管理 
+      该页面目前不受每CPU的PCP链表管理
 */
 	if (migratetype >= MIGRATE_PCPTYPES) {
 		if (unlikely(is_migrate_isolate(migratetype))) {
@@ -3046,7 +3052,7 @@ struct page *buffered_rmqueue(struct zone *preferred_zone,
 	struct page *page;
     /*
 	只分配1页(order=0)的情况下,会判断是不是”冷”页
-	冷页的区别是会放到高速缓存的末尾, 
+	冷页的区别是会放到高速缓存的末尾,
 	相反热页会放到高速缓存的头部
 	然后尝试获取高速缓存的page
     */
@@ -3115,7 +3121,7 @@ struct page *buffered_rmqueue(struct zone *preferred_zone,
 		 */
 		 /* 分配的是多个页面，不需要考虑每CPU页面缓存，直接从系统中分配 */
 		WARN_ON_ONCE((gfp_flags & __GFP_NOFAIL) && (order > 1));
-		
+
 		/* 关中断，并获得管理区的锁 */
 		spin_lock_irqsave(&zone->lock, flags);
 
@@ -3387,8 +3393,8 @@ static bool zone_allows_reclaim(struct zone *local_zone, struct zone *zone)
  * a page.
  */
 /*
- * get_page_from_freelist()通过标志集和分配阶来
- * 判断是否能进行分配。如果可以，则发起实际的分配操作。
+ * get_page_from_freelist()通过标志集和分配阶来判断是否能进行分配。
+   如果可以，则发起实际的分配操作。
  */
 static struct page *
 get_page_from_freelist(gfp_t gfp_mask, unsigned int order, int alloc_flags,
@@ -3403,18 +3409,22 @@ get_page_from_freelist(gfp_t gfp_mask, unsigned int order, int alloc_flags,
 	 * See also __cpuset_node_allowed() comment in kernel/cpuset.c.
 	 */
 /*
-      在允许的节点中，遍历满足要求的管理区选择合适的zone
+     在允许的节点中，遍历满足要求的管理区选择合适的zone
 	 考虑是否满足分配的wartermark, 是否需要均衡到别的zone当中
 */
-
+/*
+      从认定的管理区开始遍历，直到找到一个拥有足够空间的管理区，
+      例如，如果high_zoneidx对应的ZONE_HIGHMEM，则遍历顺序为HIGHMEM-->NORMAL-->DMA，
+      如果high_zoneidx对应ZONE_NORMAL，则遍历顺序为NORMAL-->DMA
+*/
 	for_next_zone_zonelist_nodemask(zone, z, ac->zonelist, ac->high_zoneidx,
 								ac->nodemask) {
 		struct page *page;
 		unsigned long mark;
 
         /*
-           是否被cpusets禁止了分配等等
-           */
+           检查给定的内存域是否属于该进程允许运行的CPU
+        */
 		if (cpusets_enabled() &&
 			(alloc_flags & ALLOC_CPUSET) &&
 			!__cpuset_zone_allowed(zone, gfp_mask))
@@ -4161,6 +4171,9 @@ retry_cpuset:
 	if (!ac->preferred_zoneref->zone)
 		goto nopage;
 
+/*
+    唤醒kswapd进行内存回收
+*/
 	if (gfp_mask & __GFP_KSWAPD_RECLAIM)
 		wake_all_kswapds(order, ac);
 
@@ -4257,7 +4270,7 @@ retry:
 	 * 因为在分配内存的时候可能在获取可用内存的过程中也需要分配内存，
 	 * 所以会设置该标志。如果在分配失败时，发现该标志已经设置，则表示
 	 * 在获取内存过程中需要的内存也没有可用内存，所以这时应该返回失败，
-	 * 避免递归调用。参见__alloc_pages_direct_reclaim()	  调用者本身就是内存回收进程，不能进入后面的内存回收处理流程，否则死锁 
+	 * 避免递归调用。参见__alloc_pages_direct_reclaim()	  调用者本身就是内存回收进程，不能进入后面的内存回收处理流程，否则死锁
 	 */
 	if (current->flags & PF_MEMALLOC)
 		goto nopage;
@@ -4268,7 +4281,7 @@ retry:
           */
 	page = __alloc_pages_direct_reclaim(gfp_mask, order, alloc_flags, ac,
 							&did_some_progress);
-    /* 庆幸，回收了一些内存后，满足了上层分配需求 */							
+    /* 庆幸，回收了一些内存后，满足了上层分配需求 */
 	if (page)
 		goto got_pg;
 
@@ -4425,13 +4438,14 @@ __alloc_pages_nodemask(gfp_t gfp_mask, unsigned int order,
 		.high_zoneidx = gfp_zone(gfp_mask),
 		.zonelist = zonelist,
 		.nodemask = nodemask,
+		/*根据gfp_mask得到迁移类分配页的型*/
 		.migratetype = gfpflags_to_migratetype(gfp_mask),
 	};
 
 /*
-检查cpusets的功能是否打开, 这个是一个cgroup的子模块, 
-如果没有设置nodemask就会用cpusets配置的cpuset_current_mems_allowed来限制在哪个node上分配, 
-这个也是在NUMA结构当中才会有用的
+    检查cpusets的功能是否打开, 这个是一个cgroup的子模块,
+    如果没有设置nodemask就会用cpusets配置的cpuset_current_mems_allowed来限制在哪个node上分配,
+    这个也是在NUMA结构当中才会有用的
 */
 	if (cpusets_enabled()) {
 		alloc_mask |= __GFP_HARDWALL;
@@ -4439,7 +4453,7 @@ __alloc_pages_nodemask(gfp_t gfp_mask, unsigned int order,
 		if (!ac.nodemask)
 			ac.nodemask = &cpuset_current_mems_allowed;
 	}
-	
+
     /**
       * 在系统运行的各个阶段，某些标志不能使用。
       * 例如，没有初始化文件系统时，自然不能使用GFP_FS标志。
@@ -4450,7 +4464,7 @@ __alloc_pages_nodemask(gfp_t gfp_mask, unsigned int order,
 	lockdep_trace_alloc(gfp_mask);
 
     /**
-     当前内存压力比较大需要直接回收内存, 
+     当前内存压力比较大需要直接回收内存,
      会循环睡眠同步等待页可用
      */
 	might_sleep_if(gfp_mask & __GFP_DIRECT_RECLAIM);
@@ -4487,9 +4501,9 @@ __alloc_pages_nodemask(gfp_t gfp_mask, unsigned int order,
 	 * may get reset for allocations that ignore memory policies.
 	 */
 /*
-      据传入的参数，确定优先在哪个管理区中分配内存
+     据传入的参数，确定优先在哪个管理区中分配内存
 
-	 从zonelist这个表示分配page的zone的优先顺序链表里获取第一个zoneref, 
+	 从zonelist这个表示分配page的zone的优先顺序链表里获取第一个zoneref,
 	 zoneref是一个链表节点用于迭代之后的zone选项
 */
 	ac.preferred_zoneref = first_zones_zonelist(ac.zonelist,
@@ -4538,7 +4552,7 @@ no_zone:
 
     /*
     分配完页如果失败会调用__alloc_pages_slowpath
-    唤起swapd进程进行页回收从而获取可用的页, 
+    唤起swapd进程进行页回收从而获取可用的页,
     再尝试调用get_page_from_free_list
     */
 	page = __alloc_pages_slowpath(alloc_mask, order, &ac);
@@ -4606,7 +4620,7 @@ void __free_pages(struct page *page, unsigned int order)
         /*
         如果是释放单页，那么就不必给交换给伙伴系统，
         而是置于per-CPU缓存中，对很可能出现在CPU高速缓存的页，
-        则置放到热页的列表中,交回到高速缓存即可, 
+        则置放到热页的列表中,交回到高速缓存即可,
         如果高速缓存满了再交回给buddy system
         */
 		if (order == 0)
@@ -5272,8 +5286,8 @@ static int build_zonelists_node(pg_data_t *pgdat, struct zonelist *zonelist,
  *  the same zonelist. So only NUMA can configure this param.
  */
 /*
-如果系统当前系统是非NUMA结构的, 则系统中只有一个结点, 
-配置ZONELIST_ORDER_NODE和ZONELIST_ORDER_ZONE结果相同. 
+如果系统当前系统是非NUMA结构的, 则系统中只有一个结点,
+配置ZONELIST_ORDER_NODE和ZONELIST_ORDER_ZONE结果相同.
 */
 /*
  由系统智能选择Node或Zone方式
@@ -5568,7 +5582,7 @@ static int default_zonelist_order(void)
 #endif /* CONFIG_64BIT */
 /*
 如果系统是NUMA结构, 则设置为系统指定的方式即可
-当前的排列方式为ZONELIST_ORDER_DEFAULT, 即系统默认方式, 
+当前的排列方式为ZONELIST_ORDER_DEFAULT, 即系统默认方式,
 则current_zonelist_order则由内核交给default_zonelist_order采用一定的算法选择一个最优的分配策略,　
 目前的系统中如果是32位则配置为ZONE方式, 而如果是６４位系统则设置为NODE方式
 当前的排列方式不是默认方式, 则设置为user_zonelist_order指定的内存域排列方式
@@ -5678,8 +5692,8 @@ static void set_zonelist_order(void)
 
 /*
 初始化每个内存结点的zonelists
-完成了节点pgdat上zonelists的初始化工作, 
-它建立了备用层次结构zonelists. 
+完成了节点pgdat上zonelists的初始化工作,
+它建立了备用层次结构zonelists.
 
 由于UMA和NUMA架构下结点的层次结构有很大的区别,
 因此内核分别提供了两套不同的接口
@@ -5725,9 +5739,9 @@ static void build_zonelists(pg_data_t *pgdat)
             |     node_zonelist[0]._zonerefs[1].zone_idx = 1;
             |     node_zonelist[0]._zonerefs[2].zone = &node_zones[0];
             |     node_zonelist[0]._zonerefs[2].zone_idx = 0;
-            |     
+            |
             |     zonelist->_zonerefs[3].zone = NULL;
-            |     zonelist->_zonerefs[3].zone_idx = 0;   
+            |     zonelist->_zonerefs[3].zone_idx = 0;
 */
 		j = build_zonelists_node(NODE_DATA(node), zonelist, j);
 	}
@@ -5784,7 +5798,7 @@ static int __build_all_zonelists(void *data)
 		build_zonelists(self);
 	}
 
-    // 由于UMA系统只有一个结点，build_zonelists只调用了一次, 
+    // 由于UMA系统只有一个结点，build_zonelists只调用了一次,
     // 就对所有的内存创建了内存域列表
 	// 遍历所有节点
 	/*
@@ -5856,8 +5870,10 @@ build_all_zonelists_init(void)
  * (2) call of __init annotated helper build_all_zonelists_init
  * [protected by SYSTEM_BOOTING].
  */
- 
+
 /*
+初始化内存分配器使用的存储节点中的管理区链表，是为内存管理算法（伙伴管理算法）做准备工作
+
 为系统中的zone建立后备zone的列表.
 所有zone的后备列表都在pglist_data->node_zonelists[0]中;
 期间也对per-CPU变量boot_pageset做了初始化.
@@ -5865,7 +5881,6 @@ build_all_zonelists_init(void)
 build_all_zonelists建立管理结点及其内存域所需的数据结构。
 该函数可以通过宏和抽象机制实现，而不用考虑具体的NUMA或UMA系统。
 因为执行的函数实际上有两种形式，所以这样做是可能的：一种用于NUMA系统，而另一种用于UMA系统。
-
 */
 void __ref build_all_zonelists(pg_data_t *pgdat, struct zone *zone)
 {
@@ -5923,20 +5938,20 @@ void __ref build_all_zonelists(pg_data_t *pgdat, struct zone *zone)
  * 将zone中的页框PG_reserved置位。表示该页不可用。
  * 同时初始化页框中其他值。
 
-在分配内存时, 如果必须”盗取”不同于预定迁移类型的内存区, 
-内核在策略上倾向于”盗取”更大的内存区. 
+在分配内存时, 如果必须”盗取”不同于预定迁移类型的内存区,
+内核在策略上倾向于”盗取”更大的内存区.
 
-由于所有页最初都是可移动的, 那么在内核分配不可移动的内存区时, 
+由于所有页最初都是可移动的, 那么在内核分配不可移动的内存区时,
 则必须”盗取”.
 
-实际上, 在启动期间分配可移动内存区的情况较少, 
-那么分配器有很高的几率分配长度最大的内存区, 
-并将其从可移动列表转换到不可移动列表. 
+实际上, 在启动期间分配可移动内存区的情况较少,
+那么分配器有很高的几率分配长度最大的内存区,
+并将其从可移动列表转换到不可移动列表.
 
 由于分配的内存区长度是最大的, 因此不会向可移动内存中引入碎片.
 
 总而言之, 这种做法避免了启动期间内核分配的内存
-(经常在系统的整个运行时间都不释放)散布到物理内存各处, 
+(经常在系统的整个运行时间都不释放)散布到物理内存各处,
 从而使其他类型的内存分配免受碎片的干扰，
 这也是页可移动性分组框架的最重要的目标之一
  */
@@ -6199,7 +6214,7 @@ static void __meminit setup_zone_pageset(struct zone *zone)
  * Before this call only boot pagesets were available.
  */
 /*
-初始化CPU高速缓存行, 为pagesets的第一个数组元素分配内存, 
+初始化CPU高速缓存行, 为pagesets的第一个数组元素分配内存,
 换句话说, 其实就是第一个系统处理器分配
 
 由于在分页情况下，每次存储器访问都要存取多级页表，
@@ -6239,7 +6254,7 @@ static __meminit void zone_pcp_init(struct zone *zone)
 
 /*
 初始化free_area列表，并将属于该内存域的所有page实例都设置为初始默认值。
-正如前文的讨论，调用了memmap_init_zone来初始化内存域的页, 
+正如前文的讨论，调用了memmap_init_zone来初始化内存域的页,
 我们还可以回想前文提到的，所有页属性起初都设置MIGRATE_MOVABLE
 */
 int __meminit init_currently_empty_zone(struct zone *zone,
@@ -6770,7 +6785,7 @@ static void __paginginit free_area_init_core(struct pglist_data *pgdat)
 		 * and per-cpu initialisations
 		 */
 /*
-	     调整realsize的大小，即减去page结构体占用的内存大小  
+	     调整realsize的大小，即减去page结构体占用的内存大小
            memmap_pags为包括洞的所有页框的page结构体所占的大小
 */
 		memmap_pages = calc_memmap_size(size, realsize);
@@ -7381,7 +7396,7 @@ void __init free_area_init_nodes(unsigned long *max_zone_pfn)
 
 	/* Print out the zone ranges */
 /*
-    将各个内存域的最大、最小页帧号显示出来  
+    将各个内存域的最大、最小页帧号显示出来
 */
 	pr_info("Zone ranges:\n");
 	for (i = 0; i < MAX_NR_ZONES; i++) {
@@ -7572,7 +7587,7 @@ void __init mem_init_print_info(const char *str)
     pr_info("__init_begin:0x%p,__init_end:0x%p",__init_begin,__init_end);
     pr_info("_sinittext:0x%p,_einittext:0x%p",_sinittext,_einittext);
 */
-    
+
 	/*
 	 * Detect special cases and adjust section sizes accordingly:
 	 * 1) .init.* may be embedded into .data sections

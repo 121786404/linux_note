@@ -540,6 +540,7 @@ static inline void preflow_handler(struct irq_desc *desc) { }
 
 static void cond_unmask_eoi_irq(struct irq_desc *desc, struct irq_chip *chip)
 {
+
 	if (!(desc->istate & IRQS_ONESHOT)) {
 		chip->irq_eoi(&desc->irq_data);
 		return;
@@ -552,7 +553,13 @@ static void cond_unmask_eoi_irq(struct irq_desc *desc, struct irq_chip *chip)
 	 */
 	if (!irqd_irq_disabled(&desc->irq_data) &&
 	    irqd_irq_masked(&desc->irq_data) && !desc->threads_oneshot) {
+/*
+    发送EOI（End Of Interrupt）,通知中断控制器已经处理完毕
+*/
 		chip->irq_eoi(&desc->irq_data);
+/*
+		解除对该中断源的屏蔽
+*/
 		unmask_irq(desc);
 	} else if (!(chip->flags & IRQCHIP_EOI_THREADED)) {
 		chip->irq_eoi(&desc->irq_data);
@@ -583,22 +590,36 @@ void handle_fasteoi_irq(struct irq_desc *desc)
 	 * If its disabled or no action available
 	 * then mask it and get out of here:
 	 */
+/*
+	 如果该中断没有指定action描述符或该中断被关闭了 IRQD_IRQ_DISABLED
+*/
 	if (unlikely(!desc->action || irqd_irq_disabled(&desc->irq_data))) {
+	    // 设置该中断状态为IRQS_PENDING
 		desc->istate |= IRQS_PENDING;
+		// 屏蔽该中断
 		mask_irq(desc);
 		goto out;
 	}
 
 	kstat_incr_irqs_this_cpu(desc);
+/*
+	不支持中断嵌套，也需要屏蔽中断源
+*/
 	if (desc->istate & IRQS_ONESHOT)
 		mask_irq(desc);
 
 	preflow_handler(desc);
+
+	//
 	handle_irq_event(desc);
 
+    // 
 	cond_unmask_eoi_irq(desc, chip);
 
 	raw_spin_unlock(&desc->lock);
+
+    // test !!!
+	//schedule(void);
 	return;
 out:
 	if (!(chip->flags & IRQCHIP_EOI_IF_HANDLED))

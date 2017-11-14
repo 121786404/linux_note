@@ -39,7 +39,9 @@ pgd_t *pgd_alloc(struct mm_struct *mm)
 	pud_t *new_pud, *init_pud;
 	pmd_t *new_pmd, *init_pmd;
 	pte_t *new_pte, *init_pte;
-
+/*
+    分配16KB物理内存作为新进程的页表
+*/
 	new_pgd = __pgd_alloc();
 	if (!new_pgd)
 		goto no_pgd;
@@ -50,6 +52,9 @@ pgd_t *pgd_alloc(struct mm_struct *mm)
 	 * Copy over the kernel and IO PGD entries
 	 */
 	init_pgd = pgd_offset_k(0);
+/*
+复制init进程内核空间的PGD页表项到新进程页表中。
+*/
 	memcpy(new_pgd + USER_PTRS_PER_PGD, init_pgd + USER_PTRS_PER_PGD,
 		       (PTRS_PER_PGD - USER_PTRS_PER_PGD) * sizeof(pgd_t));
 
@@ -100,6 +105,10 @@ pgd_t *pgd_alloc(struct mm_struct *mm)
 		init_pud = pud_offset(init_pgd, 0);
 		init_pmd = pmd_offset(init_pud, 0);
 		init_pte = pte_offset_map(init_pmd, 0);
+/*
+    ARM处理器的异常向量表如果是低端向量表，地址空间中第一个页面和第二个页面通常包含
+    ARM处理器的向量表和相应的信息，直接从init进程复制是最简单的方法
+*/
 		set_pte_ext(new_pte + 0, init_pte[0], 0);
 		set_pte_ext(new_pte + 1, init_pte[1], 0);
 		pte_unmap(init_pte);

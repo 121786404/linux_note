@@ -102,6 +102,8 @@ EXPORT_SYMBOL(synchronize_hardirq);
  /*
 synchronize_irq 函数用于等待一个特定的中断线上所有的处理程序都执行完。
 如果特定中断线上有一个处理程序还没执行完，synchronize_irq 函数会一直阻塞。
+
+disable_irq 就会调用synchronize_irq
 */
 void synchronize_irq(unsigned int irq)
 {
@@ -789,12 +791,18 @@ static int irq_wait_for_interrupt(struct irqaction *action)
 	set_current_state(TASK_INTERRUPTIBLE);
 
 	while (!kthread_should_stop()) {
-
+/*
+        已经设置    IRQTF_RUNTHREAD   
+        __irq_wake_thread 会设置 IRQTF_RUNTHREAD
+*/
 		if (test_and_clear_bit(IRQTF_RUNTHREAD,
 				       &action->thread_flags)) {
 			__set_current_state(TASK_RUNNING);
 			return 0;
 		}
+/*
+		没有设置IRQTF_RUNTHREAD，换出CPU，睡眠等待
+*/
 		schedule();
 		set_current_state(TASK_INTERRUPTIBLE);
 	}
@@ -810,6 +818,9 @@ static int irq_wait_for_interrupt(struct irqaction *action)
 static void irq_finalize_oneshot(struct irq_desc *desc,
 				 struct irqaction *action)
 {
+/*
+    不是 oneshot 类型，直接退出
+*/
 	if (!(desc->istate & IRQS_ONESHOT) ||
 	    action->handler == irq_forced_secondary_handler)
 		return;
@@ -831,6 +842,15 @@ again:
 	 * irq_wake_thread(). See the comment there which explains the
 	 * serialization.
 	 */
+/*
+	等待硬件中断处理程序处理完毕（清除 IRQD_IRQ_INPROGRESS 标志位）
+	handle_irq_event中，irqd_clear(&desc->irq_data, IRQD_IRQ_INPROGRESS);
+
+	假如硬件中断处理程序运行在CPU0上，中断线程运行在CPU1上，
+	中断线程处理比硬件中断处理程序要快。如果CPU1接下来调用 unmask_threaded_irq
+	去销毁该中断源的屏蔽操作，那么可能中断源又来中断了，但是硬件中断处理
+	primary handler还没有执行完成，会导致中断嵌套，违背one shot语意
+*/
 	if (unlikely(irqd_irq_inprogress(&desc->irq_data))) {
 		raw_spin_unlock_irq(&desc->lock);
 		chip_bus_sync_unlock(desc);
@@ -847,7 +867,10 @@ again:
 		goto out_unlock;
 
 	desc->threads_oneshot &= ~action->thread_mask;
-
+/*
+    当该中断源的所有 action 都执行完毕时，desc->threads_oneshot 应为0
+    这时可以销毁该中断源的中断屏蔽，从而使能中断源
+*/
 	if (!desc->threads_oneshot && !irqd_irq_disabled(&desc->irq_data) &&
 	    irqd_irq_masked(&desc->irq_data))
 		unmask_threaded_irq(desc);
@@ -926,7 +949,9 @@ static irqreturn_t irq_thread_fn(struct irq_desc *desc,
 		struct irqaction *action)
 {
 	irqreturn_t ret;
-
+/*
+      执行thread_fn
+*/
 	ret = action->thread_fn(action->irq, action->dev_id);
 	irq_finalize_oneshot(desc, action);
 	return ret;
@@ -934,7 +959,13 @@ static irqreturn_t irq_thread_fn(struct irq_desc *desc,
 
 static void wake_threads_waitq(struct irq_desc *desc)
 {
+/*
+    每当执行完 action 的 thread_fn 函数，会递减desc->thread_active 计数 
+*/
 	if (atomic_dec_and_test(&desc->threads_active))
+/*
+	当中断线程都执行完毕，才能唤醒睡眠等待在 desc->wait_for_threads 的进程
+*/
 		wake_up(&desc->wait_for_threads);
 }
 
@@ -980,6 +1011,9 @@ static void irq_wake_secondary(struct irq_desc *desc, struct irqaction *action)
 /*
  * Interrupt handler thread
  */
+/*
+    中断线程执行函数
+*/
 static int irq_thread(void *data)
 {
 	struct callback_head on_exit_work;
@@ -1003,7 +1037,9 @@ static int irq_thread(void *data)
 		irqreturn_t action_ret;
 
 		irq_thread_check_affinity(desc, action);
-
+/*
+        调用 irq_thread_fn 函数执行注册中断时的 thread_fn
+*/
 		action_ret = handler_fn(desc, action);
 		if (action_ret == IRQ_HANDLED)
 			atomic_inc(&desc->threads_handled);

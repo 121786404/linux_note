@@ -83,7 +83,7 @@
 /* use the per-pgdat data instead for discontigmem - mbligh */
 unsigned long max_mapnr;
 
-/* 
+/*
 每个物理的页由一个struct page的数据结构对象来描述。
 页的数据结构对象都保存在mem_map全局数组中，
 该数组通常被存放在ZONE_NORMAL的首部，
@@ -873,9 +873,13 @@ copy_one_pte(struct mm_struct *dst_mm, struct mm_struct *src_mm,
 	struct page *page;
 
 	/* pte contains position in swap or file, so copy. */
+/*
+    pte页表是否在内存里
+*/
 	if (unlikely(!pte_present(pte))) {
 		swp_entry_t entry = pte_to_swp_entry(pte);
 
+        // swap entry
 		if (likely(!non_swap_entry(entry))) {
 			if (swap_duplicate(entry) < 0)
 				return entry.val;
@@ -889,6 +893,7 @@ copy_one_pte(struct mm_struct *dst_mm, struct mm_struct *src_mm,
 				spin_unlock(&mmlist_lock);
 			}
 			rss[MM_SWAPENTS]++;
+        // migration entry
 		} else if (is_migration_entry(entry)) {
 			page = migration_entry_to_page(entry);
 
@@ -914,6 +919,10 @@ copy_one_pte(struct mm_struct *dst_mm, struct mm_struct *src_mm,
 	 * If it's a COW mapping, write protect it both
 	 * in the parent and the child
 	 */
+/*
+	 如果父进程VMA属性是 COW ，即不是共享的进程地址空间（没有设置 VM_SHARED）
+	 那么父进程和子进程对应的pte页表都要设置成写保护
+*/
 	if (is_cow_mapping(vm_flags)) {
 		ptep_set_wrprotect(src_mm, addr, src_pte);
 		pte = pte_wrprotect(pte);
@@ -923,10 +932,18 @@ copy_one_pte(struct mm_struct *dst_mm, struct mm_struct *src_mm,
 	 * If it's a shared mapping, mark it clean in
 	 * the child
 	 */
+/*
+	 VM_SHARED 清楚页面 Dirty 标志
+*/
 	if (vm_flags & VM_SHARED)
 		pte = pte_mkclean(pte);
-	pte = pte_mkold(pte);
+/*
 
+*/
+	pte = pte_mkold(pte);
+/*
+
+*/
 	page = vm_normal_page(vma, addr, pte);
 	if (page) {
 		get_page(page);
@@ -935,10 +952,14 @@ copy_one_pte(struct mm_struct *dst_mm, struct mm_struct *src_mm,
 	}
 
 out_set_pte:
+// 设置父进程pte页表项内容到子进程
 	set_pte_at(dst_mm, addr, dst_pte, pte);
 	return 0;
 }
-
+/*
+addr：VMA对应的起始地址
+end ：VMA对应的结束地址
+*/
 static int copy_pte_range(struct mm_struct *dst_mm, struct mm_struct *src_mm,
 		   pmd_t *dst_pmd, pmd_t *src_pmd, struct vm_area_struct *vma,
 		   unsigned long addr, unsigned long end)
@@ -978,6 +999,9 @@ again:
 			progress++;
 			continue;
 		}
+/*
+    父进程pte设置到子进程pte页表项
+*/
 		entry.val = copy_one_pte(dst_mm, src_mm, dst_pte, src_pte,
 							vma, addr, rss);
 		if (entry.val)
@@ -1028,6 +1052,9 @@ static inline int copy_pmd_range(struct mm_struct *dst_mm, struct mm_struct *src
 		}
 		if (pmd_none_or_clear_bad(src_pmd))
 			continue;
+/*
+
+*/
 		if (copy_pte_range(dst_mm, src_mm, dst_pmd, src_pmd,
 						vma, addr, next))
 			return -ENOMEM;
@@ -1050,6 +1077,9 @@ static inline int copy_pud_range(struct mm_struct *dst_mm, struct mm_struct *src
 		next = pud_addr_end(addr, end);
 		if (pud_none_or_clear_bad(src_pud))
 			continue;
+/*
+
+*/
 		if (copy_pmd_range(dst_mm, src_mm, dst_pud, src_pud,
 						vma, addr, next))
 			return -ENOMEM;
@@ -1118,6 +1148,9 @@ int copy_page_range(struct mm_struct *dst_mm, struct mm_struct *src_mm,
 		next = pgd_addr_end(addr, end);
 		if (pgd_none_or_clear_bad(src_pgd))
 			continue;
+/*
+        从pud pmd 顺着页表方向循环到PTE页表
+*/
 		if (unlikely(copy_pud_range(dst_mm, src_mm, dst_pgd, src_pgd,
 					    vma, addr, next))) {
 			ret = -ENOMEM;
@@ -1782,7 +1815,7 @@ static inline int remap_pud_range(struct mm_struct *mm, pgd_t *pgd,
  *  prot: 新VMA要求的保护属性。
  * 返回为0表示成功，负值表示错误。
  */
- 
+
 int remap_pfn_range(struct vm_area_struct *vma, unsigned long addr,
 		    unsigned long pfn, unsigned long size, pgprot_t prot)
 {

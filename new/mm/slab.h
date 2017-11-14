@@ -53,10 +53,19 @@ struct kmem_cache {
  * allocated from slab caches themselves.
  */
 enum slab_state {
+/*
+    slub分配器还没有初始化完毕
+*/
 	DOWN,			/* No slab functionality yet */
+/*
+	可以分配kmem_cache_node对象
+*/
 	PARTIAL,		/* SLUB: kmem_cache_node available */
 	PARTIAL_NODE,		/* SLAB: kmalloc size for node struct available */
 	UP,			/* Slab caches usable but not all extras yet */
+/*
+    完全初始化
+*/
 	FULL			/* Everything is working */
 };
 
@@ -182,8 +191,18 @@ struct slabinfo {
 	unsigned long active_slabs;
 	unsigned long num_slabs;
 	unsigned long shared_avail;
+/*
+	字段表示每个 CPU 可以缓存的对象的最大数量
+	当本地缓冲池
+*/
 	unsigned int limit;
+/*
+	当缓存为空时转换到每个 CPU 缓存中全局缓存对象的最大数量
+*/
 	unsigned int batchcount;
+/*
+	参数说明了对称多处理器（Symmetric MultiProcessing，SMP）系统的共享行为
+*/
 	unsigned int shared;
 	unsigned int objects_per_slab;
 	unsigned int cache_order;
@@ -368,7 +387,9 @@ static inline void memcg_link_cache(struct kmem_cache *s)
 }
 
 #endif /* CONFIG_MEMCG && !CONFIG_SLOB */
-
+/*
+获取对象的kmem_cache
+*/
 static inline struct kmem_cache *cache_from_obj(struct kmem_cache *s, void *x)
 {
 	struct kmem_cache *cachep;
@@ -384,9 +405,20 @@ static inline struct kmem_cache *cache_from_obj(struct kmem_cache *s, void *x)
 	if (!memcg_kmem_enabled() &&
 	    !unlikely(s->flags & SLAB_CONSISTENCY_CHECKS))
 		return s;
+/*
+    memcg开启或kmem_cache设置SLAB_DEBUG_FREE，
 
+    kmem_cache在kmem_cache_free()的入参已经传入了，但是这里仍然要去重新判断获取该结构，
+    主要是由于当内核将各缓冲区链起来的时候，其通过对象地址经virt_to_head_page()转换后
+    获取的page页面结构远比用户传入的值得可信
+*/
 	page = virt_to_head_page(x);
 	cachep = page->slab_cache;
+/*
+	判断调用者传入的kmem_cache是否与释放的对象所属的cache相匹配，
+	如果匹配，则将由对象得到kmem_cache返回；
+	否则最后只好将调用者传入的kmem_cache返回
+*/
 	if (slab_equal_or_root(cachep, s))
 		return cachep;
 
@@ -438,6 +470,9 @@ static inline struct kmem_cache *slab_pre_alloc_hook(struct kmem_cache *s,
 
 	if (memcg_kmem_enabled() &&
 	    ((flags & __GFP_ACCOUNT) || (s->flags & SLAB_ACCOUNT)))
+/*
+	    kmem_cache结构指针转换为mcgroup组的kmem_cache指针
+*/
 		return memcg_kmem_get_cache(s);
 
 	return s;
@@ -498,11 +533,20 @@ struct kmem_cache_node {
 #endif
 
 #ifdef CONFIG_SLUB
+    /*
+        partial slab链表中slab的数量
+    */
 	unsigned long nr_partial;
+    /*
+        partial slab链表表头
+    */
 	struct list_head partial;
 #ifdef CONFIG_SLUB_DEBUG
+    /* 节点中的slab数 */
 	atomic_long_t nr_slabs;
+    /* 节点中的对象数 */
 	atomic_long_t total_objects;
+    /* full slab链表表头 */
 	struct list_head full;
 #endif
 #endif

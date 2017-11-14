@@ -363,7 +363,9 @@ static __always_inline void spin_unlock_irq(spinlock_t *lock)
 {
 	raw_spin_unlock_irq(&lock->rlock);
 }
-
+/*
+释放中断锁并恢复中断环境
+*/
 static __always_inline void spin_unlock_irqrestore(spinlock_t *lock, unsigned long flags)
 {
 	raw_spin_unlock_irqrestore(&lock->rlock, flags);

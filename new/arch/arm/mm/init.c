@@ -443,7 +443,9 @@ static inline void free_area_high(unsigned long pfn, unsigned long end)
 		free_highmem_page(pfn_to_page(pfn));
 }
 #endif
-
+/*
+释放高端内存到伙伴系统
+*/
 static void __init free_highpages(void)
 {
 #ifdef CONFIG_HIGHMEM
@@ -535,7 +537,7 @@ void __init mem_init(void)
 #define MLM(b, t) b, t, ((t) - (b)) >> 20
 #define MLK_ROUNDUP(b, t) b, t, DIV_ROUND_UP(((t) - (b)), SZ_1K)
 
-/* 
+/*
 vector  : 0xffff0000 - 0xffff1000   (   4 kB)
 fixmap  : 0xffc00000 - 0xfff00000   (3072 kB)
 vmalloc : 0x84800000 - 0xff800000   (1968 MB)
@@ -800,7 +802,7 @@ void free_tcmmem(void)
 
 /* 释放Linux Kernel介於init_begin到 init_end属于init Section的函数的所有内存.
 并会把Page个数加到变量totalram_pages中,
-作为后续Linux Kernel在配置记忆体时可以使用的Pages. 
+作为后续Linux Kernel在配置记忆体时可以使用的Pages.
 (在这也可把TCM范围(tcm_start到tcm_end)释放加入到总Page中,
 但TCM比外部记忆体有效率,适合多媒体,中断,
 …etc等对效能要求高的执行需求,放到总Page中,

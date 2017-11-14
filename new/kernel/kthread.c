@@ -384,6 +384,9 @@ struct task_struct *__kthread_create_on_node(int (*threadfn)(void *data),
  *
  * Returns a task_struct or ERR_PTR(-ENOMEM) or ERR_PTR(-EINTR).
  */
+/*
+本地内存节点创建一个内核线程
+*/
 struct task_struct *kthread_create_on_node(int (*threadfn)(void *data),
 					   void *data, int node,
 					   const char namefmt[],
@@ -412,6 +415,9 @@ static void __kthread_bind_mask(struct task_struct *p, const struct cpumask *mas
 	/* It's safe because the task is inactive. */
 	raw_spin_lock_irqsave(&p->pi_lock, flags);
 	do_set_cpus_allowed(p, mask);
+/*
+	设置 PF_NO_SETAFFINITY
+*/
 	p->flags |= PF_NO_SETAFFINITY;
 	raw_spin_unlock_irqrestore(&p->pi_lock, flags);
 }

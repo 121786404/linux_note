@@ -53,6 +53,16 @@ struct cpu_context_save {
 /*
  thread_info就保存了特定体系结构的汇编代码段
  需要访问的那部分进程的数据
+
+* ------------------------------|
+           8 byte               |
+* ------------------------------|
+                                |
+           stack                |-- Section("data..init_task")
+                                |
+* ------------------------------|
+       struct thread_info       |
+* ------------------------------|   <---- task_struct.stack
 */
 struct thread_info {
 /*
@@ -63,6 +73,15 @@ struct thread_info {
 	内核抢占计数器
 	该计数器初始值为O. 每当使用锁的时候数值加1.释放锁的时候数值减1 。
 	当数值为0    的时候，内核就可执行抢占。
+
+	preempt_count 不为0:，可能是
+	1) preempt_disable 禁止抢占
+	2) 处于中断上下文
+    bit[0:7] 抢占计数
+	bit[8:15] 用于软中断，一般只是用bit 8，可以表示软中断的嵌套深度，最多表示255次嵌套
+    bit[16:19] 用于硬件中断，一般只是用bit 4，可以表示硬中断的嵌套深度，最多表示15次嵌套
+    bit[20] NMI中断
+    bit[21] 当前被强占或者刚刚被强占，通常用于表示抢占调度
 */
 	int			preempt_count;	/* 0 => preemptable, <0 => bug */
 /*
@@ -85,6 +104,9 @@ struct thread_info {
 	struct cpu_context_save	cpu_context;	/* cpu context */
 	__u32			syscall;	/* syscall number */
 	__u8			used_cp[16];	/* thread used copro */
+/*
+    TLS 线程局部存储
+*/
 	unsigned long		tp_value[2];	/* TLS registers */
 #ifdef CONFIG_CRUNCH
 	struct crunch_state	crunchstate;

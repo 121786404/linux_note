@@ -275,7 +275,7 @@ struct irqaction {
 	unsigned long		thread_flags;
 /*
     跟踪中断线程活动的位图
-      在共享中断中，每一个action有一个bit来表示
+    在共享中断中，每一个action有一个bit来表示
 */
 	unsigned long		thread_mask;
 /*
@@ -629,10 +629,17 @@ extern bool force_irqthreads;
    tasklets are more than enough. F.e. all serial device BHs et
    al. should be converted to tasklets, not to softirqs.
  */
-/*softirq的类型*/
+/*softirq的类型
+软中断时预留给系统对时间要求最严格和最重要的下半部分使用的
+目前只有 块设备 和 网络子系统 在使用
+目前不希望用户扩充新的软中断类型，推荐使用tasklet
+
+通过枚举值静态声明软中断，枚举值越小，优先级越高
+每一个软中断类型对应一个 softirq_action
+*/
 enum
 {
-	HI_SOFTIRQ=0,	/*用来实现tasklet,优先级高于TASKLET_SOFTIRQ*/
+	HI_SOFTIRQ=0,	/*用来实现tasklet(网络驱动中用的较多),优先级高于TASKLET_SOFTIRQ*/
 	TIMER_SOFTIRQ,	/*用于定时器*/
 	NET_TX_SOFTIRQ,	/*网络设备的发送操作*/
 	NET_RX_SOFTIRQ,	/*网络设备的接收操作*/
@@ -737,13 +744,20 @@ struct tasklet_struct
 {
 	struct tasklet_struct *next;	/*将系统中的tasklet对象构建成链表*/
 	unsigned long state; /*记录每个tasklet在系统中的状态,其值时枚举型变量
-				TASKLET_STATE_SCHED和TASKLET_STATE_RUN两者之一*/
+				TASKLET_STATE_SCHED 和 TASKLET_STATE_RUN 两者之一*/
 
 	atomic_t count;	/*用来实现tasklet的disable和enable操作,count.counter=0
 			表示当前的tasklet是enabled的,可以被调度执行,否则便是
 			disabled的tasklet,不可被执行*/
-	void (*func)(unsigned long);	/*该tasklet上的执行函数或者延迟函数,当该tasklet在SOFTIRQ部分被调度执行时,该函数指针指向的函数被调用,用来完成驱动程序中实际的延迟操作任务*/
-	unsigned long data;	/*作为参数传给func函数*/
+    /*
+    该tasklet上的执行函数或者延迟函数,当该tasklet在SOFTIRQ部分被调度执行时,
+    该函数指针指向的函数被调用,用来完成驱动程序中实际的延迟操作任务
+    */
+	void (*func)(unsigned long);
+	/*
+	    作为参数传给func函数
+	*/
+	unsigned long data;
 };
 
 /*声明并初始化一个tasklet对象*/
@@ -757,7 +771,7 @@ struct tasklet_struct name = { NULL, 0, ATOMIC_INIT(1), func, data }
 
 enum
 {
-	/*TASKLET_STATE_SCHED表示当前tasklet已经被提交*/
+	/*tasklet已经被提交*/
 	TASKLET_STATE_SCHED,	/* Tasklet is scheduled for execution */
 
 	/* TASKLET_STATE_RUN只用在对称多处理器系统SMP中,
@@ -766,6 +780,9 @@ enum
 };
 
 #ifdef CONFIG_SMP
+/*
+    如果tasklet已经处于RUNNING状态，将返回fasle
+*/
 static inline int tasklet_trylock(struct tasklet_struct *t)
 {
 	return !test_and_set_bit(TASKLET_STATE_RUN, &(t)->state);
@@ -795,6 +812,10 @@ extern void __tasklet_schedule(struct tasklet_struct *t);
 */
 static inline void tasklet_schedule(struct tasklet_struct *t)
 {
+/*
+    test_and_set_bit 返回state的旧值
+    返回true 表示已经挂在tasklet链表上了
+*/
 	if (!test_and_set_bit(TASKLET_STATE_SCHED, &t->state))
 		__tasklet_schedule(t);
 }

@@ -757,6 +757,9 @@ static void set_load_weight(struct task_struct *p)
 
 static inline void enqueue_task(struct rq *rq, struct task_struct *p, int flags)
 {
+/*
+    更新rq->clock_task
+*/
 	update_rq_clock(rq);
 	if (!(flags & ENQUEUE_RESTORE))
 		sched_info_queued(rq, p);
@@ -776,6 +779,9 @@ void activate_task(struct rq *rq, struct task_struct *p, int flags)
 	if (task_contributes_to_load(p))
 		rq->nr_uninterruptible--;
 
+/*
+
+*/
 	enqueue_task(rq, p, flags);
 }
 
@@ -1543,12 +1549,15 @@ out:
 /*
  * The caller (fork, wakeup) owns p->pi_lock, ->cpus_allowed is stable.
  */
+/*
+*/
 static inline
 int select_task_rq(struct task_struct *p, int cpu, int sd_flags, int wake_flags)
 {
 	lockdep_assert_held(&p->pi_lock);
 
 	if (tsk_nr_cpus_allowed(p) > 1)
+        // 选择一个合适的调度域中最悠闲的CPU
 		cpu = p->sched_class->select_task_rq(p, cpu, sd_flags, wake_flags);
 	else
 		cpu = cpumask_any(tsk_cpus_allowed(p));
@@ -2342,6 +2351,7 @@ static inline void init_schedstats(void) {}
 int sched_fork(unsigned long clone_flags, struct task_struct *p)
 {
 	unsigned long flags;
+    // thread_info->cpu
 	int cpu = get_cpu();
 
 	__sched_fork(clone_flags, p);
@@ -2415,6 +2425,9 @@ int sched_fork(unsigned long clone_flags, struct task_struct *p)
 #if defined(CONFIG_SMP)
 	p->on_cpu = 0;
 #endif
+/*
+
+*/
 	init_task_preempt_count(p);
 #ifdef CONFIG_SMP
 	plist_node_init(&p->pushable_tasks, MAX_PRIO);
@@ -2548,12 +2561,20 @@ void wake_up_new_task(struct task_struct *p)
 	 * Use __set_task_cpu() to avoid calling sched_class::migrate_task_rq,
 	 * as we're not fully set-up yet.
 	 */
+/*
+    sched_fork 函数已经设置了父进程的CPU到子进程thread_info->cpu中，
+    这里需要重新设置
+    因为在fork新进程的过程中，cpu_allowed 有可能发生变化，另外一个原因是之前选择
+    的CPU有可能被关闭，因此从新选择CPU
+*/
 	__set_task_cpu(p, select_task_rq(p, task_cpu(p), SD_BALANCE_FORK, 0));
 #endif
 	rq = __task_rq_lock(p, &rf);
 	update_rq_clock(rq);
 	post_init_entity_util_avg(&p->se);
+/*
 
+*/
 	activate_task(rq, p, 0);
 	p->on_rq = TASK_ON_RQ_QUEUED;
 	trace_sched_wakeup_new(p);
@@ -2832,8 +2853,8 @@ asmlinkage __visible void schedule_tail(struct task_struct *prev)
 
 /*
  * context_switch - switch to the new MM and the new thread's register state.
- rq：在多核系统中，进程切换总是发生在各个cpu core上，参数rq指向本次切换发生的那个cpu对应的run queue 
- prev：将要被剥夺执行权利的那个进程 
+ rq：在多核系统中，进程切换总是发生在各个cpu core上，参数rq指向本次切换发生的那个cpu对应的run queue
+ prev：将要被剥夺执行权利的那个进程
  next：被选择在该cpu上执行的那个进程
  */
 static __always_inline struct rq *
@@ -2856,7 +2877,7 @@ context_switch(struct rq *rq, struct task_struct *prev,
 	if (!mm) { /* B进程是内核线程 */
 		next->active_mm = oldmm; /* 借用A进程当前正在使用的那个地址空间 */
 		atomic_inc(&oldmm->mm_count);
-		enter_lazy_tlb(oldmm, next); 
+		enter_lazy_tlb(oldmm, next);
 	} else
 		switch_mm_irqs_off(oldmm, mm, next);
 
@@ -3298,7 +3319,7 @@ pick_next_task(struct rq *rq, struct task_struct *prev, struct rq_flags *rf)
 	}
 
 again:
-    /*从最高优先级类开始遍历每个调度器类，从第一个非NULL值的类中选择下一个可运行进程*/ 
+    /*从最高优先级类开始遍历每个调度器类，从第一个非NULL值的类中选择下一个可运行进程*/
 	for_each_class(class) {
 		p = class->pick_next_task(rq, prev, rf);
 		if (p) {
@@ -7291,6 +7312,9 @@ void dump_cpu_task(int cpu)
  * If a task goes up by ~10% and another task goes down by ~10% then
  * the relative distance between them is ~25%.)
  */
+/*
+    优先级降低一级，执行时间少10%
+*/
 const int sched_prio_to_weight[40] = {
  /* -20 */     88761,     71755,     56483,     46273,     36291,
  /* -15 */     29154,     23254,     18705,     14949,     11916,
@@ -7309,6 +7333,19 @@ const int sched_prio_to_weight[40] = {
  * precalculated inverse to speed up arithmetics by turning divisions
  * into multiplications:
  */
+/*
+    Inverse Weight * Weight = 2^32
+
+    vruntime = delta_exec*nice_0_weight/weight
+             = delta_exec*nice_0_weight*inv_weight
+
+    vruntime：进程虚拟的运行时间，实际运行时间相对于nice值为0的权重的比例值
+    delta_exec：实际运行时间
+    nice_0_weight：nice为0的权重值
+    weight：该进程的权重值
+
+    nice值大，weight就小，vruntime就大，也就是获得更多运行时间
+*/
 const u32 sched_prio_to_wmult[40] = {
  /* -20 */     48388,     59856,     76040,     92818,    118348,
  /* -15 */    147320,    184698,    229616,    287308,    360437,

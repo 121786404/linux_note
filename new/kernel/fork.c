@@ -485,7 +485,7 @@ void set_task_stack_end_magic(struct task_struct *tsk)
 thread_info数据结构的task 成员指向进程描述符（也就是task struct数据结构）。
 进程描述符的stack成员指向对应的thread_info数据结构
 
-最终执行完dup_task_struct之后，子进程除了tsk->stack指针不同之外，全部都一样 
+最终执行完dup_task_struct之后，子进程除了tsk->stack指针不同之外，全部都一样
 
 dup_task_struct这段代码主要动作序列包括：
 1、分配内核栈和thread_info数据结构所需要的memory（统一分配），
@@ -549,6 +549,9 @@ static struct task_struct *dup_task_struct(struct task_struct *orig, int node)
     /* 设置线程栈 */
 	setup_thread_stack(tsk, orig);
 	clear_user_return_notifier(tsk);
+/*
+    进程还没有诞生，清楚TIF_NEED_RESCHED标志
+*/
 	clear_tsk_need_resched(tsk);
 	/* 设置栈底魔数*/
 	set_task_stack_end_magic(tsk);
@@ -584,6 +587,10 @@ free_tsk:
 }
 
 #ifdef CONFIG_MMU
+/*
+遍历父进程中所有VMAs，然后复制父进程VMA中对应的pte页表项到子进程相应VMA对应的pte中
+注意只是复制pte页表项，并没有复制VMA对应页面的内容
+*/
 static __latent_entropy int dup_mmap(struct mm_struct *mm,
 					struct mm_struct *oldmm)
 {
@@ -624,6 +631,9 @@ static __latent_entropy int dup_mmap(struct mm_struct *mm,
 		goto out;
 
 	prev = NULL;
+/*
+    遍历父进程VMA
+*/
 	for (mpnt = oldmm->mmap; mpnt; mpnt = mpnt->vm_next) {
 		struct file *file;
 
@@ -639,6 +649,11 @@ static __latent_entropy int dup_mmap(struct mm_struct *mm,
 				goto fail_nomem;
 			charge = len;
 		}
+/*
+        子进程创建一个新的VMA
+        子进程VMA中有一个链表 anon_vma_chain ，用于存放struct_anon_vma_chain
+        数据结构实例，用在反向映射rmap系统中
+*/
 		tmp = kmem_cache_alloc(vm_area_cachep, GFP_KERNEL);
 		if (!tmp)
 			goto fail_nomem;
@@ -651,6 +666,9 @@ static __latent_entropy int dup_mmap(struct mm_struct *mm,
 		retval = dup_userfaultfd(tmp, &uf);
 		if (retval)
 			goto fail_nomem_anon_vma_fork;
+/*
+    创建属于子进程的 struct anon_vma 实例，并使用avc来实现子进程VMA的链接
+*/
 		if (anon_vma_fork(tmp, mpnt))
 			goto fail_nomem_anon_vma_fork;
 		tmp->vm_flags &= ~(VM_LOCKED | VM_LOCKONFAULT);
@@ -685,16 +703,24 @@ static __latent_entropy int dup_mmap(struct mm_struct *mm,
 		/*
 		 * Link in the new vma and copy the page table entries.
 		 */
+/*
+		把tmp插入子进程mm系统
+*/
 		*pprev = tmp;
 		pprev = &tmp->vm_next;
 		tmp->vm_prev = prev;
 		prev = tmp;
+/*
 
+*/
 		__vma_link_rb(mm, tmp, rb_link, rb_parent);
 		rb_link = &tmp->vm_rb.rb_right;
 		rb_parent = &tmp->vm_rb;
 
 		mm->map_count++;
+/*
+    复制父进程VMA的页表到子进程页表中
+*/
 		retval = copy_page_range(mm, oldmm, mpnt);
 
 		if (tmp->vm_ops && tmp->vm_ops->open)
@@ -724,6 +750,9 @@ fail_nomem:
 	goto out;
 }
 
+/*
+    为进程分配PGD页表
+*/
 static inline int mm_alloc_pgd(struct mm_struct *mm)
 {
 	mm->pgd = pgd_alloc(mm);
@@ -1209,6 +1238,10 @@ static int copy_mm(unsigned long clone_flags, struct task_struct *tsk)
 	 *
 	 * We need to steal a active VM for that..
 	 */
+/*
+	 oldmm时父进程的内存空间指针，oldmm为空，说明父进程没有自己的运行空间
+	 只是一个“寄人篱下”的现成或者内核线程
+*/
 	oldmm = current->mm;
 	if (!oldmm)
 		return 0;
@@ -1216,6 +1249,9 @@ static int copy_mm(unsigned long clone_flags, struct task_struct *tsk)
 	/* initialize the new vmacache entries */
 	vmacache_flush(tsk);
 
+/*
+    如果子进程和父进程共享内存空间，直接mm = oldmm即可
+*/
 	if (clone_flags & CLONE_VM) {
 		atomic_inc(&oldmm->mm_users);
 		mm = oldmm;
@@ -1494,7 +1530,7 @@ init_task_pid(struct task_struct *task, enum pid_type type, struct pid *pid)
  * It copies the registers, and all the appropriate
  * parts of the process environment (as per the clone
  * flags). The actual kick-off is left to the caller.
- 
+
 4 将ret_from_fork的地址设置为eip寄存器的值
 5 为新进程分配并设置新的pid
 6 最终子进程从ret_from_fork开始执行
@@ -1530,7 +1566,7 @@ static __latent_entropy struct task_struct *copy_process(
     /*
     CLONE_NEWUSER|CLONE_FS的组合会导致一个系统漏洞，
     可以让一个普通用户窃取到root的权限，
-    具体可以参考下面的连接： 
+    具体可以参考下面的连接：
     http://www.openwall.com/lists/oss-security/2013/03/13/10
     */
 	if ((clone_flags & (CLONE_NEWUSER|CLONE_FS)) == (CLONE_NEWUSER|CLONE_FS))
@@ -1595,7 +1631,7 @@ static __latent_entropy struct task_struct *copy_process(
       当CLONE_SIGHAND被设定的时候，父子进程应该共享signal disposition table。
       也就是说，一个进程修改了某一个signal的handler，
       另外一个进程也可以感知的到。
-      
+
       CLONE_NEWUSER设定的时候，就会为fork的进程创建一个新的user namespace，以便隔离USER ID。
       linux 系统内的一个进程和某个user namespace内的uid和gid相关。
       user namespace被实现成树状结构，
@@ -1649,7 +1685,9 @@ static __latent_entropy struct task_struct *copy_process(
 			goto bad_fork_free;
 	}
 	current->flags &= ~PF_NPROC_EXCEEDED;
-
+/*
+    复制父进程的证书
+*/
 	retval = copy_creds(p, clone_flags);
 	if (retval < 0)
 		goto bad_fork_free;
@@ -1670,10 +1708,10 @@ static __latent_entropy struct task_struct *copy_process(
     */
 	delayacct_tsk_init(p);	/* Must remain after dup_task_struct() */
 
-	/* 
-	复制进程描述符的flag 
+	/*
+	复制进程描述符的flag
 	大部分的flag都是直接copy，但是下面的几个是例外
-      对于新创建的进程，当然不会用到super-user privileges，因此要清掉 
+      对于新创建的进程，当然不会用到super-user privileges，因此要清掉
 	*/
 	p->flags &= ~(PF_SUPERPRIV | PF_WQ_WORKER | PF_IDLE);
 	p->flags |= PF_FORKNOEXEC;
@@ -1872,8 +1910,13 @@ static __latent_entropy struct task_struct *copy_process(
 	clear_all_latency_tracing(p);
 
 	/* ok, now we should be set up.. */
-	/* 设置子进程的pid */
+	/*
+	    设置子进程的pid
+	*/
 	p->pid = pid_nr(pid);
+/*
+    设置线程组 group_leader
+*/
 	if (clone_flags & CLONE_THREAD) { // 如果是创建线程
 		p->exit_signal = -1;
 		p->group_leader = current->group_leader; // 线程组的leader设置为当前线程的leader
@@ -2079,7 +2122,7 @@ struct task_struct *fork_idle(int cpu)
  * it and waits for it to finish using the VM if required.
  */
 /*
-clone_flags :与clone()参数flags相同, 用来控制进程复制过的一些属性信息, 
+clone_flags :与clone()参数flags相同, 用来控制进程复制过的一些属性信息,
                  描述你需要从父进程继承那些资源。该标志位的4个字节分为两部分。
                  最低的一个字节为子进程结束时发送给父进程的信号代码，
                  通常为SIGCHLD；剩余的三个字节则是各种clone标志的组 ，
@@ -2089,7 +2132,7 @@ stack_start : 与clone()参数stack_start相同, 子进程用户态堆栈的地�
 stack_size : 用户状态下栈的大小, 该参数通常是不必要的, 总被设置为0
 parent_tidptr:与clone的ptid参数相同, 父进程在用户态下pid的地址，
                    该参数在CLONE_PARENT_SETTID标志被设定时有意义
-child_tidptr: 与clone的ctid参数相同, 子进程在用户太下pid的地址，
+child_tidptr: 与clone的ctid参数相同, 子进程在用户态下pid的地址，
                   该参数在CLONE_CHILD_SETTID标志被设定时有意义
 */
 long _do_fork(unsigned long clone_flags,
@@ -2129,7 +2172,7 @@ long _do_fork(unsigned long clone_flags,
 		if (likely(!ptrace_event_enabled(current, trace)))
 			trace = 0;
 	}
-	
+
     /* 复制进程描述符，返回创建的task_struct的指针*/
 	p = copy_process(clone_flags, stack_start, stack_size,
 			 child_tidptr, NULL, trace, tls, NUMA_NO_NODE); /* pid参数为NULL */
@@ -2183,7 +2226,7 @@ long _do_fork(unsigned long clone_flags,
 	} else {
 /*
 根据PTR_ERR()的返回值得到错误代码，保存于pid中。 返回pid。
-这也就是为什么使用fork系统调用时父进程会返回子进程pid的原因。	
+这也就是为什么使用fork系统调用时父进程会返回子进程pid的原因。
 */
 		nr = PTR_ERR(p);
 	}
@@ -2192,7 +2235,7 @@ long _do_fork(unsigned long clone_flags,
 
 #ifndef CONFIG_HAVE_COPY_THREAD_TLS
 /* For compatibility with architectures that call do_fork directly rather than
- * using the syscall entry points below. 
+ * using the syscall entry points below.
 我们会发现，新版本的系统中clone的TLS设置标识会通过TLS参数传递,
 因此_do_fork替代了老版本的do_fork。
 老版本的do_fork只有在如下情况才会定义
@@ -2231,9 +2274,9 @@ SYSCALL_DEFINE0(fork)
 #ifdef CONFIG_MMU
     /* 对于fork的实现，在kernel中会使用COW技术，
           如果没有MMU的话，也就没有虚拟地址、页表这些概念，
-          也就无法实现COW版本的fork 
-          由于写时复制(COW)技术, 最初父子进程的栈地址相同, 
-          但是如果操作栈地址闭并写入数据, 
+          也就无法实现COW版本的fork
+          由于写时复制(COW)技术, 最初父子进程的栈地址相同,
+          但是如果操作栈地址闭并写入数据,
           则COW机制会为每个进程分别创建一个新的栈副本
           标志是SIGCHLD。这意味着在子进程终止后将发送信号SIGCHLD信号通知父进程*/
 	return _do_fork(SIGCHLD, 0, 0, NULL, NULL, 0); // 如果do_fork成功, 则新建进程的pid作为系统调用的结果返回, 否则返回错误码
@@ -2254,10 +2297,10 @@ SYSCALL_DEFINE0(vfork)
 }
 #endif
 
-/* 我们可以看到sys_clone的标识不再是硬编码的, 
+/* 我们可以看到sys_clone的标识不再是硬编码的,
 而是通过各个寄存器参数传递到系统调用, 因而我们需要提取这些参数。
-另外，clone也不再复制进程的栈, 而是可以指定新的栈地址, 
-在生成线程时, 可能需要这样做, 线程可能与父进程共享地址空间， 
+另外，clone也不再复制进程的栈, 而是可以指定新的栈地址,
+在生成线程时, 可能需要这样做, 线程可能与父进程共享地址空间，
 但是线程自身的栈可能在另外一个地址空间
 另外还指令了用户空间的两个指针(parent_tidptr和child_tidptr), 用于与线程库通信*/
 #ifdef __ARCH_WANT_SYS_CLONE

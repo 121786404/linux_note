@@ -48,6 +48,9 @@
  然后调用request_threaded_irq申请中断handler
 
  根据DTS解析硬件中断号，返回Linux内核的IRQ中断号
+
+ irq_of_parse_and_map对该device node中的interrupt属性进行分析，并分配IRQ number，
+ 建立HW interrupt ID和该IRQ number的映射
  */
 unsigned int irq_of_parse_and_map(struct device_node *dev, int index)
 {
@@ -306,7 +309,7 @@ EXPORT_SYMBOL_GPL(of_irq_parse_raw);
  * interrupt specifier that can be used to retrieve a Linux IRQ number.
  */
 /*
-    分析device node中的reg interrupt等相关属性 
+    分析device node中的reg interrupt等相关属性
 */
 int of_irq_parse_one(struct device_node *device, int index, struct of_phandle_args *out_irq)
 {

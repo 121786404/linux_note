@@ -98,6 +98,17 @@ __mmap_switched:
 /**
  * 计算PC相对于__mmap_switched_data地址的差异，计算PC减去相对地址的结果。
  * 这里可以不用这种PIC的方式，但是这样做应该可以节约一条指令。
+ * __mmap_switched_data 出定义了
+	.long	__data_loc			@ r4
+	.long	_sdata				@ r5
+	.long	__bss_start			@ r6
+	.long	_end				@ r7
+	.long	processor_id			@ r4
+	.long	__machine_arch_type		@ r5
+	.long	__atags_pointer			@ r6
+	.long	cr_alignment			@ r7
+	.long	init_thread_union + THREAD_START_SP @ sp
+	.size	__mmap_switched_data, . - __mmap_switched_data
  */
 	adr	r3, __mmap_switched_data
 
@@ -106,13 +117,13 @@ __mmap_switched:
  */
 	ldmia	r3!, {r4, r5, r6, r7}
 /**
- * __data_loc指向二进制文件中初始化数据的起始位置，__data指向内存中初始化数据的起始位置
+ * __data_loc指向二进制文件中初始化数据的起始位置，_sdata指向内存中初始化数据的起始位置
  * 二者一般相等，也许XIP方式下二者会不相等。
  * 如果有必要则进行data段的拷贝搬移
  */
 	cmp	r4, r5				@ Copy data segment if needed
 /**
- * _data，__bss_start二者之间即为初始化数据，遍历复制它
+ * _sdata，__bss_start二者之间即为初始化数据，遍历复制它
  */
 1:	cmpne	r5, r6
 	ldrne	fp, [r4], #4
@@ -129,7 +140,12 @@ __mmap_switched:
 
 /**
  * 前面的ldmia指令加了！，因此此时r3已经指向processor_id字段
- * 注意这里将init进程的SP指针读入到SP寄存器了。
+ * 注意这里将init进程的SP指针读入到SP寄存器了
+ * sp = init_thread_union + THREAD_START_SP = init_thread_union + (THREAD_SIZE - 8)
+ * 这里
+
+
+ * 有了sp就可以进入 start_kernel 了，也就是 start_kernel 是跑在 init_thread 上的
  */
  ARM(	ldmia	r3, {r4, r5, r6, r7, sp})
  THUMB(	ldmia	r3, {r4, r5, r6, r7}	)
@@ -212,35 +228,35 @@ Kernel 代码将所有CPU信息的定义都放到.proc.info.init段中，因此�
 如果满足 CPUID & mask == cpuid，则找到当前cpu的定义并返回。
 */
 __lookup_processor_type:
-/* 
+/*
 r3=(phys)__lookup_processor_type_data
-adr是相对寻址，它的寻计算结果是将当前PC值加上__lookup_processor_type_data符号与PC的偏移量，     
+adr是相对寻址，它的寻计算结果是将当前PC值加上__lookup_processor_type_data符号与PC的偏移量，
 而PC是物理地址，因此r3的结果也是符号__lookup_processor_type_data的物理地址
 */
-	adr	r3, __lookup_processor_type_data  
+	adr	r3, __lookup_processor_type_data
 /*
 	@ r4=(virt). r5=(virt)__proc_info_begin r6=(virt)__proc_info_end
 */
 /*
-r5值为__proc_info_bein, r6值为__proc_ino_end，而r4值为.，     
+r5值为__proc_info_bein, r6值为__proc_ino_end，而r4值为.，
 也即符号__lookup_processor_type_data的虚拟地址。
 请注意，在链接期间，__proc_info_begin和__proc_info_end以及.均是虚执地址
 */
-	ldmia	r3, {r4 - r6}	
+	ldmia	r3, {r4 - r6}
 /*
 	r3=(phys)r3-(virt)r4 (接下来两行把virt转换成phys的时候使用)
-*/      
-/* 
-r3为__lookup_processor_type_data的物理地址，      
-r4为__lookup_processor_type_data的虚拟地址.     
+*/
+/*
+r3为__lookup_processor_type_data的物理地址，
+r4为__lookup_processor_type_data的虚拟地址.
 结果是r3为物理地址与虚拟地址的差值，即PHYS_OFFSET - PAGE_OFFSET
-*/       
+*/
 	sub	r3, r3, r4			@ get offset between virt&phys
 /*
 	(phys)r5=(virt)r5+r3
 */
-/* 
-将r5和r6转换为__proc_info_begin和__proc_info_end的物理地址 
+/*
+将r5和r6转换为__proc_info_begin和__proc_info_end的物理地址
 */
 	add	r5, r5, r3			@ convert virt addresses to
 /*
@@ -250,17 +266,17 @@ r4为__lookup_processor_type_data的虚拟地址.
 /*
 	r3=value r4=mask (参考struct proc_info_list)
 */
-/* 
-读取r5指向的__proc_info数组元素的CPUID和mask值分别保存到r3和r4寄存器 
+/*
+读取r5指向的__proc_info数组元素的CPUID和mask值分别保存到r3和r4寄存器
 */
 1:	ldmia	r5, {r3, r4}			@ value, mask
 /*
 对processor id进行mask
 */
-/* 
-将当前CPUID和mask相与，并与数组元素中的CPUID比较是否相同     
-若相同，则找到当前CPU的__proc_info定义，r5指向访元素并返回 
-*/                  
+/*
+将当前CPUID和mask相与，并与数组元素中的CPUID比较是否相同
+若相同，则找到当前CPU的__proc_info定义，r5指向访元素并返回
+*/
 	and	r4, r4, r9			@ mask wanted bits
 /*
 	比较cpu_val
@@ -273,18 +289,18 @@ r4为__lookup_processor_type_data的虚拟地址.
 /*
 	r5往后偏移sizeof(struct proc_info_list)
 */
-/* 
-r5指向下一个__proc_info元素 
+/*
+r5指向下一个__proc_info元素
 */
 	add	r5, r5, #PROC_INFO_SZ		@ sizeof(proc_info_list)
 /*
 	r6是存放proc_info_list的末尾
-    是否遍历完所有__proc_info元素 
+    是否遍历完所有__proc_info元素
 */
 	cmp	r5, r6
 /*
 	小于__proc_info_end ,继续查找
-*/   
+*/
 	blo	1b
 /*
 	如果没有匹配成功结果是unknown processor(r5=0)
@@ -304,10 +320,10 @@ ENDPROC(__lookup_processor_type)
 	.type	__lookup_processor_type_data, %object
 __lookup_processor_type_data:
 /*r4*/
-	.long	.         
-/*r5*/	             
+	.long	.
+/*r5*/
 	.long	__proc_info_begin
-/*r6*/	
+/*r6*/
 	.long	__proc_info_end
 	.size	__lookup_processor_type_data, . - __lookup_processor_type_data
 

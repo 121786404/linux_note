@@ -47,6 +47,9 @@
 */
 static struct hlist_head *pid_hash;
 static unsigned int pidhash_shift = 4;
+/*
+    init_task进程的默认配置
+*/
 struct pid init_struct_pid = INIT_STRUCT_PID;
 
 int pid_max = PID_MAX_DEFAULT;
@@ -325,7 +328,7 @@ struct pid *alloc_pid(struct pid_namespace *ns)
 		pid->numbers[i].ns = tmp;
 		tmp = tmp->parent;
 	}
-	
+
 	if (unlikely(is_child_reaper(pid))) {
 		if (pid_ns_prepare_proc(ns))
 			goto out_free;
@@ -372,7 +375,7 @@ void disable_pid_allocation(struct pid_namespace *ns)
 }
 
 /*
-获得 pid 实体。根据局部PID以及命名空间计算在 pid_hash 数组中的索引，然后遍历散列表找到所要的 upid， 
+获得 pid 实体。根据局部PID以及命名空间计算在 pid_hash 数组中的索引，然后遍历散列表找到所要的 upid，
 再根据内核的 container_of 机制找到 pid 实例
 */
 struct pid *find_pid_ns(int nr, struct pid_namespace *ns)
@@ -595,7 +598,7 @@ void __init pidhash_init(void)
 /*
 根据nr_kernel_pages(低端内存的页数)，分配哈希数组，以及各个哈希
     |     数组元素下的哈希链表的空间，原理如下：
-    |     number = nr_kernel_pages; 
+    |     number = nr_kernel_pages;
     |     number >= (18 - PAGE_SHIFT) 根据散列度获得数组元素个数
     |     number = roundup_pow_of_two(number);
     |     pidhash_shift = max{x | 2**x <= number}

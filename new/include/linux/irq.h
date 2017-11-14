@@ -248,7 +248,7 @@ enum {
 	IRQD_IRQ_DISABLED		= (1 << 16),
 	IRQD_IRQ_MASKED			= (1 << 17),
 /*
-	正在被处理
+	硬件中断处理程序正在处理硬件中断
 */
 	IRQD_IRQ_INPROGRESS		= (1 << 18),
 	IRQD_WAKEUP_ARMED		= (1 << 19),

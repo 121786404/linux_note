@@ -232,12 +232,22 @@ struct hda_device_id {
  * Struct used for matching a device
  */
 struct of_device_id {
+/*
+    要匹配的device node的名字
+*/
 	char	name[32];
+/*
+	要匹配的device node的类型
+*/
 	char	type[32];
 /*
     需要和DTS文件中的compatible对应，一般格式是“厂商名称,芯片系列-模块名”，例如“actions,s900-serial”
+    匹配字符串（DT compatible string），用来匹配适合的device node
 */
 	char	compatible[128];
+/*
+	对于clock source，这里是初始化函数指针
+*/
 	const void *data;
 };
 

@@ -268,17 +268,17 @@ copy_thread(unsigned long clone_flags, unsigned long stack_start,
 	 */
 	thread->cpu_domain = get_domain();
 #endif
-/*
-    如果不是内核线程则执行如下流程.
-*/
+
 	if (likely(!(p->flags & PF_KTHREAD))) {
-		*childregs = *current_pt_regs(); // 将父进程的regs参数赋值到子进程的内核堆栈
+        // 不是内核线程则执行如下流程
+        // 将父进程的regs参数赋值到子进程的内核堆栈
+		*childregs = *current_pt_regs();
 		childregs->ARM_r0 = 0;
 		if (stack_start)
 			childregs->ARM_sp = stack_start;
 	} else {
 /*
-如果是内核线程则执行如下流程.
+        内核线程
 */
 		memset(childregs, 0, sizeof(struct pt_regs));
 		thread->cpu_context.r4 = stk_sz;
@@ -290,7 +290,7 @@ copy_thread(unsigned long clone_flags, unsigned long stack_start,
 */
 	thread->cpu_context.pc = (unsigned long)ret_from_fork; // 将子进程的 ip 设置为 ret_form_fork 的首地址，因此子进程是从 ret_from_fork 开始执行的
 /*
- 子进程内核态栈
+    子进程内核态栈
 */
 	thread->cpu_context.sp = (unsigned long)childregs; // 栈顶 空栈
 

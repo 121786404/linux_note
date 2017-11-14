@@ -121,6 +121,9 @@ struct irq_desc {
 	cpumask_var_t		pending_mask;
 #endif
 #endif
+/*
+    每一个bit代表正在处理的共享oneshot类型中断的中断线程
+*/
 	unsigned long		threads_oneshot;
 	//正在运行该中断irqaction的线程数量。
 	atomic_t		threads_active;

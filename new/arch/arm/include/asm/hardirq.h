@@ -8,6 +8,9 @@
 #define NR_IPI	7
 
 typedef struct {
+/*
+    如果__softirq_pending不为0，说明有pending的软中断要处理
+*/
 	unsigned int __softirq_pending; // 软中断状态变量
 #ifdef CONFIG_SMP
 	unsigned int ipi_irqs[NR_IPI];

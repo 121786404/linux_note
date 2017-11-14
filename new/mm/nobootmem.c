@@ -22,13 +22,13 @@
 
 #include "internal.h"
 /*
-为了实现接口兼容, 内核用mm/memblock.c定义的memblock接口, 
-实现了一套bootmem的接口机制, 而bootmem的接口我们在上一篇引导内存管理bootmem机制中已经讲过了, 
-这些实现的bootmem函数接口API, 就定义在mm/nobootmem.c文件中, 
-然后内核把他们进行了封装, 然后提供了与bootmem相同功能和函数的接口, 
+为了实现接口兼容, 内核用mm/memblock.c定义的memblock接口,
+实现了一套bootmem的接口机制, 而bootmem的接口我们在上一篇引导内存管理bootmem机制中已经讲过了,
+这些实现的bootmem函数接口API, 就定义在mm/nobootmem.c文件中,
+然后内核把他们进行了封装, 然后提供了与bootmem相同功能和函数的接口,
 这些接口都在include/linux/memblock.h.
 
-在NUMA系统上, 基本的API是相同的, 但是函数增加了_node后缀, 
+在NUMA系统上, 基本的API是相同的, 但是函数增加了_node后缀,
 与UMA系统的函数相比, 还需要一些额外的参数, 用于指定内存分配的结点.
 
 */
@@ -205,6 +205,10 @@ void __init reset_all_zones_managed_pages(void)
  *
  * Returns the number of pages actually released.
  */
+/*
+ 释放低端memory到伙伴系统
+ 释放bootmem分配器管理的空闲页框和bootmem的位图所占用的页框，         并计入totalram_page
+*/
 unsigned long __init free_all_bootmem(void)
 {
 	unsigned long pages;

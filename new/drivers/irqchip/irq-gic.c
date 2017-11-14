@@ -355,16 +355,27 @@ static void __exception_irq_entry gic_handle_irq(struct pt_regs *regs)
 	void __iomem *cpu_base = gic_data_cpu_base(gic);
 
 	do {
+/*
+	    CPU通过读取GIC-V2控制器GICC_IAR寄存器中的Interrupt ID域(bit[9:0])
+	    可以知道当前发生中断的是哪个硬件中断号，起到了应答中断的作用
+*/
 		irqstat = readl_relaxed(cpu_base + GIC_CPU_INTACK);
 		irqnr = irqstat & GICC_IAR_INT_ID_MASK;
 
 		if (likely(irqnr > 15 && irqnr < 1020)) {
+/*
+		      外设中断或者SPI和PPI中断
+*/
 			if (static_key_true(&supports_deactivate))
 				writel_relaxed(irqstat, cpu_base + GIC_CPU_EOI);
+			// 
 			handle_domain_irq(gic->domain, irqnr, regs);
 			continue;
 		}
 		if (irqnr < 16) {
+/*
+		      SGI中断
+*/
 			writel_relaxed(irqstat, cpu_base + GIC_CPU_EOI);
 			if (static_key_true(&supports_deactivate))
 				writel_relaxed(irqstat, cpu_base + GIC_CPU_DEACTIVATE);

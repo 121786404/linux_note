@@ -754,7 +754,7 @@ void dput(struct dentry *dentry)
 		return;
 
 repeat:
-    /*ÌáĞÑÓÃ»§µ÷ÓÃ¸Ãº¯ÊıµÄº¯Êı¿ÉÄÜ»ásleep*/
+    /*æé†’ç”¨æˆ·è°ƒç”¨è¯¥å‡½æ•°çš„å‡½æ•°å¯èƒ½ä¼šsleep*/
 	might_sleep();
 
 	rcu_read_lock();
@@ -768,7 +768,7 @@ repeat:
 
 	WARN_ON(d_in_lookup(dentry));
 
-    /*dentry´Ódcache hashÁ´ÉÏÒÆ³ıÁË£¬±íÊ¾¸ÃÔªÊı¾İ¶ÔÓ¦µÄ¶ÔÏóÒÑ¾­±»É¾³ı£¬´ËÊ±¿ÉÒÔÊÍ·Å¸ÃÔªÊı¾İ*/
+    /*dentryä»dcache hashé“¾ä¸Šç§»é™¤äº†ï¼Œè¡¨ç¤ºè¯¥å…ƒæ•°æ®å¯¹åº”çš„å¯¹è±¡å·²ç»è¢«åˆ é™¤ï¼Œæ­¤æ—¶å¯ä»¥é‡Šæ”¾è¯¥å…ƒæ•°æ®*/
 	/* Unreachable? Get rid of it */
 	if (unlikely(d_unhashed(dentry)))
 		goto kill_it;
@@ -3548,10 +3548,10 @@ static int __init set_dhash_entries(char *str)
 }
 __setup("dhash_entries=", set_dhash_entries);
 /*
-Í¬pidhash_init();
-          |     Çø±ğ:
-          |         É¢ÁĞ¶È±ä»¯ÁË£¨13 - PAGE_SHIFT£©;
-          |         ´«Èëalloc_large_system_hashµÄ×îºó²ÎÊıÖµÎª0;
+åŒpidhash_init();
+          |     åŒºåˆ«:
+          |         æ•£åˆ—åº¦å˜åŒ–äº†ï¼ˆ13 - PAGE_SHIFTï¼‰;
+          |         ä¼ å…¥alloc_large_system_hashçš„æœ€åå‚æ•°å€¼ä¸º0;
 
 */
 static void __init dcache_init_early(void)
@@ -3561,10 +3561,10 @@ static void __init dcache_init_early(void)
 	/* If hashes are distributed across NUMA nodes, defer
 	 * hash allocation until vmalloc space is available.
 	 */
-	if (hashdist)//»º´æĞèÒªµÄ¿Õ¼äºÜ´ó£¬Èç¹ûĞèÒª¿çÔ½¶à¸önode¾ÍÑÓ³Ù·ÖÅä
+	if (hashdist)//ç¼“å­˜éœ€è¦çš„ç©ºé—´å¾ˆå¤§ï¼Œå¦‚æœéœ€è¦è·¨è¶Šå¤šä¸ªnodeå°±å»¶è¿Ÿåˆ†é…
 		return;
 
-	//ÔÚ64Î»ÏµÍ³ÖĞ£¬vmalloc¿Õ¼äºÜ´ó£¬¿ÉÒÔÔÚÕâÀï·ÖÅä´óÄÚ´æ
+	//åœ¨64ä½ç³»ç»Ÿä¸­ï¼Œvmallocç©ºé—´å¾ˆå¤§ï¼Œå¯ä»¥åœ¨è¿™é‡Œåˆ†é…å¤§å†…å­˜
 	dentry_hashtable =
 		alloc_large_system_hash("Dentry cache",
 					sizeof(struct hlist_bl_head),
@@ -3589,15 +3589,15 @@ static void __init dcache_init(void)
 	 * but it is probably not worth it because of the cache nature
 	 * of the dcache. 
 	 */
-	//´´½¨dcache»º´æslab
+	//åˆ›å»ºdcacheç¼“å­˜slab
 	dentry_cache = KMEM_CACHE(dentry,
 		SLAB_RECLAIM_ACCOUNT|SLAB_PANIC|SLAB_MEM_SPREAD|SLAB_ACCOUNT);
 
 	/* Hash may have been set up in dcache_init_early */
-	if (!hashdist)//Èç¹ûÔÚdcache_init_earlyÒÑ¾­³õÊ¼»¯£¬¾ÍÍË³ö
+	if (!hashdist)//å¦‚æœåœ¨dcache_init_earlyå·²ç»åˆå§‹åŒ–ï¼Œå°±é€€å‡º
 		return;
 
-	//ÔÚÕâÀï·ÖÅädcacheĞèÒª¹şÏ£»º´æ
+	//åœ¨è¿™é‡Œåˆ†é…dcacheéœ€è¦å“ˆå¸Œç¼“å­˜
 	dentry_hashtable =
 		alloc_large_system_hash("Dentry cache",
 					sizeof(struct hlist_bl_head),
@@ -3609,7 +3609,7 @@ static void __init dcache_init(void)
 					0,
 					0);
 
-	//³õÊ¼»¯dcache¹şÏ£Í·
+	//åˆå§‹åŒ–dcacheå“ˆå¸Œå¤´
 	for (loop = 0; loop < (1U << d_hash_shift); loop++)
 		INIT_HLIST_BL_HEAD(dentry_hashtable + loop);
 }
@@ -3622,31 +3622,31 @@ EXPORT_SYMBOL(d_genocide);
 
 void __init vfs_caches_init_early(void)
 {
-	//³õÊ¼»¯Ä¿Â¼Ïî»º´æ
+	//åˆå§‹åŒ–ç›®å½•é¡¹ç¼“å­˜
 	dcache_init_early();
-	//³õÊ¼»¯inode½Úµã»º´æ¡£
+	//åˆå§‹åŒ–inodeèŠ‚ç‚¹ç¼“å­˜ã€‚
 	inode_init_early();
 }
 
-//³õÊ¼»¯vfs»º´æ
+//åˆå§‹åŒ–vfsç¼“å­˜
 void __init vfs_caches_init(void)
 {
-	//»º´æÎÄ¼şÃû³ÆµÄslab£¬½Ó¿ÚÊÇ__getname,__putname
+	//ç¼“å­˜æ–‡ä»¶åç§°çš„slabï¼Œæ¥å£æ˜¯__getname,__putname
 	names_cachep = kmem_cache_create("names_cache", PATH_MAX, 0,
 			SLAB_HWCACHE_ALIGN|SLAB_PANIC, NULL);
 
-	//³õÊ¼»¯dcacheÄ¿Â¼Ïî»º´æĞèÒªslab
+	//åˆå§‹åŒ–dcacheç›®å½•é¡¹ç¼“å­˜éœ€è¦slab
 	dcache_init();
-	//³õÊ¼»¯Ë÷Òı½ÚµãËùĞèÒªµÄ»º´æslab
+	//åˆå§‹åŒ–ç´¢å¼•èŠ‚ç‚¹æ‰€éœ€è¦çš„ç¼“å­˜slab
 	inode_init();
-	//³õÊ¼»¯fileÏà¹ØµÄ»º´æslab¼°ÎÄ¼ş¼ÆÊıÆ÷¡£
+	//åˆå§‹åŒ–fileç›¸å…³çš„ç¼“å­˜slabåŠæ–‡ä»¶è®¡æ•°å™¨ã€‚
 	files_init();
-	//¸ù¾İÄÚ´æÊıÁ¿£¬¼ÆËã×î´ó´ò¿ªÎÄ¼şÊıÁ¿¡£
+	//æ ¹æ®å†…å­˜æ•°é‡ï¼Œè®¡ç®—æœ€å¤§æ‰“å¼€æ–‡ä»¶æ•°é‡ã€‚
 	files_maxfiles_init();
-	//³õÊ¼»¯mountĞèÒªµÄ»º´æ
+	//åˆå§‹åŒ–mountéœ€è¦çš„ç¼“å­˜
 	mnt_init();
-	//³õÊ¼»¯Éè±¸ÎÄ¼şĞèÒªµÄ»º´æ£¬²¢×¢²áÉè±¸ÎÄ¼şÏµÍ³¡£
+	//åˆå§‹åŒ–è®¾å¤‡æ–‡ä»¶éœ€è¦çš„ç¼“å­˜ï¼Œå¹¶æ³¨å†Œè®¾å¤‡æ–‡ä»¶ç³»ç»Ÿã€‚
 	bdev_cache_init();
-	//³õÊ¼»¯×Ö·ûÉè±¸Ïà¹ØµÄÉ¢ÁĞ±í¡£
+	//åˆå§‹åŒ–å­—ç¬¦è®¾å¤‡ç›¸å…³çš„æ•£åˆ—è¡¨ã€‚
 	chrdev_init();
 }
