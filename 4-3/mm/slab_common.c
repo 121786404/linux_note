@@ -316,7 +316,7 @@ unsigned long calculate_alignment(unsigned long flags,
 	return ALIGN(align, sizeof(void *));
 }
 
-//åˆ›å»ºslabåˆ†é…å™¨çš„ä¸»å‡½æ•°
+//´´½¨slab·ÖÅäÆ÷µÄÖ÷º¯Êı
 static struct kmem_cache *
 do_kmem_cache_create(const char *name, size_t object_size, size_t size,
 		     size_t align, unsigned long flags, void (*ctor)(void *),
@@ -326,13 +326,13 @@ do_kmem_cache_create(const char *name, size_t object_size, size_t size,
 	int err;
 
 	err = -ENOMEM;
-	//å…ˆåˆ†é…ä¸€ä¸ªkmem_cacheç®¡ç†ç»“æ„
+	//ÏÈ·ÖÅäÒ»¸ökmem_cache¹ÜÀí½á¹¹
 	s = kmem_cache_zalloc(kmem_cache, GFP_KERNEL);
 	if (!s)
 		goto out;
 
 `
-	//åˆå§‹åŒ–kmem_cacheç®¡ç†ç»“æ„
+	//³õÊ¼»¯kmem_cache¹ÜÀí½á¹¹
 	s->name = name;
 	s->object_size = object_size;
 	s->size = size;
@@ -343,14 +343,14 @@ do_kmem_cache_create(const char *name, size_t object_size, size_t size,
 	if (err)
 		goto out_free_cache;
 
-	//åˆ›å»ºslabç¼“å­˜
+	//´´½¨slab»º´æ
 	err = __kmem_cache_create(s, flags);
 	if (err)
 		goto out_free_cache;
 
-	//è®¾ç½®å¼•ç”¨è®¡æ•°
+	//ÉèÖÃÒıÓÃ¼ÆÊı
 	s->refcount = 1;
-	//æ·»åŠ åˆ°å…¨å±€é“¾è¡¨ä¸­
+	//Ìí¼Óµ½È«¾ÖÁ´±íÖĞ
 	list_add(&s->list, &slab_caches);
 out:
 	if (err)
@@ -388,7 +388,12 @@ out_free_cache:
  * as davem.
  */
 /**
- * åˆ›å»ºcache
+ * ´´½¨cache
+ *	name:	slabÃû³Æ
+ *	size:		¶ÔÏó´óĞ¡
+ *	align:	¶ÔÏó¶ÔÆëµÄ×Ö½ÚÊı
+ *	flags:	·ÖÅäÒ³ÃæÊ±µÄ±êÖ¾£¬ÓÃÓÚ´´½¨¹ı³ÌÖĞµÄÄÚ´æ·ÖÅä
+ *	ctor:		¹¹ÔìÆ÷
  */
 struct kmem_cache *
 kmem_cache_create(const char *name, size_t size, size_t align,
@@ -398,15 +403,15 @@ kmem_cache_create(const char *name, size_t size, size_t align,
 	const char *cache_name;
 	int err;
 
-	//å¢åŠ å¯¹çƒ­æ’æ‹¨ç›¸å…³æ•°æ®ç»“æ„çš„å¼•ç”¨ã€‚
+	//Ôö¼Ó¶ÔÈÈ²å²¦Ïà¹ØÊı¾İ½á¹¹µÄÒıÓÃ¡£
 	get_online_cpus();
 	get_online_mems();
 	memcg_get_cache_ids();
 
-	//è·å–é”ï¼Œä¿æŠ¤å…¨å±€çš„slabé“¾è¡¨ã€‚
+	//»ñÈ¡Ëø£¬±£»¤È«¾ÖµÄslabÁ´±í¡£
 	mutex_lock(&slab_mutex);
 
-	//éå†é“¾è¡¨ï¼Œçœ‹çœ‹æ˜¯å¦å·²ç»åˆ›å»ºäº†åŒåçš„slab
+	//±éÀúÁ´±í£¬¿´¿´ÊÇ·ñÒÑ¾­´´½¨ÁËÍ¬ÃûµÄslab
 	err = kmem_cache_sanity_check(name, size);
 	if (err) {
 		s = NULL;	/* suppress uninit var warning */
@@ -421,19 +426,19 @@ kmem_cache_create(const char *name, size_t size, size_t align,
 	 */
 	flags &= CACHE_CREATE_MASK;
 
-	//çœ‹çœ‹æ˜¯å¦å¯ä»¥ä¸å·²ç»åˆ›å»ºçš„slabåˆå¹¶????è‡ƒè‚¿å¤æ‚äº†å§:)
+	//¿´¿´ÊÇ·ñ¿ÉÒÔÓëÒÑ¾­´´½¨µÄslabºÏ²¢????Ó·Ö×¸´ÔÓÁË°É:)
 	s = __kmem_cache_alias(name, size, align, flags, ctor);
 	if (s)
 		goto out_unlock;
 
-	//å¤åˆ¶slabåç§°
+	//¸´ÖÆslabÃû³Æ
 	cache_name = kstrdup_const(name, GFP_KERNEL);
 	if (!cache_name) {
 		err = -ENOMEM;
 		goto out_unlock;
 	}
 
-	//çœŸæ­£å¹²æ´»çš„åœ¨è¿™é‡Œã€‚
+	//ÕæÕı¸É»îµÄÔÚÕâÀï¡£
 	s = do_kmem_cache_create(cache_name, size, size,
 				 calculate_alignment(flags, align, size),
 				 flags, ctor, NULL, NULL);
@@ -442,7 +447,7 @@ kmem_cache_create(const char *name, size_t size, size_t align,
 		kfree_const(cache_name);
 	}
 
-out_unlock: //è§£é”,é€’å‡å¼•ç”¨å€¼
+out_unlock: //½âËø,µİ¼õÒıÓÃÖµ
 	mutex_unlock(&slab_mutex);
 
 	memcg_put_cache_ids();

@@ -92,12 +92,12 @@ ENDPROC(ret_fast_syscall)
 ENTRY(ret_to_user)
 ret_slow_syscall:
 /**
- * åœ¨ä¸­æ–­å¤„ç†æµç¨‹ä¸­ï¼Œå¯èƒ½æ‰“å¼€äº†ä¸­æ–­ã€‚æ­¤å¤„å…³é—­
+ * ÔÚÖĞ¶Ï´¦ÀíÁ÷³ÌÖĞ£¬¿ÉÄÜ´ò¿ªÁËÖĞ¶Ï¡£´Ë´¦¹Ø±Õ
  */
 	disable_irq_notrace			@ disable interrupts
 ENTRY(ret_to_user_from_irq)
 /**
- * å¤„ç†æŠ¢å è°ƒåº¦ã€ä¿¡å·ç­‰ç­‰
+ * ´¦ÀíÇÀÕ¼µ÷¶È¡¢ĞÅºÅµÈµÈ
  */
 	ldr	r1, [tsk, #TI_FLAGS]
 	tst	r1, #_TIF_WORK_MASK
@@ -107,13 +107,13 @@ no_work_pending:
 
 	/* perform architecture specific actions before user return */
 /**
- * åªæœ‰ç‰¹æ®Šæ¶æ„æ‰ä¼šåœ¨æ­¤å¤„ç†
+ * Ö»ÓĞÌØÊâ¼Ü¹¹²Å»áÔÚ´Ë´¦Àí
  */
 	arch_ret_to_user r1, lr
 	ct_user_enter save = 0
 
 /**
- * æ¢å¤å¯„å­˜å™¨ã€‚
+ * »Ö¸´¼Ä´æÆ÷¡£
  */
 	restore_user_regs fast = 0, offset = 0
 ENDPROC(ret_to_user_from_irq)

@@ -6,22 +6,22 @@
 	.macro	arch_irq_handler_default
 	get_irqnr_preamble r6, lr
 /**
- * è·å¾—ä¸­æ–­ç¼–å·
+ * »ñµÃÖĞ¶Ï±àºÅ
  */
 1:	get_irqnr_and_base r0, r2, r6, lr
 /**
- * å½“å‰spæ­£å¥½æŒ‡å‘pt_regs
+ * µ±Ç°spÕıºÃÖ¸Ïòpt_regs
  */
 	movne	r1, sp
 	@
 	@ routine called with r0 = irq number, r1 = struct pt_regs *
 	@
 /**
- * é”™è¯¯çš„ä¸­æ–­å°±é€€å‡º
+ * ´íÎóµÄÖĞ¶Ï¾ÍÍË³ö
  */
 	badrne	lr, 1b
 /**
- * ä¸­æ–­å·æ­£ç¡®ï¼Œå¤„ç†ä¸­æ–­
+ * ÖĞ¶ÏºÅÕıÈ·£¬´¦ÀíÖĞ¶Ï
  */
 	bne	asm_do_IRQ
 

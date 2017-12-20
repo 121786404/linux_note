@@ -39,7 +39,7 @@
  * Interrupt handling.
  */
 /**
- * è°ƒç”¨Cè¯­è¨€ä¸­çš„ä¸­æ–­å¤„ç†ç¨‹åº
+ * µ÷ÓÃCÓïÑÔÖĞµÄÖĞ¶Ï´¦Àí³ÌĞò
  */
 	.macro	irq_handler
 #ifdef CONFIG_MULTI_IRQ_HANDLER
@@ -212,25 +212,25 @@ ENDPROC(__dabt_svc)
 
 	.align	5
 /**
- * svcæ¨¡å¼ä¸‹çš„ä¸­æ–­å…¥å£
+ * svcÄ£Ê½ÏÂµÄÖĞ¶ÏÈë¿Ú
  */
 __irq_svc:
 /**
- * ä¿å­˜ä¸­æ–­å‰çš„å†…æ ¸æ€ç°åœº
+ * ±£´æÖĞ¶ÏÇ°µÄÄÚºËÌ¬ÏÖ³¡
  */
 	svc_entry
 /**
- * å¤„ç†ä¸­æ–­
+ * ´¦ÀíÖĞ¶Ï
  */
 	irq_handler
 
 #ifdef CONFIG_PREEMPT
 /**
- * ä»r9ä¸­å–å½“å‰çº¿ç¨‹çš„threadinfo
+ * ´Ór9ÖĞÈ¡µ±Ç°Ïß³ÌµÄthreadinfo
  */
 	get_thread_info tsk
 /**
- * è¯»æŠ¢å è®¡æ•°
+ * ¶ÁÇÀÕ¼¼ÆÊı
  */
 	ldr	r8, [tsk, #TI_PREEMPT]		@ get preempt count
 	ldr	r0, [tsk, #TI_FLAGS]		@ get flags
@@ -240,14 +240,14 @@ __irq_svc:
 	teq	r8, #0				@ if preempt count != 0
 	movne	r0, #0				@ force flags to 0
 /**
- * å¦‚æœéœ€è¦æŠ¢å è°ƒåº¦ï¼Œåˆ™è¿›è¡ŒæŠ¢å ã€‚
+ * Èç¹ûĞèÒªÇÀÕ¼µ÷¶È£¬Ôò½øĞĞÇÀÕ¼¡£
  */
 	tst	r0, #_TIF_NEED_RESCHED
 	blne	svc_preempt
 #endif
 
 /**
- * è¿™é‡Œçš„æ¢å¤è¿‡ç¨‹æœ‰ç‚¹ä¸ä¸€æ ·ï¼Œè¿”å›åˆ°ä¸Šä¸€å±‚å¼‚å¸¸ã€‚
+ * ÕâÀïµÄ»Ö¸´¹ı³ÌÓĞµã²»Ò»Ñù£¬·µ»Øµ½ÉÏÒ»²ãÒì³£¡£
  */
 	svc_exit r5, irq = 1			@ return from exception
  UNWIND(.fnend		)
@@ -481,24 +481,27 @@ ENDPROC(__dabt_usr)
 
 	.align	5
 /**
- * usræ¨¡å¼ä¸‹çš„ä¸­æ–­å…¥å£
+ * usrÄ£Ê½ÏÂµÄÖĞ¶ÏÈë¿Ú
  */
 __irq_usr:
 /**
- * å°†ç”¨æˆ·æ¨¡å¼çš„ä¸Šä¸‹æ–‡ä¿å­˜åˆ°svcæ¨¡å¼çš„æ ˆä¸­
+ * ½«ÓÃ»§Ä£Ê½µÄÉÏÏÂÎÄ±£´æµ½svcÄ£Ê½µÄÕ»ÖĞ
  */
 	usr_entry
 /**
- * å¦‚æœåœ¨ç”¨æˆ·æ€ä¸‹å¤„ç†åŸå­æ“ä½œï¼Œæ­¤æ—¶éœ€è¦ç‰¹æ®Šå¤„ç†ã€‚
+ * Èç¹ûÔÚÓÃ»§Ì¬ÏÂ´¦ÀíÔ­×Ó²Ù×÷£¬´ËÊ±ĞèÒªÌØÊâ´¦Àí¡£
  */
 	kuser_cmpxchg_check
+/**
+ * ´¦ÀíÖĞ¶Ï
+ */
 	irq_handler
 /**
- * ä»r9ä¸­å–å¾—å½“å‰è¿›ç¨‹çš„threadinfo
+ * ´Ór9ÖĞÈ¡µÃµ±Ç°½ø³ÌµÄthreadinfo
  */
 	get_thread_info tsk
 /**
- * è¿”å›ç”¨æˆ·æ€
+ * ·µ»ØÓÃ»§Ì¬
  */
 	mov	why, #0
 	b	ret_to_user_from_irq
@@ -1094,16 +1097,19 @@ __kuser_helper_end:
  * of which is copied into r0 for the mode specific abort handler.
  */
 /**
- * correctionæ˜¯å¼‚å¸¸åœ°å€ä¸è¿”å›åœ°å€ä¹‹é—´çš„ä¿®æ­£é‡ã€‚
+ * correctionÊÇÒì³£µØÖ·Óë·µ»ØµØÖ·Ö®¼äµÄĞŞÕıÁ¿¡£
  */
 	.macro	vector_stub, name, mode, correction=0
 	.align	5
 
 vector_\name:
 /**
- * è°ƒæ•´è¿”å›å€¼
+ * µ÷Õû·µ»ØÖµ
  */
 	.if \correction
+/**
+ * ÖĞ¶Ï¡¢Òì³£·µ»ØÖµ
+ */
 	sub	lr, lr, #\correction
 	.endif
 
@@ -1112,12 +1118,12 @@ vector_\name:
 	@ (parent CPSR)
 	@
 /**
- * ä¿å­˜r0,lr,å’Œspsr
- * æ³¨æ„å †æ ˆç©ºé—´åªæœ‰å‡ ä¸ªå­—èŠ‚ï¼Œä»¥ååº”è¯¥ä¼šå†åˆ‡æ¢å †æ ˆçš„ã€‚
+ * ±£´ær0,lr,ºÍspsr
+ * ×¢Òâ¶ÑÕ»¿Õ¼äÖ»ÓĞ¼¸¸ö×Ö½Ú£¬ÒÔºóÓ¦¸Ã»áÔÙÇĞ»»¶ÑÕ»µÄ¡£
  */
-	stmia	sp, {r0, lr}		@ save r0, lr
+	stmia	sp, {r0, lr}		@ save r0, lr  /* ÕâÀï½«r0±£´æÆğÀ´£¬ÒòÎªr0ºóÃæ»á±»ÆÆ»µ */
 /**
- * åå››ä½åº”è¯¥æ˜¯å¼‚å¸¸æ—¶CPUæ‰€å¤„çš„æ¨¡å¼
+ * ºóËÄÎ»Ó¦¸ÃÊÇÒì³£Ê±CPUËù´¦µÄÄ£Ê½
  */
 	mrs	lr, spsr
 	str	lr, [sp, #8]		@ save spsr
@@ -1126,8 +1132,8 @@ vector_\name:
 	@ Prepare for SVC32 mode.  IRQs remain disabled.
 	@
 /**
- * ä»ç„¶ç¦ç”¨ä¸­æ–­ã€‚
- * å‡†å¤‡è¿›å…¥SVCæ¨¡å¼ã€‚
+ * ÈÔÈ»½ûÓÃÖĞ¶Ï¡£
+ * ×¼±¸½øÈëSVCÄ£Ê½¡£
  */
 	mrs	r0, cpsr
 	eor	r0, r0, #(\mode ^ SVC_MODE | PSR_ISETSTATE)
@@ -1137,19 +1143,19 @@ vector_\name:
 	@ the branch table must immediately follow this code
 	@
 /**
- * å¼‚å¸¸æ—¶CPUæ‰€å¤„çš„æ¨¡å¼
+ * Òì³£Ê±CPUËù´¦µÄÄ£Ê½
  */
 	and	lr, lr, #0x0f
  THUMB(	adr	r0, 1f			)
  THUMB(	ldr	lr, [r0, lr, lsl #2]	)
 	mov	r0, sp
 /**
- * pcåº”è¯¥æ­£å¥½æŒ‡å‘éšåçš„labelï¼ŒåŠ ä¸ŠCPUæ¨¡å¼ï¼Œlrä¸­æ­£å¥½ä¿å­˜äº†å¼‚å¸¸å…¥å£å‡½æ•°ã€‚
+ * pcÓ¦¸ÃÕıºÃÖ¸ÏòËæºóµÄlabel£¬¼ÓÉÏCPUÄ£Ê½£¬lrÖĞÕıºÃ±£´æÁËÒì³£Èë¿Úº¯Êı¡£
  */
  ARM(	ldr	lr, [pc, lr, lsl #2]	)
  /**
-  * å°†lrçš„å€¼åŠ è½½åˆ°pcï¼Œå¹¶å°†spsrå€¼å¤åˆ¶åˆ°cpsrã€‚
-  * è·³è½¬åˆ°å¼‚å¸¸å…¥å£ï¼Œå¦‚__irq_usr
+  * ½«lrµÄÖµ¼ÓÔØµ½pc£¬²¢½«spsrÖµ¸´ÖÆµ½cpsr¡£
+  * Ìø×ªµ½Òì³£Èë¿Ú£¬Èç__irq_usr
   */
 	movs	pc, lr			@ branch to handler in SVC mode
 ENDPROC(vector_\name)
@@ -1176,8 +1182,8 @@ vector_rst:
 	vector_stub	irq, IRQ_MODE, 4
 
 /**
- * å„ç§æ¨¡å¼ä¸‹çš„ä¸­æ–­å…¥å£
- * linuxåªä½¿ç”¨äº†usrå’Œsvcä¸‹çš„ä¸­æ–­ï¼Œå…¶ä»–æ¨¡å¼å‡ä¸ºé”™è¯¯æ¨¡å¼
+ * ¸÷ÖÖÄ£Ê½ÏÂµÄÖĞ¶ÏÈë¿Ú
+ * linuxÖ»Ê¹ÓÃÁËusrºÍsvcÏÂµÄÖĞ¶Ï£¬ÆäËûÄ£Ê½¾ùÎª´íÎóÄ£Ê½
  */
 	.long	__irq_usr			@  0  (USR_26 / USR_32)
 	.long	__irq_invalid			@  1  (FIQ_26 / FIQ_32)
@@ -1203,7 +1209,7 @@ vector_rst:
 	vector_stub	dabt, ABT_MODE, 8
 
 /**
- * å„ç§æ¨¡å¼ä¸‹çš„dabtå…¥å£
+ * ¸÷ÖÖÄ£Ê½ÏÂµÄdabtÈë¿Ú
  */
 	.long	__dabt_usr			@  0  (USR_26 / USR_32)
 	.long	__dabt_invalid			@  1  (FIQ_26 / FIQ_32)
@@ -1310,8 +1316,8 @@ vector_addrexcptn:
 
 	.section .vectors, "ax", %progbits
 /**
- * å¤åˆ¶åˆ°å‘é‡åœ°å€è¡¨ä¸­çš„ä»£ç ï¼Œå„ç§ä¸­æ–­å’Œå¼‚å¸¸çš„å¤„ç†å…¥å£ã€‚
- * è¿™äº›ä»£ç ç”±vector_stubç”Ÿæˆ
+ * ¸´ÖÆµ½ÏòÁ¿µØÖ·±íÖĞµÄ´úÂë£¬¸÷ÖÖÖĞ¶ÏºÍÒì³£µÄ´¦ÀíÈë¿Ú¡£
+ * ÕâĞ©´úÂëÓÉvector_stubÉú³É
  */
 __vectors_start:
 	W(b)	vector_rst
