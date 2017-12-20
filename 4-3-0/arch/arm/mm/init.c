@@ -149,6 +149,7 @@ static void __init zone_sizes_init(unsigned long min, unsigned long max_low,
 	 * to do anything fancy with the allocation of this memory
 	 * to the zones, now is the time to do it.
 	 */
+	//第一个和高端内存zone的大小
 	zone_size[0] = max_low - min;
 #ifdef CONFIG_HIGHMEM
 	zone_size[ZONE_HIGHMEM] = max_high - max_low;
@@ -158,17 +159,17 @@ static void __init zone_sizes_init(unsigned long min, unsigned long max_low,
 	 * Calculate the size of the holes.
 	 *  holes = node_size - sum(bank_sizes)
 	 */
-	memcpy(zhole_size, zone_size, sizeof(zhole_size));
+	memcpy(zhole_size, zone_size, sizeof(zhole_size));//计算空洞大小，默认整个zone都是空洞
 	for_each_memblock(memory, reg) {
 		unsigned long start = memblock_region_memory_base_pfn(reg);
 		unsigned long end = memblock_region_memory_end_pfn(reg);
 
-		if (start < max_low) {
+		if (start < max_low) {//从空洞中减去可用内存区域
 			unsigned long low_end = min(end, max_low);
 			zhole_size[0] -= low_end - start;
 		}
 #ifdef CONFIG_HIGHMEM
-		if (end > max_low) {
+		if (end > max_low) {//减去可用区域
 			unsigned long high_start = max(start, max_low);
 			zhole_size[ZONE_HIGHMEM] -= end - high_start;
 		}
@@ -180,11 +181,12 @@ static void __init zone_sizes_init(unsigned long min, unsigned long max_low,
 	 * Adjust the sizes according to any special requirements for
 	 * this machine type.
 	 */
-	if (arm_dma_zone_size)
+	if (arm_dma_zone_size)//调整dma zone
 		arm_adjust_dma_zone(zone_size, zhole_size,
 			arm_dma_zone_size >> PAGE_SHIFT);
 #endif
 
+	//根据起始位置和空洞大小，初始化0号内存区块。
 	free_area_init_node(0, zone_size, min, zhole_size);
 }
 
@@ -278,6 +280,9 @@ void __init arm_memblock_init(const struct machine_desc *mdesc)
 	memblock_dump_all();
 }
 
+/**
+ * boot内存初始化
+ */
 void __init bootmem_init(void)
 {
 	unsigned long min, max_low, max_high;
@@ -285,14 +290,19 @@ void __init bootmem_init(void)
 	memblock_allow_resize();
 	max_low = max_high = 0;
 
+	//计算所有内存块的pfn上下限。
 	find_limits(&min, &max_low, &max_high);
 
+	//内存测试，这个可以有
 	early_memtest((phys_addr_t)min << PAGE_SHIFT,
 		      (phys_addr_t)max_low << PAGE_SHIFT);
 
 	/*
 	 * Sparsemem tries to allocate bootmem in memory_present(),
 	 * so must be done after the fixed reservations
+	 */
+	/**
+	 * 如果支持分散内存，则记录下每块分散内存的起始、结束区域
 	 */
 	arm_memory_present();
 
@@ -305,6 +315,9 @@ void __init bootmem_init(void)
 	 * Now free the memory - free_area_init_node needs
 	 * the sparse mem_map arrays initialized by sparse_init()
 	 * for memmap_init_zone(), otherwise all PFNs are invalid.
+	 */
+	/**
+	 * 释放内存块
 	 */
 	zone_sizes_init(min, max_low, max_high);
 
@@ -338,6 +351,7 @@ free_memmap(unsigned long start_pfn, unsigned long end_pfn)
 	/*
 	 * Convert start_pfn/end_pfn to a struct page pointer.
 	 */
+	//要释放的内存页帧描述符地址。
 	start_pg = pfn_to_page(start_pfn - 1) + 1;
 	end_pg = pfn_to_page(end_pfn - 1) + 1;
 
@@ -345,6 +359,7 @@ free_memmap(unsigned long start_pfn, unsigned long end_pfn)
 	 * Convert to physical addresses, and
 	 * round start upwards and end downwards.
 	 */
+	//将页帧地址对齐页边界，因为此时只能按页释放内存
 	pg = PAGE_ALIGN(__pa(start_pg));
 	pgend = __pa(end_pg) & PAGE_MASK;
 
@@ -352,12 +367,16 @@ free_memmap(unsigned long start_pfn, unsigned long end_pfn)
 	 * If there are free pages between these,
 	 * free the section of the memmap array.
 	 */
-	if (pg < pgend)
+	if (pg < pgend)//按页释放memmap对应的内存。
 		memblock_free_early(pg, pgend - pg);
 }
 
 /*
  * The mem_map array can get very big.  Free the unused area of the memory map.
+ */
+/**
+ * memmap数组是一个连续的数组，记录内存状态。
+ * 本函数将不内存空洞对应的memmap内存释放。积少成多也是不少的内存空间。
  */
 static void __init free_unused_memmap(void)
 {
@@ -368,7 +387,8 @@ static void __init free_unused_memmap(void)
 	 * This relies on each bank being in address order.
 	 * The banks are sorted previously in bootmem_init().
 	 */
-	for_each_memblock(memory, reg) {
+	for_each_memblock(memory, reg) {//遍历内存块
+		//找到该内存块的起始页帧号
 		start = memblock_region_memory_base_pfn(reg);
 
 #ifdef CONFIG_SPARSEMEM
@@ -390,7 +410,7 @@ static void __init free_unused_memmap(void)
 		 * If we had a previous bank, and there is a space
 		 * between the current bank and the previous, free it.
 		 */
-		if (prev_end && prev_end < start)
+		if (prev_end && prev_end < start)//与上一个内存块不连续，说明有空洞，释放memmap对应的内存。
 			free_memmap(prev_end, start);
 
 		/*
@@ -470,6 +490,9 @@ static void __init free_highpages(void)
  * memory is free.  This is done after various parts of the system have
  * claimed their memory after the kernel image.
  */
+/**
+ * 切换到伙伴系统了。
+ */
 void __init mem_init(void)
 {
 #ifdef CONFIG_HAVE_TCM
@@ -481,7 +504,9 @@ void __init mem_init(void)
 	set_max_mapnr(pfn_to_page(max_pfn) - mem_map);
 
 	/* this will put all unused low memory onto the freelists */
+	//释放内存空洞对应的memmap数组空间。
 	free_unused_memmap();
+	//将未用bootmem释放给伙伴系统。
 	free_all_bootmem();
 
 #ifdef CONFIG_SA1111

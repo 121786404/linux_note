@@ -156,20 +156,39 @@ static int __init early_mem(char *p)
 }
 early_param("mem", early_mem);
 
+/**
+ * 保留内核和initrd占用的内容
+ */
 void __init arm64_memblock_init(void)
 {
+	/**
+	 * 解析了DTS的memory节点，已经向系统加入了不少的memory type的region
+	 * reserved memory block也会有一些，例如DTB对应的memory就是reserved
+	 * memory_limit可以对这些DTS的设定给出上限
+	 * memblock_enforce_memory_limit函数会根据这个上限，修改各个memory region的base和size
+	 * 此外还将大于memory_limit的memory block（包括memory type和reserved type）从列表中删掉。
+	 */
 	memblock_enforce_memory_limit(memory_limit);
 
 	/*
 	 * Register the kernel text, kernel data, initrd, and initial
 	 * pagetables with memblock.
 	 */
+	/**
+	 * reserve内核代码、数据区等
+	 */
 	memblock_reserve(__pa(_text), _end - _text);
 #ifdef CONFIG_BLK_DEV_INITRD
 	if (initrd_start)
+		/**
+		 * 保留initital ramdisk image区域
+		 */
 		memblock_reserve(__virt_to_phys(initrd_start), initrd_end - initrd_start);
 #endif
 
+	/**
+	 * 分析dts中的节点，从而进行保留内存的动作
+	 */
 	early_init_fdt_scan_reserved_mem();
 
 	/* 4GB maximum for 32-bit only capable devices */

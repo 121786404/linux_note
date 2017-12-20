@@ -26,6 +26,7 @@
 #define SLAB_HWCACHE_ALIGN	0x00002000UL	/* Align objs on cache lines */
 #define SLAB_CACHE_DMA		0x00004000UL	/* Use GFP_DMA memory */
 #define SLAB_STORE_USER		0x00010000UL	/* DEBUG: Store the last owner for bug hunting */
+//如果失败就panic
 #define SLAB_PANIC		0x00040000UL	/* Panic if kmem_cache_create() fails */
 /*
  * SLAB_DESTROY_BY_RCU - **WARNING** READ THIS!
@@ -424,6 +425,9 @@ static __always_inline void *kmalloc_large(size_t size, gfp_t flags)
  * There are other flags available as well, but these are not intended
  * for general use, and so are not documented here. For a full list of
  * potential flags, always refer to linux/gfp.h.
+ */
+/**
+ * 需要解释这个函数么?
  */
 static __always_inline void *kmalloc(size_t size, gfp_t flags)
 {

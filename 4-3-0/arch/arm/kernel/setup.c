@@ -135,14 +135,24 @@ EXPORT_SYMBOL(outer_cache);
  */
 int __cpu_architecture __read_mostly = CPU_ARCH_UNKNOWN;
 
+/**
+ * ARM中断模式栈
+ * 在cpu_init中设置
+ */
 struct stack {
+	//中断栈
 	u32 irq[3];
+	//abt/und/fiq的栈
 	u32 abt[3];
 	u32 und[3];
 	u32 fiq[3];
 } ____cacheline_aligned;
 
 #ifndef CONFIG_CPU_V7M
+/**
+ * 用于中断处理
+ * 在转到SVC模式前，由IRQ模式的汇编使用
+ */
 static struct stack stacks[NR_CPUS];
 #endif
 
@@ -238,6 +248,9 @@ static int __get_cpu_architecture(void)
 	return CPU_ARCH_ARMv7M;
 }
 #else
+/**
+ * 获取CPU架构，慢慢看不注释了。
+ */
 static int __get_cpu_architecture(void)
 {
 	int cpu_arch;
@@ -309,6 +322,10 @@ static int cpu_has_aliasing_icache(unsigned int arch)
 	return aliasing_icache;
 }
 
+/**
+ * 判断缓存类型
+ * 判断过程很容易，不过缓存类型对内核的影响大，好戏在后面。
+ */
 static void __init cacheid_init(void)
 {
 	unsigned int arch = cpu_architecture();
@@ -453,6 +470,7 @@ static void __init elf_hwcap_fixup(void)
 void notrace cpu_init(void)
 {
 #ifndef CONFIG_CPU_V7M
+	//取当前CPU的堆栈
 	unsigned int cpu = smp_processor_id();
 	struct stack *stk = &stacks[cpu];
 
@@ -467,6 +485,11 @@ void notrace cpu_init(void)
 	 */
 	set_my_cpu_offset(per_cpu_offset(cpu));
 
+	/**
+	 * 调用procinfo中的_proc_init回调。
+	 * 例如cpu_v7_proc_init
+	 * 对v6,v7架构来说什么都不做。
+	 */
 	cpu_proc_init();
 
 	/*
@@ -482,11 +505,14 @@ void notrace cpu_init(void)
 	/*
 	 * setup stacks for re-entrant exception handlers
 	 */
+	/**
+	 * 设置各种异常和中断的堆栈入口。
+	 */
 	__asm__ (
-	"msr	cpsr_c, %1\n\t"
-	"add	r14, %0, %2\n\t"
+	"msr	cpsr_c, %1\n\t"/* 进入IRQ模式 */
+	"add	r14, %0, %2\n\t" /* r14是irq中断栈地址 */
 	"mov	sp, r14\n\t"
-	"msr	cpsr_c, %3\n\t"
+	"msr	cpsr_c, %3\n\t" /* 分别进入ABT、UND、FIQ模式，并设置其堆栈 */
 	"add	r14, %0, %4\n\t"
 	"mov	sp, r14\n\t"
 	"msr	cpsr_c, %5\n\t"
@@ -495,7 +521,7 @@ void notrace cpu_init(void)
 	"msr	cpsr_c, %7\n\t"
 	"add	r14, %0, %8\n\t"
 	"mov	sp, r14\n\t"
-	"msr	cpsr_c, %9"
+	"msr	cpsr_c, %9"	/* 退回SVC模式 */
 	    :
 	    : "r" (stk),
 	      PLC (PSR_F_BIT | PSR_I_BIT | IRQ_MODE),
@@ -507,18 +533,23 @@ void notrace cpu_init(void)
 	      PLC (PSR_F_BIT | PSR_I_BIT | FIQ_MODE),
 	      "I" (offsetof(struct stack, fiq[0])),
 	      PLC (PSR_F_BIT | PSR_I_BIT | SVC_MODE)
-	    : "r14");
+	    : "r14");/* clobber list，表示r14会被汇编使用 */
 #endif
 }
 
 u32 __cpu_logical_map[NR_CPUS] = { [0 ... NR_CPUS-1] = MPIDR_INVALID };
 
+/**
+ * 设置boot阶段的主CPU
+ */
 void __init smp_setup_processor_id(void)
 {
 	int i;
+	//从控制寄存器中读入当前CPU号
 	u32 mpidr = is_smp() ? read_cpuid_mpidr() & MPIDR_HWID_BITMASK : 0;
 	u32 cpu = MPIDR_AFFINITY_LEVEL(mpidr, 0);
 
+	//设置0号逻辑CPU对应的物理CPU
 	cpu_logical_map(0) = cpu;
 	for (i = 1; i < nr_cpu_ids; ++i)
 		cpu_logical_map(i) = i == cpu ? 0 : i;
@@ -528,6 +559,7 @@ void __init smp_setup_processor_id(void)
 	 * using percpu variable early, for example, lockdep will
 	 * access percpu variable inside lock_release
 	 */
+	//为了避免访问percpu数据出现异常
 	set_my_cpu_offset(0);
 
 	pr_info("Booting Linux on physical CPU 0x%x\n", mpidr);
@@ -608,16 +640,23 @@ static void __init setup_processor(void)
 	 * types.  The linker builds this table for us from the
 	 * entries in arch/arm/mm/proc-*.S
 	 */
+	/**
+	 * 根据CPUID查找处理器类型
+	 * 还记得初始化过程中，汇编的查找过程么?
+	 */
 	list = lookup_processor_type(read_cpuid_id());
-	if (!list) {
+	if (!list) {//应该不可能找不到
 		pr_err("CPU configuration botched (ID %08x), unable to continue.\n",
 		       read_cpuid_id());
-		while (1);
+		while (1);//实在找不到就挂住吧。
 	}
 
 	cpu_name = list->cpu_name;
 	__cpu_architecture = __get_cpu_architecture();
 
+/**
+ * 记录下CPU相关的回调函数。
+ */
 #ifdef MULTI_CPU
 	processor = *list->proc;
 #endif
@@ -631,6 +670,9 @@ static void __init setup_processor(void)
 	cpu_cache = *list->cache;
 #endif
 
+	/**
+	 * balabala，输出一些信息
+	 */
 	pr_info("CPU: %s [%08x] revision %d (ARMv%s), cr=%08lx\n",
 		cpu_name, read_cpuid_id(), read_cpuid_id() & 15,
 		proc_arch[cpu_architecture()], get_cr());
@@ -653,7 +695,14 @@ static void __init setup_processor(void)
 
 	elf_hwcap_fixup();
 
+	/**
+	 * 获得缓存类型，并保存到cacheid中
+	 * 缓存类型方面的知识，需要一本书才说得清:(
+	 */
 	cacheid_init();
+	/**
+	 * 初始化CPU在各种模式下使用的栈空间
+	 */
 	cpu_init();
 }
 
@@ -766,25 +815,34 @@ static int __init early_mem(char *p)
 }
 early_param("mem", early_mem);
 
+/**
+ * 将不依赖于机器的内存、设备端口资源注册到/proc/iomem中
+ */
 static void __init request_standard_resources(const struct machine_desc *mdesc)
 {
 	struct memblock_region *region;
 	struct resource *res;
 
+	//内核代码段、数据段区间
 	kernel_code.start   = virt_to_phys(_text);
 	kernel_code.end     = virt_to_phys(_etext - 1);
 	kernel_data.start   = virt_to_phys(_sdata);
 	kernel_data.end     = virt_to_phys(_end - 1);
 
+	//遍历所有内存块
 	for_each_memblock(memory, region) {
+		//分配内存，保存资源描述信息
 		res = memblock_virt_alloc(sizeof(*res), 0);
+		//填充资源信息
 		res->name  = "System RAM";
 		res->start = __pfn_to_phys(memblock_region_memory_base_pfn(region));
 		res->end = __pfn_to_phys(memblock_region_memory_end_pfn(region)) - 1;
 		res->flags = IORESOURCE_MEM | IORESOURCE_BUSY;
 
+		//将资源信息记录到iomem_resource中
 		request_resource(&iomem_resource, res);
 
+		//如果内核代码段、数据段位于该区间，则将其记录为子区间。
 		if (kernel_code.start >= res->start &&
 		    kernel_code.end <= res->end)
 			request_resource(res, &kernel_code);
@@ -793,7 +851,7 @@ static void __init request_standard_resources(const struct machine_desc *mdesc)
 			request_resource(res, &kernel_data);
 	}
 
-	if (mdesc->video_start) {
+	if (mdesc->video_start) {//如果有video缓冲区，则将它记录下来
 		video_ram.start = mdesc->video_start;
 		video_ram.end   = mdesc->video_end;
 		request_resource(&iomem_resource, &video_ram);
@@ -803,7 +861,7 @@ static void __init request_standard_resources(const struct machine_desc *mdesc)
 	 * Some machines don't have the possibility of ever
 	 * possessing lp0, lp1 or lp2
 	 */
-	if (mdesc->reserve_lp0)
+	if (mdesc->reserve_lp0)//将lp0,lp1,lp2用到的端口区间也记录下来。
 		request_resource(&ioport_resource, &lp0);
 	if (mdesc->reserve_lp1)
 		request_resource(&ioport_resource, &lp1);
@@ -932,11 +990,16 @@ void __init hyp_mode_check(void)
 #endif
 }
 
+/**
+ * 体系架构相关的初始化。
+ */
 void __init setup_arch(char **cmdline_p)
 {
 	const struct machine_desc *mdesc;
 
+	//设置CPU处理器
 	setup_processor();
+	//设置机器，如果boot传递了dtb给内核的话，就根据指示进行初始化。
 	mdesc = setup_machine_fdt(__atags_pointer);
 	if (!mdesc)
 		mdesc = setup_machine_tags(__atags_pointer, __machine_arch_type);
@@ -959,16 +1022,22 @@ void __init setup_arch(char **cmdline_p)
 	if (IS_ENABLED(CONFIG_FIX_EARLYCON_MEM))
 		early_fixmap_init();
 
+	//解析命令行参数，第一次解析
 	parse_early_param();
 
 #ifdef CONFIG_MMU
 	early_paging_init(mdesc);
 #endif
 	setup_dma_zone(mdesc);
+	/**
+	 * 对meminfo中的各个内存条信息进行合理性检查
+	 */
 	sanity_check_meminfo();
 	arm_memblock_init(mdesc);
 
+	//分页初始化。
 	paging_init(mdesc);
+	//将初始化阶段发现的内存、端口等地址空间资源添加到资源树中。
 	request_standard_resources(mdesc);
 
 	if (mdesc->restart)
@@ -980,13 +1049,15 @@ void __init setup_arch(char **cmdline_p)
 	psci_dt_init();
 	xen_early_init();
 #ifdef CONFIG_SMP
+	//虽然配置了SMP，但是仍然有可能运行在单核上。
 	if (is_smp()) {
-		if (!mdesc->smp_init || !mdesc->smp_init()) {
+		if (!mdesc->smp_init || !mdesc->smp_init()) {//运行smp_init
 			if (psci_smp_available())
 				smp_set_ops(&psci_smp_ops);
 			else if (mdesc->smp)
 				smp_set_ops(mdesc->smp);
 		}
+		//调用回调初始化CPU
 		smp_init_cpus();
 		smp_build_mpidr_hash();
 	}

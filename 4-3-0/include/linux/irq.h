@@ -135,12 +135,17 @@ struct irq_domain;
  * @msi_desc:		MSI descriptor
  */
 struct irq_common_data {
+	//状态
 	unsigned int		state_use_accessors;
 #ifdef CONFIG_NUMA
+	//用于负载平衡
 	unsigned int		node;
 #endif
+	//中断私有数据
 	void			*handler_data;
+	//msi描述符
 	struct msi_desc		*msi_desc;
+	//中断亲和性
 	cpumask_var_t		affinity;
 };
 
@@ -159,15 +164,23 @@ struct irq_common_data {
  *			methods, to allow shared chip implementations
  */
 struct irq_data {
+	//预先计算好的，访问寄存器的位图。
 	u32			mask;
+	//中断编号
 	unsigned int		irq;
+	//硬件中断编号
 	unsigned long		hwirq;
+	//指向所有中断芯片共享数据的指针
 	struct irq_common_data	*common;
+	//中断控制芯片
 	struct irq_chip		*chip;
+	//将硬件中断编号转换为中断编号的域
 	struct irq_domain	*domain;
 #ifdef	CONFIG_IRQ_DOMAIN_HIERARCHY
+	//在支持多级控制域的时候，指向上级结构
 	struct irq_data		*parent_data;
 #endif
+	//平台特定的中断控制器数据
 	void			*chip_data;
 };
 
@@ -356,24 +369,36 @@ static inline irq_hw_number_t irqd_to_hwirq(struct irq_data *d)
  * @irq_set_vcpu_affinity:	optional to target a vCPU in a virtual machine
  * @flags:		chip specific flags
  */
+/**
+ * 中断控制器
+ */
 struct irq_chip {
+	//控制器名称
 	const char	*name;
+	//打开关闭中断，不指定的话，就调用irq_enable
 	unsigned int	(*irq_startup)(struct irq_data *data);
 	void		(*irq_shutdown)(struct irq_data *data);
 	void		(*irq_enable)(struct irq_data *data);
 	void		(*irq_disable)(struct irq_data *data);
 
+	//应答中断
 	void		(*irq_ack)(struct irq_data *data);
+	//屏蔽中断
 	void		(*irq_mask)(struct irq_data *data);
 	void		(*irq_mask_ack)(struct irq_data *data);
 	void		(*irq_unmask)(struct irq_data *data);
+	//结束中断
 	void		(*irq_eoi)(struct irq_data *data);
 
+	//设置irq亲和性
 	int		(*irq_set_affinity)(struct irq_data *data, const struct cpumask *dest, bool force);
+	//在中断丢失的情况下，重新触发中断
 	int		(*irq_retrigger)(struct irq_data *data);
+	//设置中断触发方式
 	int		(*irq_set_type)(struct irq_data *data, unsigned int flow_type);
 	int		(*irq_set_wake)(struct irq_data *data, unsigned int on);
 
+	//锁定总线
 	void		(*irq_bus_lock)(struct irq_data *data);
 	void		(*irq_bus_sync_unlock)(struct irq_data *data);
 

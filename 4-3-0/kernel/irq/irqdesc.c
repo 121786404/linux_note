@@ -256,6 +256,9 @@ int __init early_irq_init(void)
 
 #else /* !CONFIG_SPARSE_IRQ */
 
+/**
+ * 系统中所有中断描述符
+ */
 struct irq_desc irq_desc[NR_IRQS] __cacheline_aligned_in_smp = {
 	[0 ... NR_IRQS-1] = {
 		.handle_irq	= handle_bad_irq,
@@ -269,20 +272,26 @@ int __init early_irq_init(void)
 	int count, i, node = first_online_node;
 	struct irq_desc *desc;
 
+	//设置默认的中断亲和性位图
 	init_irq_default_affinity();
 
 	printk(KERN_INFO "NR_IRQS:%d\n", NR_IRQS);
 
+	//得到中断描述符数组及其大小
 	desc = irq_desc;
 	count = ARRAY_SIZE(irq_desc);
 
+	//设置所有中断的默认值
 	for (i = 0; i < count; i++) {
+		//记录每CPU上中断执行统计的结构
 		desc[i].kstat_irqs = alloc_percpu(unsigned int);
+		//分配亲和性位图
 		alloc_masks(&desc[i], GFP_KERNEL, node);
 		raw_spin_lock_init(&desc[i].lock);
 		lockdep_set_class(&desc[i].lock, &irq_desc_lock_class);
 		desc_set_defaults(i, &desc[i], node, NULL);
 	}
+	//arm上面什么都不做
 	return arch_early_irq_init();
 }
 
@@ -343,10 +352,14 @@ void irq_init_desc(unsigned int irq)
  */
 int generic_handle_irq(unsigned int irq)
 {
+	/**
+	 * 查找该中断号的描述符
+	 */
 	struct irq_desc *desc = irq_to_desc(irq);
 
-	if (!desc)
+	if (!desc)//没有，可能是还没有注册任何中断。
 		return -EINVAL;
+	//调用注册的中断回调函数。
 	generic_handle_irq_desc(desc);
 	return 0;
 }
@@ -365,14 +378,22 @@ EXPORT_SYMBOL_GPL(generic_handle_irq);
 int __handle_domain_irq(struct irq_domain *domain, unsigned int hwirq,
 			bool lookup, struct pt_regs *regs)
 {
+	/**
+	 * 将当前中断现场保存下来
+	 * 这样其他代码就可以通过get_irq_regs函数获得中断现场了。
+	 */
 	struct pt_regs *old_regs = set_irq_regs(regs);
 	unsigned int irq = hwirq;
 	int ret = 0;
 
+	/**
+	 * 处理抢占计数，rcu等等
+	 */
 	irq_enter();
 
 #ifdef CONFIG_IRQ_DOMAIN
 	if (lookup)
+		//HW中断号转逻辑中断号
 		irq = irq_find_mapping(domain, hwirq);
 #endif
 
@@ -380,14 +401,20 @@ int __handle_domain_irq(struct irq_domain *domain, unsigned int hwirq,
 	 * Some hardware gives randomly wrong interrupts.  Rather
 	 * than crashing, do something sensible.
 	 */
-	if (unlikely(!irq || irq >= nr_irqs)) {
+	if (unlikely(!irq || irq >= nr_irqs)) {//判断中断号的合法性
 		ack_bad_irq(irq);
 		ret = -EINVAL;
 	} else {
+		//进行通常的中断处理
 		generic_handle_irq(irq);
 	}
 
+	//处理rcu，抢占计数等等，也处理软中断
 	irq_exit();
+	/**
+	 * 退出中断前，恢复上一个pt_regs指针。
+	 * 上一次中断的处理代码调用get_irq_regs才正常。
+	 */
 	set_irq_regs(old_regs);
 	return ret;
 }

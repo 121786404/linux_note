@@ -26,6 +26,9 @@
  * setting should be assumed to be "as already configured", which
  * may be as per machine or firmware initialisation.
  */
+/**
+ * 中断触发类型
+ */
 #define IRQF_TRIGGER_NONE	0x00000000
 #define IRQF_TRIGGER_RISING	0x00000001
 #define IRQF_TRIGGER_FALLING	0x00000002
@@ -62,15 +65,43 @@
  *                wakeup devices users need to implement wakeup detection in
  *                their interrupt handlers.
  */
+/**
+ * 是否允许在设备间共享???
+ */
 #define IRQF_SHARED		0x00000080
+/**
+ * 仅仅是尝试一下是否能够共享
+ * 内核别报警
+ */
 #define IRQF_PROBE_SHARED	0x00000100
 #define __IRQF_TIMER		0x00000200
+/**
+ * 该中断是否是每CPU中断，如Local timer
+ */
 #define IRQF_PERCPU		0x00000400
+/**
+ * 是否参与IRQ负载平衡
+ */
 #define IRQF_NOBALANCING	0x00000800
 #define IRQF_IRQPOLL		0x00001000
+/**
+ * 一次性的，不能嵌套
+ * 重入问题
+ */
 #define IRQF_ONESHOT		0x00002000
+/**
+ * Suspend的时候，别挂起这个中断
+ */
 #define IRQF_NO_SUSPEND		0x00004000
+/**
+ * 唤醒的时候，必须要强制唤醒本中断
+ * 即使有IRQF_NO_SUSPEND标志也是如此
+ */
 #define IRQF_FORCE_RESUME	0x00008000
+/**
+ * 别线程化这些中断，即使强制线程化功能打开也是如此
+ * 如Timer、级联中断。
+ */
 #define IRQF_NO_THREAD		0x00010000
 #define IRQF_EARLY_RESUME	0x00020000
 #define IRQF_COND_SUSPEND	0x00040000
@@ -128,6 +159,10 @@ request_threaded_irq(unsigned int irq, irq_handler_t handler,
 		     irq_handler_t thread_fn,
 		     unsigned long flags, const char *name, void *dev);
 
+/**
+ * 用于与老接口兼容
+ * 旧驱动使用
+ */
 static inline int __must_check
 request_irq(unsigned int irq, irq_handler_t handler, unsigned long flags,
 	    const char *name, void *dev)
@@ -405,16 +440,18 @@ extern bool force_irqthreads;
 
 enum
 {
-	HI_SOFTIRQ=0,
-	TIMER_SOFTIRQ,
-	NET_TX_SOFTIRQ,
-	NET_RX_SOFTIRQ,
-	BLOCK_SOFTIRQ,
-	BLOCK_IOPOLL_SOFTIRQ,
-	TASKLET_SOFTIRQ,
-	SCHED_SOFTIRQ,
+	HI_SOFTIRQ=0,//高优先级软中断
+	TIMER_SOFTIRQ,//定时器软中断
+	NET_TX_SOFTIRQ, //网络发送软中断，回收发送内存
+	NET_RX_SOFTIRQ, //接收软中断
+	BLOCK_SOFTIRQ,  //块设备软中断
+	BLOCK_IOPOLL_SOFTIRQ, //块设备poll软中断
+	TASKLET_SOFTIRQ, //tasklet软中断
+	SCHED_SOFTIRQ, //调度软中断
+	//高精度时钟软中断，未用
 	HRTIMER_SOFTIRQ, /* Unused, but kept as tools rely on the
 			    numbering. Sigh! */
+	//RCU软中断
 	RCU_SOFTIRQ,    /* Preferable RCU should always be the last softirq */
 
 	NR_SOFTIRQS

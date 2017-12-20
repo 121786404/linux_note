@@ -965,10 +965,15 @@ static bool free_pages_prepare(struct page *page, unsigned int order)
 	return true;
 }
 
+/**
+ * 释放多个页面到内存中
+ * 并且将空闲页合并
+ */
 static void __free_pages_ok(struct page *page, unsigned int order)
 {
 	unsigned long flags;
 	int migratetype;
+	/* 取页面的页帧号 */
 	unsigned long pfn = page_to_pfn(page);
 
 	if (!free_pages_prepare(page, order))
@@ -981,6 +986,7 @@ static void __free_pages_ok(struct page *page, unsigned int order)
 	local_irq_restore(flags);
 }
 
+//将bootmem页面释放给伙伴系统。
 static void __init __free_pages_boot_core(struct page *page,
 					unsigned long pfn, unsigned int order)
 {
@@ -988,17 +994,28 @@ static void __init __free_pages_boot_core(struct page *page,
 	struct page *p = page;
 	unsigned int loop;
 
+	//数据预取
 	prefetchw(p);
+	//遍历所有页面
 	for (loop = 0; loop < (nr_pages - 1); loop++, p++) {
 		prefetchw(p + 1);
+		//清除其reserved标志，表示页面可用可交换
 		__ClearPageReserved(p);
-		set_page_count(p, 0);
+		set_page_count(p, 0);//将页面引用计数设置为0
 	}
+	/**
+	 * 前面的循环少了一页，这里将最后一页标志置位
+	 * 仅仅因为预取的关系，把程序复杂了，感觉不值。
+	 */
 	__ClearPageReserved(p);
 	set_page_count(p, 0);
 
+	//增加zone的页面计数
 	page_zone(page)->managed_pages += nr_pages;
+	//这里将第一个页面引用计数设置为1!!!!!
 	set_page_refcounted(page);
+	//将页面添加到zone的链表中。
+	//释放后，其引用计数又成0了，这里注意体会一下。
 	__free_pages(page, order);
 }
 
@@ -1282,6 +1299,10 @@ static inline void expand(struct zone *zone, struct page *page,
 {
 	unsigned long size = 1 << high;
 
+	/**
+	 * 可能会切成多个蛋糕
+	 * 循环次数就是可能的蛋糕数量
+	 */
 	while (high > low) {
 		area--;
 		high--;
@@ -1300,6 +1321,7 @@ static inline void expand(struct zone *zone, struct page *page,
 			set_page_guard(zone, &page[size], high, migratetype);
 			continue;
 		}
+		/* 加到相应的空闲链表中 */
 		list_add(&page[size].lru, &area->free_list[migratetype]);
 		area->nr_free++;
 		set_page_order(&page[size], high);
@@ -1344,8 +1366,14 @@ static int prep_new_page(struct page *page, unsigned int order, gfp_t gfp_flags,
 {
 	int i;
 
+	/**
+	 * 遍历每一个页面描述符
+	 */
 	for (i = 0; i < (1 << order); i++) {
 		struct page *p = page + i;
+		/**
+		 * 每一个页面描述符一定不能处于被破坏的不一致状态
+		 */
 		if (unlikely(check_new_page(p)))
 			return 1;
 	}
@@ -1393,8 +1421,15 @@ struct page *__rmqueue_smallest(struct zone *zone, unsigned int order,
 	struct page *page;
 
 	/* Find a page of the appropriate size in the preferred list */
+	/**
+	 * 从小到大遍历ZONE空闲链表
+	 */
 	for (current_order = order; current_order < MAX_ORDER; ++current_order) {
 		area = &(zone->free_area[current_order]);
+		/**
+		 * 哦豁，相应的迁移类型链表里面，没有空闲页面了
+		 * 转下一个大块链表
+		 */
 		if (list_empty(&area->free_list[migratetype]))
 			continue;
 
@@ -1403,6 +1438,11 @@ struct page *__rmqueue_smallest(struct zone *zone, unsigned int order,
 		list_del(&page->lru);
 		rmv_page_order(page);
 		area->nr_free--;
+		/**
+		 * 切蛋糕了
+		 * 将大块蛋糕切成小块，一部分返回给调用者
+		 * 一部分留在伙伴系统中
+		 */
 		expand(zone, page, order, current_order, area, migratetype);
 		set_pcppage_migratetype(page, migratetype);
 		return page;
@@ -1677,6 +1717,10 @@ static struct page *__rmqueue(struct zone *zone, unsigned int order,
 	struct page *page;
 
 retry_reserve:
+	/**
+	 * 正常分配，先从最小的链表开始分配
+	 * 尽量保证大的块不被破坏
+	 */
 	page = __rmqueue_smallest(zone, order, migratetype);
 
 	if (unlikely(!page) && migratetype != MIGRATE_RESERVE) {
@@ -1917,8 +1961,12 @@ void mark_free_pages(struct zone *zone)
  * Free a 0-order page
  * cold == true ? free a cold page : free a hot page
  */
+/**
+ * 将单个页面释放给伙伴系统
+ */
 void free_hot_cold_page(struct page *page, bool cold)
 {
+	//页面所属的zone
 	struct zone *zone = page_zone(page);
 	struct per_cpu_pages *pcp;
 	unsigned long flags;
@@ -1948,12 +1996,15 @@ void free_hot_cold_page(struct page *page, bool cold)
 		migratetype = MIGRATE_MOVABLE;
 	}
 
+	//当前CPU的缓存
 	pcp = &this_cpu_ptr(zone->pageset)->pcp;
-	if (!cold)
+	if (!cold)//加到缓存的前面，保持其热度。
 		list_add(&page->lru, &pcp->lists[migratetype]);
-	else
+	else//否则加到后面
 		list_add_tail(&page->lru, &pcp->lists[migratetype]);
+	//缓存计数
 	pcp->count++;
+	//缓存中页面过多，还到链表中去.
 	if (pcp->count >= pcp->high) {
 		unsigned long batch = READ_ONCE(pcp->batch);
 		free_pcppages_bulk(zone, batch, pcp);
@@ -2092,6 +2143,13 @@ struct page *buffered_rmqueue(struct zone *preferred_zone,
 	struct page *page;
 	bool cold = ((gfp_flags & __GFP_COLD) != 0);
 
+	/**
+	 * 分配一个页面
+	 * 这是最简单、最常见的情况
+	 * 直接在本CPU的缓存中分配
+	 * -------------------------------这里划重点--------------------
+	 * 这是<深入理解并行编程>里面提到的"数据所有权"
+	 */
 	if (likely(order == 0)) {
 		struct per_cpu_pages *pcp;
 		struct list_head *list;
@@ -2114,7 +2172,12 @@ struct page *buffered_rmqueue(struct zone *preferred_zone,
 
 		list_del(&page->lru);
 		pcp->count--;
-	} else {
+	} else {/* 分配多个页面的情况，必须从空闲链表中分配 */
+		/**
+		 * 小伙子，__GFP_NOFAIL已经不建议使用了
+		 * 先警告一下
+		 * 记得改上层调用代码
+		 */
 		if (unlikely(gfp_flags & __GFP_NOFAIL)) {
 			/*
 			 * __GFP_NOFAIL is not to be used in new code.
@@ -2128,7 +2191,9 @@ struct page *buffered_rmqueue(struct zone *preferred_zone,
 			 */
 			WARN_ON_ONCE(order > 1);
 		}
+		/* 获取ZONE管理区的锁 */
 		spin_lock_irqsave(&zone->lock, flags);
+		/* 在ZONE管理区的链表里面分配 */
 		page = __rmqueue(zone, order, migratetype);
 		spin_unlock(&zone->lock);
 		if (!page)
@@ -2489,6 +2554,10 @@ zonelist_scan:
 	 * Scan zonelist, looking for a zone with enough free.
 	 * See also __cpuset_node_allowed() comment in kernel/cpuset.c.
 	 */
+	/**
+	 * 在允许的ZONE管理区里面进行遍历
+	 * 尽量先从高端开始分配
+	 */
 	for_each_zone_zonelist_nodemask(zone, z, zonelist, ac->high_zoneidx,
 								ac->nodemask) {
 		unsigned long mark;
@@ -2496,9 +2565,9 @@ zonelist_scan:
 		if (IS_ENABLED(CONFIG_NUMA) && zlc_active &&
 			!zlc_zone_worth_trying(zonelist, z, allowednodes))
 				continue;
-		if (cpusets_enabled() &&
-			(alloc_flags & ALLOC_CPUSET) &&
-			!cpuset_zone_allowed(zone, gfp_mask))
+		if (cpusets_enabled() && /* 这个开关用的人少了 */
+			(alloc_flags & ALLOC_CPUSET) && /* 要求按CPU来分配 */
+			!cpuset_zone_allowed(zone, gfp_mask))/* 配对不成功，这个ZONE不喜欢这个CPU */
 				continue;
 		/*
 		 * Distribute pages in proportion to the individual
@@ -2545,9 +2614,12 @@ zonelist_scan:
 
 		mark = zone->watermark[alloc_flags & ALLOC_WMARK_MASK];
 		if (!zone_watermark_ok(zone, order, mark,
-				       ac->classzone_idx, alloc_flags)) {
+				       ac->classzone_idx, alloc_flags)) {/* 内存水线不够 */
 			int ret;
 
+			/**
+			 * 嘿呦嘿呦，准备回收内存
+			 */
 			/* Checked here to keep the fast path fast */
 			BUILD_BUG_ON(ALLOC_NO_WATERMARKS < NR_WMARK);
 			if (alloc_flags & ALLOC_NO_WATERMARKS)
@@ -2609,9 +2681,17 @@ zonelist_scan:
 		}
 
 try_this_zone:
+		/**
+		 * 先在伙伴系统空闲缓冲链表中分配 
+		 */
 		page = buffered_rmqueue(ac->preferred_zone, zone, order,
 						gfp_mask, ac->migratetype);
 		if (page) {
+			/**
+			 * 在将页面返回给上层调用者之前
+			 * 做一些规整工作
+			 * 当然也会做一些正确性检查
+			 */
 			if (prep_new_page(page, order, gfp_mask, alloc_flags))
 				goto try_this_zone;
 			return page;
@@ -3191,6 +3271,9 @@ got_pg:
 /*
  * This is the 'heart' of the zoned buddy allocator.
  */
+/**
+ * 伙伴系统核心函数
+ */
 struct page *
 __alloc_pages_nodemask(gfp_t gfp_mask, unsigned int order,
 			struct zonelist *zonelist, nodemask_t *nodemask)
@@ -3200,9 +3283,14 @@ __alloc_pages_nodemask(gfp_t gfp_mask, unsigned int order,
 	unsigned int cpuset_mems_cookie;
 	int alloc_flags = ALLOC_WMARK_LOW|ALLOC_CPUSET|ALLOC_FAIR;
 	gfp_t alloc_mask; /* The gfp_t that was actually used for allocation */
+	/**
+	 * 分配上下文，参数
+	 */
 	struct alloc_context ac = {
+		/* 根据分配标志，找到最高允许的ZONE索引 */
 		.high_zoneidx = gfp_zone(gfp_mask),
 		.nodemask = nodemask,
+		/* 是否允许迁移页面，对kernel来说，不允许 */
 		.migratetype = gfpflags_to_migratetype(gfp_mask),
 	};
 
@@ -3241,6 +3329,11 @@ retry_cpuset:
 
 	/* First allocation attempt */
 	alloc_mask = gfp_mask|__GFP_HARDWALL;
+	/**
+	 * 直接从伙伴系统空闲链表中分配
+	 * 而不进行内存回收
+	 * 一般这是常见路径
+	 */
 	page = get_page_from_freelist(alloc_mask, order, alloc_flags, &ac);
 	if (unlikely(!page)) {
 		/*
@@ -3298,12 +3391,17 @@ unsigned long get_zeroed_page(gfp_t gfp_mask)
 }
 EXPORT_SYMBOL(get_zeroed_page);
 
+/**
+ * 释放多个页面到伙伴系统
+ */
 void __free_pages(struct page *page, unsigned int order)
 {
-	if (put_page_testzero(page)) {
-		if (order == 0)
+	if (put_page_testzero(page)) {/* 递减引用计数，如果为0表示没有人引用了。*/
+		if (order == 0)/* 如果是单个页*/
+			/* 将它放到hot池中，性能优化考虑。 */
 			free_hot_cold_page(page, false);
 		else
+			/* 否则直接放回链表中 */
 			__free_pages_ok(page, order);
 	}
 }
@@ -3590,6 +3688,7 @@ EXPORT_SYMBOL_GPL(nr_free_buffer_pages);
  * nr_free_pagecache_pages() counts the number of pages which are beyond the
  * high watermark within all zones.
  */
+//在高水线上面的空页数
 unsigned long nr_free_pagecache_pages(void)
 {
 	return nr_free_zone_pages(gfp_zone(GFP_HIGHUSER_MOVABLE));
@@ -3868,16 +3967,20 @@ static void zoneref_set_zone(struct zone *zone, struct zoneref *zoneref)
  *
  * Add all populated zones of a node to the zonelist.
  */
+//将节点的zone添加到其他节点的备用列表中
 static int build_zonelists_node(pg_data_t *pgdat, struct zonelist *zonelist,
 				int nr_zones)
 {
 	struct zone *zone;
+	//从最后一个zone开始，当然要优先保护低地址的dma，normal区了。
 	enum zone_type zone_type = MAX_NR_ZONES;
 
 	do {
 		zone_type--;
+		//待加到备用列表中的zone
 		zone = pgdat->node_zones + zone_type;
-		if (populated_zone(zone)) {
+		if (populated_zone(zone)) {//这个zone上有内存
+			//加到备用列表中
 			zoneref_set_zone(zone,
 				&zonelist->_zonerefs[nr_zones++]);
 			check_highest_zone(zone_type);
@@ -4025,39 +4128,41 @@ static int find_next_best_node(int node, nodemask_t *used_node_mask)
 	const struct cpumask *tmp = cpumask_of_node(0);
 
 	/* Use the local node if we haven't already */
+	//当然优先从当前节点开始查找了。
 	if (!node_isset(node, *used_node_mask)) {
 		node_set(node, *used_node_mask);
 		return node;
 	}
 
+	//遍历所有节点
 	for_each_node_state(n, N_MEMORY) {
 
 		/* Don't want a node to appear more than once */
-		if (node_isset(n, *used_node_mask))
+		if (node_isset(n, *used_node_mask))//已经在备用列表中了，下一个
 			continue;
 
 		/* Use the distance array to find the distance */
-		val = node_distance(node, n);
+		val = node_distance(node, n);//计算节点之间的距离
 
 		/* Penalize nodes under us ("prefer the next node") */
-		val += (n < node);
+		val += (n < node);//如果是前面的节点，加一点距离，优先使用后面的节点
 
 		/* Give preference to headless and unused nodes */
 		tmp = cpumask_of_node(n);
-		if (!cpumask_empty(tmp))
+		if (!cpumask_empty(tmp))//没有设置CPU亲和性的?
 			val += PENALTY_FOR_NODE_WITH_CPUS;
 
 		/* Slight preference for less loaded node */
-		val *= (MAX_NODE_LOAD*MAX_NUMNODES);
+		val *= (MAX_NODE_LOAD*MAX_NUMNODES);//考虑该节点的负载
 		val += node_load[n];
 
-		if (val < min_val) {
+		if (val < min_val) {//找值最小的，即最优的节点
 			min_val = val;
 			best_node = n;
 		}
 	}
 
-	if (best_node >= 0)
+	if (best_node >= 0)//存在可用节点
 		node_set(best_node, *used_node_mask);
 
 	return best_node;
@@ -4069,15 +4174,20 @@ static int find_next_best_node(int node, nodemask_t *used_node_mask)
  * This results in maximum locality--normal zone overflows into local
  * DMA zone, if any--but risks exhausting DMA zone.
  */
+//按内存节点顺序排列zone备用列表
 static void build_zonelists_in_node_order(pg_data_t *pgdat, int node)
 {
 	int j;
 	struct zonelist *zonelist;
 
+	//备用zone列表指针
 	zonelist = &pgdat->node_zonelists[0];
+	//找到已经在列表中的zone数量，j是下一个可用索引
 	for (j = 0; zonelist->_zonerefs[j].zone != NULL; j++)
 		;
+	//将备用节点中的zone保存到最后一个可用位置
 	j = build_zonelists_node(NODE_DATA(node), zonelist, j);
+	//将后面的备用列表置为空。
 	zonelist->_zonerefs[j].zone = NULL;
 	zonelist->_zonerefs[j].zone_idx = 0;
 }
@@ -4090,7 +4200,9 @@ static void build_thisnode_zonelists(pg_data_t *pgdat)
 	int j;
 	struct zonelist *zonelist;
 
+	//本节点自己的zone列表
 	zonelist = &pgdat->node_zonelists[1];
+	//构建zone列表，当指定GFP_THISNODE时，使用本节点的zone列表进行分配。
 	j = build_zonelists_node(pgdat, zonelist, 0);
 	zonelist->_zonerefs[j].zone = NULL;
 	zonelist->_zonerefs[j].zone_idx = 0;
@@ -4104,6 +4216,9 @@ static void build_thisnode_zonelists(pg_data_t *pgdat)
  */
 static int node_order[MAX_NUMNODES];
 
+/**
+ * 以zone类型排列节点的备用列表
+ */
 static void build_zonelists_in_zone_order(pg_data_t *pgdat, int nr_nodes)
 {
 	int pos, j, node;
@@ -4113,17 +4228,20 @@ static void build_zonelists_in_zone_order(pg_data_t *pgdat, int nr_nodes)
 
 	zonelist = &pgdat->node_zonelists[0];
 	pos = 0;
+	//从高端zone向低端zone遍历。
 	for (zone_type = MAX_NR_ZONES - 1; zone_type >= 0; zone_type--) {
-		for (j = 0; j < nr_nodes; j++) {
-			node = node_order[j];
+		for (j = 0; j < nr_nodes; j++) {//处理所有备用节点
+			node = node_order[j];//前面已经按距离、负载等因素将节点排序了。
 			z = &NODE_DATA(node)->node_zones[zone_type];
-			if (populated_zone(z)) {
+			if (populated_zone(z)) {//这个zone上有内存
+				//记录到备用列表中
 				zoneref_set_zone(z,
 					&zonelist->_zonerefs[pos++]);
 				check_highest_zone(zone_type);
 			}
 		}
 	}
+	//将最后一个备用索引置空。
 	zonelist->_zonerefs[pos].zone = NULL;
 	zonelist->_zonerefs[pos].zone_idx = 0;
 }
@@ -4155,9 +4273,13 @@ static int default_zonelist_order(void)
 
 static void set_zonelist_order(void)
 {
-	if (user_zonelist_order == ZONELIST_ORDER_DEFAULT)
+	if (user_zonelist_order == ZONELIST_ORDER_DEFAULT)//默认排列方式
+		/**
+		 * 在64位机器上，使用DMA的时间比较少，因此可以按节点排列而不考虑DMA OOM，这样可以使程序运行得快一点。
+		 * 32位机器上，则默认使用zone排列方式。
+		 */
 		current_zonelist_order = default_zonelist_order();
-	else
+	else//使用用户指定的排列方式
 		current_zonelist_order = user_zonelist_order;
 }
 
@@ -4171,6 +4293,7 @@ static void build_zonelists(pg_data_t *pgdat)
 	int order = current_zonelist_order;
 
 	/* initialize zonelists */
+	//将节点的两个zonelist初始化为空。
 	for (i = 0; i < MAX_ZONELISTS; i++) {
 		zonelist = pgdat->node_zonelists + i;
 		zonelist->_zonerefs[0].zone = NULL;
@@ -4186,11 +4309,16 @@ static void build_zonelists(pg_data_t *pgdat)
 	memset(node_order, 0, sizeof(node_order));
 	j = 0;
 
+	//查找备用节点
 	while ((node = find_next_best_node(local_node, &used_mask)) >= 0) {
 		/*
 		 * We don't want to pressure a particular node.
 		 * So adding penalty to the first node in same
 		 * distance group to make it round-robin.
+		 */
+		/**
+		 * 如果当前选中的节点的距离与前一个节点相同，那么将当前节点负载加一点，这样下一次就不容易再选中该节点
+		 * 避免该节点被造成太大的压力。
 		 */
 		if (node_distance(local_node, node) !=
 		    node_distance(local_node, prev_node))
@@ -4198,17 +4326,19 @@ static void build_zonelists(pg_data_t *pgdat)
 
 		prev_node = node;
 		load--;
+		//以节点进行排列
 		if (order == ZONELIST_ORDER_NODE)
 			build_zonelists_in_node_order(pgdat, node);
-		else
+		else//以zone类型进行排列，在这里记下节点顺序
 			node_order[j++] = node;	/* remember order */
 	}
 
-	if (order == ZONELIST_ORDER_ZONE) {
+	if (order == ZONELIST_ORDER_ZONE) {//按zone类型为序进行排列
 		/* calculate node order -- i.e., DMA last! */
 		build_zonelists_in_zone_order(pgdat, j);
 	}
 
+	//构建本节点自己的zone列表(前面构建的是备用列表)
 	build_thisnode_zonelists(pgdat);
 }
 
@@ -4219,10 +4349,14 @@ static void build_zonelist_cache(pg_data_t *pgdat)
 	struct zonelist_cache *zlc;
 	struct zoneref *z;
 
+	//备用zone列表
 	zonelist = &pgdat->node_zonelists[0];
 	zonelist->zlcache_ptr = zlc = &zonelist->zlcache;
+	//将所有备用zone的full标志清空，表示其内存可用。
 	bitmap_zero(zlc->fullzones, MAX_ZONES_PER_ZONELIST);
+	//遍历所有备用缓存
 	for (z = zonelist->_zonerefs; z->zone; z++)
+		//设置zone对应的节点id
 		zlc->z_to_n[z - zonelist->_zonerefs] = zonelist_node_idx(z);
 }
 
@@ -4335,10 +4469,13 @@ static int __build_all_zonelists(void *data)
 		build_zonelist_cache(self);
 	}
 
+	//遍历所有节点
 	for_each_online_node(nid) {
 		pg_data_t *pgdat = NODE_DATA(nid);
 
+		//构建两个zonelist，一个是备用zone列表，一个是节点自己的zone列表。
 		build_zonelists(pgdat);
+		//构建备份列表的zone位图，如果相应的zone已经没有可用内存，则将位图置1.
 		build_zonelist_cache(pgdat);
 	}
 
@@ -4378,8 +4515,11 @@ static int __build_all_zonelists(void *data)
 static noinline void __init
 build_all_zonelists_init(void)
 {
+	//构建备份zone列表
 	__build_all_zonelists(NULL);
+	//balabala,输出备份列表信息
 	mminit_verify_zonelist();
+	//设置当前进程的mems_allowed位图，允许当前进程在所有节点中分配内存。
 	cpuset_init_current_mems_allowed();
 }
 
@@ -4394,9 +4534,10 @@ build_all_zonelists_init(void)
  */
 void __ref build_all_zonelists(pg_data_t *pgdat, struct zone *zone)
 {
+	//设置zone排列方式，是按节点之间的距离还是按zone类型。
 	set_zonelist_order();
 
-	if (system_state == SYSTEM_BOOTING) {
+	if (system_state == SYSTEM_BOOTING) {//启动阶段
 		build_all_zonelists_init();
 	} else {
 #ifdef CONFIG_MEMORY_HOTPLUG
@@ -4405,9 +4546,11 @@ void __ref build_all_zonelists(pg_data_t *pgdat, struct zone *zone)
 #endif
 		/* we have to stop all cpus to guarantee there is no user
 		   of zonelist */
+		//停止所有CPU，并让这些CPU在关中断的状态下调用__build_all_zonelists
 		stop_machine(__build_all_zonelists, pgdat, NULL);
 		/* cpuset refresh routine should be here */
 	}
+	//计算所有zone中，在高水线的情况下，可用的内存页面数量。
 	vm_total_pages = nr_free_pagecache_pages();
 	/*
 	 * Disable grouping by mobility if the number of pages in the
@@ -4415,6 +4558,9 @@ void __ref build_all_zonelists(pg_data_t *pgdat, struct zone *zone)
 	 * more accurate, but expensive to check per-zone. This check is
 	 * made on memory-hotadd so a system can start with mobility
 	 * disabled and enable it later
+	 */
+	/**
+	 * 如果可用内存较少，就不打开页面移动功能。
 	 */
 	if (vm_total_pages < (pageblock_nr_pages * MIGRATE_TYPES))
 		page_group_by_mobility_disabled = 1;
@@ -4616,6 +4762,10 @@ static void setup_zone_migrate_reserve(struct zone *zone)
  * Initially all pages are reserved - free ones are freed
  * up by free_all_bootmem() once the early boot process is
  * done. Non-atomic initialization, single-pass.
+ */
+/**
+ * 将zone中的页框PG_reserved置位。表示该页不可用。
+ * 同时初始化页框中其他值。
  */
 void __meminit memmap_init_zone(unsigned long size, int nid, unsigned long zone,
 		unsigned long start_pfn, enum memmap_context context)
@@ -4823,8 +4973,9 @@ static void __meminit zone_pageset_init(struct zone *zone, int cpu)
 static void __meminit setup_zone_pageset(struct zone *zone)
 {
 	int cpu;
+	//分配zone的pageset结构
 	zone->pageset = alloc_percpu(struct per_cpu_pageset);
-	for_each_possible_cpu(cpu)
+	for_each_possible_cpu(cpu)//初始化pageset的值。
 		zone_pageset_init(zone, cpu);
 }
 
@@ -4836,7 +4987,9 @@ void __init setup_per_cpu_pageset(void)
 {
 	struct zone *zone;
 
+	//遍历所有zone
 	for_each_populated_zone(zone)
+		//设置每个zone的每CPU缓存。
 		setup_zone_pageset(zone);
 }
 
@@ -4908,8 +5061,10 @@ int __meminit init_currently_empty_zone(struct zone *zone,
 	ret = zone_wait_table_init(zone, size);
 	if (ret)
 		return ret;
+	//设置内存区中的zone个数，这个感觉有点奇怪
 	pgdat->nr_zones = zone_idx(zone) + 1;
 
+	//zone的起始pfn
 	zone->zone_start_pfn = zone_start_pfn;
 
 	mminit_dprintk(MMINIT_TRACE, "memmap_init",
@@ -4918,6 +5073,7 @@ int __meminit init_currently_empty_zone(struct zone *zone,
 			(unsigned long)zone_idx(zone),
 			zone_start_pfn, (zone_start_pfn + size));
 
+	//初始化free_area链表，并将空闲页面数量设置为0.
 	zone_init_free_lists(zone);
 
 	return 0;
@@ -5335,6 +5491,7 @@ static void __paginginit free_area_init_core(struct pglist_data *pgdat)
 	unsigned long zone_start_pfn = pgdat->node_start_pfn;
 	int ret;
 
+	//初始化节区的管理结构。
 	pgdat_resize_init(pgdat);
 #ifdef CONFIG_NUMA_BALANCING
 	spin_lock_init(&pgdat->numabalancing_migrate_lock);
@@ -5345,6 +5502,7 @@ static void __paginginit free_area_init_core(struct pglist_data *pgdat)
 	init_waitqueue_head(&pgdat->pfmemalloc_wait);
 	pgdat_page_ext_init(pgdat);
 
+	//遍历所有zone对其进行处理
 	for (j = 0; j < MAX_NR_ZONES; j++) {
 		struct zone *zone = pgdat->node_zones + j;
 		unsigned long size, realsize, freesize, memmap_pages;
@@ -5397,11 +5555,13 @@ static void __paginginit free_area_init_core(struct pglist_data *pgdat)
 						/ 100;
 		zone->min_slab_pages = (freesize * sysctl_min_slab_ratio) / 100;
 #endif
+		//初始化zone的数据。
 		zone->name = zone_names[j];
 		spin_lock_init(&zone->lock);
 		spin_lock_init(&zone->lru_lock);
 		zone_seqlock_init(zone);
 		zone->zone_pgdat = pgdat;
+		//初始化zone的每cpu缓存数据
 		zone_pcp_init(zone);
 
 		/* For bootup, initialized properly in watermark setup */
@@ -5413,9 +5573,11 @@ static void __paginginit free_area_init_core(struct pglist_data *pgdat)
 
 		set_pageblock_order();
 		setup_usemap(pgdat, zone, zone_start_pfn, size);
+		//初始化zone的free_area结构体。
 		ret = init_currently_empty_zone(zone, zone_start_pfn,
 						size, MEMMAP_EARLY);
 		BUG_ON(ret);
+		//设置所有页框的PG_reserved位。
 		memmap_init(size, nid, j, zone_start_pfn);
 		zone_start_pfn += size;
 	}
@@ -5474,6 +5636,7 @@ void __paginginit free_area_init_node(int nid, unsigned long *zones_size,
 	WARN_ON(pgdat->nr_zones || pgdat->classzone_idx);
 
 	reset_deferred_meminit(pgdat);
+	//设置内存区的节点号和起始pfn
 	pgdat->node_id = nid;
 	pgdat->node_start_pfn = node_start_pfn;
 #ifdef CONFIG_HAVE_MEMBLOCK_NODE_MAP
@@ -5482,9 +5645,13 @@ void __paginginit free_area_init_node(int nid, unsigned long *zones_size,
 		(u64)start_pfn << PAGE_SHIFT,
 		end_pfn ? ((u64)end_pfn << PAGE_SHIFT) - 1 : 0);
 #endif
+	/**
+	 * 初始化节点中每个zone的大小和空洞。
+	 */
 	calculate_node_totalpages(pgdat, start_pfn, end_pfn,
 				  zones_size, zholes_size);
 
+	//设置节点的node_mem_map
 	alloc_node_mem_map(pgdat);
 #ifdef CONFIG_FLAT_NODE_MEM_MAP
 	printk(KERN_DEBUG "free_area_init_node: node %d, pgdat %08lx, node_mem_map %08lx\n",
@@ -5492,6 +5659,7 @@ void __paginginit free_area_init_node(int nid, unsigned long *zones_size,
 		(unsigned long)pgdat->node_mem_map);
 #endif
 
+	//初始化zone，设置zone的free_area链表，标记所有页面不可用。
 	free_area_init_core(pgdat);
 }
 
@@ -6044,6 +6212,9 @@ void __init free_area_init(unsigned long *zones_size)
 			__pa(PAGE_OFFSET) >> PAGE_SHIFT, NULL);
 }
 
+/**
+ * CPU热插拨时的回调。
+ */
 static int page_alloc_cpu_notify(struct notifier_block *self,
 				 unsigned long action, void *hcpu)
 {
@@ -6075,6 +6246,9 @@ static int page_alloc_cpu_notify(struct notifier_block *self,
 
 void __init page_alloc_init(void)
 {
+	/**
+	 * 注册CPU热插拨侦听回调。
+	 */
 	hotcpu_notifier(page_alloc_cpu_notify, 0);
 }
 
@@ -6460,7 +6634,7 @@ __setup("hashdist=", set_hashdist);
  */
 void *__init alloc_large_system_hash(const char *tablename,
 				     unsigned long bucketsize,
-				     unsigned long numentries,
+				     unsigned long numentries,//缓存项的个数
 				     int scale,
 				     int flags,
 				     unsigned int *_hash_shift,
@@ -6473,12 +6647,12 @@ void *__init alloc_large_system_hash(const char *tablename,
 	void *table = NULL;
 
 	/* allow the kernel cmdline to have a say */
-	if (!numentries) {
+	if (!numentries) {//传递的缓存项数目为0，由内核决定分配多少项
 		/* round applicable memory size up to nearest megabyte */
 		numentries = nr_kernel_pages;
 
 		/* It isn't necessary when PAGE_SIZE >= 1MB */
-		if (PAGE_SHIFT < 20)
+		if (PAGE_SHIFT < 20)//每页小于1M，就根据内存有多少M来决定缓存项
 			numentries = round_up(numentries, (1<<20)/PAGE_SIZE);
 
 		/* limit to 1 bucket per 2^scale bytes of low memory */
@@ -6488,7 +6662,7 @@ void *__init alloc_large_system_hash(const char *tablename,
 			numentries <<= (PAGE_SHIFT - scale);
 
 		/* Make sure we've got at least a 0-order allocation.. */
-		if (unlikely(flags & HASH_SMALL)) {
+		if (unlikely(flags & HASH_SMALL)) {//至少分配一页
 			/* Makes no sense without HASH_EARLY */
 			WARN_ON(!(flags & HASH_EARLY));
 			if (!(numentries >> *_hash_shift)) {
@@ -6514,6 +6688,7 @@ void *__init alloc_large_system_hash(const char *tablename,
 
 	log2qty = ilog2(numentries);
 
+	//根据情况从bootmem,vmalloc,伙伴系统中分配内存。感觉这段代码还是晦涩了一点。
 	do {
 		size = bucketsize << log2qty;
 		if (flags & HASH_EARLY)

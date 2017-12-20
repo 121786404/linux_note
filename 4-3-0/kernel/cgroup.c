@@ -5041,6 +5041,9 @@ static void __init cgroup_init_subsys(struct cgroup_subsys *ss, bool early)
  * Initialize cgroups at system boot, and initialize any
  * subsystems that request early init.
  */
+/**
+ * 初始化idle进程的cgroup数据结构。
+ */
 int __init cgroup_init_early(void)
 {
 	static struct cgroup_sb_opts __initdata opts;
@@ -5076,6 +5079,10 @@ int __init cgroup_init_early(void)
  *
  * Register cgroup filesystem and /proc file, and initialize
  * any subsystems that didn't request early init.
+ */
+/**
+ * 执行一些在cgroup_init_early中没有完成的初始化
+ * 在/proc文件系统中注册。
  */
 int __init cgroup_init(void)
 {

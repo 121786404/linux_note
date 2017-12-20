@@ -31,6 +31,9 @@
  * physical memory with fixmap indices.
  *
  */
+/**
+ * 初始化过程中，用于固定映射的区间
+ */
 enum fixed_addresses {
 	FIX_HOLE,
 

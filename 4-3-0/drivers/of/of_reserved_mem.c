@@ -200,9 +200,13 @@ static int __init __reserved_mem_init_node(struct reserved_mem *rmem)
 /**
  * fdt_init_reserved_mem - allocate and init all saved reserved memory regions
  */
+/**
+ * 预留reserved-memory节点的内存
+ */
 void __init fdt_init_reserved_mem(void)
 {
 	int i;
+	/* 遍历每一个reserved memory region */
 	for (i = 0; i < reserved_mem_count; i++) {
 		struct reserved_mem *rmem = &reserved_mem[i];
 		unsigned long node = rmem->fdt_node;
@@ -210,16 +214,31 @@ void __init fdt_init_reserved_mem(void)
 		const __be32 *prop;
 		int err = 0;
 
+		/**
+		 * 每一个需要被其他node引用的node都需要定义"phandle", 或者"linux,phandle"
+		 */
 		prop = of_get_flat_dt_prop(node, "phandle", &len);
 		if (!prop)
 			prop = of_get_flat_dt_prop(node, "linux,phandle", &len);
 		if (prop)
 			rmem->phandle = of_read_number(prop, len/4);
 
+		/**
+		 * size等于0的memory region表示这是一个动态分配region
+		 * base address尚未定义
+		 */
 		if (rmem->size == 0)
+			/**
+			 * 通过__reserved_mem_alloc_size函数对节点进行分析
+			 * 然后调用memblock的alloc接口函数进行memory block的分析
+			 * 最终的结果是确定base address和size
+			 */
 			err = __reserved_mem_alloc_size(node, rmem->name,
 						 &rmem->base, &rmem->size);
 		if (err == 0)
+			/**
+			 * 借用device tree的匹配机制进行这段保留内存的初始化动作
+			 */
 			__reserved_mem_init_node(rmem);
 	}
 }

@@ -43,25 +43,47 @@ struct pt_regs;
  * @dir:		/proc/irq/ procfs entry
  * @name:		flow handler name for /proc/interrupts output
  */
+/**
+ * ÖĞ¶ÏÃèÊö·û
+ */
 struct irq_desc {
 	struct irq_common_data	irq_common_data;
+	//ÖĞ¶Ï¿ØÖÆÆ÷Ïà¹ØµÄÊı¾İ
 	struct irq_data		irq_data;
+	//ÖĞ¶ÏÔÚÃ¿¸öCPUÉÏµÄÖ´ĞĞ×´Ì¬
 	unsigned int __percpu	*kstat_irqs;
+	/**
+	 * ¸ß¼¶irqÊÂ¼şş??
+	 * ¼´¸ß¼¶ÊÂ¼ş´¦Àí»Øµ÷
+	 * Èç±ßÔµ¡¢µçÆ½Á½ÖÖ·½Ê½µÄÖĞ¶ÏÓĞ²»Í¬µÄ´¦Àí·½Ê½¡£
+	 */
 	irq_flow_handler_t	handle_irq;
 #ifdef CONFIG_IRQ_PREFLOW_FASTEOI
+	//armÉÏÎ´ÓÃ
 	irq_preflow_handler_t	preflow_handler;
 #endif
+	//×¢²áµÄirq»Øµ÷Á´±í
 	struct irqaction	*action;	/* IRQ action list */
+	//ºÍirq_common_dataÖĞµÄ×´Ì¬ÓĞÊ²Ã´Çø±ğ?
 	unsigned int		status_use_accessors;
+	//ÄÚ²¿×´Ì¬£¬±ğ¶¯
 	unsigned int		core_internal_state__do_not_mess_with_it;
+	//½ûÖ¹¸ÃÖĞ¶ÏµÄ´ÎÊı
 	unsigned int		depth;		/* nested irq disables */
+	//»½ĞÑ¸ÃÖĞ¶ÏµÄ´ÎÊı£¬ÓÃÓÚµçÔ´¹ÜÀí
 	unsigned int		wake_depth;	/* nested wake enables */
+	//·¢ÉúµÄÖĞ¶Ï´ÎÊı£¬ÓÃÓÚ¼ì²âÓ²¼ş¹ÊÕÏ¡£
 	unsigned int		irq_count;	/* For detecting broken IRQs */
+	//ÉÏ´ÎÎ´´¦Àí¸ÃÖĞ¶ÏµÄÊ±¼ä¡£
 	unsigned long		last_unhandled;	/* Aging timer for unhandled count */
+	//Î´´¦ÀíµÄÖĞ¶Ï´ÎÊı
 	unsigned int		irqs_unhandled;
+	//???
 	atomic_t		threads_handled;
 	int			threads_handled_last;
+	//±£»¤¸ÃÊı¾İ½á¹¹µÄ×ÔĞıËø
 	raw_spinlock_t		lock;
+	//ÔÚÄÄĞ©ºËÉÏÃæ´ò¿ª´ËÖĞ¶Ï
 	struct cpumask		*percpu_enabled;
 #ifdef CONFIG_SMP
 	const struct cpumask	*affinity_hint;
@@ -71,7 +93,9 @@ struct irq_desc {
 #endif
 #endif
 	unsigned long		threads_oneshot;
+	//ÕıÔÚÔËĞĞ¸ÃÖĞ¶ÏirqactionµÄÏß³ÌÊıÁ¿¡£
 	atomic_t		threads_active;
+	//¸ÃÖĞ¶ÏsyncµÈ´ı¶ÓÁĞ
 	wait_queue_head_t       wait_for_threads;
 #ifdef CONFIG_PM_SLEEP
 	unsigned int		nr_actions;
@@ -84,6 +108,7 @@ struct irq_desc {
 #endif
 	int			parent_irq;
 	struct module		*owner;
+	//procÖĞµÄÃû³Æ
 	const char		*name;
 } ____cacheline_internodealigned_in_smp;
 
@@ -137,6 +162,10 @@ static inline struct msi_desc *irq_desc_get_msi_desc(struct irq_desc *desc)
  */
 static inline void generic_handle_irq_desc(struct irq_desc *desc)
 {
+	/**
+	 * µ÷ÓÃÃèÊö·ûÖĞµÄ»Øµ÷£¬ÀıÈçhandle_level_irq.
+	 * Í¨¹ı__irq_set_handlerÉèÖÃ»Øµ÷º¯Êı¡£
+	 */
 	desc->handle_irq(desc);
 }
 

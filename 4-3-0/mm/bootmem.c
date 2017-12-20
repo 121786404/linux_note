@@ -169,6 +169,9 @@ void __init free_bootmem_late(unsigned long physaddr, unsigned long size)
 	}
 }
 
+/**
+ * 释放某个内存块中的内存到伙伴系统中
+ */
 static unsigned long __init free_all_bootmem_core(bootmem_data_t *bdata)
 {
 	struct page *page;
@@ -177,6 +180,7 @@ static unsigned long __init free_all_bootmem_core(bootmem_data_t *bdata)
 	if (!bdata->node_bootmem_map)
 		return 0;
 
+	//内存块的映射位图，起始结束页帧号
 	map = bdata->node_bootmem_map;
 	start = bdata->node_min_pfn;
 	end = bdata->node_low_pfn;
@@ -184,10 +188,11 @@ static unsigned long __init free_all_bootmem_core(bootmem_data_t *bdata)
 	bdebug("nid=%td start=%lx end=%lx\n",
 		bdata - bootmem_node_data, start, end);
 
-	while (start < end) {
+	while (start < end) {//依次释放每一页
 		unsigned long idx, vec;
 		unsigned shift;
 
+		//该页在位图中的值
 		idx = start - bdata->node_min_pfn;
 		shift = idx & (BITS_PER_LONG - 1);
 		/*
@@ -207,17 +212,18 @@ static unsigned long __init free_all_bootmem_core(bootmem_data_t *bdata)
 		 * BITS_PER_LONG block of pages in front of us, free
 		 * it in one go.
 		 */
-		if (IS_ALIGNED(start, BITS_PER_LONG) && vec == ~0UL) {
+		if (IS_ALIGNED(start, BITS_PER_LONG) && vec == ~0UL) {//连续多个页面都可用
 			int order = ilog2(BITS_PER_LONG);
 
+			//一次性释放多个内存给伙伴系统
 			__free_pages_bootmem(pfn_to_page(start), start, order);
 			count += BITS_PER_LONG;
 			start += BITS_PER_LONG;
-		} else {
+		} else {//只能单个页面释放回去了
 			cur = start;
 
 			start = ALIGN(start + 1, BITS_PER_LONG);
-			while (vec && cur != start) {
+			while (vec && cur != start) {//一个一个的释放回去。
 				if (vec & 1) {
 					page = pfn_to_page(cur);
 					__free_pages_bootmem(page, cur, 0);
@@ -232,8 +238,10 @@ static unsigned long __init free_all_bootmem_core(bootmem_data_t *bdata)
 	cur = bdata->node_min_pfn;
 	page = virt_to_page(bdata->node_bootmem_map);
 	pages = bdata->node_low_pfn - bdata->node_min_pfn;
+	//计算memmap数组占用了多少页
 	pages = bootmem_bootmap_pages(pages);
 	count += pages;
+	//将memmap数组一页一页的释放给伙伴系统。
 	while (pages--)
 		__free_pages_bootmem(page++, cur++, 0);
 	bdata->node_bootmem_map = NULL;
@@ -271,16 +279,26 @@ void __init reset_all_zones_managed_pages(void)
  *
  * Returns the number of pages actually released.
  */
+/**
+ * 将bootmem中的空闲页释放到伙伴系统中。
+ */
 unsigned long __init free_all_bootmem(void)
 {
 	unsigned long total_pages = 0;
 	bootmem_data_t *bdata;
 
+	/**
+	 * 设置所有内存块的所有zone，将其管理的页面重置为0
+	 * 为什么重置呢???
+	 */
 	reset_all_zones_managed_pages();
 
+	//遍历所有内存块
 	list_for_each_entry(bdata, &bdata_list, list)
+		//将不需要的内存返还给伙伴系统、
 		total_pages += free_all_bootmem_core(bdata);
 
+	//记录下所有可用的内存页面数量。
 	totalram_pages += total_pages;
 
 	return total_pages;
@@ -604,6 +622,7 @@ find_block:
 	return NULL;
 }
 
+//bootmem分配核心函数
 static void * __init alloc_bootmem_core(unsigned long size,
 					unsigned long align,
 					unsigned long goal,
@@ -612,23 +631,31 @@ static void * __init alloc_bootmem_core(unsigned long size,
 	bootmem_data_t *bdata;
 	void *region;
 
+	//有人调错函数了，警告一下
 	if (WARN_ON_ONCE(slab_is_available()))
-		return kzalloc(size, GFP_NOWAIT);
+		return kzalloc(size, GFP_NOWAIT);//此时slab分配器已经可用，就从slab中分配吧。
 
+	//遍历所有内存块
 	list_for_each_entry(bdata, &bdata_list, list) {
+		//根据goal查找合适的内存块。
 		if (goal && bdata->node_low_pfn <= PFN_DOWN(goal))
 			continue;
 		if (limit && bdata->node_min_pfn >= PFN_DOWN(limit))
 			break;
 
+		//在内存块中分配。
 		region = alloc_bootmem_bdata(bdata, size, align, goal, limit);
-		if (region)
+		if (region)//成功了，返回
 			return region;
 	}
 
 	return NULL;
 }
 
+/**
+ * 在bootmem中分配内存
+ * 优先从goal中分配，如果在goal中没有找到可用内存，则从其他内存条中分配。
+ */
 static void * __init ___alloc_bootmem_nopanic(unsigned long size,
 					      unsigned long align,
 					      unsigned long goal,
@@ -637,14 +664,16 @@ static void * __init ___alloc_bootmem_nopanic(unsigned long size,
 	void *ptr;
 
 restart:
+	//从goal开始分配
 	ptr = alloc_bootmem_core(size, align, goal, limit);
-	if (ptr)
+	if (ptr)//成功:)
 		return ptr;
-	if (goal) {
+	if (goal) {//如果分配失败，并且不是从头开始分配，则回退
 		goal = 0;
 		goto restart;
 	}
 
+	//确实无法分配了:(
 	return NULL;
 }
 

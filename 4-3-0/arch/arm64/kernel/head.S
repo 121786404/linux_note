@@ -62,6 +62,10 @@
 /*
  * Initial memory map attributes.
  */
+/**
+ * PTE_AF表示acces flag，避免缺页异常
+ * PTE_SHARED在所有core之间共享
+ */
 #define PTE_FLAGS	PTE_TYPE_PAGE | PTE_AF | PTE_SHARED
 #define PMD_FLAGS	PMD_TYPE_SECT | PMD_SECT_AF | PMD_SECT_S
 
@@ -274,12 +278,39 @@ ENDPROC(preserve_boot_args)
  * Corrupts:	tmp1, tmp2
  * Returns:	tbl -> next level table page address
  */
+/**
+ * 创建一个中间level的translation table中的描述符
+ * 即PGD、PUD或者PMD的描述符
+ * 或L0、L1或者L2的描述符
+ *	tbl:	创建哪一层的描述符,tbl指向了该translation table的内存
+ *	virt:	给出了要创建地址映射的那个虚拟地址
+ *	shift, ptrs:虚拟地址右移shift，然后截取ptrs位就可以得到entry index了
+ *	tmp1, tmp2: 临时寄存器变量
+ */
 	.macro	create_table_entry, tbl, virt, shift, ptrs, tmp1, tmp2
+	/**
+	 * 保存virt地址对应在Translation table中的entry index。
+	 */
 	lsr	\tmp1, \virt, #\shift
 	and	\tmp1, \tmp1, #\ptrs - 1	// table index
+	/**
+	 * 初始页表只有三个页，即PGD/PUD/PMD/PTE各占一个页
+	 * tmp2保存了下一个level的页表
+	 */
 	add	\tmp2, \tbl, #PAGE_SIZE
+	/**
+	 * 合成页表描述符
+	 * PMD_TYPE_TABLE最后两位为11，表示是块描述符(中间层)
+	 */
 	orr	\tmp2, \tmp2, #PMD_TYPE_TABLE	// address of next table and entry type
+	/**
+	 * 一个页表描述符占用8个字节
+	 * 因此这里左移3位并写入内存
+	 */
 	str	\tmp2, [\tbl, \tmp1, lsl #3]
+	/**
+	 * 移动到下一级，并继续
+	 */
 	add	\tbl, \tbl, #PAGE_SIZE		// next level table page
 	.endm
 
@@ -290,6 +321,9 @@ ENDPROC(preserve_boot_args)
  * Preserves:	tbl, next, virt
  * Corrupts:	tmp1, tmp2
  */
+ /**
+  * 创建内核映射的PGD、PUD、PMD描述符
+  */
 	.macro	create_pgd_entry, tbl, virt, tmp1, tmp2
 	create_table_entry \tbl, \virt, PGDIR_SHIFT, PTRS_PER_PGD, \tmp1, \tmp2
 #if SWAPPER_PGTABLE_LEVELS == 3
@@ -303,6 +337,10 @@ ENDPROC(preserve_boot_args)
  *
  * Preserves:	tbl, flags
  * Corrupts:	phys, start, end, pstate
+ */
+/**
+ * 在tbl指定的Translation table中建立block descriptor以便完成address mapping
+ * 映射范围由start, end指定
  */
 	.macro	create_block_map, tbl, flags, phys, start, end
 	lsr	\phys, \phys, #BLOCK_SHIFT
@@ -325,7 +363,15 @@ ENDPROC(preserve_boot_args)
  *   - first few MB of the kernel linear mapping to jump to once the MMU has
  *     been enabled
  */
+/**
+ * 创建初始页表
+ */
 __create_page_tables:
+/**
+ * 取idmap_pg_dir这个符号的物理地址，保存到x25
+ * 取swapper_pg_dir这个符号的物理地址，保存到x26
+ * adrp->address page，寻址范围4G，要求页对齐
+ */
 	adrp	x25, idmap_pg_dir
 	adrp	x26, swapper_pg_dir
 	mov	x27, lr
@@ -336,6 +382,13 @@ __create_page_tables:
 	 */
 	mov	x0, x25
 	add	x1, x26, #SWAPPER_DIR_SIZE
+	/**
+	 * 使无效页表内容
+	 * idmap_pg_dir和swapper_pg_dir对应页表空间不属于kernel image的一部分
+	 * boot并不保证它是clean的
+	 * 因此其对应的cacheline很可能有一些旧的，无效的数据
+	 * 必须要清理掉。
+	 */
 	bl	__inval_cache_range
 
 	/*
@@ -343,21 +396,36 @@ __create_page_tables:
 	 */
 	mov	x0, x25
 	add	x6, x26, #SWAPPER_DIR_SIZE
+/**
+ * 将idmap和swapper页表内容设定为0
+ */
 1:	stp	xzr, xzr, [x0], #16
 	stp	xzr, xzr, [x0], #16
 	stp	xzr, xzr, [x0], #16
 	stp	xzr, xzr, [x0], #16
 	cmp	x0, x6
 	b.lo	1b
-
+/**
+ * 映射属性
+ */
 	ldr	x7, =MM_MMUFLAGS
 
 	/*
 	 * Create the identity mapping.
 	 */
+/**
+ * x0保存了idmap_pg_dir变量的物理地址
+ * 也就是identity mapping的PGD
+ */
 	mov	x0, x25				// idmap_pg_dir
+/**
+ * x3保存了__idmap_text_start的物理地址
+ */
 	adrp	x3, __idmap_text_start		// __pa(__idmap_text_start)
 
+/**
+ * 这里是防止物理地址太大，映射出现问题
+ */
 #ifndef CONFIG_ARM64_VA_BITS_48
 #define EXTRA_SHIFT	(PGDIR_SHIFT + PAGE_SHIFT - 3)
 #define EXTRA_PTRS	(1 << (48 - EXTRA_SHIFT))
@@ -384,10 +452,14 @@ __create_page_tables:
 	 * the physical address of __idmap_text_end.
 	 */
 	adrp	x5, __idmap_text_end
+	/* 计算最高位地址的前导0个数 */
 	clz	x5, x5
+	/* 配置的虚拟地址前导0个数 */
 	cmp	x5, TCR_T0SZ(VA_BITS)	// default T0SZ small enough?
+	/* 要映射的高地址在虚拟地址的表示范围内 */
 	b.ge	1f			// .. then skip additional level
 
+	/* 物理地址太大，需要创建扩展映射，不懂 */
 	adr_l	x6, idmap_t0sz
 	str	x5, [x6]
 	dmb	sy
@@ -397,19 +469,45 @@ __create_page_tables:
 1:
 #endif
 
+	/* 建立中间层的转换表 */
 	create_pgd_entry x0, x3, x5, x6
 	mov	x5, x3				// __pa(__idmap_text_start)
 	adr_l	x6, __idmap_text_end		// __pa(__idmap_text_end)
+/**
+ * 创建最后一个level translation table的entry。该entry可能是page descriptor，也可能是block descriptor，具体传递的参数如下：
+ * x0：指向最后一个level的translation table
+ * x7：要创建映射的memory attribute
+ * x3：物理地址
+ * x5：虚拟地址的起始地址（其实和x3一样）
+ * 创建最后一个level translation table的entry。该entry可能是page descriptor，也可能是block descriptor，具体传递的参数如下：
+x0：指向最后一个level的translation table
+x7：要创建映射的memory attribute
+x3：物理地址
+x5：虚拟地址的起始地址（其实和x3一样）
+x6：虚拟地址的结束地址
+ */
 	create_block_map x0, x7, x3, x5, x6
 
 	/*
 	 * Map the kernel image (starting with PHYS_OFFSET).
 	 */
+/**
+ * x0指向了内核地址空间的PGD的基地址
+ */
 	mov	x0, x26				// swapper_pg_dir
+/**
+ * PAGE_OFFSET是kernel image的虚拟地址起始处
+ */
 	mov	x5, #PAGE_OFFSET
+/**
+ * 创建PAGE_OFFSET对应中间level的table描述符。
+ */
 	create_pgd_entry x0, x5, x3, x6
 	ldr	x6, =KERNEL_END			// __va(KERNEL_END)
 	mov	x3, x24				// phys offset
+/**
+ * 创建PAGE_OFFSET～KERNEL_END之间地址映射的最后一个level的描述符。
+ */
 	create_block_map x0, x7, x3, x5, x6
 
 	/*

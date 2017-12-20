@@ -679,7 +679,9 @@ struct signal_struct {
 	unsigned int		has_child_subreaper:1;
 
 	/* POSIX.1b Interval Timers */
+	/* 进程最近分配的posix时钟ID，参照posix_timer_add */
 	int			posix_timer_id;
+	/* posix进程的时钟链表头 */
 	struct list_head	posix_timers;
 
 	/* ITIMER_REAL timer for the process */
@@ -749,6 +751,7 @@ struct signal_struct {
 	 * protect this instead of the siglock, because they really
 	 * have no need to disable irqs.
 	 */
+	//进程的资源限制
 	struct rlimit rlim[RLIM_NLIMITS];
 
 #ifdef CONFIG_BSD_PROCESS_ACCT
@@ -870,6 +873,7 @@ struct sched_info {
 
 #ifdef CONFIG_TASK_DELAY_ACCT
 struct task_delay_info {
+	//保护本结构的自旋锁
 	spinlock_t	lock;
 	unsigned int	flags;	/* Private per-task flags */
 
@@ -888,14 +892,18 @@ struct task_delay_info {
 	 * associated with the operation is added to XXX_delay.
 	 * XXX_delay contains the accumulated delay time in nanoseconds.
 	 */
+	//块设备io起始时间
 	u64 blkio_start;	/* Shared by blkio, swapin */
+	//等待块io的延迟时间
 	u64 blkio_delay;	/* wait for sync block io completion */
 	u64 swapin_delay;	/* wait for swapin block io completion */
+	//块设备io次数
 	u32 blkio_count;	/* total count of the number of sync block */
 				/* io operations performed */
 	u32 swapin_count;	/* total count of the number of swapin block */
 				/* io operations performed */
 
+	//等待回收页面的时间
 	u64 freepages_start;
 	u64 freepages_delay;	/* wait for memory reclaim */
 	u32 freepages_count;	/* total count of memory reclaim */

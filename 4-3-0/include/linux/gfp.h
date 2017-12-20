@@ -10,10 +10,16 @@
 struct vm_area_struct;
 
 /* Plain integer GFP bitmasks. Do not use this directly. */
+/**
+ * 和页面ZONE相关的标志
+ */
 #define ___GFP_DMA		0x01u
 #define ___GFP_HIGHMEM		0x02u
 #define ___GFP_DMA32		0x04u
 #define ___GFP_MOVABLE		0x08u
+/**
+ * 和分配行为相关的标志
+ */
 #define ___GFP_WAIT		0x10u
 #define ___GFP_HIGH		0x20u
 #define ___GFP_IO		0x40u
@@ -388,6 +394,9 @@ extern void __free_kmem_pages(struct page *page, unsigned int order);
 extern void free_kmem_pages(unsigned long addr, unsigned int order);
 
 #define __free_page(page) __free_pages((page), 0)
+/**
+ * 释放页面的主函数
+ */
 #define free_page(addr) free_pages((addr), 0)
 
 void page_alloc_init(void);

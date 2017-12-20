@@ -63,27 +63,53 @@ struct module;
  * @resume:		resume function for the clocksource, if necessary
  * @owner:		module reference, must be set by clocksource in modules
  */
+/**
+ * 时钟源描述符，用于提供free running的硬件
+ */
 struct clocksource {
 	/*
 	 * Hotpath data, fits in a single cache line when the
 	 * clocksource itself is cacheline aligned.
 	 */
+	/* 读取硬件时间戳 */
 	cycle_t (*read)(struct clocksource *cs);
+	/* 时钟的有效位，超过这些位就溢出了 */
 	cycle_t mask;
+	/* ns = ((u64) cycles * mult) >> shift */
 	u32 mult;
 	u32 shift;
+	/* 能够休眠的最大时间，超过此时间cycles会溢出 */
 	u64 max_idle_ns;
 	u32 maxadj;
+
+	/**
+	 * 下面这些字段没那么重要，可以放在下一个cacheline
+	 */
 #ifdef CONFIG_ARCH_CLOCKSOURCE_DATA
 	struct arch_clocksource_data archdata;
 #endif
 	u64 max_cycles;
 	const char *name;
+	/**
+	 * 将时钟挂到全局链表中
+	 */
 	struct list_head list;
+	/**
+	 * 描述时钟的质量，好货还是歪货
+	 */
 	int rating;
+	/**
+	 * 启用时钟源
+	 */
 	int (*enable)(struct clocksource *cs);
 	void (*disable)(struct clocksource *cs);
+	/**
+	 * 标志和特性
+	 */
 	unsigned long flags;
+	/**
+	 * 电源管理相关
+	 */
 	void (*suspend)(struct clocksource *cs);
 	void (*resume)(struct clocksource *cs);
 
@@ -95,6 +121,9 @@ struct clocksource {
 	cycle_t wd_last;
 #endif
 	struct module *owner;
+/**
+ * 频繁访问的数据，前面一部分集中放在一个缓存行
+ */
 } ____cacheline_aligned;
 
 /*
@@ -104,8 +133,14 @@ struct clocksource {
 #define CLOCK_SOURCE_MUST_VERIFY		0x02
 
 #define CLOCK_SOURCE_WATCHDOG			0x10
+/**
+ * 对高精度时钟有用???
+ */
 #define CLOCK_SOURCE_VALID_FOR_HRES		0x20
 #define CLOCK_SOURCE_UNSTABLE			0x40
+/**
+ * 挂起时会继续运行而不停止
+ */
 #define CLOCK_SOURCE_SUSPEND_NONSTOP		0x80
 #define CLOCK_SOURCE_RESELECT			0x100
 
@@ -243,6 +278,10 @@ extern int clocksource_mmio_init(void __iomem *, const char *,
 
 extern int clocksource_i8253_init(void);
 
+/**
+ * 是初始化了一个struct of_device_id的静态常量
+ * 并放置在__clksrc_of_table section中
+ */
 #define CLOCKSOURCE_OF_DECLARE(name, compat, fn) \
 	OF_DECLARE_1(clksrc, name, compat, fn)
 
