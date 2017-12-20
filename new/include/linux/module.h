@@ -23,6 +23,54 @@
 #include <linux/percpu.h>
 #include <asm/module.h>
 
+
+/*
+
+将moudle.c编译为 moudle.o
+modpost(scripts\mod\modpost.c)根据moudle.c生成moudle.mod.c
+将moudle.mod.c编译为moudle.mod.o
+将moudle.o和moudle.mod.o链接为moudle.ko
+
+
+
+其定义了一个类型为 module 的全局变量 __this_module，成员 init 为 init_module（即 hello_init），
+且该变量链接到 .gnu.linkonce.this_module段中。
+
+modutils 会调用 sys_init_module api，调用到init_module函数
+
+
+
+MODULE_INFO(vermagic, VERMAGIC_STRING);
+
+__visible struct module __this_module
+__attribute__((section(".gnu.linkonce.this_module"))) = {
+	.name = KBUILD_MODNAME,
+	.init = init_module,
+#ifdef CONFIG_MODULE_UNLOAD
+	.exit = cleanup_module,
+#endif
+	.arch = MODULE_ARCH_INIT,
+};
+
+static const struct modversion_info ____versions[]
+__used
+__attribute__((section("__versions"))) = {
+	{ 0xc6c01fa, __VMLINUX_SYMBOL_STR(module_layout) },
+	{ 0x27e1a049, __VMLINUX_SYMBOL_STR(printk) },
+};
+
+static const char __module_depends[]
+__used
+__attribute__((section(".modinfo"))) =
+"depends=";
+
+
+MODULE_INFO(srcversion, "0352AD4358D8B5ECA60036D");
+
+*/
+
+
+
 /* In stripped ARM and x86-64 modules, ~ is surprisingly rare. */
 #define MODULE_SIG_STRING "~Module signature appended~\n"
 
@@ -124,6 +172,15 @@ extern void cleanup_module(void);
 #define console_initcall(fn)		module_init(fn)
 #define security_initcall(fn)		module_init(fn)
 
+/*
+__inittest 仅仅是为了检测定义的函数是否符合 initcall_t 类型，如果不是 __inittest 类型在编译时将会报错。
+
+alias 属性是 gcc 的特有属性，将定义 init_module 为函数 initfn 的别名。
+所以 module_init(hello_init) 的作用就是定义一个变量名 init_module，其地址和hello_init 是一样的
+
+因此，用动态加载方式时，可以不使用 module_init 和 module_exit 宏，
+而直接定义 init_module 和 cleanup_module 函数，效果是一样的
+*/
 /* Each module must use one module_init(). */
 #define module_init(initfn)					\
 	static inline initcall_t __maybe_unused __inittest(void)		\

@@ -2428,6 +2428,9 @@ static void set_license(struct module *mod, const char *license)
 	if (!license)
 		license = "unspecified";
 
+/*
+    如果模块内没有使用license则会打印一下内核受到污染的信息
+*/
 	if (!license_is_gpl_compatible(license)) {
 		if (!test_taint(TAINT_PROPRIETARY_MODULE))
 			pr_warn("%s: module license '%s' taints kernel.\n",
@@ -2937,7 +2940,9 @@ static struct module *setup_load_info(struct load_info *info, int flags)
 			break;
 		}
 	}
-
+/*
+查找 .gnu.linkonce.this_module 段
+*/
 	info->index.mod = find_sec(info, ".gnu.linkonce.this_module");
 	if (!info->index.mod) {
 		pr_warn("No module found in object\n");

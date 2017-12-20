@@ -78,8 +78,13 @@ struct clock_event_device中的broadcast这个callback函数是和clock event广
 在per CPU 的local timer硬件无法正常运作的时候，
 需要一个独立于各个CPU的timer硬件来作为broadcast clock event device。
 在这种情况下，它可以将clock event广播到所有的CPU core，以此推动各个CPU core上的tick device的运作。
+ * CPU进入C3睡眠状态时，该时钟会失效
 */
 # define CLOCK_EVT_FEAT_C3STOP		0x000008
+/**
+ * 时钟设备只是一个摆设
+ * apic local timer有这个标志
+ */
 # define CLOCK_EVT_FEAT_DUMMY		0x000010
 
 /*
@@ -90,6 +95,9 @@ struct clock_event_device中的broadcast这个callback函数是和clock event广
 
 /*
  * Clockevent device is based on a hrtimer for broadcast
+ */
+/**
+ * 基于高精度时钟来实现
  */
 # define CLOCK_EVT_FEAT_HRTIMER		0x000080
 
@@ -123,8 +131,20 @@ struct clock_event_device中的broadcast这个callback函数是和clock event广
  * @list:		list head for the management code
  * @owner:		module reference
  */
+/**
+ * 定时器设备描述符
+ */
 struct clock_event_device {
+	/**
+	 * 时钟的定时中断处理函数
+	 * 如tick_handle_periodic
+	 */
 	void			(*event_handler)(struct clock_event_device *);
+	/** 
+	 * 控制下一次event产生的时间点
+	 * set_next_event以cycles为单位
+	 * set_next_ktime以ktime(纳秒)为单位
+	 */
 	int			(*set_next_event)(unsigned long evt, struct clock_event_device *);
 	int			(*set_next_ktime)(ktime_t expires, struct clock_event_device *);
 /*
@@ -145,6 +165,7 @@ struct clock_event_device {
     在注册clock event device的时候设定这个参数
 */
 	u64			min_delta_ns;
+	/* 类似于clocksource */
 	u32			mult;
 	u32			shift;
 	enum clock_event_state	state_use_accessors;
@@ -154,6 +175,7 @@ struct clock_event_device {
 	unsigned int		features;
 	unsigned long		retries;
 
+	/* 设置为不同的工作状态 */
 	int			(*set_state_periodic)(struct clock_event_device *);
 	int			(*set_state_oneshot)(struct clock_event_device *);
 	int			(*set_state_oneshot_stopped)(struct clock_event_device *);
@@ -173,8 +195,11 @@ struct clock_event_device {
 	unsigned long		max_delta_ticks;
 
 	const char		*name;
+	/* 类似于clocksource */
 	int			rating;
+	/* 使用的IRQ number */
 	int			irq;
+	/* 该clock event device附着在哪一个CPU core上 */
 	int			bound_on;
 /*
     在multi core的环境下，底层driver在调用该接口函数注册clock event设备之前就需要设定cpumask成员，

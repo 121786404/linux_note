@@ -76,23 +76,47 @@ struct module;
  * information you need you should consider to cache line align that
  * structure.
  */
+ /**
+ * 时钟源描述符，用于提供free running的硬件
+ */
 struct clocksource {
 	u64 (*read)(struct clocksource *cs);
+	/* 时钟的有效位，超过这些位就溢出了 */
 	u64 mask;
 	u32 mult;
 	u32 shift;
+	/* 能够休眠的最大时间，超过此时间cycles会溢出 */
 	u64 max_idle_ns;
 	u32 maxadj;
+
+	/**
+	 * 下面这些字段没那么重要，可以放在下一个cacheline
+	 */
 #ifdef CONFIG_ARCH_CLOCKSOURCE_DATA
 	struct arch_clocksource_data archdata;
 #endif
 	u64 max_cycles;
 	const char *name;
+	/**
+	 * 将时钟挂到全局链表中
+	 */
 	struct list_head list;
+	/**
+	 * 描述时钟的质量，好货还是歪货
+	 */
 	int rating;
+	/**
+	 * 启用时钟源
+	 */
 	int (*enable)(struct clocksource *cs);
 	void (*disable)(struct clocksource *cs);
+	/**
+	 * 标志和特性
+	 */
 	unsigned long flags;
+	/**
+	 * 电源管理相关
+	 */
 	void (*suspend)(struct clocksource *cs);
 	void (*resume)(struct clocksource *cs);
 	void (*mark_unstable)(struct clocksource *cs);
@@ -114,8 +138,14 @@ struct clocksource {
 #define CLOCK_SOURCE_MUST_VERIFY		0x02
 
 #define CLOCK_SOURCE_WATCHDOG			0x10
+/**
+ * 对高精度时钟有用???
+ */
 #define CLOCK_SOURCE_VALID_FOR_HRES		0x20
 #define CLOCK_SOURCE_UNSTABLE			0x40
+/**
+ * 挂起时会继续运行而不停止
+ */
 #define CLOCK_SOURCE_SUSPEND_NONSTOP		0x80
 #define CLOCK_SOURCE_RESELECT			0x100
 
@@ -250,6 +280,9 @@ extern int clocksource_mmio_init(void __iomem *, const char *,
 extern int clocksource_i8253_init(void);
 
 /*
+ * 是初始化了一个struct of_device_id的静态常量
+ * 并放置在__clksrc_of_table section中
+ 
 在linux kernel编译的时候，你可以配置多个clocksource进入内核，
 编译系统会把所有的CLOCKSOURCE_OF_DECLARE宏定义的数据放入到一个特殊的section中（section name是__clksrc_of_table），
 我们称这个特殊的section叫做clock source table。

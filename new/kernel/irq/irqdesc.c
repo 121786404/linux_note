@@ -661,6 +661,7 @@ int __handle_domain_irq(struct irq_domain *domain, unsigned int hwirq,
 
 #ifdef CONFIG_IRQ_DOMAIN
 	if (lookup)
+		//HW中断号转逻辑中断号
 		irq = irq_find_mapping(domain, hwirq);
 #endif
 

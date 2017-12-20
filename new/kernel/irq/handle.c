@@ -225,8 +225,10 @@ irqreturn_t handle_irq_event(struct irq_desc *desc)
 	irqd_set(&desc->irq_data, IRQD_IRQ_INPROGRESS);
 	raw_spin_unlock(&desc->lock);
 
+	//调用ISR
 	ret = handle_irq_event_percpu(desc);
 
+	//再次获得锁并清除IRQD_IRQ_INPROGRESS标志
 	raw_spin_lock(&desc->lock);
 /*
 	清除IRQD_IRQ_INPROGRESS标志

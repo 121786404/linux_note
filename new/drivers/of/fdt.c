@@ -650,29 +650,54 @@ static int __init __fdt_scan_reserved_mem(unsigned long node, const char *uname,
 	const char *status;
 	int err;
 
+	/**
+	 * 是root node的子节点
+	 * node name是"reserved-memory"
+	 */
 	if (!found && depth == 1 && strcmp(uname, "reserved-memory") == 0) {
+		/**
+		 * reserved-memory节点应该包括#address-cells、#size-cells和range属性
+		 * 并且#address-cells和#size-cells的属性值应该等于根节点对应的属性值
+		 */
 		if (__reserved_mem_check_root(node) != 0) {
 			pr_err("Reserved memory: unsupported node format, ignoring\n");
 			/* break scan */
 			return 1;
 		}
+		/**
+		 * 找到，可以处理下一个节点
+		 */
 		found = 1;
 		/* scan next node */
 		return 0;
-	} else if (!found) {
+	} else if (!found) {/* 返回0继续搜索下一个节点 */
 		/* scan next node */
 		return 0;
 	} else if (found && depth < 2) {
+		/**
+		 * 如果找到了一个reserved-memory节点，并且完成了对其所有subnode的scan
+		 * 那么退出整个reserved memory的scan过程。
+		 */
 		/* scanning of /reserved-memory has been finished */
 		return 1;
 	}
 
 	status = of_get_flat_dt_prop(node, "status", NULL);
+	/**
+	 * 如果定义了status属性
+	 * 那么要求其值必须要是ok或者okay
+	 */
 	if (status && strcmp(status, "okay") != 0 && strcmp(status, "ok") != 0)
 		return 0;
 
+	/**
+	 * 处理静态定义的保留区域
+	 */
 	err = __reserved_mem_reserve_reg(node, uname);
-	if (err == -ENOENT && of_get_flat_dt_prop(node, "size", NULL))
+	if (err == -ENOENT && of_get_flat_dt_prop(node, "size", NULL))/* 动态定义的区域，只有size没有指定基地址 */
+		/**
+		 * 由操作系统自已分配一段区域并保留起来
+		 */
 		fdt_reserved_mem_save_node(node, uname, 0, 0);
 
 	/* scan next node */
@@ -691,18 +716,29 @@ void __init early_init_fdt_scan_reserved_mem(void)
 	int n;
 	u64 base, size;
 
+	/**
+	 * 系统中没有有效的fdt
+	 * 直接退出
+	 */
 	if (!initial_boot_params)
 		return;
 
 	/* Process header /memreserve/ fields */
 	for (n = 0; ; n++) {
+		/* 分析FDT中的memreserve设置 */
 		fdt_get_mem_rsv(initial_boot_params, n, &base, &size);
 		if (!size)
 			break;
+		/* 保留相应的内存 */
 		early_init_dt_reserve_memory_arch(base, size, 0);
 	}
 
+	/**
+	 * 进行reserved-memory节点的扫描
+	 * 之后调用fdt_init_reserved_mem函数进行内存预留的动作
+	 */
 	of_scan_flat_dt(__fdt_scan_reserved_mem, NULL);
+	/* 处理动态保留内存 */
 	fdt_init_reserved_mem();
 }
 
@@ -1031,23 +1067,36 @@ int __init early_init_dt_scan_memory(unsigned long node, const char *uname,
 		 */
 		if (!IS_ENABLED(CONFIG_PPC32) || depth != 1 || strcmp(uname, "memory@0") != 0)
 			return 0;
-	} else if (strcmp(type, "memory") != 0)
+	} else if (strcmp(type, "memory") != 0)/* 只解析memory参数 */
 		return 0;
 
+	/**
+	 * 从DT中读取物理地址的位置
+	 */
 	reg = of_get_flat_dt_prop(node, "linux,usable-memory", &l);
 	if (reg == NULL)
 		reg = of_get_flat_dt_prop(node, "reg", &l);
 	if (reg == NULL)
 		return 0;
 
+	/* endp是最后一个属性 */
 	endp = reg + (l / sizeof(__be32));
 	hotpluggable = of_get_flat_dt_prop(node, "hotpluggable", NULL);
 
 	pr_debug("memory scan node %s, reg size %d,\n", uname, l);
 
+	/**
+	 * dt_root_addr_cells和dt_root_size_cells这两个参数的解析在early_init_dt_scan_root中完成。
+	 * 对于ARMv8，一般dt_root_addr_cells和dt_root_size_cells等于2
+	 * 表示基地址（或者size）用两个32-bit的cell表示
+	 * 这里遍历，处理每一对地址及其长度
+	 */
 	while ((endp - reg) >= (dt_root_addr_cells + dt_root_size_cells)) {
 		u64 base, size;
 
+		/**
+		 * 解析内存块的基地址及其长度
+		 */
 		base = dt_mem_next_cell(dt_root_addr_cells, &reg);
 		size = dt_mem_next_cell(dt_root_size_cells, &reg);
 
@@ -1057,6 +1106,10 @@ int __init early_init_dt_scan_memory(unsigned long node, const char *uname,
 		    (unsigned long long)size);
 
         /* vexpress-v2p-ca9.dts base = 0x60000000   size = 0x40000000*/
+		/**
+		 * 针对该memory mode中的每一个memory region
+		 & 调用early_init_dt_add_memory_arch向系统注册memory type的内存区域
+		 */
 		early_init_dt_add_memory_arch(base, size);
 
 		if (!hotpluggable)
@@ -1078,15 +1131,24 @@ int __init early_init_dt_scan_chosen(unsigned long node, const char *uname,
 
 	pr_debug("search \"chosen\", depth: %d, uname: %s\n", depth, uname);
 
+	/**
+	 * 只扫描第一级子节点下面的chosen节点
+	 */
 	if (depth != 1 || !data ||
 	    (strcmp(uname, "chosen") != 0 && strcmp(uname, "chosen@0") != 0))
 		return 0;
 
+	/**
+	 * 解析chosen node中的initrd的信息
+	 */
 	early_init_dt_check_for_initrd(node);
 
 	/* Retrieve command line */
+	/**
+	 * 解析chosen node中的bootargs
+	 */
 	p = of_get_flat_dt_prop(node, "bootargs", &l);
-	if (p != NULL && l > 0)
+	if (p != NULL && l > 0)/* 将bootargs参数复制到内存中 */
 		strlcpy(data, p, min((int)l, COMMAND_LINE_SIZE));
 
 	/*
@@ -1102,7 +1164,8 @@ int __init early_init_dt_scan_chosen(unsigned long node, const char *uname,
 	strlcpy(data, CONFIG_CMDLINE, COMMAND_LINE_SIZE);
 #else
 	/* No arguments from boot loader, use kernel's  cmdl*/
-	if (!((char *)data)[0])
+	if (!((char *)data)[0])/* 没有传入参数 */
+		/* 用默认的参数 */
 		strlcpy(data, CONFIG_CMDLINE, COMMAND_LINE_SIZE);
 #endif
 #endif /* CONFIG_CMDLINE */
@@ -1229,12 +1292,19 @@ bool __init early_init_dt_verify(void *params)
 void __init early_init_dt_scan_nodes(void)
 {
 	/* Retrieve various information from the /chosen node */
+	/**
+	 * 扫描chosen node节点
+	 * 并读取启动参数到命令行参数中。
+	 */
 	of_scan_flat_dt(early_init_dt_scan_chosen, boot_command_line);
 
 	/* Initialize {size,address}-cells info */
 	of_scan_flat_dt(early_init_dt_scan_root, NULL);
 
 	/* Setup memory, calling early_init_dt_add_memory_arch */
+	/**
+	 * 读取内存节点属性
+	 */
 	of_scan_flat_dt(early_init_dt_scan_memory, NULL);
 }
 

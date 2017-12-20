@@ -523,6 +523,7 @@ static void __init mm_init(void)
 	 * bigger than MAX_ORDER unless SPARSEMEM.
 	 */
 	page_ext_init_flatmem();
+	//将boot内存管理转换为伙伴内存管理
 	mem_init();
 	/**
 	 * 初始化slab/slub内存分配器
@@ -611,6 +612,7 @@ init=/linuxrc earlyprintk console=ttyAMA0,115200 root=/dev/mmcblk0 rw rootwait
 	 * 而且会对per-CPU变量的动态分配机制进行初始化*/
 	setup_per_cpu_areas();
 	boot_cpu_state_init();
+	//体系结构相关的SMP初始化，还是设置每cpu数据相关的东西
 	smp_prepare_boot_cpu();	/* arch-specific boot-cpu hooks */
 
 	//继续初始化伙伴系统中的pglist_data，重点是初始化它的node_zonelist成员
@@ -824,6 +826,7 @@ init=/linuxrc earlyprintk console=ttyAMA0,115200 root=/dev/mmcblk0 rw rootwait
 	// file system, including kernfs, sysfs, rootfs, mount tree
 	vfs_caches_init();
 	pagecache_init();
+	//初始化以准备使用进程信号。
 	signals_init();
 	/* rootfs populating might need page-writeback */
 	//初始化页回写机制。
@@ -1277,6 +1280,10 @@ static noinline void __init kernel_init_freeable(void)
 /*
     会透过函式do_one_initcall,执行Symbol中 __initcall_start与__early_initcall_end之间的函数
 */
+	/**
+	 * 执行模块注册的初始化函数。
+	 * 这些函数主要是初始化多核间调度需要的队列。
+	 */
 	do_pre_smp_initcalls();
 	lockup_detector_init();
 /*

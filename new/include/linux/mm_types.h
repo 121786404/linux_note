@@ -104,6 +104,7 @@ struct page {
         表示该页在vm_file中的偏移页数, 其类型pgoff_t被定义为unsigned long即一个机器字长.
         */
 		pgoff_t index;		/* Our offset within mapping. */
+	/* 所在slab的第一个free对象 */
 		void *freelist;		/* sl[aou]b first free object */
 		/* page_deferred_list().prev	-- second tail page */
 	};
@@ -144,8 +145,14 @@ struct page {
 
 				unsigned int active;		/* SLAB */
 				struct {			/* SLUB */
+						/* 在当前slab中，已经分配的slab数量 */
 					unsigned inuse:16;
+						/* 在当前slab中，总slab数量 */
 					unsigned objects:15;
+						/**
+						 * 如果为1，表示只能由活动CPU分配SLAB
+						 * 其他CPU只能向其释放SLAB
+						 */
 					unsigned frozen:1;
 				};
 				int units;			/* SLOB */
@@ -264,6 +271,7 @@ lru：链表头，主要有3个用途：
 		spinlock_t ptl;
 #endif
 #endif
+		/* 指向本页关联的SLAB描述符 */
 		struct kmem_cache *slab_cache;	/* SL[AU]B: Pointer to slab */
 	};
 

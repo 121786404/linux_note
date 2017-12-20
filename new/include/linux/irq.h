@@ -416,6 +416,9 @@ static inline irq_hw_number_t irqd_to_hwirq(struct irq_data *d)
  * @ipi_send_mask:	send an IPI to destination cpus in cpumask
  * @flags:		chip specific flags
  */
+/**
+ * 中断控制器
+ */
 struct irq_chip {
 	struct device	*parent_device;
 	/*该中断控制器的名字，显示在/proc/interrupts*/
@@ -457,7 +460,7 @@ struct irq_chip {
     */
 	int		(*irq_set_wake)(struct irq_data *data, unsigned int on);
     /*
-      上锁函数
+      锁定总线
       保护低速设备访问
     */
 	void		(*irq_bus_lock)(struct irq_data *data);

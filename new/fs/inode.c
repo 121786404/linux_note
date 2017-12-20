@@ -1948,6 +1948,7 @@ void __init inode_init_early(void)
 		INIT_HLIST_HEAD(&inode_hashtable[loop]);
 }
 
+//与dcache_init类似，略过
 void __init inode_init(void)
 {
 	unsigned int loop;

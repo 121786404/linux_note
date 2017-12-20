@@ -3425,9 +3425,9 @@ get_page_from_freelist(gfp_t gfp_mask, unsigned int order, int alloc_flags,
         /*
            检查给定的内存域是否属于该进程允许运行的CPU
         */
-		if (cpusets_enabled() &&
-			(alloc_flags & ALLOC_CPUSET) &&
-			!__cpuset_zone_allowed(zone, gfp_mask))
+		if (cpusets_enabled() && /* 这个开关用的人少了 */
+			(alloc_flags & ALLOC_CPUSET) && /* 要求按CPU来分配 */
+			!__cpuset_zone_allowed(zone, gfp_mask))/* 配对不成功，这个ZONE不喜欢这个CPU */
 				continue;
 		/*
 		 * When allocating a page cache page for writing, we
@@ -3466,6 +3466,9 @@ get_page_from_freelist(gfp_t gfp_mask, unsigned int order, int alloc_flags,
 				       ac_classzone_idx(ac), alloc_flags)) {
 			int ret;
 
+			/**
+			 * 嘿呦嘿呦，准备回收内存
+			 */
 			/* Checked here to keep the fast path fast */
 			BUILD_BUG_ON(ALLOC_NO_WATERMARKS < NR_WMARK);
 			if (alloc_flags & ALLOC_NO_WATERMARKS)
@@ -4623,12 +4626,14 @@ void __free_pages(struct page *page, unsigned int order)
         则置放到热页的列表中,交回到高速缓存即可,
         如果高速缓存满了再交回给buddy system
         */
-		if (order == 0)
+		if (order == 0)/* 如果是单个页*/
+			/* 将它放到hot池中，性能优化考虑。 */
 			free_hot_cold_page(page, false);
 /*
 	不为0说明也没有缓存过 直接放回链表中
 */
 		else
+			/* 否则直接放回链表中 */
 			__free_pages_ok(page, order);
 	}
 }

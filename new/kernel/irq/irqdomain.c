@@ -234,6 +234,7 @@ struct irq_domain *irq_domain_add_legacy(struct device_node *of_node,
 				  first_hwirq + size, 0, ops, host_data);
 	// 创建映射			  
 	if (domain)
+		/* 创建HW中断与逻辑中断之间的映射 */
 		irq_domain_associate_many(domain, first_irq, first_hwirq, size);
 
 	return domain;
@@ -360,6 +361,9 @@ void irq_domain_disassociate(struct irq_domain *domain, unsigned int irq)
 	}
 }
 
+/**
+ * 建立逻辑中断与HW中断之间的映射
+ */
 int irq_domain_associate(struct irq_domain *domain, unsigned int virq,
 			 irq_hw_number_t hwirq)
 {
@@ -374,12 +378,16 @@ int irq_domain_associate(struct irq_domain *domain, unsigned int virq,
 	if (WARN(irq_data->domain, "error: virq%i is already associated", virq))
 		return -EINVAL;
 
+	//获取irq_domain的锁
 	mutex_lock(&irq_domain_mutex);
 	irq_data->hwirq = hwirq;
 	irq_data->domain = domain;
-	if (domain->ops->map) {
+	if (domain->ops->map) {/* 定义了map函数 */
+		/**
+		 * 调用irq domain的map callback函数
+		 */
 		ret = domain->ops->map(domain, virq, hwirq);
-		if (ret != 0) {
+		if (ret != 0) {/* 失败了 */
 			/*
 			 * If map() returns -EPERM, this interrupt is protected
 			 * by the firmware or some other service and shall not
@@ -389,26 +397,34 @@ int irq_domain_associate(struct irq_domain *domain, unsigned int virq,
 				pr_info("%s didn't like hwirq-0x%lx to VIRQ%i mapping (rc=%d)\n",
 				       domain->name, hwirq, virq, ret);
 			}
+			//清除irq_data字段
 			irq_data->domain = NULL;
 			irq_data->hwirq = 0;
+			//解锁返回
 			mutex_unlock(&irq_domain_mutex);
 			return ret;
 		}
 
 		/* If not already assigned, give the domain the chip's name */
+		/* 给一个默认值 */
 		if (!domain->name && irq_data->chip)
 			domain->name = irq_data->chip->name;
 	}
 
+	//线性映射
 	if (hwirq < domain->revmap_size) {
+		//直接设置线性映射的转换
 		domain->linear_revmap[hwirq] = virq;
-	} else {
+	} else {/* 基树映射 */
+		//获得基树锁
 		mutex_lock(&revmap_trees_mutex);
+		//将其插入基树
 		radix_tree_insert(&domain->revmap_tree, hwirq, irq_data);
 		mutex_unlock(&revmap_trees_mutex);
 	}
 	mutex_unlock(&irq_domain_mutex);
 
+	//已经映射了，置标志表示把坑占住
 	irq_clear_status_flags(virq, IRQ_NOREQUEST);
 
 	return 0;
@@ -514,19 +530,23 @@ unsigned int irq_create_mapping(struct irq_domain *domain,
 	of_node = irq_domain_get_of_node(domain);
 
 	/* Check if mapping already exists */
+	// 如果映射已经存在
 	virq = irq_find_mapping(domain, hwirq);
 	if (virq) {
+		//那么不需要映射，直接返回
 		pr_debug("-> existing mapping on virq %d\n", virq);
 		return virq;
 	}
 
 	/* Allocate a virtual interrupt number */
+	//分配一个IRQ 描述符以及对应的irq number
 	virq = irq_domain_alloc_descs(-1, 1, hwirq, of_node_to_nid(of_node), NULL);
 	if (virq <= 0) {
 		pr_debug("-> virq allocation failed\n");
 		return 0;
 	}
 
+	//建立HW中断号与逻辑中断号之间的映射
 	if (irq_domain_associate(domain, virq, hwirq)) {
 		irq_free_desc(virq);
 		return 0;
@@ -683,6 +703,7 @@ unsigned int irq_create_fwspec_mapping(struct irq_fwspec *fwspec)
 			return 0;
 	} else {
 		/* Create mapping */
+		//创建映射
 		virq = irq_create_mapping(domain, hwirq);
 		if (!virq)
 			return virq;

@@ -40,6 +40,10 @@
 /* These are for everybody (although not all archs will actually
    discard it in modules) */
 /*
+
+其中，__init和__exit都是宏，它们封装了内核使用的编译器属性，
+被它们修饰的函数都会被编译器放在特定的段中，
+
 不同的段代码有着不同的作用，比如初始化段的代码，
 当系统运行正常以后，这段代码就没有什么用了，
 聪明的做法就是回收这段代码占用的内存，
@@ -49,6 +53,10 @@
 让相关联的代码尽可能同在一片内存里，
 这样当CPU加载代码到缓存时，就可以一起命中，
 提高缓存的命中率，这样就大大提高代码的执行速度。
+*/
+/*
+__init修饰的函数会被放在.init.text段中，这个段中的函数在初始化阶段(系统启动或者模块加载)完成之后会被清除，
+以减少不必要的内存占用。
 */
 #define __init		__section(.init.text) __cold notrace __latent_entropy
 #define __initdata	__section(.init.data)
@@ -83,6 +91,9 @@
 #define __exitused  __used
 #endif
 
+/*
+__exit表明，当代码被静态构建进内核时，该函数可以安全地优化了，不需要清理收尾
+*/
 #define __exit          __section(.exit.text) __exitused __cold notrace
 
 /* Used for MEMORY_HOTPLUG */

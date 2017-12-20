@@ -651,6 +651,9 @@ extern void *page_frag_alloc(struct page_frag_cache *nc,
 extern void page_frag_free(void *addr);
 
 #define __free_page(page) __free_pages((page), 0)
+/**
+ * 释放页面的主函数
+ */
 #define free_page(addr) free_pages((addr), 0)
 
 void page_alloc_init(void);

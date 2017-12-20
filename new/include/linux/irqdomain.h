@@ -116,6 +116,13 @@ struct irq_domain_ops {
       （2）设定该IRQ number对应的中断描述符的highlevel irq-events handler
       （3）设定该IRQ number对应的中断描述符的 irq chip data
       这些设定不适合由具体的硬件驱动来设定，因此在Interrupt controller，也就是irq domain的callback函数中设定。
+	  
+	  	 * 在建立HW中断与逻辑中断关联时
+	 * 由此函数进行:
+	 *		1、设置中断描述符的irq-chip
+	 *		2、根据中断类型设置高级处理函数
+	 *		3、设置中断描述符irq-chipdata
+	 
     */
 	int (*map)(struct irq_domain *d, unsigned int virq, irq_hw_number_t hw);
 	void (*unmap)(struct irq_domain *d, unsigned int virq);
@@ -127,6 +134,9 @@ struct irq_domain_ops {
 	这里，interrupts属性所表示的interrupt specifier只能由具体的interrupt controller（也就是irq domain）来解析。
 	而xlate函数就是将指定的设备（node参数）上若干个（intsize参数）中断属性（intspec参数）
 	翻译成HW interrupt ID（out_hwirq参数）和trigger类型（out_type）。 
+	
+		 * 根据设备设置属性
+	 * 解析某个硬件的逻辑中断号，中断类型
 	*/
 	int (*xlate)(struct irq_domain *d, struct device_node *node,
 		     const u32 *intspec, unsigned int intsize,
@@ -326,6 +336,9 @@ static inline struct irq_domain *irq_domain_add_linear(struct device_node *of_no
 	return __irq_domain_add(of_node_to_fwnode(of_node), size, size, 0, ops, host_data);
 }
 /*
+ * 对于PowerPC PMIC控制器，其硬件中断号可自由配置
+ * 此时不需要软件进行二次映射
+ 
 有些中断控制器很强，可以通过寄存器配置HW interrupt ID而不是由物理连接决定的。
 例如PowerPC 系统使用的MPIC (Multi-Processor Interrupt Controller)。
 在这种情况下，不需要进行映射，我们直接把IRQ number写入HW interrupt ID配置寄存器就OK了，
@@ -347,6 +360,9 @@ static inline struct irq_domain *irq_domain_add_legacy_isa(
 				     host_data);
 }
 /*
+ * 向基树映射表中添加映射关系
+ * PowerPC和MIPS平台使用此函数
+ 
 Radix Tree map。
 建立一个Radix Tree来维护HW interrupt ID到IRQ number映射关系。
 HW interrupt ID作为lookup key，在Radix Tree检索到IRQ number。

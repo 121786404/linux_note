@@ -2186,6 +2186,10 @@ __kmem_cache_create (struct kmem_cache *cachep, unsigned long flags)
 	}
 
 	/* 3) caller mandated alignment */
+	/**
+	 * 用户指定的对齐值过小
+	 * 调整一下
+	 */
 	if (ralign < cachep->align) {
 		ralign = cachep->align;
 	}
@@ -2200,11 +2204,11 @@ __kmem_cache_create (struct kmem_cache *cachep, unsigned long flags)
 	/* Offset must be a multiple of the alignment. */
 	if (cachep->colour_off < cachep->align)
 		cachep->colour_off = cachep->align;
-
+	/* 完成了SLAB子系统的初始化过程 */
 	if (slab_is_available())
-		gfp = GFP_KERNEL;
+		gfp = GFP_KERNEL;/* 分配不到时，可以睡眠 */
 	else
-		gfp = GFP_NOWAIT;
+		gfp = GFP_NOWAIT;/* 在初始化过程中，不能等待 */
 
 #if DEBUG
 
@@ -2231,7 +2235,7 @@ __kmem_cache_create (struct kmem_cache *cachep, unsigned long flags)
 
 	kasan_cache_create(cachep, &size, &flags);
 
-	/* 根据对齐边界调整长度 */
+	/* 根据对齐参数，计算实际大小 */
 	size = ALIGN(size, cachep->align);
 	/*
 	 * We should restrict the number of objects in a slab to implement
@@ -2304,6 +2308,7 @@ done:
 			kmalloc_slab(cachep->freelist_size, 0u);
 	}
 
+	//设置该slab在每CPU上的缓存
 	err = setup_cpu_cache(cachep, gfp);
 	if (err) {
 		__kmem_cache_release(cachep);
@@ -3178,6 +3183,7 @@ static void *cache_alloc_refill(struct kmem_cache *cachep, gfp_t flags)
 	check_irq_off();
 	node = numa_mem_id();
 
+	/* 获取本CPU缓冲管理对象 */
 	ac = cpu_cache_get(cachep);
 	/* 需要填充的缓存数量 */
 	batchcount = ac->batchcount;
@@ -3204,12 +3210,18 @@ static void *cache_alloc_refill(struct kmem_cache *cachep, gfp_t flags)
 
 	/* See if we can refill from the shared array */
 	/* 从共享缓存中移动到CPU缓存中 */
+	/**
+	 * 如果有共享缓冲对象
+	 * 就调用transfer_objects从共享缓冲池中转移部分节点到本地缓冲区。
+	 */
 	if (shared && transfer_objects(ac, shared, batchcount)) {
 		shared->touched = 1;
 		goto alloc_done;
 	}
 
 	/*
+	 * 运行到这里，说明共享池中也没有了
+	 * 循环，取batchcount个对象放到缓冲池中
 	 * 内核现在必须找到array_cache->batchcount个未使用
 	 * 对象重新填充per-CPU缓存.首先扫描所有部分
 	 * 空闲slab的链表(slabs_partial),然后通过slab_get_obj()
@@ -3347,8 +3359,12 @@ static inline void *____cache_alloc(struct kmem_cache *cachep, gfp_t flags)
 		goto out;
 	}
 
+	/* 运行到这里，说明本地缓冲为空 */
 	STATS_INC_ALLOCMISS(cachep);
 	/* CPU缓存中没有可用对象，重新填充缓存并返回给调用者 */
+	/**
+	 * 填充本地缓冲，并分配
+	 */
 	objp = cache_alloc_refill(cachep, flags);
 	/*
 	 * the 'ac' may be updated by cache_alloc_refill(),
@@ -3677,6 +3693,7 @@ static void free_block(struct kmem_cache *cachep, void **objpp,
 			 * partial list on free - maximum time for the
 			 * other objects to be freed, too.
 			 */
+			/* 放回partial链表 */
 			list_add_tail(&page->lru, &n->slabs_partial);
 		}
 	}
@@ -3708,7 +3725,7 @@ static void cache_flusharray(struct kmem_cache *cachep, struct array_cache *ac)
 	/**
 	 * 如果包含一个共享本地高速缓存
 	 */
-	if (n->shared) {
+	if (n->shared) {/* 节点有共享缓冲池 */
 		struct array_cache *shared_array = n->shared;
 		int max = shared_array->limit - shared_array->avail;
 		/**
@@ -4056,6 +4073,7 @@ void kmem_cache_free(struct kmem_cache *cachep, void *objp)
 	debug_check_no_locks_freed(objp, cachep->object_size);
 	if (!(cachep->flags & SLAB_DEBUG_OBJECTS))
 		debug_check_no_obj_freed(objp, cachep->object_size);
+	/* 主函数 */
 	__cache_free(cachep, objp, _RET_IP_);
 	local_irq_restore(flags);
 
@@ -4167,6 +4185,7 @@ static int __do_tune_cpucache(struct kmem_cache *cachep, int limit,
 	struct array_cache __percpu *cpu_cache, *prev;
 	int cpu;
 
+	/* 分配每CPU变量 */
 	cpu_cache = alloc_kmem_cache_cpus(cachep, limit, batchcount);
 	if (!cpu_cache)
 		return -ENOMEM;
@@ -4199,6 +4218,7 @@ static int __do_tune_cpucache(struct kmem_cache *cachep, int limit,
 	free_percpu(prev);
 
 setup_node:
+	/* 分配核间共享对象 */
 	return setup_kmem_cache_nodes(cachep, gfp);
 }
 
@@ -4208,6 +4228,7 @@ static int do_tune_cpucache(struct kmem_cache *cachep, int limit,
 	int ret;
 	struct kmem_cache *c;
 
+	/* 分配每CPU变量及SMP共享对象 */
 	ret = __do_tune_cpucache(cachep, limit, batchcount, shared, gfp);
 
 	if (slab_state < FULL)
@@ -4255,6 +4276,7 @@ static int enable_cpucache(struct kmem_cache *cachep, gfp_t gfp)
 	 * The numbers are guessed, we should auto-tune as described by
 	 * Bonwick.
 	 */
+	/* 根据对象大小，来计算CPU缓存对象的个数 */
 	if (cachep->size > 131072)
 		limit = 1;
 	else if (cachep->size > PAGE_SIZE)
@@ -4289,6 +4311,7 @@ static int enable_cpucache(struct kmem_cache *cachep, gfp_t gfp)
 #endif
 	batchcount = (limit + 1) / 2;
 skip_setup:
+	/* 配置CPU缓存对象 */
 	err = do_tune_cpucache(cachep, limit, batchcount, shared, gfp);
 end:
 	if (err)

@@ -56,9 +56,13 @@ unsigned int irq_of_parse_and_map(struct device_node *dev, int index)
 {
 	struct of_phandle_args oirq;
 
+	/**
+	 * 分析DT表第index项的属性
+	 */
 	if (of_irq_parse_one(dev, index, &oirq))
 		return 0;
 
+	//根据DT创建映射
 	return irq_create_of_mapping(&oirq);
 }
 EXPORT_SYMBOL_GPL(irq_of_parse_and_map);
@@ -513,6 +517,11 @@ struct of_intc_desc {
  *
  * This function scans the device tree for matching interrupt controller nodes,
  * and calls their initialization functions in order with parents first.
+ */
+/**
+ * 在dtb中扫描中断控制器节点
+ * 并从root开始，分层次调用驱动进行初始化。
+ * 对GIC-V2来说，会调用gic_of_init
  */
 void __init of_irq_init(const struct of_device_id *matches)
 {

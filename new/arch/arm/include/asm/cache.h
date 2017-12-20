@@ -24,6 +24,7 @@
 #endif
 /*
 内核加载时会放入cache
+read_mostly的数据放在一起，可以减少cache变脏引起的失效
 */
 #define __read_mostly __attribute__((__section__(".data..read_mostly")))
 

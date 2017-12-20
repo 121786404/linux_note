@@ -1171,7 +1171,7 @@ setup_irq_thread(struct irqaction *new, unsigned int irq, bool secondary)
 	if (IS_ERR(t))
 		return PTR_ERR(t);
 
-    // 调度策略SCHED_FIFO
+    // 调度策略SCHED_FIFO  //设置线程为实时线程
 	sched_setscheduler_nocheck(t, SCHED_FIFO, &param);
 
 	/*
@@ -1182,6 +1182,7 @@ setup_irq_thread(struct irqaction *new, unsigned int irq, bool secondary)
 /*
 	增加线程 task_struct->usage 引用计数
     防止中断线程化的处理程序访问了空指针
+	//中断描述符需要引用这个线程对象
 */
 	get_task_struct(t);
 	new->thread = t;
@@ -1234,9 +1235,10 @@ __setup_irq(unsigned int irq, struct irq_desc *desc, struct irqaction *new)
 	 * Check whether the interrupt nests into another interrupt
 	 * thread.
 	 */
-/*
-	 
-*/
+	/**
+	 * 嵌套中断，handle_nested_irq中唤醒线程来处理
+	 * IO expander上面的慢速 中断
+	 */
 	nested = irq_settings_is_nested_thread(desc);
 	if (nested) {
 /*
@@ -1252,8 +1254,12 @@ __setup_irq(unsigned int irq, struct irq_desc *desc, struct irqaction *new)
 		 * the driver for non nested interrupt handling by the
 		 * dummy function which warns when called.
 		 */
+		/**
+		 * 警告，二传手直接唤醒线程
+		 */
 		new->handler = irq_nested_primary_handler;
 	} else {
+		/* 如果允许强制线程化，就把主处理函数也线程化了 */
 		if (irq_settings_can_thread(desc)) {
 			ret = irq_setup_forced_threading(new);
 			if (ret)
@@ -1283,6 +1289,7 @@ __setup_irq(unsigned int irq, struct irq_desc *desc, struct irqaction *new)
 		}
 	}
 
+	//mask用于线程亲和性，与中断亲和性相关
 	if (!alloc_cpumask_var(&mask, GFP_KERNEL)) {
 		ret = -ENOMEM;
 		goto out_thread;
@@ -1296,6 +1303,10 @@ __setup_irq(unsigned int irq, struct irq_desc *desc, struct irqaction *new)
 	 * MSI based interrupts are per se one shot safe. Check the
 	 * chip flags, so we can avoid the unmask dance at the end of
 	 * the threaded handler for those.
+	 */
+	/**
+	 * 如果中断控制器本身已经保证中断不重入了
+	 * 那就可以去掉IRQF_ONESHOT标志
 	 */
 	if (desc->irq_data.chip->flags & IRQCHIP_ONESHOT_SAFE)
 		new->flags &= ~IRQF_ONESHOT;
@@ -1321,18 +1332,18 @@ __setup_irq(unsigned int irq, struct irq_desc *desc, struct irqaction *new)
 		 * set the trigger type must match. Also all must
 		 * agree on ONESHOT.
 		 */
-		if (!((old->flags & new->flags) & IRQF_SHARED) ||
-		    ((old->flags ^ new->flags) & IRQF_TRIGGER_MASK) ||
-		    ((old->flags ^ new->flags) & IRQF_ONESHOT))
+		if (!((old->flags & new->flags) & IRQF_SHARED) ||/* 新旧ISR没有打开共享 */
+		    ((old->flags ^ new->flags) & IRQF_TRIGGER_MASK) ||/* 中断类型不一样 */
+		    ((old->flags ^ new->flags) & IRQF_ONESHOT))/* ONESHOT标志不一样 */
 			goto mismatch;
 
 		/* All handlers must agree on per-cpuness */
 		if ((old->flags & IRQF_PERCPU) !=
-		    (new->flags & IRQF_PERCPU))
+		    (new->flags & IRQF_PERCPU))/* 晕，还有这个 */
 			goto mismatch;
 
 		/* add new interrupt at end of irq queue */
-		do {
+		do {/* 将ISR链接到链表中 */
 			/*
 			 * Or all existing action->thread_mask bits,
 			 * so we can find the next zero bit for this
@@ -1354,12 +1365,17 @@ __setup_irq(unsigned int irq, struct irq_desc *desc, struct irqaction *new)
 	 * !ONESHOT irqs the thread mask is 0 so we can avoid a
 	 * conditional in irq_wake_thread().
 	 */
-	if (new->flags & IRQF_ONESHOT) {
+	if (new->flags & IRQF_ONESHOT) {/* 对ONESHOT类型的中断来说，还需要设置线程掩码 */
 		/*
 		 * Unlikely to have 32 resp 64 irqs sharing one line,
 		 * but who knows.
 		 */
+		/**
+		 * 线程掩码用完了。
+		 * 有太多的ISR
+		 */
 		if (thread_mask == ~0UL) {
+			/* 不成功，退出 */
 			ret = -EBUSY;
 			goto out_mask;
 		}
@@ -1383,8 +1399,15 @@ __setup_irq(unsigned int irq, struct irq_desc *desc, struct irqaction *new)
 		 * thread_mask assigned. See the loop above which or's
 		 * all existing action->thread_mask bits.
 		 */
+		/* 找一个可用的掩码 */
 		new->thread_mask = 1 << ffz(thread_mask);
 
+	/**
+	 * irq_default_primary_handler只会唤醒线程
+	 * 而不会让电平信号消失
+	 * 如果中断控制器并不是ONESHOT安全的
+	 * 那么明显有问题
+	 */
 	} else if (new->handler == irq_default_primary_handler &&
 		   !(desc->irq_data.chip->flags & IRQCHIP_ONESHOT_SAFE)) {
 		/*
@@ -1410,6 +1433,10 @@ __setup_irq(unsigned int irq, struct irq_desc *desc, struct irqaction *new)
 */
 		pr_err("Threaded irq requested with handler=NULL and !ONESHOT for irq %d\n",
 		       irq);
+		/**
+		 * 调用者应当设置上半部函数
+		 * 以清除电平信号
+		 */
 		ret = -EINVAL;
 		goto out_mask;
 	}
@@ -1832,9 +1859,9 @@ int request_threaded_irq(unsigned int irq, irq_handler_t handler,
 	 * Also IRQF_COND_SUSPEND only makes sense for shared interrupts and
 	 * it cannot be set along with IRQF_NO_SUSPEND.
 	 */
-	if (((irqflags & IRQF_SHARED) && !dev_id) ||
+	if (((irqflags & IRQF_SHARED) && !dev_id) ||/* 共享中断必须指定设备参数 */
 	    (!(irqflags & IRQF_SHARED) && (irqflags & IRQF_COND_SUSPEND)) ||
-	    ((irqflags & IRQF_NO_SUSPEND) && (irqflags & IRQF_COND_SUSPEND)))
+	    ((irqflags & IRQF_NO_SUSPEND) && (irqflags & IRQF_COND_SUSPEND)))/* 参数冲突 */
 		return -EINVAL;
 
     // 用中断号获取中断描述符irq_desc
@@ -1842,10 +1869,21 @@ int request_threaded_irq(unsigned int irq, irq_handler_t handler,
 	if (!desc)
 		return -EINVAL;
 
+	/**
+	 * 某些中断号，不能为其安装ISR
+	 * 如级联中断
+	 */
 	if (!irq_settings_can_request(desc) ||
+	/**
+	 * 对于per_cpu中断来说，也不能为其安装ISR
+	 * 这种情况请调用request_percpu_irq
+	 */
 	    WARN_ON(irq_settings_is_per_cpu_devid(desc)))
 		return -EINVAL;
 
+	/**
+	 * 上下半部不能同时为NULL
+	 */
 	if (!handler) {
 	    // 不能handler和thread_fn都是NULL
 		if (!thread_fn)
@@ -1854,9 +1892,9 @@ int request_threaded_irq(unsigned int irq, irq_handler_t handler,
 		handler = irq_default_primary_handler;
 	}
 
-	/*申请空间*/
+	//分配irqaction结构
 	action = kzalloc(sizeof(struct irqaction), GFP_KERNEL);
-	if (!action)
+	if (!action)/* 哦豁，没有内存了 */
 		return -ENOMEM;
 
 	/*根据传入的参数初始化*/

@@ -26,9 +26,10 @@ struct kmem_cache {
 	 */
 	unsigned int batchcount;
 	unsigned int limit;
+	/* 用于SMP，在所有CPU之间灵活机动共享的SLAB个数 */
 	unsigned int shared;
 
-	//slab头部大小??
+	//slab对象长度大小，不含对齐所需补充的字节
 	unsigned int size;
 	//加快内部计算过程用的临时变量
 	struct reciprocal_value reciprocal_buffer_size;
@@ -48,9 +49,15 @@ struct kmem_cache {
 	//分配内存的GFP标志，依赖于上层调用方式。
 	gfp_t allocflags;
 
-	//着色范围。
+	/**
+	 * 着色范围。
+	 * 也就是SLAB中，空闲空间来容纳多少次着色。
+	 */
 	size_t colour;			/* cache colouring range */
-	//两次着色之间的差
+	/**
+	 * 两次着色之间的差
+	 * 根据缓存行大小和对象对齐大小来计算
+	 */
 	unsigned int colour_off;	/* colour offset */
 	//当kmem_cache位于slab外面时，预先分配的kmem_cache对象指针及其数量。
 	struct kmem_cache *freelist_cache;
@@ -69,8 +76,9 @@ struct kmem_cache {
 	struct list_head list;
 	//引用计数
 	int refcount;
-	//slab对象大小
+	//slab对象大小，含对齐所需字节
 	int object_size;
+	/* 对齐长度 */
 	int align;
 
 /* 5) statistics */
@@ -113,6 +121,10 @@ struct kmem_cache {
 	unsigned int *random_seq;
 #endif
 
+	/**
+	 * 按节点管理的kmem_cache_node描述符。
+	 * 每个kmem_cache_node管理空闲、满、可用slab
+	 */
 	struct kmem_cache_node *node[MAX_NUMNODES];
 };
 

@@ -539,6 +539,9 @@ __irq_usr:
  * 如果在用户态下处理原子操作，此时需要特殊处理。
  */
 	kuser_cmpxchg_check
+/**
+ * 处理中断
+ */
 	irq_handler
 /**
  * 从r9中取得当前进程的threadinfo

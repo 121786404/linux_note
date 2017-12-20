@@ -814,6 +814,7 @@ static inline void __init kuser_init(void *vectors)
 void __init early_trap_init(void *vectors_base)
 {
 #ifndef CONFIG_CPU_V7M
+	//异常向量表基地址，可能为0或者0xffff0000
 	unsigned long vectors = (unsigned long)vectors_base;
 	//向异常处理入口汇编代码地址。需要复制。
 /*

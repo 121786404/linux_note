@@ -923,6 +923,9 @@ static int check_slab(struct kmem_cache *s, struct page *page)
  * Determine if a certain object on a page is on the freelist. Must hold the
  * slab lock to guarantee that the chains are in a consistent state.
  */
+/**
+ * 用于确定 一个特定对象是否位于特定页的freelist中
+ */
 static int on_freelist(struct kmem_cache *s, struct page *page, void *search)
 {
 	int nr = 0;
@@ -931,9 +934,15 @@ static int on_freelist(struct kmem_cache *s, struct page *page, void *search)
 	int max_objects;
 
 	fp = page->freelist;
+	/* 遍历slab的freelist链表 */
 	while (fp && nr <= page->objects) {
 		if (fp == search)
 			return 1;
+		/**
+		 * check_valid_pointer检查freelist链表中的对象地址是否位于一个 slab页面内
+		 * 用于验证freelist是否被破坏
+		 * 防止黑客攻击内核，参见CVE-2009-1046
+		 */
 		if (!check_valid_pointer(s, page, fp)) {
 			if (object) {
 				object_err(s, page, object,
@@ -2582,9 +2591,10 @@ redo:
 	导致本地的空闲对象指针不为空
 */
 	freelist = c->freelist;
-	if (freelist)
+	if (freelist)/* 有空闲对象， */
 		goto load_freelist;
 
+	/* 运行到这里，说明没有本CPU空闲对象 */
 	freelist = get_freelist(s, page);
 
 	if (!freelist) {
@@ -2605,6 +2615,7 @@ load_freelist:
 	 * That page must be frozen for per cpu allocations to work.
 	 */
 	VM_BUG_ON(!c->page->frozen);
+	/* 移动空闲对象指针 */
 	c->freelist = get_freepointer(s, freelist);
 	c->tid = next_tid(c->tid);
 	return freelist;
@@ -2631,7 +2642,7 @@ new_slab:
 */
 	freelist = new_slab_objects(s, gfpflags, node, &c);
 
-	if (unlikely(!freelist)) {
+	if (unlikely(!freelist)) {/* 内存不足了 */
 	    // 记录日志后使能中断并返回NULL表示申请失败
 		slab_out_of_memory(s, gfpflags, node);
 		return NULL;
@@ -2723,6 +2734,10 @@ redo:
 	 * the same cpu. It could be different if CONFIG_PREEMPT so we need
 	 * to check if it is matched or not.
 	 */
+	/**
+	 * 获取本CPU的kmem_cache_cpu描述符
+	 * 为什么不象老版本那样关中断或者关抢占读
+	 */
 	do {
     /*
     	获取当前CPU的kmem_cache_cpu结构
@@ -2756,7 +2771,7 @@ redo:
 	或者当前slab使用内存页面与管理节点是否不匹配
 */
 	if (unlikely(!object || !node_match(page, node))) {
-	    // 慢速路径
+		/* 慢速分配流程 */
 		object = __slab_alloc(s, gfpflags, node, addr, c);
 		stat(s, ALLOC_SLOWPATH);
 	} else {
@@ -2818,6 +2833,7 @@ redo:
     // 后处理
 	slab_post_alloc_hook(s, gfpflags, 1, &object);
 
+	/* 返回对象 */
 	return object;
 }
 
@@ -3072,6 +3088,7 @@ redo:
 	 * data is retrieved via this pointer. If we are on the same cpu
 	 * during the cmpxchg then the free will succeed.
 	 */
+	/* 获得缓冲区当前cpu活动对象 */
 	do {
 		tid = this_cpu_read(s->cpu_slab->tid);
 		c = raw_cpu_ptr(s->cpu_slab);
@@ -3081,9 +3098,10 @@ redo:
 	/* Same with comment on barrier() in slab_alloc_node() */
 	barrier();
 
-	if (likely(page == c->page)) {
+	if (likely(page == c->page)) {/* 要释放的对象位于活动对象链表中 */
 		set_freepointer(s, tail_obj, c->freelist);
 
+		/* 直接移动活动对象的空闲链表即可 */
 		if (unlikely(!this_cpu_cmpxchg_double(
 				s->cpu_slab->freelist, s->cpu_slab->tid,
 				c->freelist, tid,
@@ -4177,6 +4195,9 @@ EXPORT_SYMBOL(kfree);
  * being allocated from last increasing the chance that the last objects
  * are freed in them.
  */
+/**
+ * 收缩slab缓存，当内存不足时调用
+ */
 int __kmem_cache_shrink(struct kmem_cache *s)
 {
 	int node;
@@ -4189,7 +4210,11 @@ int __kmem_cache_shrink(struct kmem_cache *s)
 	unsigned long flags;
 	int ret = 0;
 
+	/**
+	 * 将所有CPU的slab放回到NODE节点的部分空链表
+	 */
 	flush_all(s);
+	/* 遍历缓冲区的每个NODE节点 */
 	for_each_kmem_cache_node(s, node, n) {
 		INIT_LIST_HEAD(&discard);
 		for (i = 0; i < SHRINK_PROMOTE_MAX; i++)
@@ -4203,7 +4228,9 @@ int __kmem_cache_shrink(struct kmem_cache *s)
 		 * Note that concurrent frees may occur while we hold the
 		 * list_lock. page->inuse here is the upper limit.
 		 */
+		/* 遍历半满链表 */
 		list_for_each_entry_safe(page, t, &n->partial, lru) {
+			/* 计算空闲数量 */
 			int free = page->objects - page->inuse;
 
 			/* Do not reread page->inuse */
@@ -4212,10 +4239,14 @@ int __kmem_cache_shrink(struct kmem_cache *s)
 			/* We do not keep full slabs on the list */
 			BUG_ON(free <= 0);
 
+			/* 全部空闲 */
 			if (free == page->objects) {
+				/* 移入discard链表 */
 				list_move(&page->lru, &discard);
 				n->nr_partial--;
+			/* 空闲数量较少 */
 			} else if (free <= SHRINK_PROMOTE_MAX)
+				/* 放到相应链表，用于排序 */
 				list_move(&page->lru, promote + free - 1);
 		}
 
@@ -4223,12 +4254,14 @@ int __kmem_cache_shrink(struct kmem_cache *s)
 		 * Promote the slabs filled up most to the head of the
 		 * partial list.
 		 */
+		/* 按空闲数量大小，将链表放到节点空闲链表中 */
 		for (i = SHRINK_PROMOTE_MAX - 1; i >= 0; i--)
 			list_splice(promote + i, &n->partial);
 
 		spin_unlock_irqrestore(&n->list_lock, flags);
 
 		/* Release empty slabs */
+		/* 释放空闲slab页框 */
 		list_for_each_entry_safe(page, t, &discard, lru)
 			discard_slab(s, page);
 
@@ -4465,7 +4498,10 @@ static struct kmem_cache * __init bootstrap(struct kmem_cache *static_cache)
 */
 void __init kmem_cache_init(void)
 {
-    //声明静态变量，存储临时kmem_cache管理结构
+	/*
+	 * 静态kmem_cache结构
+	 * 用于初始kmem_cache分配
+	 */
 	static __initdata struct kmem_cache boot_kmem_cache,
 		boot_kmem_cache_node;
 
@@ -4490,6 +4526,9 @@ void __init kmem_cache_init(void)
 		       SLAB_HWCACHE_ALIGN);
 
     /*
+		 * 从刚才挂在临时结构的缓冲区中申请kmem_cache的kmem_cache
+	 * 并将管理数据拷贝到新申请的内存中
+	 
           使用上面创建boot cache引导自身，即从高速缓存中为自身分配内存。
           这是内核的第一个使用高速缓存的地方。
           当调用create_boot_cache创建完kmem_cache和kmem_cache_node两个Cache后，

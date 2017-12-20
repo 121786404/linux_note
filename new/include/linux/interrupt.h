@@ -303,7 +303,11 @@ request_threaded_irq(unsigned int irq, irq_handler_t handler,
 		     irq_handler_t thread_fn,
 		     unsigned long flags, const char *name, void *dev);
 
-/* 把驱动程序实现的中断服务例程赋值给handler,驱动程序中安装中断服务例程
+/* 
+ * 用于与老接口兼容
+ * 旧驱动使用
+
+把驱动程序实现的中断服务例程赋值给handler,驱动程序中安装中断服务例程
  * @irq:要申请的中断号。对于某些设备，如系统时钟、键盘等，这个参数值通常是固定死的。
         而对于大多数设备来说，这个参数值要么可以通过探测获取，要么可以通过编程动态确定。
         所有固定下来的中断号在 arch\arm\mach-s3c24xx\include\mach\irq.h 中定义

@@ -1,4 +1,4 @@
-/*
+ï»¿/*
  * Copyright (C) 2001 Momchil Velikov
  * Portions Copyright (C) 2001 Christoph Hellwig
  * Copyright (C) 2005 SGI, Christoph Lameter
@@ -1977,15 +1977,16 @@ static int radix_tree_cpu_dead(unsigned int cpu)
 	return 0;
 }
 
-//³õÊ¼»¯»ùÊı
+//åˆå§‹åŒ–åŸºæ•°
 void __init radix_tree_init(void)
 {
 	int ret;
+	//åŸºæ•°ç¼“å­˜slab
 	radix_tree_node_cachep = kmem_cache_create("radix_tree_node",
 			sizeof(struct radix_tree_node), 0,
 			SLAB_PANIC | SLAB_RECLAIM_ACCOUNT,
 			radix_tree_node_ctor);
-	//»ùÊı³õÊ¼»¯
+	//åŸºæ•°åˆå§‹åŒ–
 	radix_tree_init_maxnodes();
 	ret = cpuhp_setup_state_nocalls(CPUHP_RADIX_DEAD, "lib/radix:dead",
 					NULL, radix_tree_cpu_dead);
