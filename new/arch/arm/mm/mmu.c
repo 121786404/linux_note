@@ -60,7 +60,7 @@ pmdval_t user_pmd_table = _PAGE_USER_TABLE;
 #define CPOLICY_UNCACHED	0
 #define CPOLICY_BUFFERED	1
 /*
-write through CPU向cache写入数据时，同时向memory也写一份，使cache和memory的数据保持一致。 
+write through CPU向cache写入数据时，同时向memory也写一份，使cache和memory的数据保持一致。
 优点是简单，缺点是每次都要访问memory，速度比较慢
 */
 #define CPOLICY_WRITETHROUGH	2
@@ -759,7 +759,15 @@ static pte_t * __init arm_pte_alloc(pmd_t *pmd, unsigned long addr,
 				unsigned long prot,
 				void *(*alloc)(unsigned long sz))
 {
+/*
+    检查这个参数对应的PMD 表项的内容
+*/
 	if (pmd_none(*pmd)) {
+/*
+	页面表PTE 还没建立，所以要先去建立页面表。
+	这里会去分配 PTE_HWTABLE_OFF + PTE_HWTABLE_SIZE 个PTE 页面表项，
+	即会分配512+512 个PTE 页面表
+*/
 		pte_t *pte = alloc(PTE_HWTABLE_OFF + PTE_HWTABLE_SIZE);
 		__pmd_populate(pmd, __pa(pte), prot);
 	}
@@ -781,6 +789,10 @@ static void __init alloc_init_pte(pmd_t *pmd, unsigned long addr,
 {
 	pte_t *pte = arm_pte_alloc(pmd, addr, type->prot_l1, alloc);
 	do {
+/*
+	根据物理地址的pfn 页帧号来生成新的PTE 表项(PTE enty) ，
+	最后设置到ARM 硬件页表中。
+*/
 		set_pte_ext(pte, pfn_pte(pfn, __pgprot(type->prot_pte)),
 			    ng ? PTE_EXT_NG : 0);
 		pfn++;
@@ -846,6 +858,9 @@ static void __init alloc_init_pmd(pud_t *pud, unsigned long addr,
 	} while (pmd++, addr = next, addr != end);
 }
 
+/*
+初始化PGD 页表项内容和下一级页表PUD
+*/
 static void __init alloc_init_pud(pgd_t *pgd, unsigned long addr,
 				  unsigned long end, phys_addr_t phys,
 				  const struct mem_type *type,
@@ -935,6 +950,7 @@ static void __init __create_mapping(struct mm_struct *mm, struct map_desc *md,
 	const struct mem_type *type;
 	pgd_t *pgd;
 
+    // 通过md->type 来获取描述内存区域属性的mem_type 数据结构
 	type = &mem_types[md->type];
 
 #ifndef CONFIG_ARM_LPAE
@@ -958,11 +974,14 @@ static void __init __create_mapping(struct mm_struct *mm, struct map_desc *md,
 		return;
 	}
 
+    // 获取所属的页面目录项PGD
+    // init_mm.pgd = swapper_pg_dir
 	pgd = pgd_offset(mm, addr);
 	end = addr + length;
-	do {//以2m为单位进行映射
+	do {// 以2m为单位进行映射
 		unsigned long next = pgd_addr_end(addr, end);
 
+        // 初始化PGD 页表项内容和下一级页表PUD
 		alloc_init_pud(pgd, addr, next, phys, type, alloc, ng);
 
 		phys += next - addr;
@@ -977,6 +996,9 @@ static void __init __create_mapping(struct mm_struct *mm, struct map_desc *md,
  * offsets, and we take full advantage of sections and
  * supersections.
  */
+/*
+ 为一个给定的内存区间建立页面映射
+*/
 static void __init create_mapping(struct map_desc *md)
 {
 	if (md->virtual != vectors_base() && md->virtual < TASK_SIZE) {
@@ -1266,6 +1288,9 @@ void __init sanity_check_meminfo(void)
 	if (should_use_highmem)
 		pr_notice("Consider using a HIGHMEM enabled kernel.\n");
 
+/*
+
+*/
 	high_memory = __va(arm_lowmem_limit - 1) + 1;
 
 	/*
@@ -1281,11 +1306,11 @@ void __init sanity_check_meminfo(void)
 	memblock_set_current_limit(memblock_limit);
 }
 
-/* 
+/*
 清空页目录，有两块地址空间区域是不需要清除的，
-一个是kernel image，另外一个是kernel线性地址映射区 
+一个是kernel image，另外一个是kernel线性地址映射区
 
-这里对如下3段地址调用pmd_clear()函数来清除一级页表项的内容。
+对如下3段地址调用pmd_clear()函数来清除一级页表项的内容。
 0x0～MODULES_VADDR。
 MODULES_VADDR～PAGE_OFFSET。
 arm_lowmem_limit～VMALLOC_START
@@ -1496,11 +1521,21 @@ static void __init kmap_init(void)
 
 /*
 建立低端内存的所有页目录和页表：遍历memory bank，映射那些没有highmem标记的内存bank
+
+map_lowmemO会对两个内存区间创建映射。
+(1)区间1
+    物理地址: Ox60000000~Ox60800000
+    虚拟地址: OxcOOOOOOO~Oxc0800000
+    属性:可读、可写并且可执行(MT_MEMORY_RWX)
+(2)区间2
+    物理地址: Ox60800000~Ox8f800000
+    虚拟地址: Oxc0800000~Oxef800000
+    属性:可读、可写(MT_MEMORY_RW)
 */
 static void __init map_lowmem(void)
 {
 	struct memblock_region *reg;
-	
+
     /* 1.计算kernel的起始物理地址 */
 #ifdef CONFIG_XIP_KERNEL
 	phys_addr_t kernel_x_start = round_down(__pa(_sdata), SECTION_SIZE);
@@ -1518,7 +1553,7 @@ static void __init map_lowmem(void)
         /*
         printk(KERN_CRIT "sheldon: %s(%llx~%llx)\n", __FUNCTION__,(unsigned long long)start,(unsigned long long)end);
         printk(KERN_CRIT "sheldon: %s(%llx~%llx)\n",__FUNCTION__,(unsigned long long)__phys_to_virt(start),(unsigned long long)__phys_to_virt(end));
-        */  
+        */
         /*
         start           0x60000000
         kernel_x_start  0x60000000
@@ -1725,6 +1760,7 @@ void __init paging_init(const struct machine_desc *mdesc)
 	build_mem_type_table();
 	//准备页表
 	prepare_page_table();
+	// 创建页表
 	map_lowmem();
 	memblock_set_current_limit(arm_lowmem_limit);
 	dma_contiguous_remap();

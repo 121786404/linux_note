@@ -30,12 +30,32 @@
  */
 
 /* _text:80008000,_stext:80100000,_etext:80800000 */
+/*
+_text  代码段的起始地址
+_etext 代码段的结束地址
+包含了编译后的内核代码
+*/
 extern char _text[], _stext[], _etext[];
 /* _data:80c00000,_sdata:80c00000,_edata:80c6f728 */
+/*
+_sdata 数据段的起始地址
+_edata 数据段的结束地址
+保存大部分内核的变量
+*/
 extern char _data[], _sdata[], _edata[];
 /* __bss_start:80c71000 __bss_stop:80ce609c */
+/*
+__bss_start BSS 段的结束地址
+__bss_stop  BSS 段的结束地址
+包含初始化为0的所有静态全局变量
+*/
 extern char __bss_start[], __bss_stop[];
 /* __init_begin:80b00000 __init_end:80c00000 */
+/*
+__init_begin  init 段的起始地址
+__init_end    init 段的结束地址
+包含了大部分模块初始化的数据
+*/
 extern char __init_begin[], __init_end[];
 /* _sinittext:80b002e0 _einittext:80b457b4 */
 extern char _sinittext[], _einittext[];

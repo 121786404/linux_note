@@ -62,7 +62,7 @@ VMALLOC_OFFSET 定义了8M的空洞，用于捕捉越界的内存访问。
 */
 #define VMALLOC_OFFSET		(8*1024*1024)
 /*
-VMALLOC_START和VMALLOC_END定义了vmalloc区域的开始和结束，
+VMALLOC_START 和 VMALLOC_END定义了vmalloc区域的开始和结束，
 该区域用于物理上不连续的内核映射
 */
 #define VMALLOC_START		(((unsigned long)high_memory + VMALLOC_OFFSET) & ~(VMALLOC_OFFSET-1))

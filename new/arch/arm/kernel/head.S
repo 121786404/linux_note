@@ -48,8 +48,8 @@
 #define PMD_ORDER	2
 #endif
 /*
-swapper_pg_dir被定义为PAGE_OFFSET向上偏移TEXT_OFFSET。T
-EXT_OFFSET代表内核代码段的相对于PAGE_OFFSET的偏移。
+swapper_pg_dir被定义为PAGE_OFFSET向上偏移TEXT_OFFSET。
+TEXT_OFFSET代表内核代码段的相对于PAGE_OFFSET的偏移。
 
 KERNEL_RAM_VADDR的值与_stext的值相同，代表了内核代码的起始地址。
 swapper_pg_dir为KERNEL_RAM_VADDR - 0x4000，也即向低地址方向偏移了16K。
@@ -84,7 +84,7 @@ ARM Linux中的主内存页表，使用段表。
  * We're trying to keep crap to a minimum; DO NOT add any machine specific
  * crap here - that's what the boot loader (or in extreme, well justified
  * circumstances, zImage) is for.
- *   
+ *
  * stext的功能是获取处理器类型和机器类型信息，并创建临时的页表，然后开启MMU功能，并跳进第一个C语言函数start_kernel
  */
 	.arm
@@ -133,12 +133,12 @@ ENTRY(stext)
 r3寄存器中保存标号2处的物理地址值
 */
 	adr	r3, 2f
-/* 
-r4保存标号2处的虚拟地址值，r8保存PAGE_OFFSET值 
+/*
+r4保存标号2处的虚拟地址值，r8保存PAGE_OFFSET值
 */
 	ldmia	r3, {r4, r8}
-/* 
-计算RAM物理地址和虚拟地址的偏移值 --> r4 
+/*
+计算RAM物理地址和虚拟地址的偏移值 --> r4
 */
 	sub	r4, r3, r4			@ (PHYS_OFFSET - PAGE_OFFSET)
 	add	r8, r8, r4			@ PHYS_OFFSET
@@ -201,8 +201,8 @@ r4保存标号2处的虚拟地址值，r8保存PAGE_OFFSET值
 	mov	r5, #0				@ high TTBR0
 	mov	r8, r4, lsr #12			@ TTBR1 is swapper_pg_dir pfn
 #else
-/* 
-对于ARM指令(不是THUMB指令)，跳转到对应芯片结构的__cpu_flush执行 
+/*
+对于ARM指令(不是THUMB指令)，跳转到对应芯片结构的__cpu_flush执行
 */
 	mov	r8, r4				@ set TTBR1 to swapper_pg_dir
 #endif
@@ -325,30 +325,30 @@ r10 = proc_info_list类型结构体的基地址.
 	 */
 	adr	r0, __turn_mmu_on_loc
 	ldmia	r0, {r3, r5, r6}
-/* 
-计算函数__turn_mmu_on和__turn_mmu_on_end函数的物理地址. 
+/*
+计算函数__turn_mmu_on和__turn_mmu_on_end函数的物理地址.
 */
 	sub	r0, r0, r3			@ virt->phys offset
 	add	r5, r5, r0			@ phys __turn_mmu_on
 	add	r6, r6, r0			@ phys __turn_mmu_on_end
-/* 
-因1页(4KB)映射1M空间，所以SECTION_SHIFT为20, 右移20位后，     
+/*
+因1页(4KB)映射1M空间，所以SECTION_SHIFT为20, 右移20位后，
 r5，r6代表该段地址空间的物理地址(页内偏移值)
 */
 	mov	r5, r5, lsr #SECTION_SHIFT
 	mov	r6, r6, lsr #SECTION_SHIFT
 
-/* 
-r5左移20位，获取该页基地址，或上CPU的mmuflags，存在r3中 
+/*
+r5左移20位，获取该页基地址，或上CPU的mmuflags，存在r3中
 */
 1:	orr	r3, r7, r5, lsl #SECTION_SHIFT	@ flags + kernel base
 /*
-将r3值存储在页目录表空间（r4起始）的（r5<<2）的页表中, 因一页用4bytes表示，所以PMD_ORDER=2 
+将r3值存储在页目录表空间（r4起始）的（r5<<2）的页表中, 因一页用4bytes表示，所以PMD_ORDER=2
 */
 	str	r3, [r4, r5, lsl #PMD_ORDER]	@ identity mapping
-/* 
-r5与r6之前相距多个1M，则需要填写多个页表。     
-因turn_mmu_on函数很短，所以肯定在1M内，该处r5=r6 
+/*
+r5与r6之前相距多个1M，则需要填写多个页表。
+因turn_mmu_on函数很短，所以肯定在1M内，该处r5=r6
 */
 	cmp	r5, r6
 	addlo	r5, r5, #1			@ next section
@@ -372,14 +372,14 @@ r5与r6之前相距多个1M，则需要填写多个页表。
 	 */
 #define XIP_START XIP_VIRT_ADDR(CONFIG_XIP_PHYS_ADDR)
 	mov	r3, pc
-/* 
-计算当前kernel运行的物理地址所在物理页面的起始地址 
+/*
+计算当前kernel运行的物理地址所在物理页面的起始地址
 */
 	mov	r3, r3, lsr #SECTION_SHIFT
 	orr	r3, r7, r3, lsl #SECTION_SHIFT
-/* 
-因为KERNEL_START是内核的起始虚拟地址(0xC0008000)，KERNEL_END为内核的结束虚拟地址，     
-所以下面的代码实际上是将物理地址为kernel的起始地址(0x80208000)的一段内存空间     
+/*
+因为KERNEL_START是内核的起始虚拟地址(0xC0008000)，KERNEL_END为内核的结束虚拟地址，
+所以下面的代码实际上是将物理地址为kernel的起始地址(0x80208000)的一段内存空间
 (大小为内核映像文件的大小)映射到虚拟地址0xC0008000。
 */
 	add	r0, r4,  #(XIP_START & 0xff000000) >> (SECTION_SHIFT - PMD_ORDER)
@@ -662,15 +662,15 @@ ENTRY(__turn_mmu_on)
 /**
  * 将其写入控制器寄存器c1，激活MMU
  */
-/* 
-* 将r0值写入CP15的c0寄存器，查看CP15说明，c0寄存器的第0位表征MMU的开启，     
-* 刚才__v7_setup中v7_crval给出的mmuset值已经将第0位置1了，因此写入c0后MMU就开启了 
+/*
+* 将r0值写入CP15的c0寄存器，查看CP15说明，c0寄存器的第0位表征MMU的开启，
+* 刚才__v7_setup中v7_crval给出的mmuset值已经将第0位置1了，因此写入c0后MMU就开启了
 */
 	mcr	p15, 0, r0, c1, c0, 0		@ write control reg
-/* 
-* 接下来CPU取指地址是当前pc+4,由于做了平映射，虽然接下来是虚拟地址，     
-* 但是该虚拟地址跟之前的物理地址是完全一致的，pc+4可以取到     
-* mrc p15, 0, r3, c0, c0, 0指令，并不会导致CPU取指上的问题 
+/*
+* 接下来CPU取指地址是当前pc+4,由于做了平映射，虽然接下来是虚拟地址，
+* 但是该虚拟地址跟之前的物理地址是完全一致的，pc+4可以取到
+* mrc p15, 0, r3, c0, c0, 0指令，并不会导致CPU取指上的问题
 */
 	mrc	p15, 0, r3, c0, c0, 0		@ read id reg
 	instr_sync

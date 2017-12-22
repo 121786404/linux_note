@@ -40,12 +40,12 @@ static inline pmd_t *pmd_off_k(unsigned long virt)
 
 struct mem_type {
 /*
-    页面表项的控制位和标志位
+    页面表项的控制位和标志位,如 L_PTE_VALID
 */
 	pteval_t prot_pte;
 	pteval_t prot_pte_s2;
 /*
-	一级页表项的控制位和标志位
+	一级页表项的控制位和标志位,如 PMD_TYPE_FAULT
 */
 	pmdval_t prot_l1;
 /*
@@ -53,7 +53,7 @@ struct mem_type {
 */
 	pmdval_t prot_sect;
 /*
-    所属的内存域	
+    所属的内存域，    如 DOMAIN_KERNEL
 */
 	unsigned int domain;
 };
@@ -102,6 +102,9 @@ extern unsigned long arm_dma_pfn_limit;
 #define arm_dma_pfn_limit (~0ul >> PAGE_SHIFT)
 #endif
 
+/*
+arm_lowmem_limit 以上都被认为是HIGHMEM
+*/
 extern phys_addr_t arm_lowmem_limit;
 
 void __init bootmem_init(void);

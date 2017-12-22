@@ -106,19 +106,49 @@ void __init free_bootmem_late(unsigned long addr, unsigned long size)
 		totalram_pages++;
 	}
 }
-
+/*
+下面是向系统中添加一段内存的情况，页帧号范围为[Ox8800e， Oxaecea] ，以start 为起始来计算其order ，
+一开始order 的数值还比较凌乱，等到start 和Ox400 对齐，以后基本上order 都取值为10 了，
+也就是都挂入order 为10 的free list 链表中。
+free_pages_memory: start=Ox8800e , end=Oxaecea
+free_pages_memory: start=Ox8800e , order=l  , __ffs()=l  , ffs()=2
+free_pages_memory: start=Ox88010 , order=4  , __ffs()=4  , ffs()=5
+free_pages_memory: start=Ox88020 , order=5  , __ffs()=5  , ffs()=6
+free_pages_memory: start=Ox88040 , order=6  , __ffs()=6  , ffs()=7
+free_pages_memory: start=Ox88080 , order=7  , __ffs()=7  , ffs()=8
+free_pages_memory: start=Ox88100 , order=8  , __ffs()=8  , ffs()=9
+free_pages_memory: start=Ox88200 , order=9  , __ffs()=9  , ffs()=10
+free_pages_memory: start=Ox88400 , order=10 , __ffs()=10 , ffs()=l1
+free_pages_memory: start=Ox88800 , order=10 , __ffs()=ll , ffs()=12
+free_pages_memory: start=Ox88cOO , order=10 , __ffs()=10 , ffs()=ll
+free_pages_memory: start=Ox89000 , order=10 , __ffs()=12 , ffs()=13
+free_pages_memory: start=Ox89400 , order=10 , __ffs()=10 , ffs()=ll
+free_pages_memory: start=Ox89800 , order=lO , __ffs()=ll , ffs()=12
+free_pages_memory: start=Ox89cOO , order=10 , __ffs()=10 , ffs()=ll
+*/
 static void __init __free_pages_memory(unsigned long start, unsigned long end)
 {
 	int order;
+/*
+    从起始页帧号start遍历到emd
+*/
+    //pr_debug("start %ul ,end: %ul",start,end);
 
 	while (start < end) {
+/*
+	order 取MAX_ORDER -1 和 _ffs(start) 的最小值
+	因为伙伴系统的链表都是2 的n 次幕，最大的链表是2 的10 次方，也就是1024 ，即Ox400 。
+	所以，通过ffs函数可以很方便地计算出地址的对齐边界。
+	例如start 等于Ox63300 ，那么_ffs(Ox63300)等于8 ，那么这里order 选用8
+*/
 		order = min(MAX_ORDER - 1UL, __ffs(start));
 
 		while (start + (1UL << order) > end)
 			order--;
-
 		__free_pages_bootmem(pfn_to_page(start), start, order);
-
+/*
+        循环的步长和order有关
+*/
 		start += (1UL << order);
 	}
 }
@@ -154,8 +184,14 @@ static unsigned long __init free_low_memory_core_early(void)
 	 *  because in some case like Node0 doesn't have RAM installed
 	 *  low ram will be on Node1
 	 */
+/*
+	 遍历所有的memblock 内存块，找出内存块的起始地址和结束地址。
+*/
 	for_each_free_mem_range(i, NUMA_NO_NODE, MEMBLOCK_NONE, &start, &end,
 				NULL)
+/*
+		把内存块传递到__free_memory_core中
+*/
 		count += __free_memory_core(start, end);
 
 #ifdef CONFIG_ARCH_DISCARD_MEMBLOCK

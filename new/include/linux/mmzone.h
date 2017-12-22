@@ -568,6 +568,10 @@ zone中定义了两把锁，lock以及lru_lock，lock与页面分配有关，lru
 以提高访问效率。例如struct zone数据结构中zone->lock和zone->lru_lock这两个频繁被访问的锁，
 可以让它们各自使用不同的cache line，以提高获取锁的效率。
 
+内核开发者逐步发现有一些自旋锁会竞争得非常厉害，很难获取。
+像zone->Iock 和zone->lru lock 这两个锁有时需要同时获取锁，因此保证它们使用不同的
+cache line 是内核常用的一种优化技巧。
+
 当CPU对某个锁进行上锁处理时，CPU会将锁从内存加载到cache中，因为是以cache line为单位进行加载，
 所以与锁紧挨着的成员也被加载到同一cache line中。
 CPU上完锁想要访问相关的成员时，这些成员已经在cache line中了。
@@ -666,9 +670,10 @@ struct zone {
 	 * In SPARSEMEM, this map is stored in struct mem_section
 	 */
 /*
+    pageblock_nr_pages个页的内存块的迁移类型，
+
     在内存释放时，为了能够快速的将内存块返回到正确的迁移链表上，
     内核提供了一个专门的字段pageblock_flags，
-    用来跟踪包含pageblock_nr_pages个页的内存块的迁移类型，
     在启用大页的情况下pageblock_nr_pages与大页大小（2M）相同，
     否则pageblock_nr_pages=2^(MAX_ORDER-1)=2^10个page。
 
@@ -676,12 +681,14 @@ struct zone {
     在使能SPARSEMEM（稀疏内存模型）的系统上，pageblock_flags被定义在struct mem_section中，
     否则定义在struct zone中。
 
+
     几点说明：
+    0) setup_usemap 里面得到
     1) pageblock_flags的空间是根据内存大小，在内存初始化时就分配好的，
-        它的比特位总是可用的，与page是否由伙伴系统管理无关。
+       它的比特位总是可用的，与page是否由伙伴系统管理无关。
     2) 函数set_pageblock_migratetype(page, migratetype)用于设置以page为首的内存块的迁移类型，
-        而get_pageblock_migratetype(page)用于获取以page为首的内存块的迁移类型。
-    3) 所有页最开始都被标记为可移动的。
+       而get_pageblock_migratetype(page)用于获取以page为首的内存块的迁移类型。
+    3) 所有页最开始都被标记为MIGRATE_MOVABLE。
     4) 分配内存时，如果需要从备用列表中申请，内核优先申请更大的内存块。
         比如计划申请1个page的不可移动内存块，优先查找是否存在2^10个page的可回收内存块，
         如果不存在再查找是否存在2^9个page的可回收内存块，直到2^0。
@@ -919,7 +926,7 @@ enum {
 struct zoneref {
 	//实际引用的zone指针
 	struct zone *zone;	/* Pointer to actual zone */
-	//在引用数组中的索引
+	//zone 的编号
 	int zone_idx;		/* zone_idx(zoneref->zone) */
 };
 

@@ -1447,6 +1447,8 @@ static void __init __free_pages_boot_core(struct page *page, unsigned int order)
 	struct page *p = page;
 	unsigned int loop;
 
+    // pr_debug("start %p ,order: %u",page,order);
+
 	//数据预取
 	prefetchw(p);
 	//遍历所有页面
@@ -6045,6 +6047,7 @@ not_early:
 			struct page *page = pfn_to_page(pfn);
 
 			__init_single_page(page, pfn, zone, nid);
+			// 内核初始化时所有的页面最初都标记为 MIGRATE_MOVABLE 类型
 			set_pageblock_migratetype(page, MIGRATE_MOVABLE);
 		} else {
 			__init_single_pfn(pfn, zone, nid);
@@ -6651,9 +6654,15 @@ static unsigned long __init usemap_size(unsigned long zone_start_pfn, unsigned l
 {
 	unsigned long usemapsize;
 
+    /*
+    计算zone 有多少个pageblock
+    */
 	zonesize += zone_start_pfn & (pageblock_nr_pages-1);
 	usemapsize = roundup(zonesize, pageblock_nr_pages);
 	usemapsize = usemapsize >> pageblock_order;
+/*
+    每个pageblock 需要4bit 来存放 MIGRATE_TYPES 类型
+*/
 	usemapsize *= NR_PAGEBLOCK_BITS;
 	usemapsize = roundup(usemapsize, 8 * sizeof(unsigned long));
 

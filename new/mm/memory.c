@@ -105,9 +105,19 @@ EXPORT_SYMBOL(mem_map);
  * highstart_pfn must be the same; there must be no gap between ZONE_NORMAL
  * and ZONE_HIGHMEM.
  */
-/**
- * 高端内存的起始地址，被设置成896MB.
- */
+/*
+高端内存的起始地址，被设置成896MB？还是760M.
+高端内存保留给vmalloc 、fixmap 和高端向量表等使用的。
+内核很多驱动使用vmalloc 来分配连续虚拟地址的内存，因为有的驱动不需要连续物理地址的内存;
+除此以外， vmalloc 还可以用于高端内存的临时映射。
+
+由于32 位系统的寻址能力只有4GB，对于物理内存高于760MB而低于4GB 的情况，
+我们可以从保留的240MB 的虚拟地址空间中划出一部分用于动态映射高端内存，
+这样内核就可以访问到全部的4GB内存了。
+如果物理内存高于4GB，那么在ARMv7-A 架构中就要使用LPE 机制来扩展物理内存访问了。
+用于映射高端内存的虚拟地址空间有限，所以又可以划分为两部分，
+一部分为临时映射区，另一部分为固定映射区，PKMAP 指向的就是固定映射区。
+*/
 void * high_memory;
 
 EXPORT_SYMBOL(high_memory);

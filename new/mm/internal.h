@@ -109,6 +109,9 @@ extern pmd_t *mm_find_pmd(struct mm_struct *mm, unsigned long address);
  * in __alloc_pages_slowpath(). All other functions pass the whole strucure
  * by a const pointer.
  */
+/*
+伙伴系统分配函数中用于保存相关参数。
+*/
 struct alloc_context {
 	struct zonelist *zonelist;
 	nodemask_t *nodemask;
@@ -144,11 +147,11 @@ static inline unsigned long
 __find_buddy_pfn(unsigned long page_pfn, unsigned int order)
 {
     /*
-    page是以数组的形式存放在mem_map当中, 
+    page是以数组的形式存放在mem_map当中,
     整个page是可以通过index线性索引的.
     要找到自己的buddy只要在对应的order位进行抑或即可
-    idx 抑或 2^order order那位是0, 那么buddy应该是1 
-    order那位是1, 那么buddy应该是0 
+    idx 抑或 2^order order那位是0, 那么buddy应该是1
+    order那位是1, 那么buddy应该是0
     */
 	return page_pfn ^ (1 << order);
 }

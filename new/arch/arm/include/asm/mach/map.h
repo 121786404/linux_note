@@ -16,11 +16,11 @@
 
 struct map_desc {
 /*
-映射到的虚拟地址的开始
+    虚拟地址的起始地址
 */
 	unsigned long virtual;
 /*
-	被映射的物理内存的起始页框
+	物理地址的开始地址的页帧号
 */
 	unsigned long pfn;
 /*
@@ -47,6 +47,9 @@ enum {
 */
 	MT_HIGH_VECTORS,
 	MT_MEMORY_RWX,
+	/*
+    ARM 页表项有一个XN比特    位，XN 比特位置为1，表示这段内存区域不允许执行。
+	*/
 	MT_MEMORY_RW,
 	MT_ROM,
 	MT_MEMORY_RWX_NONCACHED,

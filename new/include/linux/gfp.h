@@ -8,7 +8,7 @@
 #include <linux/topology.h>
 
 
-/* 
+/*
  * 以'__'打头的GFP掩码只限于在内存管理组件内部的代码使用，
  * gfp_mask掩码以"GFP_"的形式出现
  */
@@ -24,15 +24,15 @@ GFP缩写的意思为获取空闲页get free page
 
 常见的几种内存分配场景及使用的标志
     1) 缺页异常分配内存时：
-        GFP_HIGHUSER | __GFP_ZERO | __GFP_MOVABLE   
+        GFP_HIGHUSER | __GFP_ZERO | __GFP_MOVABLE
         分配可移动的page，并且将page清零
         do_page_fault() -> handle_pte_fault() -> do_anonymous_page() -> alloc_zeroed_user_highpage_movable()
     2) 文件映射分配内存时：
-        GFP_HIGHUSER_MOVABLE    
-        分配可移动的page 
+        GFP_HIGHUSER_MOVABLE
+        分配可移动的page
         do_page_fault() -> handle_pte_fault() -> do_anonymous_page() -> do_nonlinear_fault() -> __do_fault()
     3) vmalloc分配内存时：
-        GFP_KERNEL | __GFP_HIGHMEM   
+        GFP_KERNEL | __GFP_HIGHMEM
         优先从高端内存中分配
         vmalloc() -> __vmalloc_node_flags(size, -1, GFP_KERNEL | __GFP_HIGHMEM)
 */
@@ -119,7 +119,7 @@ GFP缩写的意思为获取空闲页get free page
 #define __GFP_RECLAIMABLE ((__force gfp_t)___GFP_RECLAIMABLE)
 #define __GFP_WRITE	((__force gfp_t)___GFP_WRITE)
 /*
-只在NUMA系统上有意义. 
+只在NUMA系统上有意义.
 只能在当前进程可运行的cpu关联的内存节点上分配内存，
 如果进程可在所有cpu上运行，该标志无意义
 */
@@ -195,14 +195,14 @@ GFP缩写的意思为获取空闲页get free page
  *   the allocation to succeed.  The OOM killer is not called with the current
  *   implementation.
  */
-/* 
+/*
 内存分配的过程中可进行IO操作，
 也就是说分配过程中如果需要换出页，
-必须设置该标志，才能将换出的页写入磁盘 
+必须设置该标志，才能将换出的页写入磁盘
 */
 #define __GFP_IO	((__force gfp_t)___GFP_IO)
 /*
-允许内核执行VFS操作. 在与VFS层有联系的内核子系统中必须禁用, 
+允许内核执行VFS操作. 在与VFS层有联系的内核子系统中必须禁用,
 因为这可能引起循环递归调用
 */
 #define __GFP_FS	((__force gfp_t)___GFP_FS)
@@ -247,8 +247,8 @@ GFP缩写的意思为获取空闲页get free page
  */
 /*
  如果需要分配不在CPU高速缓存中的“冷”页时，则设置__GFP_COLD
- 它在一段时间没被使用. 它对分配页作 DMA 读是有用的, 
- 此时在处理器缓冲中出现是无用的. 
+ 它在一段时间没被使用. 它对分配页作 DMA 读是有用的,
+ 此时在处理器缓冲中出现是无用的.
 */
 #define __GFP_COLD	((__force gfp_t)___GFP_COLD)
 /*
@@ -327,8 +327,8 @@ Get Free Pages = GFP
 */
 /*
  用于原子分配，不能中断, 不能睡眠，不能有IO和VFS操作
- 可能使用紧急分配链表中的内存, 
- 这个标志用在中断处理程序, 下半部, 
+ 可能使用紧急分配链表中的内存,
+ 这个标志用在中断处理程序, 下半部,
  持有自旋锁以及其他不能睡眠的地方
 */
 #define GFP_ATOMIC	(__GFP_HIGH|__GFP_ATOMIC|__GFP_KSWAPD_RECLAIM)
@@ -341,7 +341,7 @@ Get Free Pages = GFP
 #define GFP_KERNEL	(__GFP_RECLAIM | __GFP_IO | __GFP_FS)
 #define GFP_KERNEL_ACCOUNT (GFP_KERNEL | __GFP_ACCOUNT)
 /*
-与GFP_ATOMIC类似, 不同之处在于, 调用不会退给紧急内存池, 
+与GFP_ATOMIC类似, 不同之处在于, 调用不会退给紧急内存池,
 这就增加了内存分配失败的可能性
 */
 #define GFP_NOWAIT	(__GFP_KSWAPD_RECLAIM)
@@ -367,7 +367,7 @@ Get Free Pages = GFP
  */
 #define GFP_USER	(__GFP_RECLAIM | __GFP_IO | __GFP_FS | __GFP_HARDWALL)
 /*
-用于分配适用于DMA的内存, 当前是__GFP_DMA的同义词, 
+用于分配适用于DMA的内存, 当前是__GFP_DMA的同义词,
 GFP_DMA32也是__GFP_GMA32的同义词
 */
 #define GFP_DMA		__GFP_DMA
@@ -393,6 +393,11 @@ GFP_USER的一个扩展, 分配用于用户进程的页面，
 #define GFP_MOVABLE_SHIFT 3
 
 // 转换分配标志及对应的迁移类型
+/*
+把 gfp_flags 分配掩码转换成 MTGRATE_TYPES，
+例如分配掩码为 GFP_KERNEL，那么 MIGRATE_TYPES 是MIGRATE_UNMOVABLE
+如果分配掩码为 GFP_HIGHUSER_MOVABLE，那么 MIGRATE_TYPES 是MIGRATE_MOVABLE
+*/
 static inline int gfpflags_to_migratetype(const gfp_t gfp_flags)
 {
 	VM_WARN_ON((gfp_flags & GFP_MOVABLE_MASK) == GFP_MOVABLE_MASK);
@@ -505,7 +510,10 @@ static inline bool gfpflags_allow_blocking(const gfp_t gfp_flags)
 
 /* 根据gfp_mask制定在囊二域中分配物理页面
  * 如果没有在gfp_mask中明确制定__GFP_DMA或者__GFP_HIGHMEM,那么默认在ZONE_NORMAL中分配物理页
- * 如果ZONE_NORMAL中现有空闲页不足以满足当前的分配，那么页分配器会到ZONE_DMA域中查找空闲页，而不会到ZONE_HIGHMEM中查找*/
+ * 如果ZONE_NORMAL中现有空闲页不足以满足当前的分配，那么页分配器会到ZONE_DMA域中查找空闲页，而不会到ZONE_HIGHMEM中查找
+
+   从分配掩码中计算出zone 的zoneidx ，并存放在 high_zoneidx 成员中。
+ */
 static inline enum zone_type gfp_zone(gfp_t flags)
 {
 	enum zone_type z;
