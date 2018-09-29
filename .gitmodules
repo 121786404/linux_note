@@ -1,3 +1,6 @@
 [submodule "linux-4-3-0-comment"]
 	path = linux-4-3-0-comment
 	url = https://code.csdn.net/xiebaoyou/linux-4-3-0-comment.git
+[submodule "linux-stable"]
+	path = linux-stable
+	url = https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-stable.git
