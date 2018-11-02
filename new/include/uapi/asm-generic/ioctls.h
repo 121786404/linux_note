@@ -1,3 +1,4 @@
+/* SPDX-License-Identifier: GPL-2.0 WITH Linux-syscall-note */
 #ifndef __ASM_GENERIC_IOCTLS_H
 #define __ASM_GENERIC_IOCTLS_H
 
@@ -79,15 +80,10 @@
 #define TIOCGPKT	_IOR('T', 0x38, int) /* Get packet mode state */
 #define TIOCGPTLCK	_IOR('T', 0x39, int) /* Get Pty lock state */
 #define TIOCGEXCL	_IOR('T', 0x40, int) /* Get exclusive mode state */
+#define TIOCGPTPEER	_IO('T', 0x41) /* Safely open the slave */
 
-/*清除执行时关闭标志,即File IOctl Not CLose on EXec,与FIOCLEX标志相反,
-  清除由FIOCLEX命令设置的标志*/
 #define FIONCLEX	0x5450
-/* 执行时关闭标志,即File IOctl Close on EXec,通知内核在调用进程一个新程序
- * 时,比如exec()系统调用,自动关闭打开的文件*/
 #define FIOCLEX		0x5451
-/*设置或者复位文件的异步通知,这两个动作在内核中实际的执行者是fcntl,所以
- * 内核代码并不使用该cmd*/
 #define FIOASYNC	0x5452
 #define TIOCSERCONFIG	0x5453
 #define TIOCSERGWILD	0x5454
@@ -107,7 +103,6 @@
  * conflict with a Hayes modem-specific ioctl value.
  */
 #ifndef FIOQSIZE
-/*获得一个文件或者目录的大小,用于设备文件时,将返回一个ENOTTY错误*/
 # define FIOQSIZE	0x5460
 #endif
 

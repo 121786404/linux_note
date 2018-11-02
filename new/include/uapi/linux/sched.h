@@ -1,3 +1,4 @@
+/* SPDX-License-Identifier: GPL-2.0 WITH Linux-syscall-note */
 #ifndef _UAPI_LINUX_SCHED_H
 #define _UAPI_LINUX_SCHED_H
 
@@ -17,13 +18,13 @@
 /*
 子进程与父进程共享相同的文件描述符（file descriptor）表,即共享打开的文件
 */
-#define CLONE_FILES 0x00000400	/* set if open files shared between processes */
+#define CLONE_FILES	0x00000400	/* set if open files shared between processes */
 /* 表示创建的子进程与父进程共享相同的信号处理（signal handler）表 ，必须同时设置CLONE_VM标志*/
 #define CLONE_SIGHAND	0x00000800	/* set if signal handlers and blocked signals shared */
 /* 如果父进程被追踪，那么子进程也被追踪*/
 #define CLONE_PTRACE	0x00002000	/* set if we want to let tracing continue on the child too */
 /* 在发出vfork系统调用时设置*/
-#define CLONE_VFORK 0x00004000	/* set if the parent wants the child to wake it up on mm_release */
+#define CLONE_VFORK	0x00004000	/* set if the parent wants the child to wake it up on mm_release */
 /* 创建的子进程的父进程是调用者的父进程，
      新进程与创建它的进程成了“兄弟”而不是“父子” */
 #define CLONE_PARENT	0x00008000	/* set if we want to have the same parent as the cloner */
@@ -54,7 +55,7 @@ mount Namespace为进程提供了一个文件层次视图。
 就可以调用mount或umount建立一份新的文件层次视图。
 该flag配合pivot_root系统调用，可以为进程创建一个独立的目录空间
 */
-#define CLONE_NEWNS 0x00020000	/* New mount namespace group */
+#define CLONE_NEWNS	0x00020000	/* New mount namespace group */
 /* 父子进程共享system V SEM_UNDO 语义*/
 #define CLONE_SYSVSEM	0x00040000	/* share system V SEM_UNDO semantics */
 /*
@@ -205,5 +206,11 @@ SCHED_NORMAL普通进程策略的分化版本。采用分时策略，
  * For the sched_{set,get}attr() calls
  */
 #define SCHED_FLAG_RESET_ON_FORK	0x01
+#define SCHED_FLAG_RECLAIM		0x02
+#define SCHED_FLAG_DL_OVERRUN		0x04
+
+#define SCHED_FLAG_ALL	(SCHED_FLAG_RESET_ON_FORK	| \
+			 SCHED_FLAG_RECLAIM		| \
+			 SCHED_FLAG_DL_OVERRUN)
 
 #endif /* _UAPI_LINUX_SCHED_H */

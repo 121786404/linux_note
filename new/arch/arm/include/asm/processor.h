@@ -45,13 +45,18 @@ struct thread_struct {
 	struct debug_info	debug;
 };
 
+/*
+ * Everything usercopied to/from thread_struct is statically-sized, so
+ * no hardened usercopy whitelist is needed.
+ */
+static inline void arch_thread_struct_whitelist(unsigned long *offset,
+						unsigned long *size)
+{
+	*offset = *size = 0;
+}
+
 #define INIT_THREAD  {	}
 
-#ifdef CONFIG_MMU
-#define nommu_start_thread(regs) do { } while (0)
-#else
-#define nommu_start_thread(regs) regs->ARM_r10 = current->mm->start_data
-#endif
 
 /*
 start_thread()这个宏操作会将eip和esp改成新的地址，
@@ -64,7 +69,22 @@ start_thread()这个宏操作会将eip和esp改成新的地址，
 */
 #define start_thread(regs,pc,sp)					\
 ({									\
+	unsigned long r7, r8, r9;					\
+									\
+	if (IS_ENABLED(CONFIG_BINFMT_ELF_FDPIC)) {			\
+		r7 = regs->ARM_r7;					\
+		r8 = regs->ARM_r8;					\
+		r9 = regs->ARM_r9;					\
+	}								\
 	memset(regs->uregs, 0, sizeof(regs->uregs));			\
+	if (IS_ENABLED(CONFIG_BINFMT_ELF_FDPIC) &&			\
+	    current->personality & FDPIC_FUNCPTRS) {			\
+		regs->ARM_r7 = r7;					\
+		regs->ARM_r8 = r8;					\
+		regs->ARM_r9 = r9;					\
+		regs->ARM_r10 = current->mm->start_data;		\
+	} else if (!IS_ENABLED(CONFIG_MMU))				\
+		regs->ARM_r10 = current->mm->start_data;		\
 	if (current->personality & ADDR_LIMIT_32BIT)			\
 		regs->ARM_cpsr = USR_MODE;				\
 	else								\
@@ -74,7 +94,6 @@ start_thread()这个宏操作会将eip和esp改成新的地址，
 	regs->ARM_cpsr |= PSR_ENDSTATE;					\
 	regs->ARM_pc = pc & ~1;		/* pc */			\
 	regs->ARM_sp = sp;		/* sp */			\
-	nommu_start_thread(regs);					\
 })
 
 /* Forward declaration, a strange C thing */

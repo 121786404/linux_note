@@ -1,4 +1,5 @@
-#ifndef __LINUX_COMPILER_H
+/* SPDX-License-Identifier: GPL-2.0 */
+#ifndef __LINUX_COMPILER_TYPES_H
 #error "Please don't include <linux/compiler-gcc.h> directly, include <linux/compiler.h> instead."
 #endif
 
@@ -8,6 +9,10 @@
 #define GCC_VERSION (__GNUC__ * 10000		\
 		     + __GNUC_MINOR__ * 100	\
 		     + __GNUC_PATCHLEVEL__)
+
+#if GCC_VERSION < 40600
+# error Sorry, your compiler is too old - please upgrade it.
+#endif
 
 /* Optimization barrier */
 
@@ -221,18 +226,22 @@ __must_check宏的作用是告诉编译器当调用者调用这个函数时不�
 #define __UNIQUE_ID(prefix) __PASTE(__PASTE(__UNIQUE_ID_, prefix), __COUNTER__)
 
 #ifndef __CHECKER__
-# define __compiletime_warning(message) __attribute__((warning(message)))
-# define __compiletime_error(message) __attribute__((error(message)))
-#endif /* __CHECKER__ */
-#endif /* GCC_VERSION >= 40300 */
+#define __compiletime_warning(message) __attribute__((warning(message)))
+#define __compiletime_error(message) __attribute__((error(message)))
 
-#if GCC_VERSION >= 40500
-
-#ifndef __CHECKER__
 #ifdef LATENT_ENTROPY_PLUGIN
 #define __latent_entropy __attribute__((latent_entropy))
 #endif
-#endif
+#endif /* __CHECKER__ */
+
+/*
+ * calling noreturn functions, __builtin_unreachable() and __builtin_trap()
+ * confuse the stack allocation in gcc, leading to overly large stack
+ * frames, see https://gcc.gnu.org/bugzilla/show_bug.cgi?id=82365
+ *
+ * Adding an empty inline assembly before it works around the problem
+ */
+#define barrier_before_unreachable() asm volatile("")
 
 /*
  * Mark a position in code as unreachable.  This can be used to
@@ -243,14 +252,24 @@ __must_check宏的作用是告诉编译器当调用者调用这个函数时不�
  * this in the preprocessor, but we can live with this because they're
  * unreleased.  Really, we need to have autoconf for the kernel.
  */
-#define unreachable() __builtin_unreachable()
+#define unreachable() \
+	do {					\
+		annotate_unreachable();		\
+		barrier_before_unreachable();	\
+		__builtin_unreachable();	\
+	} while (0)
 
 /* Mark a function definition as prohibited from being cloned. */
 #define __noclone	__attribute__((__noclone__, __optimize__("no-tracer")))
 
-#endif /* GCC_VERSION >= 40500 */
+#if defined(RANDSTRUCT_PLUGIN) && !defined(__CHECKER__)
+#define __randomize_layout __attribute__((randomize_layout))
+#define __no_randomize_layout __attribute__((no_randomize_layout))
+/* This anon struct can add padding, so only enable it under randstruct. */
+#define randomized_struct_fields_start	struct {
+#define randomized_struct_fields_end	} __randomize_layout;
+#endif
 
-#if GCC_VERSION >= 40600
 /*
  * When used with Link Time Optimization, gcc can optimize away C functions or
  * variables which are referenced only from assembly code.  __visible tells the
@@ -258,8 +277,8 @@ __must_check宏的作用是告诉编译器当调用者调用这个函数时不�
  * this.
  */
 #define __visible	__attribute__((externally_visible))
-#endif
 
+/* gcc version specific checks */
 
 #if GCC_VERSION >= 40900 && !defined(__CHECKER__)
 /*
@@ -293,10 +312,8 @@ __must_check宏的作用是告诉编译器当调用者调用这个函数时不�
  * folding in __builtin_bswap*() (yet), so don't set these for it.
  */
 #if defined(CONFIG_ARCH_USE_BUILTIN_BSWAP) && !defined(__CHECKER__)
-#if GCC_VERSION >= 40400
 #define __HAVE_BUILTIN_BSWAP32__
 #define __HAVE_BUILTIN_BSWAP64__
-#endif
 #if GCC_VERSION >= 40800
 #define __HAVE_BUILTIN_BSWAP16__
 #endif
@@ -319,7 +336,14 @@ __must_check宏的作用是告诉编译器当调用者调用这个函数时不�
 #define __no_sanitize_address __attribute__((no_sanitize_address))
 #endif
 
-#endif	/* gcc version >= 40000 specific checks */
+#if GCC_VERSION >= 50100
+/*
+ * Mark structures as requiring designated initializers.
+ * https://gcc.gnu.org/onlinedocs/gcc/Designated-Inits.html
+ */
+#define __designated_init __attribute__((designated_init))
+#define COMPILER_HAS_GENERIC_BUILTIN_OVERFLOW 1
+#endif
 
 #if !defined(__noclone)
 #define __noclone	/* not needed */
@@ -330,7 +354,23 @@ __must_check宏的作用是告诉编译器当调用者调用这个函数时不�
 #endif
 
 /*
- * A trick to suppress uninitialized variable warning without generating any
- * code
+ * Turn individual warnings and errors on and off locally, depending
+ * on version.
  */
-#define uninitialized_var(x) x = x
+#define __diag_GCC(version, severity, s) \
+	__diag_GCC_ ## version(__diag_GCC_ ## severity s)
+
+/* Severity used in pragma directives */
+#define __diag_GCC_ignore	ignored
+#define __diag_GCC_warn		warning
+#define __diag_GCC_error	error
+
+#define __diag_str1(s)		#s
+#define __diag_str(s)		__diag_str1(s)
+#define __diag(s)		_Pragma(__diag_str(GCC diagnostic s))
+
+#if GCC_VERSION >= 80000
+#define __diag_GCC_8(s)		__diag(s)
+#else
+#define __diag_GCC_8(s)
+#endif

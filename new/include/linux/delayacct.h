@@ -18,18 +18,8 @@
 #define _LINUX_DELAYACCT_H
 
 #include <uapi/linux/taskstats.h>
-#include <linux/sched.h>
-#include <linux/slab.h>
 
-/*
- * Per-task flags relevant to delay accounting
- * maintained privately to avoid exhausting similar flags in sched.h:PF_*
- * Used to set current->delays->flags
- */
-#define DELAYACCT_PF_SWAPIN	0x00000001	/* I am doing a swapin */
-#define DELAYACCT_PF_BLKIO	0x00000002	/* I am waiting on IO */
-
-/*
+*
 delayacct是一个缩写，是指per-task delay accounting。
 这个feature是统计每一个task的等待系统资源的时间（例如等待CPU、memeory或者IO）。
 这些统计信息有助于精准的确定task访问系统资源的优先级。
@@ -49,15 +39,59 @@ delayacct是一个缩写，是指per-task delay accounting。
 3、rss limit value。 rss的全称是resident set size，表示有物理内存对应的虚拟地址空间。
        由于物理内存资源有限，各个进程要合理使用。rss limit value定义了各个进程rss的上限。
 */
-#ifdef CONFIG_TASK_DELAY_ACCT
+/*
+ * Per-task flags relevant to delay accounting
+ * maintained privately to avoid exhausting similar flags in sched.h:PF_*
+ * Used to set current->delays->flags
+ */
+#define DELAYACCT_PF_SWAPIN	0x00000001	/* I am doing a swapin */
+#define DELAYACCT_PF_BLKIO	0x00000002	/* I am waiting on IO */
 
+#ifdef CONFIG_TASK_DELAY_ACCT
+struct task_delay_info {
+	raw_spinlock_t	lock;
+	unsigned int	flags;	/* Private per-task flags */
+
+	/* For each stat XXX, add following, aligned appropriately
+	 *
+	 * struct timespec XXX_start, XXX_end;
+	 * u64 XXX_delay;
+	 * u32 XXX_count;
+	 *
+	 * Atomicity of updates to XXX_delay, XXX_count protected by
+	 * single lock above (split into XXX_lock if contention is an issue).
+	 */
+
+	/*
+	 * XXX_count is incremented on every XXX operation, the delay
+	 * associated with the operation is added to XXX_delay.
+	 * XXX_delay contains the accumulated delay time in nanoseconds.
+	 */
+	u64 blkio_start;	/* Shared by blkio, swapin */
+	u64 blkio_delay;	/* wait for sync block io completion */
+	u64 swapin_delay;	/* wait for swapin block io completion */
+	u32 blkio_count;	/* total count of the number of sync block */
+				/* io operations performed */
+	u32 swapin_count;	/* total count of the number of swapin block */
+				/* io operations performed */
+
+	u64 freepages_start;
+	u64 freepages_delay;	/* wait for memory reclaim */
+	u32 freepages_count;	/* total count of memory reclaim */
+};
+#endif
+
+#include <linux/sched.h>
+#include <linux/slab.h>
+
+#ifdef CONFIG_TASK_DELAY_ACCT
 extern int delayacct_on;	/* Delay accounting turned on/off */
 extern struct kmem_cache *delayacct_cache;
 extern void delayacct_init(void);
 extern void __delayacct_tsk_init(struct task_struct *);
 extern void __delayacct_tsk_exit(struct task_struct *);
 extern void __delayacct_blkio_start(void);
-extern void __delayacct_blkio_end(void);
+extern void __delayacct_blkio_end(struct task_struct *);
 extern int __delayacct_add_tsk(struct taskstats *, struct task_struct *);
 extern __u64 __delayacct_blkio_ticks(struct task_struct *);
 extern void __delayacct_freepages_start(void);
@@ -108,10 +142,10 @@ static inline void delayacct_blkio_start(void)
 		__delayacct_blkio_start();
 }
 
-static inline void delayacct_blkio_end(void)
+static inline void delayacct_blkio_end(struct task_struct *p)
 {
-	if (current->delays)
-		__delayacct_blkio_end();
+	if (p->delays)
+		__delayacct_blkio_end(p);
 	delayacct_clear_flag(DELAYACCT_PF_BLKIO);
 }
 
@@ -155,7 +189,7 @@ static inline void delayacct_tsk_free(struct task_struct *tsk)
 {}
 static inline void delayacct_blkio_start(void)
 {}
-static inline void delayacct_blkio_end(void)
+static inline void delayacct_blkio_end(struct task_struct *p)
 {}
 static inline int delayacct_add_tsk(struct taskstats *d,
 					struct task_struct *tsk)

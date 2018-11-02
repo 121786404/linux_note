@@ -1,3 +1,4 @@
+/* SPDX-License-Identifier: GPL-2.0 */
 /*
  * kernel/workqueue_internal.h
  *
@@ -9,6 +10,7 @@
 
 #include <linux/workqueue.h>
 #include <linux/kthread.h>
+#include <linux/preempt.h>
 
 struct worker_pool;
 
@@ -37,7 +39,6 @@ struct worker {
 	当前work所属的pool_workqueue
 */
 	struct pool_workqueue	*current_pwq; /* L: current_work's pwq */
-	bool			desc_valid;	/* ->desc is valid */
 /*
 	 所有被调度并且正在准备执行的work都挂在该链表中
 */
@@ -81,7 +82,7 @@ struct worker {
  */
 static inline struct worker *current_wq_worker(void)
 {
-	if (current->flags & PF_WQ_WORKER)
+	if (in_task() && (current->flags & PF_WQ_WORKER))
 		return kthread_data(current);
 	return NULL;
 }

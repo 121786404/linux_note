@@ -1,3 +1,4 @@
+/* SPDX-License-Identifier: GPL-2.0 */
 /*  linux/include/linux/clocksource.h
  *
  *  This file contains the structure definitions for clocksources.
@@ -120,6 +121,7 @@ struct clocksource {
 	void (*suspend)(struct clocksource *cs);
 	void (*resume)(struct clocksource *cs);
 	void (*mark_unstable)(struct clocksource *cs);
+	void (*tick_stable)(struct clocksource *cs);
 
 	/* private: */
 #ifdef CONFIG_CLOCKSOURCE_WATCHDOG
@@ -150,7 +152,7 @@ struct clocksource {
 #define CLOCK_SOURCE_RESELECT			0x100
 
 /* simplify initialization of mask field */
-#define CLOCKSOURCE_MASK(bits) (u64)((bits) < 64 ? ((1ULL<<(bits))-1) : -1)
+#define CLOCKSOURCE_MASK(bits) GENMASK_ULL((bits) - 1, 0)
 
 static inline u32 clocksource_freq2mult(u32 freq, u32 shift_constant, u64 from)
 {
@@ -222,6 +224,9 @@ extern void clocksource_suspend(void);
 extern void clocksource_resume(void);
 extern struct clocksource * __init clocksource_default_clock(void);
 extern void clocksource_mark_unstable(struct clocksource *cs);
+extern void
+clocksource_start_suspend_timing(struct clocksource *cs, u64 start_cycles);
+extern u64 clocksource_stop_suspend_timing(struct clocksource *cs, u64 now);
 
 extern u64
 clocks_calc_max_nsecs(u32 mult, u32 shift, u32 maxadj, u64 mask, u64 *max_cycles);
@@ -279,6 +284,8 @@ extern int clocksource_mmio_init(void __iomem *, const char *,
 
 extern int clocksource_i8253_init(void);
 
+#define TIMER_OF_DECLARE(name, compat, fn) \
+	OF_DECLARE_1_RET(timer, name, compat, fn)
 /*
  * 是初始化了一个struct of_device_id的静态常量
  * 并放置在__clksrc_of_table section中
@@ -289,15 +296,15 @@ extern int clocksource_i8253_init(void);
 这个table也就保存了kernel支持的所有的clock source的ID信息（最重要的是驱动代码初始化函数和DT compatible string）。
 */
 #define CLOCKSOURCE_OF_DECLARE(name, compat, fn) \
-	OF_DECLARE_1_RET(clksrc, name, compat, fn)
+	TIMER_OF_DECLARE(name, compat, fn)
 
-#ifdef CONFIG_CLKSRC_PROBE
-extern void clocksource_probe(void);
+#ifdef CONFIG_TIMER_PROBE
+extern void timer_probe(void);
 #else
-static inline void clocksource_probe(void) {}
+static inline void timer_probe(void) {}
 #endif
 
-#define CLOCKSOURCE_ACPI_DECLARE(name, table_id, fn)		\
-	ACPI_DECLARE_PROBE_ENTRY(clksrc, name, table_id, 0, NULL, 0, fn)
+#define TIMER_ACPI_DECLARE(name, table_id, fn)		\
+	ACPI_DECLARE_PROBE_ENTRY(timer, name, table_id, 0, NULL, 0, fn)
 
 #endif /* _LINUX_CLOCKSOURCE_H */

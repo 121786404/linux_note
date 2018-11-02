@@ -98,6 +98,8 @@ struct cachepolicy {
 #define s2_policy(policy)	0
 #endif
 
+unsigned long kimage_voffset __ro_after_init;
+
 static struct cachepolicy cache_policies[] __initdata = {
 	{
 		.policy		= "uncached",
@@ -424,6 +426,11 @@ void __set_fixmap(enum fixed_addresses idx, phys_addr_t phys, pgprot_t prot)
 	BUILD_BUG_ON(FIXADDR_START + (__end_of_fixed_addresses * PAGE_SIZE) >
 		     FIXADDR_END);
 	BUG_ON(idx >= __end_of_fixed_addresses);
+
+	/* we only support device mappings until pgprot_kernel has been set */
+	if (WARN_ON(pgprot_val(prot) != pgprot_val(FIXMAP_PAGE_IO) &&
+		    pgprot_val(pgprot_kernel) == 0))
+		return;
 
 	if (pgprot_val(prot))
 		set_pte_at(NULL, vaddr, pte,
@@ -1199,13 +1206,12 @@ phys_addr_t arm_lowmem_limit __initdata = 0;
 /*
 对meminfo中所有的membank进行范围检查，不能覆盖最小的vmalloc区域
 */
-void __init sanity_check_meminfo(void)
+void __init adjust_lowmem_bounds(void)
 {
 	phys_addr_t memblock_limit = 0;
-	int highmem = 0;
 	u64 vmalloc_limit;
 	struct memblock_region *reg;
-	bool should_use_highmem = false;
+	phys_addr_t lowmem_limit = 0;
 
 	/*
 	 * Let's use our own (unoptimized) equivalent of __pa() that is
@@ -1219,44 +1225,18 @@ void __init sanity_check_meminfo(void)
 	for_each_memblock(memory, reg) {
 		phys_addr_t block_start = reg->base;
 		phys_addr_t block_end = reg->base + reg->size;
-		phys_addr_t size_limit = reg->size;
 
-		if (reg->base >= vmalloc_limit)//高端内存
-			highmem = 1;
-		else
-			size_limit = vmalloc_limit - reg->base;
-
-
-		//不允许高端内存，或者有别名问题
-		if (!IS_ENABLED(CONFIG_HIGHMEM) || cache_is_vipt_aliasing()) {
-
-			if (highmem) {//这种情况下需要忽略高端内存，不然映射后可能导致别名。
-				pr_notice("Ignoring RAM at %pa-%pa (!CONFIG_HIGHMEM)\n",
-					  &block_start, &block_end);
-				memblock_remove(reg->base, reg->size);
-				should_use_highmem = true;
-				continue;
-			}
-
-			if (reg->size > size_limit) {//跨越vmalloc区了，要截断区域将它看作两块内存。
-				phys_addr_t overlap_size = reg->size - size_limit;
-
-				pr_notice("Truncating RAM at %pa-%pa",
-					  &block_start, &block_end);
-				block_end = vmalloc_limit;
-				pr_cont(" to -%pa", &block_end);
-				memblock_remove(vmalloc_limit, overlap_size);
-				should_use_highmem = true;
-			}
-		}
-
-		if (!highmem) {
-			if (block_end > arm_lowmem_limit) {
-				if (reg->size > size_limit)
-					arm_lowmem_limit = vmalloc_limit;
-				else
-					arm_lowmem_limit = block_end;
-			}
+		if (reg->base < vmalloc_limit) {
+			if (block_end > lowmem_limit)
+				/*
+				 * Compare as u64 to ensure vmalloc_limit does
+				 * not get truncated. block_end should always
+				 * fit in phys_addr_t so there should be no
+				 * issue with assignment.
+				 */
+				lowmem_limit = min_t(u64,
+							 vmalloc_limit,
+							 block_end);
 
 			/*
 			 * Find the first non-pmd-aligned page, and point
@@ -1275,29 +1255,37 @@ void __init sanity_check_meminfo(void)
 				if (!IS_ALIGNED(block_start, PMD_SIZE))
 					memblock_limit = block_start;
 				else if (!IS_ALIGNED(block_end, PMD_SIZE))
-					memblock_limit = arm_lowmem_limit;
+					memblock_limit = lowmem_limit;
 			}
 
 		}
 	}
 
-	if (should_use_highmem)
-		pr_notice("Consider using a HIGHMEM enabled kernel.\n");
+	arm_lowmem_limit = lowmem_limit;
 
-/*
-
-*/
 	high_memory = __va(arm_lowmem_limit - 1) + 1;
+
+	if (!memblock_limit)
+		memblock_limit = arm_lowmem_limit;
 
 	/*
 	 * Round the memblock limit down to a pmd size.  This
 	 * helps to ensure that we will allocate memory from the
 	 * last full pmd, which should be mapped.
 	 */
-	if (memblock_limit)
-		memblock_limit = round_down(memblock_limit, PMD_SIZE);
-	if (!memblock_limit)
-		memblock_limit = arm_lowmem_limit;
+	memblock_limit = round_down(memblock_limit, PMD_SIZE);
+
+	if (!IS_ENABLED(CONFIG_HIGHMEM) || cache_is_vipt_aliasing()) {
+		if (memblock_end_of_DRAM() > arm_lowmem_limit) {
+			phys_addr_t end = memblock_end_of_DRAM();
+
+			pr_notice("Ignoring RAM at %pa-%pa\n",
+				  &memblock_limit, &end);
+			pr_notice("Consider using a HIGHMEM enabled kernel.\n");
+
+			memblock_remove(memblock_limit, end - memblock_limit);
+		}
+	}
 
 	memblock_set_current_limit(memblock_limit);
 }
@@ -1322,13 +1310,13 @@ static inline void prepare_page_table(void)
 	/**
 	 * 将内核映像下面的所有PMD清空。
 	 */
-	
+	/*	
 	printk(KERN_CRIT "sheldon %s: MODULES_VADDR:0x%x\n",__FUNCTION__,MODULES_VADDR); //0xbf000000
 	printk(KERN_CRIT "sheldon %s: PAGE_OFFSET:0x%x\n",__FUNCTION__,PAGE_OFFSET); // 0xc0000000
 	printk(KERN_CRIT "sheldon %s: high_memory:0x%x\n",__FUNCTION__,high_memory); // 0xef800000
 	printk(KERN_CRIT "sheldon %s: arm_lowmem_limit:0x%x\n",__FUNCTION__,arm_lowmem_limit); // 0x636f  0x8f800000
 	printk(KERN_CRIT "sheldon %s: VMALLOC_START:0x%x VMALLOC_END:0x%x\n",__FUNCTION__,VMALLOC_START,VMALLOC_END); // 0xf0000000 0xff000000
-	
+	 */
 	for (addr = 0; addr < MODULES_VADDR; addr += PMD_SIZE)
 		pmd_clear(pmd_off_k(addr));
 
@@ -1540,11 +1528,7 @@ static void __init map_lowmem(void)
 	struct memblock_region *reg;
 
     /* 1.计算kernel的起始物理地址 */
-#ifdef CONFIG_XIP_KERNEL
-	phys_addr_t kernel_x_start = round_down(__pa(_sdata), SECTION_SIZE);
-#else
-	phys_addr_t kernel_x_start = round_down(__pa(_stext), SECTION_SIZE);
-#endif
+	phys_addr_t kernel_x_start = round_down(__pa(KERNEL_START), SECTION_SIZE);
     /* 2.计算__init_end的物理地址 */
 	phys_addr_t kernel_x_end = round_up(__pa(__init_end), SECTION_SIZE);
 
@@ -1630,7 +1614,7 @@ pgtables_remap lpae_pgtables_remap_asm;
  * early_paging_init() recreates boot time page table setup, allowing machines
  * to switch over to a high (>4G) address space on LPAE systems
  */
-void __init early_paging_init(const struct machine_desc *mdesc)
+static void __init early_paging_init(const struct machine_desc *mdesc)
 {
 	pgtables_remap *lpae_pgtables_remap;
 	unsigned long pa_pgd;
@@ -1700,7 +1684,7 @@ void __init early_paging_init(const struct machine_desc *mdesc)
 
 #else
 
-void __init early_paging_init(const struct machine_desc *mdesc)
+static void __init early_paging_init(const struct machine_desc *mdesc)
 {
 	long long offset;
 
@@ -1759,10 +1743,6 @@ void __init paging_init(const struct machine_desc *mdesc)
 {
 	void *zero_page;
 
-	/**
-	 * 根据ARM CPU版本及内存类型对mem_type结构体进行初始化。
-	 */
-	build_mem_type_table();
 	//准备页表
 	prepare_page_table();
 	// 创建页表
@@ -1794,4 +1774,13 @@ void __init paging_init(const struct machine_desc *mdesc)
 	empty_zero_page = virt_to_page(zero_page);
 	//清除0页数据缓存。
 	__flush_dcache_page(NULL, empty_zero_page);
+
+	/* Compute the virt/idmap offset, mostly for the sake of KVM */
+	kimage_voffset = (unsigned long)&kimage_voffset - virt_to_idmap(&kimage_voffset);
+}
+
+void __init early_mm_init(const struct machine_desc *mdesc)
+{
+	build_mem_type_table();
+	early_paging_init(mdesc);
 }

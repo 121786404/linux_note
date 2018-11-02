@@ -1,7 +1,8 @@
+ï»¿/* SPDX-License-Identifier: GPL-2.0 WITH Linux-syscall-note */
 /* const.h: Macros for dealing with constants.  */
 
-#ifndef _LINUX_CONST_H
-#define _LINUX_CONST_H
+#ifndef _UAPI_LINUX_CONST_H
+#define _UAPI_LINUX_CONST_H
 
 /* Some constant macros are used in both assembler and
  * C code.  Therefore we cannot annotate them always with
@@ -11,20 +12,18 @@
  * Similarly, _AT() will cast an expression with a type in C, but
  * leave it unchanged in asm.
 
-Ä³Ð©³£Á¿ºê»áÍ¬Ê±±»CºÍasmÒýÓÃ£¬
-¶øCÓëasmÔÚ¶ÔÁ¢¼´Êý·ûºÅµÄ´¦ÀíÉÏÊÇ²»Í¬µÄ¡£
+æŸäº›å¸¸é‡å®ä¼šåŒæ—¶è¢«Cå’Œasmå¼•ç”¨ï¼Œ
+è€ŒCä¸Žasmåœ¨å¯¹ç«‹å³æ•°ç¬¦å·çš„å¤„ç†ä¸Šæ˜¯ä¸åŒçš„ã€‚
 
-asmÖÐÍ¨¹ýÖ¸ÁîÀ´Çø·ÖÆä²Ù×÷ÊýÊÇÓÐ·ûºÅ»¹ÊÇÎÞ·ûºÅµÄ£¬
-¶ø²»ÊÇÍ¨¹ý²Ù×÷Êý¡£¶øCÖÐÊÇÍ¨¹ý±äÁ¿µÄÊôÐÔ£¬¶ø²»ÊÇÍ¨¹ý²Ù×÷·û¡£
+asmä¸­é€šè¿‡æŒ‡ä»¤æ¥åŒºåˆ†å…¶æ“ä½œæ•°æ˜¯æœ‰ç¬¦å·è¿˜æ˜¯æ— ç¬¦å·çš„ï¼Œ
+è€Œä¸æ˜¯é€šè¿‡æ“ä½œæ•°ã€‚è€ŒCä¸­æ˜¯é€šè¿‡å˜é‡çš„å±žæ€§ï¼Œè€Œä¸æ˜¯é€šè¿‡æ“ä½œç¬¦ã€‚
 
-CÖÐÈç¹ûÒªÖ¸Ã÷³£Á¿ÓÐÎÞ·ûºÅ£¬±ØÐëÎª³£Á¿Ìí¼Óºó×º£¬
-¶øasmÔòÍ¨¹ýÊ¹ÓÃ²»Í¬µÄÖ¸ÁîÀ´Ö¸Ã÷¡£
+Cä¸­å¦‚æžœè¦æŒ‡æ˜Žå¸¸é‡æœ‰æ— ç¬¦å·ï¼Œå¿…é¡»ä¸ºå¸¸é‡æ·»åŠ åŽç¼€ï¼Œ
+è€Œasmåˆ™é€šè¿‡ä½¿ç”¨ä¸åŒçš„æŒ‡ä»¤æ¥æŒ‡æ˜Žã€‚
 
-Èç´Ë£¬µ±Ò»¸ö³£Á¿±»CºÍasmÍ¬Ê±°üº¬Ê±£¬±ØÐë×ö²»Í¬µÄ´¦Àí
+å¦‚æ­¤ï¼Œå½“ä¸€ä¸ªå¸¸é‡è¢«Cå’ŒasmåŒæ—¶åŒ…å«æ—¶ï¼Œå¿…é¡»åšä¸åŒçš„å¤„ç†
 
-_AC(X, Y)ÔÚ__ASSEMBLY__ÏÂÖ±½Ó·´»ØX£¬ÔÚ·Ç__ASSEMBLY__ÏÂ·µ»ØXÓëYµÄÆ´½Ó·ûºÅ¡
-_AT(T, X)Ïàµ±ÓÚº¯Êýµ÷ÓÃ£¬ÆäÖÐT¿ÉÒÔÎªº¯ÊýÃû»òÕßº¯ÊýÖ¸Õë£¬XÎªÏàÓ¦¸ÃµÄ²ÎÊý±í£
- */
+_AC(X, Y)åœ¨__ASSEMBLY__ä¸‹ç›´æŽ¥åå›žXï¼Œåœ¨éž__ASSEMBLY__ä¸‹è¿”å›žXä¸ŽYçš„æ‹¼æŽ¥ç¬¦å·?_AT(T, X)ç›¸å½“äºŽå‡½æ•°è°ƒç”¨ï¼Œå…¶ä¸­Tå¯ä»¥ä¸ºå‡½æ•°åæˆ–è€…å‡½æ•°æŒ‡é’ˆï¼ŒXä¸ºç›¸åº”è¯¥çš„å‚æ•°è¡¨? */
 
 #ifdef __ASSEMBLY__
 #define _AC(X,Y)	X
@@ -35,7 +34,10 @@ _AT(T, X)Ïàµ±ÓÚº¯Êýµ÷ÓÃ£¬ÆäÖÐT¿ÉÒÔÎªº¯ÊýÃû»òÕßº¯ÊýÖ¸Õë£¬XÎªÏàÓ¦¸ÃµÄ²ÎÊý±í£
 #define _AT(T,X)	((T)(X))
 #endif
 
-#define _BITUL(x)	(_AC(1,UL) << (x))
-#define _BITULL(x)	(_AC(1,ULL) << (x))
+#define _UL(x)		(_AC(x, UL))
+#define _ULL(x)		(_AC(x, ULL))
 
-#endif /* !(_LINUX_CONST_H) */
+#define _BITUL(x)	(_UL(1) << (x))
+#define _BITULL(x)	(_ULL(1) << (x))
+
+#endif /* _UAPI_LINUX_CONST_H */

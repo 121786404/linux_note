@@ -1,3 +1,4 @@
+/* SPDX-License-Identifier: GPL-2.0+ WITH Linux-syscall-note */
 /* ------------------------------------------------------------------------- */
 /*									     */
 /* i2c.h - definitions for the i2c-bus interface			     */
@@ -83,6 +84,9 @@ flags，数据传输可携带的flag，包括（具体可参考include/uapi/linu
 					/* I2C_M_RD is guaranteed to be 0x0001! */
 /* 支持10-bit的slave地址 */
 #define I2C_M_TEN		0x0010	/* this is a ten bit chip address */
+#define I2C_M_DMA_SAFE		0x0200	/* the buffer of this message is DMA safe */
+					/* makes only sense in kernelspace */
+					/* userspace buffers are copied anyway */
 /*
 SMBUS的一个flag，意义不明。
 */

@@ -293,10 +293,11 @@ static int clockevents_program_min_delta(struct clock_event_device *dev)
 static int clockevents_program_min_delta(struct clock_event_device *dev)
 {
 	unsigned long long clc;
-	int64_t delta;
-
+	int64_t delta = 0;
+	int i;
 	/* 硬件允许的最小的时间点 */
-	delta = dev->min_delta_ns;
+	for (i = 0; i < 10; i++) {
+		delta += dev->min_delta_ns;
 /*
 	ktime_get函数获取当前的时间点，加上min_delta_ns就是下一次要触发event的时间点，
 */
@@ -316,7 +317,10 @@ static int clockevents_program_min_delta(struct clock_event_device *dev)
 /*
     调用底层driver callback函数进行设定
 */
-	return dev->set_next_event((unsigned long) clc, dev);
+		if (dev->set_next_event((unsigned long) clc, dev) == 0)
+			return 0;
+	}
+	return -ETIME;
 }
 
 #endif /* CONFIG_GENERIC_CLOCKEVENTS_MIN_ADJUST */
@@ -526,6 +530,13 @@ void clockevents_register_device(struct clock_event_device *dev)
 */
 		dev->cpumask = cpumask_of(smp_processor_id());
 	}
+	
+	if (dev->cpumask == cpu_all_mask) {
+		WARN(1, "%s cpumask == cpu_all_mask, using cpu_possible_mask instead\n",
+		     dev->name);
+		dev->cpumask = cpu_possible_mask;
+	}
+	
 /*
     考虑到来自多个CPU上的并发，这里使用spin lock进行保护。
     关闭本地中断，可以防止来自本cpu上的并发操作。
@@ -555,7 +566,7 @@ EXPORT_SYMBOL_GPL(clockevents_register_device);
 /**
  * 初始化定时器设备
  */
-void clockevents_config(struct clock_event_device *dev, u32 freq)
+static void clockevents_config(struct clock_event_device *dev, u32 freq)
 {
 	u64 sec;
 

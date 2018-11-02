@@ -22,7 +22,7 @@
 #include <asm/glue-df.h>
 #include <asm/glue-pf.h>
 #include <asm/vfpmacros.h>
-#ifndef CONFIG_MULTI_IRQ_HANDLER
+#ifndef CONFIG_GENERIC_IRQ_MULTI_HANDLER
 #include <mach/entry-macro.S>
 #endif
 #include <asm/thread_notify.h>
@@ -42,7 +42,7 @@
  * 调用C语言中的中断处理程序
  */
 	.macro	irq_handler
-#ifdef CONFIG_MULTI_IRQ_HANDLER
+#ifdef CONFIG_GENERIC_IRQ_MULTI_HANDLER
 /*
     CONFIG_MULTI_IRQ_HANDLER:允许每个机器在运行时制定irq处理程序
     对于ARM Soc来说，每一款Soc的芯片设计都不一样，采用的中断控制器以及中断控制器的连接方式也不同，
@@ -92,11 +92,7 @@
 #endif
 	.endm
 
-#ifdef CONFIG_KPROBES
-	.section	.kprobes.text,"ax",%progbits
-#else
-	.text
-#endif
+	.section	.entry.text,"ax",%progbits
 
 /*
  * Invalid mode handlers
@@ -279,8 +275,8 @@ __irq_svc:
 /**
  * 读抢占计数
  */
-	ldr	r8, [tsk, #TI_PREEMPT]		@ get preempt count  , thread_info->preempt_count
-	ldr	r0, [tsk, #TI_FLAGS]		@ get flags          , thread_info->flags
+	ldr	r8, [tsk, #TI_PREEMPT]		@ get preempt count
+	ldr	r0, [tsk, #TI_FLAGS]		@ get flags
 /*
 	
 */
@@ -808,6 +804,7 @@ do_fpe:
  */
 
 	.pushsection .data
+	.align	2
 ENTRY(fp_enter)
 	.word	no_fp
 	.popsection
@@ -920,7 +917,7 @@ r6存着下一个线程的DOMAIN属性
 	ldr	r6, [r2, #TI_CPU_DOMAIN]
 #endif
 	switch_tls r1, r4, r5, r3, r7
-#if defined(CONFIG_CC_STACKPROTECTOR) && !defined(CONFIG_SMP)
+#if defined(CONFIG_STACKPROTECTOR) && !defined(CONFIG_SMP)
 /*
 下一个线程的task_struct
 */
@@ -929,10 +926,10 @@ r6存着下一个线程的DOMAIN属性
 r8里面是__stack_chk_guard地址
 */
 	ldr	r8, =__stack_chk_guard
-/*
-r7里面是stack_canary值
-*/
-	ldr	r7, [r7, #TSK_STACK_CANARY]
+	.if (TSK_STACK_CANARY > IMM12_MASK)
+	add	r7, r7, #TSK_STACK_CANARY & ~IMM12_MASK
+	.endif
+	ldr	r7, [r7, #TSK_STACK_CANARY & IMM12_MASK]
 #endif
 #ifdef CONFIG_CPU_USE_DOMAINS
 /*
@@ -954,7 +951,7 @@ r4就是下一个线程的thread_info里面的cpu_context的地址
 	ldr	r0, =thread_notify_head
 	mov	r1, #THREAD_NOTIFY_SWITCH
 	bl	atomic_notifier_call_chain
-#if defined(CONFIG_CC_STACKPROTECTOR) && !defined(CONFIG_SMP)
+#if defined(CONFIG_STACKPROTECTOR) && !defined(CONFIG_SMP)
 	str	r7, [r8]
 #endif
 /*
@@ -1462,13 +1459,8 @@ vector_addrexcptn:
 	W(b)	vector_fiq /* 快速中断 */
 
 	.data
+	.align	2
 
 	.globl	cr_alignment
 cr_alignment:
 	.space	4
-
-#ifdef CONFIG_MULTI_IRQ_HANDLER
-	.globl	handle_arch_irq
-handle_arch_irq:
-	.space	4
-#endif

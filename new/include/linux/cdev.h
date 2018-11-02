@@ -1,3 +1,4 @@
+/* SPDX-License-Identifier: GPL-2.0 */
 #ifndef _LINUX_CDEV_H
 #define _LINUX_CDEV_H
 
@@ -5,6 +6,7 @@
 #include <linux/kobject.h>
 #include <linux/kdev_t.h>
 #include <linux/list.h>
+#include <linux/device.h>
 
 struct file_operations;
 struct inode;
@@ -28,7 +30,7 @@ struct cdev {
 	dev_t dev;		//字符设备的设备号，由主设备号和次设备号构成
 	unsigned int count;	/* 隶属于同一主设备号的次设备的个数，
 				 * 用于表示由当前设备驱动程序控制的实际同类设备的数量*/
-};
+} __randomize_layout;
 
 /*
 	一个 cdev 一般它有两种定义初始化方式：静态的和动态的。
@@ -53,6 +55,9 @@ void cdev_put(struct cdev *p);
 初始化 cdev 后，需要把它添加到系统中去。为此可以调用 cdev_add() 函数。传入 cdev 结构的指针，起始设备编号，以及设备编号范围。用于向系统添加一个cdev，完成字符设备的注册*/
 int cdev_add(struct cdev *, dev_t, unsigned);
 
+void cdev_set_parent(struct cdev *p, struct kobject *kobj);
+int cdev_device_add(struct cdev *cdev, struct device *dev);
+void cdev_device_del(struct cdev *cdev, struct device *dev);
 /*
 当一个字符设备驱动不再需要的时候（比如模块卸载），就可以用 cdev_del() 函数来释放 cdev 占用的内存*/
 void cdev_del(struct cdev *);
