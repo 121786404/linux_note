@@ -55,7 +55,7 @@ static int i2c_versatile_getscl(void *data)
 	return !!(readl(i2c->base + I2C_CONTROL) & SCL);
 }
 
-static struct i2c_algo_bit_data i2c_versatile_algo = {
+static const struct i2c_algo_bit_data i2c_versatile_algo = {
 	.setsda	= i2c_versatile_setsda,
 	.setscl = i2c_versatile_setscl,
 	.getsda	= i2c_versatile_getsda,
@@ -131,9 +131,7 @@ static void __exit i2c_versatile_exit(void)
 {
 	platform_driver_unregister(&i2c_versatile_driver);
 }
-/*
-会被do_initcalls调用
-*/
+
 subsys_initcall(i2c_versatile_init);
 module_exit(i2c_versatile_exit);
 

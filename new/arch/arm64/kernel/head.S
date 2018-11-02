@@ -43,6 +43,7 @@
 #include <asm/virt.h>
 
 #include "efi-header.S"
+
 #define __PHYS_OFFSET	(KERNEL_START - TEXT_OFFSET)
 
 #if (TEXT_OFFSET & 0xfff) != 0
@@ -155,7 +156,7 @@ ENDPROC(preserve_boot_args)
  *	ptrs:	#imm pointers per table page
  *
  * Preserves:	virt
- * Corrupts:	tmp1, tmp2
+ * Corrupts:	ptrs, tmp1, tmp2
  * Returns:	tbl -> next level table page address
  */
 /**
@@ -168,25 +169,15 @@ ENDPROC(preserve_boot_args)
  *	tmp1, tmp2: 临时寄存器变量
  */
 	.macro	create_table_entry, tbl, virt, shift, ptrs, tmp1, tmp2
+	add	\tmp1, \tbl, #PAGE_SIZE
+	phys_to_pte \tmp2, \tmp1
+	orr	\tmp2, \tmp2, #PMD_TYPE_TABLE	// address of next table and entry type
 	/**
 	 * 保存virt地址对应在Translation table中的entry index。
 	 */
 	lsr	\tmp1, \virt, #\shift
-	and	\tmp1, \tmp1, #\ptrs - 1	// table index
-	/**
-	 * 初始页表只有三个页，即PGD/PUD/PMD/PTE各占一个页
-	 * tmp2保存了下一个level的页表
-	 */
-	add	\tmp2, \tbl, #PAGE_SIZE
-	/**
-	 * 合成页表描述符
-	 * PMD_TYPE_TABLE最后两位为11，表示是块描述符(中间层)
-	 */
-	orr	\tmp2, \tmp2, #PMD_TYPE_TABLE	// address of next table and entry type
-	/**
-	 * 一个页表描述符占用8个字节
-	 * 因此这里左移3位并写入内存
-	 */
+	sub	\ptrs, \ptrs, #1
+	and	\tmp1, \tmp1, \ptrs		// table index
 	str	\tmp2, [\tbl, \tmp1, lsl #3]
 	/**
 	 * 移动到下一级，并继续
@@ -195,48 +186,109 @@ ENDPROC(preserve_boot_args)
 	.endm
 
 /*
- * Macro to populate the PGD (and possibily PUD) for the corresponding
- * block entry in the next level (tbl) for the given virtual address.
+ * Macro to populate page table entries, these entries can be pointers to the next level
+ * or last level entries pointing to physical memory.
  *
- * Preserves:	tbl, next, virt
- * Corrupts:	tmp1, tmp2
+ *	tbl:	page table address
+ *	rtbl:	pointer to page table or physical memory
+ *	index:	start index to write
+ *	eindex:	end index to write - [index, eindex] written to
+ *	flags:	flags for pagetable entry to or in
+ *	inc:	increment to rtbl between each entry
+ *	tmp1:	temporary variable
+ *
+ * Preserves:	tbl, eindex, flags, inc
+ * Corrupts:	index, tmp1
+ * Returns:	rtbl
  */
- /**
-  * 创建内核映射的PGD、PUD、PMD描述符
-  */
-	.macro	create_pgd_entry, tbl, virt, tmp1, tmp2
-	create_table_entry \tbl, \virt, PGDIR_SHIFT, PTRS_PER_PGD, \tmp1, \tmp2
-#if SWAPPER_PGTABLE_LEVELS > 3
-	create_table_entry \tbl, \virt, PUD_SHIFT, PTRS_PER_PUD, \tmp1, \tmp2
-#endif
-#if SWAPPER_PGTABLE_LEVELS > 2
-	create_table_entry \tbl, \virt, SWAPPER_TABLE_SHIFT, PTRS_PER_PTE, \tmp1, \tmp2
-#endif
+	.macro populate_entries, tbl, rtbl, index, eindex, flags, inc, tmp1
+.Lpe\@:	phys_to_pte \tmp1, \rtbl
+	orr	\tmp1, \tmp1, \flags	// tmp1 = table entry
+	str	\tmp1, [\tbl, \index, lsl #3]
+	add	\rtbl, \rtbl, \inc	// rtbl = pa next level
+	add	\index, \index, #1
+	cmp	\index, \eindex
+	b.ls	.Lpe\@
 	.endm
 
 /*
- * Macro to populate block entries in the page table for the start..end
- * virtual range (inclusive).
+ * Compute indices of table entries from virtual address range. If multiple entries
+ * were needed in the previous page table level then the next page table level is assumed
+ * to be composed of multiple pages. (This effectively scales the end index).
  *
- * Preserves:	tbl, flags
- * Corrupts:	phys, start, end, pstate
+ *	vstart:	virtual address of start of range
+ *	vend:	virtual address of end of range
+ *	shift:	shift used to transform virtual address into index
+ *	ptrs:	number of entries in page table
+ *	istart:	index in table corresponding to vstart
+ *	iend:	index in table corresponding to vend
+ *	count:	On entry: how many extra entries were required in previous level, scales
+ *			  our end index.
+ *		On exit: returns how many extra entries required for next page table level
+ *
+ * Preserves:	vstart, vend, shift, ptrs
+ * Returns:	istart, iend, count
  */
-/**
- * 在tbl指定的Translation table中建立block descriptor以便完成address mapping
- * 映射范围由start, end指定
+	.macro compute_indices, vstart, vend, shift, ptrs, istart, iend, count
+	lsr	\iend, \vend, \shift
+	mov	\istart, \ptrs
+	sub	\istart, \istart, #1
+	and	\iend, \iend, \istart	// iend = (vend >> shift) & (ptrs - 1)
+	mov	\istart, \ptrs
+	mul	\istart, \istart, \count
+	add	\iend, \iend, \istart	// iend += (count - 1) * ptrs
+					// our entries span multiple tables
+
+	lsr	\istart, \vstart, \shift
+	mov	\count, \ptrs
+	sub	\count, \count, #1
+	and	\istart, \istart, \count
+
+	sub	\count, \iend, \istart
+	.endm
+
+/*
+ * Map memory for specified virtual address range. Each level of page table needed supports
+ * multiple entries. If a level requires n entries the next page table level is assumed to be
+ * formed from n pages.
+ *
+ *	tbl:	location of page table
+ *	rtbl:	address to be used for first level page table entry (typically tbl + PAGE_SIZE)
+ *	vstart:	start address to map
+ *	vend:	end address to map - we map [vstart, vend]
+ *	flags:	flags to use to map last level entries
+ *	phys:	physical address corresponding to vstart - physical memory is contiguous
+ *	pgds:	the number of pgd entries
+ *
+ * Temporaries:	istart, iend, tmp, count, sv - these need to be different registers
+ * Preserves:	vstart, vend, flags
+ * Corrupts:	tbl, rtbl, istart, iend, tmp, count, sv
  */
-	.macro	create_block_map, tbl, flags, phys, start, end
-	lsr	\phys, \phys, #SWAPPER_BLOCK_SHIFT
-	lsr	\start, \start, #SWAPPER_BLOCK_SHIFT
-	and	\start, \start, #PTRS_PER_PTE - 1	// table index
-	orr	\phys, \flags, \phys, lsl #SWAPPER_BLOCK_SHIFT	// table entry
-	lsr	\end, \end, #SWAPPER_BLOCK_SHIFT
-	and	\end, \end, #PTRS_PER_PTE - 1		// table end index
-9999:	str	\phys, [\tbl, \start, lsl #3]		// store the entry
-	add	\start, \start, #1			// next entry
-	add	\phys, \phys, #SWAPPER_BLOCK_SIZE		// next block
-	cmp	\start, \end
-	b.ls	9999b
+	.macro map_memory, tbl, rtbl, vstart, vend, flags, phys, pgds, istart, iend, tmp, count, sv
+	add \rtbl, \tbl, #PAGE_SIZE
+	mov \sv, \rtbl
+	mov \count, #0
+	compute_indices \vstart, \vend, #PGDIR_SHIFT, \pgds, \istart, \iend, \count
+	populate_entries \tbl, \rtbl, \istart, \iend, #PMD_TYPE_TABLE, #PAGE_SIZE, \tmp
+	mov \tbl, \sv
+	mov \sv, \rtbl
+
+#if SWAPPER_PGTABLE_LEVELS > 3
+	compute_indices \vstart, \vend, #PUD_SHIFT, #PTRS_PER_PUD, \istart, \iend, \count
+	populate_entries \tbl, \rtbl, \istart, \iend, #PMD_TYPE_TABLE, #PAGE_SIZE, \tmp
+	mov \tbl, \sv
+	mov \sv, \rtbl
+#endif
+
+#if SWAPPER_PGTABLE_LEVELS > 2
+	compute_indices \vstart, \vend, #SWAPPER_TABLE_SHIFT, #PTRS_PER_PMD, \istart, \iend, \count
+	populate_entries \tbl, \rtbl, \istart, \iend, #PMD_TYPE_TABLE, #PAGE_SIZE, \tmp
+	mov \tbl, \sv
+#endif
+
+	compute_indices \vstart, \vend, #SWAPPER_BLOCK_SHIFT, #PTRS_PER_PTE, \istart, \iend, \count
+	bic \count, \phys, #SWAPPER_BLOCK_SIZE - 1
+	populate_entries \tbl, \count, \istart, \iend, \flags, #SWAPPER_BLOCK_SIZE, \tmp
 	.endm
 
 /*
@@ -250,44 +302,29 @@ ENDPROC(preserve_boot_args)
  * 创建初始页表
  */
 __create_page_tables:
-/**
- * 取idmap_pg_dir这个符号的物理地址，保存到x25
- * 取swapper_pg_dir这个符号的物理地址，保存到x26
- * adrp->address page，寻址范围4G，要求页对齐
- */
-	adrp	x25, idmap_pg_dir
-	adrp	x26, swapper_pg_dir
-	mov	x27, lr
+	mov	x28, lr
 
 	/*
 	 * Invalidate the idmap and swapper page tables to avoid potential
 	 * dirty cache lines being evicted.
 	 */
 	adrp	x0, idmap_pg_dir
-	adrp	x1, swapper_pg_dir + SWAPPER_DIR_SIZE + RESERVED_TTBR0_SIZE
-	/**
-	 * 使无效页表内容
-	 * idmap_pg_dir和swapper_pg_dir对应页表空间不属于kernel image的一部分
-	 * boot并不保证它是clean的
-	 * 因此其对应的cacheline很可能有一些旧的，无效的数据
-	 * 必须要清理掉。
-	 */
-	bl	__inval_cache_range
+	adrp	x1, swapper_pg_end
+	sub	x1, x1, x0
+	bl	__inval_dcache_area
 
 	/*
 	 * Clear the idmap and swapper page tables.
 	 */
 	adrp	x0, idmap_pg_dir
-	adrp	x6, swapper_pg_dir + SWAPPER_DIR_SIZE + RESERVED_TTBR0_SIZE
-/**
- * 将idmap和swapper页表内容设定为0
- */
+	adrp	x1, swapper_pg_end
+	sub	x1, x1, x0
 1:	stp	xzr, xzr, [x0], #16
 	stp	xzr, xzr, [x0], #16
 	stp	xzr, xzr, [x0], #16
 	stp	xzr, xzr, [x0], #16
-	cmp	x0, x6
-	b.lo	1b
+	subs	x1, x1, #64
+	b.ne	1b
 /**
  * 映射属性
  */
@@ -296,7 +333,8 @@ __create_page_tables:
 	/*
 	 * Create the identity mapping.
 	 */
-/**
+	adrp	x0, idmap_pg_dir
+ /*
  * x0保存了idmap_pg_dir变量的物理地址
  * 也就是identity mapping的PGD
  */
@@ -308,23 +346,14 @@ __create_page_tables:
 /**
  * 这里是防止物理地址太大，映射出现问题
  */
-#ifndef CONFIG_ARM64_VA_BITS_48
-#define EXTRA_SHIFT	(PGDIR_SHIFT + PAGE_SHIFT - 3)
-#define EXTRA_PTRS	(1 << (48 - EXTRA_SHIFT))
 
 	/*
-	 * If VA_BITS < 48, it may be too small to allow for an ID mapping to be
-	 * created that covers system RAM if that is located sufficiently high
-	 * in the physical address space. So for the ID map, use an extended
-	 * virtual range in that case, by configuring an additional translation
-	 * level.
-	 * First, we have to verify our assumption that the current value of
-	 * VA_BITS was chosen such that all translation levels are fully
-	 * utilised, and that lowering T0SZ will always result in an additional
-	 * translation level to be configured.
-	 */
-
-	/*
+	 * VA_BITS may be too small to allow for an ID mapping to be created
+	 * that covers system RAM if that is located sufficiently high in the
+	 * physical address space. So for the ID map, use an extended virtual
+	 * range in that case, and configure an additional translation level
+	 * if needed.
+	 *
 	 * Calculate the maximum allowed value for TCR_EL1.T0SZ so that the
 	 * entire ID map region can be mapped. As T0SZ == (64 - #bits used),
 	 * this number conveniently equals the number of leading zeroes in
@@ -336,7 +365,7 @@ __create_page_tables:
 	/* 配置的虚拟地址前导0个数 */
 	cmp	x5, TCR_T0SZ(VA_BITS)	// default T0SZ small enough?
 	/* 要映射的高地址在虚拟地址的表示范围内 */
-	b.ge	1f			// .. then skip additional level
+	b.ge	1f			// .. then skip VA range extension
 
 	/* 物理地址太大，需要创建扩展映射，不懂 */
 	adr_l	x6, idmap_t0sz
@@ -344,28 +373,37 @@ __create_page_tables:
 	dmb	sy
 	dc	ivac, x6		// Invalidate potentially stale cache line
 
-	create_table_entry x0, x3, EXTRA_SHIFT, EXTRA_PTRS, x5, x6
-1:
+#if (VA_BITS < 48)
+#define EXTRA_SHIFT	(PGDIR_SHIFT + PAGE_SHIFT - 3)
+#define EXTRA_PTRS	(1 << (PHYS_MASK_SHIFT - EXTRA_SHIFT))
+
+	/*
+	 * If VA_BITS < 48, we have to configure an additional table level.
+	 * First, we have to verify our assumption that the current value of
+	 * VA_BITS was chosen such that all translation levels are fully
+	 * utilised, and that lowering T0SZ will always result in an additional
+	 * translation level to be configured.
+	 */
+#if VA_BITS != EXTRA_SHIFT
+#error "Mismatch between VA_BITS and page size/number of translation levels"
 #endif
 
-	/* 建立中间层的转换表 */
-	create_pgd_entry x0, x3, x5, x6
+	mov	x4, EXTRA_PTRS
+	create_table_entry x0, x3, EXTRA_SHIFT, x4, x5, x6
+#else
+	/*
+	 * If VA_BITS == 48, we don't have to configure an additional
+	 * translation level, but the top-level table has more entries.
+	 */
+	mov	x4, #1 << (PHYS_MASK_SHIFT - PGDIR_SHIFT)
+	str_l	x4, idmap_ptrs_per_pgd, x5
+#endif
+1:
+	ldr_l	x4, idmap_ptrs_per_pgd
 	mov	x5, x3				// __pa(__idmap_text_start)
 	adr_l	x6, __idmap_text_end		// __pa(__idmap_text_end)
-/**
- * 创建最后一个level translation table的entry。该entry可能是page descriptor，也可能是block descriptor，具体传递的参数如下：
- * x0：指向最后一个level的translation table
- * x7：要创建映射的memory attribute
- * x3：物理地址
- * x5：虚拟地址的起始地址（其实和x3一样）
- * 创建最后一个level translation table的entry。该entry可能是page descriptor，也可能是block descriptor，具体传递的参数如下：
-x0：指向最后一个level的translation table
-x7：要创建映射的memory attribute
-x3：物理地址
-x5：虚拟地址的起始地址（其实和x3一样）
-x6：虚拟地址的结束地址
- */
-	create_block_map x0, x7, x3, x5, x6
+
+	map_memory x0, x1, x3, x6, x7, x3, x4, x10, x11, x12, x13, x14
 
 	/*
 	 * Map the kernel image (starting with PHYS_OFFSET).
@@ -379,18 +417,13 @@ x6：虚拟地址的结束地址
  */
 	mov_q	x5, KIMAGE_VADDR + TEXT_OFFSET	// compile time __va(_text)
 	add	x5, x5, x23			// add KASLR displacement
-/**
- * 创建PAGE_OFFSET对应中间level的table描述符。
- */
-	create_pgd_entry x0, x5, x3, x6
+	mov	x4, PTRS_PER_PGD
 	adrp	x6, _end			// runtime __pa(_end)
 	adrp	x3, _text			// runtime __pa(_text)
 	sub	x6, x6, x3			// _end - _text
 	add	x6, x6, x5			// runtime __va(_end)
-/**
- * 创建PAGE_OFFSET～KERNEL_END之间地址映射的最后一个level的描述符。
- */
-	create_block_map x0, x7, x3, x5, x6
+
+	map_memory x0, x1, x5, x6, x7, x3, x4, x10, x11, x12, x13, x14
 
 	/*
 	 * Since the page tables have been populated with non-cacheable
@@ -585,6 +618,7 @@ set_hcr:
 7:
 	msr	mdcr_el2, x3			// Configure debug traps
 
+	/* LORegions */
 	mrs	x1, id_aa64mmfr1_el1
 	ubfx	x0, x1, #ID_AA64MMFR1_LOR_SHIFT, 4
 	cbz	x0, 1f

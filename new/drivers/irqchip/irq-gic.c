@@ -121,7 +121,7 @@ static DEFINE_RAW_SPINLOCK(cpu_map_lock);
 #define NR_GIC_CPU_IF 8
 static u8 gic_cpu_map[NR_GIC_CPU_IF] __read_mostly;
 
-static struct static_key supports_deactivate = STATIC_KEY_INIT_TRUE;
+static DEFINE_STATIC_KEY_TRUE(supports_deactivate_key);
 
 static struct gic_chip_data gic_data[CONFIG_ARM_GIC_MAX_NR] __read_mostly;
 
@@ -370,6 +370,8 @@ static int gic_set_affinity(struct irq_data *d, const struct cpumask *mask_val,
 	writel_relaxed(val | bit, reg);
 	gic_unlock_irqrestore(flags);
 
+	irq_data_update_effective_affinity(d, cpumask_of(cpu));
+
 	return IRQ_SET_MASK_OK_DONE;
 }
 #endif
@@ -398,8 +400,9 @@ static void __exception_irq_entry gic_handle_irq(struct pt_regs *regs)
 /*
 		      外设中断或者SPI和PPI中断
 */
-			if (static_key_true(&supports_deactivate))
+			if (static_branch_likely(&supports_deactivate_key))
 				writel_relaxed(irqstat, cpu_base + GIC_CPU_EOI);
+			isb();
 			//处理通常的域中火情
 			handle_domain_irq(gic->domain, irqnr, regs);
 			continue;
@@ -411,7 +414,7 @@ static void __exception_irq_entry gic_handle_irq(struct pt_regs *regs)
 		      SGI中断
 */
 			writel_relaxed(irqstat, cpu_base + GIC_CPU_EOI);
-			if (static_key_true(&supports_deactivate))
+			if (static_branch_likely(&supports_deactivate_key))
 				writel_relaxed(irqstat, cpu_base + GIC_CPU_DEACTIVATE);
 #ifdef CONFIG_SMP
 			/*
@@ -449,16 +452,18 @@ static void gic_handle_cascade_irq(struct irq_desc *desc)
 		goto out;
 
 	cascade_irq = irq_find_mapping(chip_data->domain, gic_irq);
-	if (unlikely(gic_irq < 32 || gic_irq > 1020))
+	if (unlikely(gic_irq < 32 || gic_irq > 1020)) {
 		handle_bad_irq(desc);
-	else
+	} else {
+		isb();
 		generic_handle_irq(cascade_irq);
+	}
 
  out:
 	chained_irq_exit(chip, desc);
 }
 
-static struct irq_chip gic_chip = {
+static const struct irq_chip gic_chip = {
 	.irq_mask		= gic_mask_irq,
 	.irq_unmask		= gic_unmask_irq,
 	.irq_eoi		= gic_eoi_irq,
@@ -507,14 +512,25 @@ static u8 gic_get_cpumask(struct gic_chip_data *gic)
 	return mask;
 }
 
+static bool gic_check_gicv2(void __iomem *base)
+{
+	u32 val = readl_relaxed(base + GIC_CPU_IDENT);
+	return (val & 0xff0fff) == 0x02043B;
+}
+
 static void gic_cpu_if_up(struct gic_chip_data *gic)
 {
 	void __iomem *cpu_base = gic_data_cpu_base(gic);
 	u32 bypass = 0;
 	u32 mode = 0;
+	int i;
 
-	if (gic == &gic_data[0] && static_key_true(&supports_deactivate))
+	if (gic == &gic_data[0] && static_branch_likely(&supports_deactivate_key))
 		mode = GIC_CPU_CTRL_EOImodeNS;
+
+	if (gic_check_gicv2(cpu_base))
+		for (i = 0; i < 4; i++)
+			writel_relaxed(0, cpu_base + GIC_CPU_ACTIVEPRIO + i * 4);
 
 	/*
 	* Preserve bypass disable bits to be written back later
@@ -1055,6 +1071,7 @@ static int gic_irq_domain_map(struct irq_domain *d, unsigned int irq,
 		irq_domain_set_info(d, irq, hw, &gic->chip, d->host_data,
 				    handle_fasteoi_irq, NULL, NULL);
 		irq_set_probe(irq);
+		irqd_set_single_target(irq_desc_get_irq_data(irq_to_desc(irq)));
 	}
 	return 0;
 }
@@ -1083,6 +1100,9 @@ static int gic_irq_domain_translate(struct irq_domain *d,
 			*hwirq += 16;
 
 		*type = fwspec->param[2] & IRQ_TYPE_SENSE_MASK;
+
+		/* Make it clear that broken DTs are... broken */
+		WARN_ON(*type == IRQ_TYPE_NONE);
 		return 0;
 	}
 
@@ -1092,6 +1112,8 @@ static int gic_irq_domain_translate(struct irq_domain *d,
 
 		*hwirq = fwspec->param[0];
 		*type = fwspec->param[1];
+
+		WARN_ON(*type == IRQ_TYPE_NONE);
 		return 0;
 	}
 
@@ -1118,9 +1140,11 @@ static int gic_irq_domain_alloc(struct irq_domain *domain, unsigned int virq,
 	if (ret)
 		return ret;
 
-	for (i = 0; i < nr_irqs; i++)
-	    //
-		gic_irq_domain_map(domain, virq + i, hwirq + i);
+	for (i = 0; i < nr_irqs; i++) {
+		ret = gic_irq_domain_map(domain, virq + i, hwirq + i);
+		if (ret)
+			return ret;
+	}
 
 	return 0;
 }
@@ -1347,11 +1371,11 @@ static int __init __gic_init_bases(struct gic_chip_data *gic,
 		 * 汇编中直接进入gic_handle_irq
 		 */
 		set_handle_irq(gic_handle_irq);
-		if (static_key_true(&supports_deactivate))
+		if (static_branch_likely(&supports_deactivate_key))
 			pr_info("GIC: Using split EOI/Deactivate mode\n");
 	}
 
-	if (static_key_true(&supports_deactivate) && gic == &gic_data[0]) {
+	if (static_branch_likely(&supports_deactivate_key) && gic == &gic_data[0]) {
 		name = kasprintf(GFP_KERNEL, "GICv2");
 		gic_init_chip(gic, NULL, name, true);
 	} else {
@@ -1378,7 +1402,7 @@ void __init gic_init(unsigned int gic_nr, int irq_start,
 	 * Non-DT/ACPI systems won't run a hypervisor, so let's not
 	 * bother with these...
 	 */
-	static_key_slow_dec(&supports_deactivate);
+	static_branch_disable(&supports_deactivate_key);
 
 	gic = &gic_data[gic_nr];
 	gic->raw_dist_base = dist_base;
@@ -1400,6 +1424,13 @@ static void gic_teardown(struct gic_chip_data *gic)
 
 #ifdef CONFIG_OF
 static int gic_cnt __initdata;
+static bool gicv2_force_probe;
+
+static int __init gicv2_force_probe_cfg(char *buf)
+{
+	return strtobool(buf, &gicv2_force_probe);
+}
+early_param("irqchip.gicv2_force_probe", gicv2_force_probe_cfg);
 
 static bool gic_check_eoimode(struct device_node *node, void __iomem **base)
 {
@@ -1409,20 +1440,60 @@ static bool gic_check_eoimode(struct device_node *node, void __iomem **base)
 
 	if (!is_hyp_mode_available())
 		return false;
-	if (resource_size(&cpuif_res) < SZ_8K)
-		return false;
-	if (resource_size(&cpuif_res) == SZ_128K) {
-		u32 val_low, val_high;
+	if (resource_size(&cpuif_res) < SZ_8K) {
+		void __iomem *alt;
+		/*
+		 * Check for a stupid firmware that only exposes the
+		 * first page of a GICv2.
+		 */
+		if (!gic_check_gicv2(*base))
+			return false;
+
+		if (!gicv2_force_probe) {
+			pr_warn("GIC: GICv2 detected, but range too small and irqchip.gicv2_force_probe not set\n");
+			return false;
+		}
+
+		alt = ioremap(cpuif_res.start, SZ_8K);
+		if (!alt)
+			return false;
+		if (!gic_check_gicv2(alt + SZ_4K)) {
+			/*
+			 * The first page was that of a GICv2, and
+			 * the second was *something*. Let's trust it
+			 * to be a GICv2, and update the mapping.
+			 */
+			pr_warn("GIC: GICv2 at %pa, but range is too small (broken DT?), assuming 8kB\n",
+				&cpuif_res.start);
+			iounmap(*base);
+			*base = alt;
+			return true;
+		}
 
 		/*
-		 * Verify that we have the first 4kB of a GIC400
+		 * We detected *two* initial GICv2 pages in a
+		 * row. Could be a GICv2 aliased over two 64kB
+		 * pages. Update the resource, map the iospace, and
+		 * pray.
+		 */
+		iounmap(alt);
+		alt = ioremap(cpuif_res.start, SZ_128K);
+		if (!alt)
+			return false;
+		pr_warn("GIC: Aliased GICv2 at %pa, trying to find the canonical range over 128kB\n",
+			&cpuif_res.start);
+		cpuif_res.end = cpuif_res.start + SZ_128K -1;
+		iounmap(*base);
+		*base = alt;
+	}
+	if (resource_size(&cpuif_res) == SZ_128K) {
+		/*
+		 * Verify that we have the first 4kB of a GICv2
 		 * aliased over the first 64kB by checking the
 		 * GICC_IIDR register on both ends.
 		 */
-		val_low = readl_relaxed(*base + GIC_CPU_IDENT);
-		val_high = readl_relaxed(*base + GIC_CPU_IDENT + 0xf000);
-		if ((val_low & 0xffff0fff) != 0x0202043B ||
-		    val_low != val_high)
+		if (!gic_check_gicv2(*base) ||
+		    !gic_check_gicv2(*base + 0xf000))
 			return false;
 
 		/*
@@ -1523,7 +1594,8 @@ static void __init gic_of_setup_kvm_info(struct device_node *node)
 	if (ret)
 		return;
 
-	gic_set_kvm_info(&gic_v2_kvm_info);
+	if (static_branch_likely(&supports_deactivate_key))
+		gic_set_kvm_info(&gic_v2_kvm_info);
 }
 
 /*
@@ -1544,7 +1616,6 @@ gic_of_init(struct device_node *node, struct device_node *parent)
 
 	gic = &gic_data[gic_cnt];
 
-    /**/
 	ret = gic_of_setup(gic, node);
 	if (ret)
 		return ret;
@@ -1554,7 +1625,7 @@ gic_of_init(struct device_node *node, struct device_node *parent)
 	 * or the CPU interface is too small.
 	 */
 	if (gic_cnt == 0 && !gic_check_eoimode(node, &gic->raw_cpu_base))
-		static_key_slow_dec(&supports_deactivate);
+		static_branch_disable(&supports_deactivate_key);
 
     /* 主处理过程 */
 	ret = __gic_init_bases(gic, -1, &node->fwnode);
@@ -1742,7 +1813,7 @@ static int __init gic_v2_acpi_init(struct acpi_subtable_header *header,
 	 * interface will always be the right size.
 	 */
 	if (!is_hyp_mode_available())
-		static_key_slow_dec(&supports_deactivate);
+		static_branch_disable(&supports_deactivate_key);
 
 	/*
 	 * Initialize GIC instance zero (no multi-GIC support).
@@ -1767,7 +1838,8 @@ static int __init gic_v2_acpi_init(struct acpi_subtable_header *header,
 	if (IS_ENABLED(CONFIG_ARM_GIC_V2M))
 		gicv2m_init(NULL, gic_data[0].domain);
 
-	gic_acpi_setup_kvm_info();
+	if (static_branch_likely(&supports_deactivate_key))
+		gic_acpi_setup_kvm_info();
 
 	return 0;
 }

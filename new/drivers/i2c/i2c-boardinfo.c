@@ -15,6 +15,7 @@
 #include <linux/export.h>
 #include <linux/i2c.h>
 #include <linux/kernel.h>
+#include <linux/property.h>
 #include <linux/rwsem.h>
 #include <linux/slab.h>
 
@@ -61,6 +62,7 @@ EXPORT_SYMBOL_GPL(__i2c_first_dynamic_bus_num);
  *
  * The board info passed can safely be __initdata, but be careful of embedded
  * pointers (for platform_data, functions, etc) since that won't be copied.
+ * Device properties are deep-copied though.
  */
 /*
 总线控制器i2c_adapter 会通过i2c_scan_static_board_info 来遍历这些信息，
@@ -89,6 +91,29 @@ int i2c_register_board_info(int busnum, struct i2c_board_info const *info, unsig
 
 		devinfo->busnum = busnum;
 		devinfo->board_info = *info;
+
+		if (info->properties) {
+			devinfo->board_info.properties =
+					property_entries_dup(info->properties);
+			if (IS_ERR(devinfo->board_info.properties)) {
+				status = PTR_ERR(devinfo->board_info.properties);
+				kfree(devinfo);
+				break;
+			}
+		}
+
+		if (info->resources) {
+			devinfo->board_info.resources =
+				kmemdup(info->resources,
+					info->num_resources *
+						sizeof(*info->resources),
+					GFP_KERNEL);
+			if (!devinfo->board_info.resources) {
+				status = -ENOMEM;
+				kfree(devinfo);
+				break;
+			}
+		}
 /*
 		将包含有板级信息的结构体添加到系统链表__i2c_board_list
 */
