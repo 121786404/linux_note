@@ -552,10 +552,10 @@ is_uncached_acl(struct posix_acl *acl)
  * of the 'struct inode'
  */
 struct inode {
-	umode_t			i_mode;
+	umode_t			i_mode; /* inode的权限 */
 	unsigned short		i_opflags;
-	kuid_t			i_uid;
-	kgid_t			i_gid;
+	kuid_t			i_uid;  /* inode拥有者的id */
+	kgid_t			i_gid;  /* inode所属的群组id */
 	unsigned int		i_flags;
 
 #ifdef CONFIG_FS_POSIX_ACL
@@ -563,8 +563,8 @@ struct inode {
 	struct posix_acl	*i_default_acl;
 #endif
 
-	const struct inode_operations	*i_op;
-	struct super_block	*i_sb;
+	const struct inode_operations	*i_op;  /*索引节点操作表*/
+	struct super_block	*i_sb; /*相关的超级块*/
 	struct address_space	*i_mapping;
 
 #ifdef CONFIG_SECURITY
@@ -585,15 +585,15 @@ struct inode {
 		const unsigned int i_nlink;
 		unsigned int __i_nlink;
 	};
-	dev_t			i_rdev;
-	loff_t			i_size;
-	struct timespec		i_atime;
-	struct timespec		i_mtime;
-	struct timespec		i_ctime;
+	dev_t			i_rdev; /* 若是设备文件，此字段将记录设备的设备号 */
+	loff_t			i_size; /* inode所代表的文件大小 */
+	struct timespec		i_atime;  /* inode最近一次的存取时间 */
+	struct timespec		i_mtime; /* inode最近一次的修改时间 */
+	struct timespec		i_ctime; /* inode的产生时间 */
 	spinlock_t		i_lock;	/* i_blocks, i_bytes, maybe i_size */
 	unsigned short          i_bytes;
 	unsigned int		i_blkbits;
-	blkcnt_t		i_blocks;
+	blkcnt_t		i_blocks; /* inode所使用的block数，一个block为512 字节 */
 
 #ifdef __NEED_I_SIZE_ORDERED
 	seqcount_t		i_size_seqcount;
@@ -634,14 +634,15 @@ struct inode {
 #ifdef CONFIG_IMA
 	atomic_t		i_readcount; /* struct files open RO */
 #endif
+	/*该索引节点对应文件的文件操作集*/
 	const struct file_operations	*i_fop;	/* former ->i_op->default_file_ops */
 	struct file_lock_context	*i_flctx;
 	struct address_space	i_data;
 	struct list_head	i_devices;
 	union {
 		struct pipe_inode_info	*i_pipe;
-		struct block_device	*i_bdev;
-		struct cdev		*i_cdev;
+		struct block_device	*i_bdev; /* 若是块设备，为其对应的block_device结构体指针 */
+		struct cdev		*i_cdev; /* 若是字符设备，为其对应的cdev结构体指针 */
 		char			*i_link;
 		unsigned		i_dir_seq;
 	};
@@ -863,7 +864,11 @@ struct file {
 	void			*f_security;
 #endif
 	/* needed for tty driver, and maybe others */
-	/*常被用来记录设备驱动程序自身定义的数据，因为filp指针会在驱动程序实现的file_operations对象其他成员函数之间传递，所以可以通过filp中的private_data成员在某一个特定文件视图的基础上共享数据*/
+	/*
+	常被用来记录设备驱动程序自身定义的数据，
+	因为filp指针会在驱动程序实现的file_operations对象其他成员函数之间传递，
+	所以可以通过filp中的private_data成员在某一个特定文件视图的基础上共享数据
+	*/
 	void			*private_data;
 
 #ifdef CONFIG_EPOLL
@@ -1301,7 +1306,7 @@ struct super_block {
 	unsigned long		s_blocksize;
 	loff_t			s_maxbytes;	/*指定文件系统中最大文件尺寸 Max file size */
 	struct file_system_type	*s_type;	/*是指向file_system_type结构的指针*/
-	const struct super_operations	*s_op;
+	const struct super_operations	*s_op; /*超级块方法*/
 	const struct dquot_operations	*dq_op;
 	const struct quotactl_ops	*s_qcop;
 	const struct export_operations *s_export_op;
@@ -1324,7 +1329,7 @@ struct super_block {
 	struct block_device	*s_bdev;	/*指向文件系统存在的块设备指针*/
 	struct backing_dev_info *s_bdi;
 	struct mtd_info		*s_mtd;
-	struct hlist_node	s_instances;
+	struct hlist_node	s_instances; /*该类型文件系统*/
 	unsigned int		s_quota_types;	/* Bitmask of supported quota types */
 	struct quota_info	s_dquot;	/* Diskquota specific options */
 
@@ -1705,14 +1710,16 @@ struct file_operations {
 			u64);
 };
 
+//索引节点方法
 struct inode_operations {
+	//在特定目录中寻找dentry对象所对应的索引节点
 	struct dentry * (*lookup) (struct inode *,struct dentry *, unsigned int);
 	const char * (*get_link) (struct dentry *, struct inode *, struct delayed_call *);
 	int (*permission) (struct inode *, int);
 	struct posix_acl * (*get_acl)(struct inode *, int);
 
 	int (*readlink) (struct dentry *, char __user *,int);
-
+	//该函数为dentry对象所对应的文件创建一个新的索引节点，主要是由open()系统调用来调用
 	int (*create) (struct inode *,struct dentry *, umode_t, bool);
 	int (*link) (struct dentry *,struct inode *,struct dentry *);
 	int (*unlink) (struct inode *,struct dentry *);
@@ -1775,6 +1782,7 @@ static inline int do_clone_file_range(struct file *file_in, loff_t pos_in,
 }
 
 struct super_operations {
+	//该函数在给定的超级块下创建并初始化一个新的索引节点对象
    	struct inode *(*alloc_inode)(struct super_block *sb);
 	void (*destroy_inode)(struct inode *);
 
@@ -2018,8 +2026,8 @@ int sync_inode(struct inode *inode, struct writeback_control *wbc);
 int sync_inode_metadata(struct inode *inode, int wait);
 
 struct file_system_type {
-	const char *name;
-	int fs_flags;
+	const char *name;  /*文件系统的名字*/
+	int fs_flags; /*文件系统类型标志*/
 #define FS_REQUIRES_DEV		1 
 #define FS_BINARY_MOUNTDATA	2
 #define FS_HAS_SUBTYPE		4
@@ -2027,10 +2035,10 @@ struct file_system_type {
 #define FS_RENAME_DOES_D_MOVE	32768	/* FS will handle d_move() during rename() internally. */
 	struct dentry *(*mount) (struct file_system_type *, int,
 		       const char *, void *);
-	void (*kill_sb) (struct super_block *);
-	struct module *owner;
-	struct file_system_type * next;
-	struct hlist_head fs_supers;
+	void (*kill_sb) (struct super_block *); /*终止访问超级块*/
+	struct module *owner;  /*文件系统模块*/
+	struct file_system_type * next; /*链表中的下一个文件系统类型*/
+	struct hlist_head fs_supers;  /*具有同一种文件系统类型的超级块对象链表*/
 
 	struct lock_class_key s_lock_key;
 	struct lock_class_key s_umount_key;

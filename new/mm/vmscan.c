@@ -164,9 +164,6 @@ struct scan_control {
  * From 0 .. 100.  Higher means more swappy.
  */
 /*
- swappiness 参数指示了 VM子系统在通过解除页面映射
- 并将其换出的方式来回收页面与只回收未被
- 任何进程映射的页面之间的相对优先选择。
 
  实际的决策依赖于一个二元开关，
  当映射至进程页表中的内存百分比的一半取值与 
@@ -181,6 +178,26 @@ struct scan_control {
 
  如果 kswapd正在使用大量 CPU资源或者系统正在 iowait状态中耗费时间，
  则可以增加 swappiness参数值可以提高系统的整体性能
+
+
+我们都知道，Linux一个进程使用的内存分为2种：
+
+file-backed pages
+（有文件背景的页面，比如代码段、比如read/write方法读写的文件、比如mmap读写的文件；
+他们有对应的硬盘文件，因此如果要交换，可以直接和硬盘对应的文件进行交换），
+此部分页面进page cache
+
+anonymous pages（匿名页，如stack，heap，CoW后的数据段等；
+他们没有对应的硬盘文件，因此如果要交换，只能交换到虚拟内存-swapfile
+或者Linux的swap硬盘分区），此部分页面，如果系统内存不充分，
+可以被swap到swapfile或者硬盘的swap分区
+
+因此，Linux在进行内存回收(memory reclaim)的时候，
+实际上可以从1类和2类这两种页面里面进行回收，
+而swappiness就决定了回收这2类页面的优先级。
+
+swappiness越大，越倾向于回收匿名页；swappiness越小，
+越倾向于回收file-backed的页面。当然，它们的回收方法都是一样的LRU算法。
 */
 int vm_swappiness = 60;
 /*
@@ -2411,6 +2428,15 @@ static void get_scan_count(struct lruvec *lruvec, struct mem_cgroup *memcg,
 	 * proportional to the fraction of recently scanned pages on
 	 * each list that were recently referenced and in active use.
 	 */
+/*
+如果swappiness=0，除非系统的内存过小（nr_free + nr_filebacked < high watermark）
+这种恶劣情况发生，都只是考虑交换file-backed的pages，就不会考虑交换匿名页了。	
+
+anon_prio如果为0的话，ap也为0了。
+swappiness如果等于0的话，意味着哪怕匿名页占据的内存很大，
+哪怕swap分区还有很多的剩余空间，除非恶劣情况发生，都不会交换匿名页，
+因此这可能造成更大的OOM压力。不像以前，平时会一直兼顾着回收page cache和匿名页。
+*/
 	ap = anon_prio * (reclaim_stat->recent_scanned[0] + 1);
 	ap /= reclaim_stat->recent_rotated[0] + 1;
 

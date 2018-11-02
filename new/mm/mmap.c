@@ -259,8 +259,8 @@ SYSCALL_DEFINE1(brk, unsigned long, brk)
 
 	/* Ok, looks good - let it rip. */
 	/*
-	 * 扩大堆的实际工作委托给do_brk()。函数总是返回
-	 * mm->brk的新值，无论与原值相比是增大、缩小、还是不变。
+	 * 扩大堆的实际工作委托给do_brk()。函数总是返回mm->brk的新值，
+	 * 无论与原值相比是增大、缩小、还是不变。
 	 *
 	 * 如果一切顺利，则调用do_brk函数。该函数其实是do_mmap的简化版。
 	 * 如果它返回oldbrk，则分配成功且sys_brk返回addr的值，否则返回mm->brk值。
@@ -506,6 +506,7 @@ anon_vma_interval_tree_post_update_vma(struct vm_area_struct *vma)
 /**
  * 确定新里子节点在与给定线性地址对应的红黑树中的位置。并返回
  * 前一个线性区的地址和要插入的叶子节点的父节点的地址
+ 遍历该进程中所有的VMAs. 当检查到当前要映射的区域和己有的VMA 有些许的重叠时，	该函数都返回-ENOMEM ，
  */
 static int find_vma_links(struct mm_struct *mm, unsigned long addr,
 		unsigned long end, struct vm_area_struct **pprev,
@@ -1449,10 +1450,10 @@ static inline int mlock_future_check(struct mm_struct *mm,
 
 file和offset:如果新的线性区将把一个文件映射到内存 
                    则使用文件描述符指针file和文件偏移量offset 
-addr:这个线性地址指定从何处开始查找一个空闲的区间； 
-len:线性区间的长度； 
-prot:指定这个线性区所包含页的访问权限，比如读写、执行； 
-flag:指定线性区间的其他标志 
+addr:用于指定映射到进程地址空间的起始地址，为了应用程序的可移植性，般设置为NULL.让内核来选择一个合适的地址
+len:映射到进程地址空间的大小； 
+prot:指内存映射区域的读写属性 
+flag:内存映射的属性，例如共享映射、私有映射等
 */ 
 unsigned long do_mmap(struct file *file, unsigned long addr,
 			unsigned long len, unsigned long prot,
@@ -1662,7 +1663,9 @@ unsigned long do_mmap(struct file *file, unsigned long addr,
 		if (file && is_file_hugepages(file))
 			vm_flags |= VM_NORESERVE;
 	}
+/*
 
+*/
 	addr = mmap_region(file, addr, len, vm_flags, pgoff);
 	if (!IS_ERR_VALUE(addr) &&
 	    ((vm_flags & VM_LOCKED) ||
@@ -1671,6 +1674,9 @@ unsigned long do_mmap(struct file *file, unsigned long addr,
 	return addr;
 }
 
+/*
+
+*/
 SYSCALL_DEFINE6(mmap_pgoff, unsigned long, addr, unsigned long, len,
 		unsigned long, prot, unsigned long, flags,
 		unsigned long, fd, unsigned long, pgoff)
@@ -1712,7 +1718,9 @@ SYSCALL_DEFINE6(mmap_pgoff, unsigned long, addr, unsigned long, len,
 	}
 
 	flags &= ~(MAP_EXECUTABLE | MAP_DENYWRITE);
+/*
 
+*/
 	retval = vm_mmap_pgoff(file, addr, len, prot, flags, pgoff);
 out_fput:
 	if (file)
@@ -1829,7 +1837,9 @@ unsigned long mmap_region(struct file *file, unsigned long addr,
 	 */
 	while (find_vma_links(mm, addr, addr + len, &prev, &rb_link,
 			      &rb_parent)) {
-		/* 解除映射，如果失败则退出 */
+/*
+		把这段将要映射区域先销毁，然后重新映射
+*/
 		if (do_munmap(mm, addr, len))
 			return -ENOMEM;
 	}
@@ -2758,6 +2768,9 @@ find_extend_vma(struct mm_struct *mm, unsigned long addr)
 	unsigned long start;
 
 	addr &= PAGE_MASK;
+/*
+	调用fmd_vma查找VMA	
+*/
 	vma = find_vma(mm, addr);
 	if (!vma)
 		return NULL;
@@ -2765,6 +2778,10 @@ find_extend_vma(struct mm_struct *mm, unsigned long addr)
 		return vma;
 	if (!(vma->vm_flags & VM_GROWSDOWN))
 		return NULL;
+/*
+	如果VMA->vm_start 大于查找地址start时，那么它会尝试去扩增VMA，
+	把VMA->vm_start 边界扩大到start中。
+*/
 	start = vma->vm_start;
 	if (expand_stack(vma, addr))
 		return NULL;
@@ -3313,6 +3330,11 @@ static int do_brk_flags(unsigned long addr, unsigned long request, unsigned long
 		return -EINVAL;
 	flags |= VM_DATA_DEFAULT_FLAGS | VM_ACCOUNT | mm->def_flags;
 
+/*
+	判断虚拟内存空间是否有足够的空间，
+	返回一段没有映射过的空间的起始地址，
+	这个函数会调到费具体的体系结构中实现。
+*/
 	error = get_unmapped_area(NULL, addr, len, 0, MAP_FIXED);
 	if (offset_in_page(error))
 		return error;
@@ -3330,6 +3352,12 @@ static int do_brk_flags(unsigned long addr, unsigned long request, unsigned long
 	/*
 	 * Clear old maps.  this also does some error checking for us
 	 */
+/*
+	循环遍历用户进程红黑树中的VMAs，然后根据addr来查找最合适插入到红黑树的节点，
+	最终 rb_link 指针指向最合适节点的 rb_left 或 rb_right 指针本身的地址。
+	返回0 表示寻找到最合适插入的节点，
+	返回-ENOMEM 表示和现有的VMA 重叠，这时会调用do_munmap函数来释放这段重叠的空间。	 
+*/
 	while (find_vma_links(mm, addr, addr + len, &prev, &rb_link,
 			      &rb_parent)) {
 		if (do_munmap(mm, addr, len))
@@ -3345,7 +3373,10 @@ static int do_brk_flags(unsigned long addr, unsigned long request, unsigned long
 
 	if (security_vm_enough_memory_mm(mm, len >> PAGE_SHIFT))
 		return -ENOMEM;
-
+/*
+	去找有没有可能合并addr 附近的VMA 。
+	如果没办法合并，那么只能新创建一个VMA，VMA 的地址空间就是[addr,addr+len]
+*/
 	/* Can we just expand an old private anonymous mapping? */
 	vma = vma_merge(mm, prev, addr, addr + len, flags,
 			NULL, NULL, pgoff, NULL, NULL_VM_UFFD_CTX);
@@ -3368,6 +3399,10 @@ static int do_brk_flags(unsigned long addr, unsigned long request, unsigned long
 	vma->vm_pgoff = pgoff;
 	vma->vm_flags = flags;
 	vma->vm_page_prot = vm_get_page_prot(flags);
+/*
+	新创建的VMA 需要加入到mm->mmap 链表和红黑树中, 
+	vma link 函数实现这个功能，该函数之前已经阅读过
+*/
 	vma_link(mm, vma, prev, rb_link, rb_parent);
 out:
 	perf_event_mmap(vma);
@@ -3394,6 +3429,14 @@ int vm_brk_flags(unsigned long addr, unsigned long len, unsigned long flags)
 		return -EINTR;
 
 	ret = do_brk_flags(addr, len, flags);
+	
+/*
+	判断f1ags 是否置位 VM_LOCKED. 这个 VM_LOCKED 通常从 mlockall 系统调用中设置而来。
+	如果有，那么需要调用 mm_populate 马上分配物理内存并建立映射。
+	通常用户程序很少使用 VM_LOCKED 分配掩码，所以brk不会为这个用户进程立马分配物理页面，
+	而是一直将分配物理页面的工作推延到用户进程需要访问这些虚拟页面时，
+	发生了缺页中断才会分配物理内存，并和虚拟地址建立映射关系。 
+*/
 	populate = ((mm->def_flags & VM_LOCKED) != 0);
 	up_write(&mm->mmap_sem);
 	if (populate && !ret)

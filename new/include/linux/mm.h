@@ -1719,6 +1719,9 @@ static inline void pgtable_page_dtor(struct page *page)
 	dec_zone_page_state(page, NR_PAGETABLE);
 }
 
+/*
+通过PMD 和地址addr 获取pte 页表项，
+*/
 #define pte_offset_map_lock(mm, pmd, address, ptlp)	\
 ({							\
 	spinlock_t *__ptl = pte_lockptr(mm, pmd);	\
@@ -2180,6 +2183,9 @@ extern struct vm_area_struct * find_vma_prev(struct mm_struct * mm, unsigned lon
    NULL if none.  Assume start_addr < end_addr. */
 static inline struct vm_area_struct * find_vma_intersection(struct mm_struct * mm, unsigned long start_addr, unsigned long end_addr)
 {
+/*
+	查找当前用户进程中是否己经有一块VMA 和start addr 地址有重叠。
+*/
 	struct vm_area_struct * vma = find_vma(mm,start_addr);
 
 	if (vma && end_addr <= vma->vm_start)
@@ -2246,20 +2252,30 @@ static inline struct page *follow_page(struct vm_area_struct *vma,
 	unsigned int unused_page_mask;
 	return follow_page_mask(vma, address, foll_flags, &unused_page_mask);
 }
-
+		
+/* 判断pte是否具有可写属性 */
 #define FOLL_WRITE	0x01	/* check pte is writable */
+/* 标记page可访问 */
 #define FOLL_TOUCH	0x02	/* mark page accessed */
+/* 在这个page执行get_page( )操作， 增加一countì十数 */
 #define FOLL_GET	0x04	/* do get_page on page */
 #define FOLL_DUMP	0x08	/* give error on hole if it would be zero */
+/* get_user_pages 函数具有读写权限*/
 #define FOLL_FORCE	0x10	/* get_user_pages read/write w/o permission */
+/*如果需要一个磁盘传输，那么开始一个工O传输不需要为其等待*/
 #define FOLL_NOWAIT	0x20	/* if a disk transfer is needed, start the IO
 				 * and return without waiting upon it */
 #define FOLL_POPULATE	0x40	/* fault in page */
+/*不返回大页面，切分它们*/
 #define FOLL_SPLIT	0x80	/* don't return transhuge pages, split them */
+/*检查这个page是否hwpoisoned*/
 #define FOLL_HWPOISON	0x100	/* check page is hwpoisoned */
+/*强制NUMA触发一个缺页中断*/
 #define FOLL_NUMA	0x200	/* force NUMA hinting page fault */
+/*等待页面合并*/
 #define FOLL_MIGRATION	0x400	/* wait for page to replace migration entry */
 #define FOLL_TRIED	0x800	/* a retry, previous pass started an IO */
+/*标记，这个page是mlocked*/
 #define FOLL_MLOCK	0x1000	/* lock present pages */
 #define FOLL_REMOTE	0x2000	/* we are working on non-current tsk/mm */
 #define FOLL_COW	0x4000	/* internal GUP flag */

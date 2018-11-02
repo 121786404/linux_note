@@ -539,6 +539,9 @@ static void cdev_unmap(dev_t dev, unsigned count)
  * cdev_del() removes @p from the system, possibly freeing the structure
  * itself.
  */
+/*
+cdev_del函数的调用则通常发生在字符设备驱动模块卸载函数中 
+*/
 void cdev_del(struct cdev *p)
 {
 	cdev_unmap(p->dev, p->count);
@@ -578,6 +581,9 @@ static struct kobj_type ktype_cdev_dynamic = {
  *
  * Allocates and returns a cdev structure, or NULL on failure.
  */
+/*
+动态申请一个cdev内存 
+*/
 struct cdev *cdev_alloc(void)
 {
 	struct cdev *p = kzalloc(sizeof(struct cdev), GFP_KERNEL);
@@ -596,6 +602,9 @@ struct cdev *cdev_alloc(void)
  * Initializes @cdev, remembering @fops, making it ready to add to the
  * system with cdev_add().
  */
+/*
+用于初始化cdev的成员，并建立cdev和file_operations之间的连接 
+*/
 void cdev_init(struct cdev *cdev, const struct file_operations *fops)
 {
 	memset(cdev, 0, sizeof *cdev);

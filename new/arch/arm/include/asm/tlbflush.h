@@ -583,7 +583,11 @@ static inline void flush_pmd_entry(void *pmd)
 	if (tlb_flag(TLB_WB))
 		dsb(ishst);
 }
-
+/*
+如果当前arm处理器是通过清空数据cache来清空TLB，
+那么就把这两个描述符条目所在地址对应的数据cache块清空。		
+利用cp15去操作pmd clear
+*/
 static inline void clean_pmd_entry(void *pmd)
 {
 	const unsigned int __tlb_flag = __cpu_tlb_flags;

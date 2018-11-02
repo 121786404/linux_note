@@ -55,6 +55,9 @@
 #else
 #include <stdint.h>
 struct mtd_info;
+/*
+导出的符号可以在/proc/kallsyms看到
+*/
 #define EXPORT_SYMBOL(x)  /* x */
 
 #define MODULE_LICENSE(x)	/* x */

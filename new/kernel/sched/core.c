@@ -6215,7 +6215,9 @@ void ___might_sleep(const char *file, int line, int preempt_offset)
 
 	/* WARN_ON_ONCE() by default, no rate limit required: */
 	rcu_sleep_check();
-
+/*
+	来判断当前的上下文是否是一个atomic context
+*/
 	if ((preempt_count_equals(preempt_offset) && !irqs_disabled() &&
 	     !is_idle_task(current)) ||
 	    system_state != SYSTEM_RUNNING || oops_in_progress)

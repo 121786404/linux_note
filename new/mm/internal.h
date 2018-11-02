@@ -115,6 +115,7 @@ extern pmd_t *mm_find_pmd(struct mm_struct *mm, unsigned long address);
 struct alloc_context {
 	struct zonelist *zonelist;
 	nodemask_t *nodemask;
+	// 优先在哪个管理区中分配内存
 	struct zoneref *preferred_zoneref;
 	int migratetype;
 	enum zone_type high_zoneidx;
@@ -483,6 +484,10 @@ unsigned long reclaim_clean_pages_from_list(struct zone *zone,
 /* Mask to get the watermark bits */
 #define ALLOC_WMARK_MASK	(ALLOC_NO_WATERMARKS-1)
 
+/*
+如果当前进程是实时优先级(real-time)进程且不是在中断上下文，
+或是这次内存申请不能被中断(__GFP_WAIT没有置位)，则设置标志ALLOC_HARDER
+*/
 #define ALLOC_HARDER		0x10 /* try to alloc harder */
 #define ALLOC_HIGH		0x20 /* __GFP_HIGH set */
 #define ALLOC_CPUSET		0x40 /* check for correct cpuset */
@@ -504,8 +509,4 @@ static inline void try_to_unmap_flush_dirty(void)
 
 #endif /* CONFIG_ARCH_WANT_BATCHED_UNMAP_TLB_FLUSH */
 
-extern const struct trace_print_flags pageflag_names[];
-extern const struct trace_print_flags vmaflag_names[];
-extern const struct trace_print_flags gfpflag_names[];
-
-#endif	/* __MM_INTERNAL_H */
+extern const

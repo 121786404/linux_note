@@ -378,7 +378,7 @@ struct per_cpu_pages {
 	int batch;		/* chunk size for buddy add/remove */
 
 	/* Lists of pages, one per migrate type stored on the pcp-lists */
-	//缓存的页链表
+	/* 链表的第一个页面，是最近刚释放到每CPU缓存的，热度高 */
 	struct list_head lists[MIGRATE_PCPTYPES];
 };
 
@@ -404,30 +404,10 @@ struct per_cpu_nodestat {
 #endif /* !__GENERATING_BOUNDS.H */
 
 /*
-实际的计算机体系结构有硬件的诸多限制, 这限制了页框可以使用的方式.
-尤其是, Linux内核必须处理80x86体系结构的两种硬件约束.
-ISA总线的直接内存存储DMA处理器有一个严格的限制 : 他们只能对RAM的前16MB进行寻址
-在具有大容量RAM的现代32位计算机中, CPU不能直接访问所有的物理地址,
-因为线性地址空间太小, 内核不可能直接映射所有物理内存到线性地址空间,
-因此Linux内核对不同区域的内存需要采用不同的管理方式和映射方式,
-因此内核将物理地址或者成用zone_t表示的不同地址区域
+DMA ZONE的作用是让有缺陷的DMA对应的外设驱动申请DMA buffer的时候从这个区域申请而已，
+但是它不是专有的。其他所有人的内存（包括应用程序和内核）也可以来自这个区域。
 
-传统X86_32位系统中, 前16M划分给ZONE_DMA,
-该区域包含的页框可以由老式的基于ISAS的设备通过DMA使用”直接内存访问(DMA)”,
- ZONE_DMA和ZONE_NORMAL区域包含了内存的常规页框,
-通过把他们线性的映射到现行地址的第4个GB, 内核就可以直接进行访问,
-相反ZONE_HIGHME包含的内存页不能由内核直接访问,
-尽管他们也线性地映射到了现行地址空间的第4个GB.
-
-
-64位系统中, 并不需要高端内存, 因为AM64的linux采用4级页表，
-支持的最大物理内存为64TB, 对于虚拟地址空间的划分，
-将0x0000,0000,0000,0000 – 0x0000,7fff,ffff,f000这128T地址用于用户空间；
-而0xffff,8000,0000,0000以上的128T为系统空间地址,
-这远大于当前我们系统中的内存空间,
-因此所有的物理地址都可以直接映射到内核中,
-不需要高端内存的特殊映射.
-
+现如今绝大多数DMA在任何地方申请的内存，都可以存取到，因此DMA ZONE已经没有必要了
 对于Arm 实际上只有ZONE_NORMAL和ZONE_MOVABLE
 */
 enum zone_type {
@@ -437,14 +417,10 @@ enum zone_type {
 	 * to do DMA to all of addressable memory (ZONE_NORMAL). Then we
 	 * carve out the portion of memory that is needed for these devices.
 	 * The range is arch specific.
-	 * 当有些设备不能使用所有的ZONE_NORMAL区域中的内存空间作DMA访问时，
-	 * 就可以使用ZONE_DMA所表示的内存区域，于是我么把这部分空间划分出来
-	 * 专门用作DMA访问的内存空间。
-	 * 该区域的空间访问是处理器体系结构相关的
 	 *
-	 * Some examples(一些例子)
+	 * Some examples
 	 *
-	 * Architecture(体系架构) Limit(限制)
+	 * Architecture Limit
 	 * ---------------------------
 	 * parisc, ia64, sparc	<4G
 	 * s390			<2G
@@ -454,15 +430,6 @@ enum zone_type {
 	 * i386, x86_64 and multiple other arches
 	 * 			<16M.
 	 */
-/*
-标记了适合DMA的内存域. 该区域的长度依赖于处理器类型.
- 这是由于古老的ISA设备强加的边界.
-但是为了兼容性, 现代的计算机也可能受此影响
-
-ARM所有地址都可以进行DMA，所以该值可以很大，
-或者干脆不定义DMA类型的内存域。
-而在IA-32的处理器上，一般定义为16M
-*/
 	ZONE_DMA,
 #endif
 #ifdef CONFIG_ZONE_DMA32
@@ -470,20 +437,7 @@ ARM所有地址都可以进行DMA，所以该值可以很大，
 	 * x86_64 needs two ZONE_DMAs because it supports devices that are
 	 * only able to do DMA to the lower 16M but also 32 bit devices that
 	 * can only do DMA areas below 4G.
-	 * X86_64架构因为除了支持只能使用低于16MB空间的DMA设备外，
-	 * 还支持可以访问4GB以下空间的32位DMA设备，所以需要两个ZONE_DMA
-	 * 内存区域
 	 */
-/*
-标记了使用32位地址字可寻址, 适合DMA的内存域. 显然,
-只有在64位系统中ZONE_DMA32才和ZONE_DMA有区别,
-在32位系统中, 本区域是空的, 即长度为0MB, 在Alpha和AMD64系统上,
-该内存的长度可能是从0到4GB
-
-只在64位系统上有效，为一些32位外设DMA时分配内存。
-如果物理内存大于4G，该值为4G，
-否则与实际的物理内存大小相同。
-*/
 	ZONE_DMA32,
 #endif
 	/*
@@ -568,10 +522,6 @@ zone中定义了两把锁，lock以及lru_lock，lock与页面分配有关，lru
 以提高访问效率。例如struct zone数据结构中zone->lock和zone->lru_lock这两个频繁被访问的锁，
 可以让它们各自使用不同的cache line，以提高获取锁的效率。
 
-内核开发者逐步发现有一些自旋锁会竞争得非常厉害，很难获取。
-像zone->Iock 和zone->lru lock 这两个锁有时需要同时获取锁，因此保证它们使用不同的
-cache line 是内核常用的一种优化技巧。
-
 当CPU对某个锁进行上锁处理时，CPU会将锁从内存加载到cache中，因为是以cache line为单位进行加载，
 所以与锁紧挨着的成员也被加载到同一cache line中。
 CPU上完锁想要访问相关的成员时，这些成员已经在cache line中了。
@@ -588,6 +538,7 @@ struct zone {
     如果空闲页多于pages_high = watermark[WMARK_HIGH], 内存域状态理想，不需要进行内存回收
     如果空闲页低于pages_low = watermark[WMARK_LOW], 开始进行内存回收，将page换出到硬盘.
     如果空闲页低于pages_min = watermark[WMARK_MIN], 内存回收的压力很重，因为内存域中的可用page数已经很少了，必须加快进行内存回收
+	watermark 计算在 __setup_per_zone_wmarks
     */
 	unsigned long watermark[NR_WMARK];
 
@@ -926,7 +877,7 @@ enum {
 struct zoneref {
 	//实际引用的zone指针
 	struct zone *zone;	/* Pointer to actual zone */
-	//zone 的编号
+	//指向zone 的编号。
 	int zone_idx;		/* zone_idx(zoneref->zone) */
 };
 
@@ -950,8 +901,14 @@ struct zoneref {
 struct zonelist {
 	/**
 	 * 最大节点数*每个节点的zone数量，对所有zone进行引用。
-	 * 外加一个用于标记列表结束的空指针
-	 */
+	 * 外加一个用于标记列表结束的空指针。
+	 * 当调用free_area_init_core()时，
+	 * 由mm/page_alloc.c文件中的build_zonelists函数设置
+	 * _zonerefs[0]表示ZONE_HIGHMEM(zone index=1);
+	 * _zonerefs[1]表示ZONE_NORMAL (zone index=0).
+	 * 也就是说，分配物理页面时会优先考虑ZONE_HIGHMEM，
+	 * ZONE_NORMAL是线性映射区，地址转换方便，优先留给内核使用。
+	*/
 	struct zoneref _zonerefs[MAX_ZONES_PER_ZONELIST + 1];
 };
 
@@ -988,8 +945,6 @@ typedef struct pglist_data {
      当从某个node的某个zone申请内存失败后，会搜索该列表，
      查找一个合适的zone继续分配内存
 
-     当调用free_area_init_core()时，
-     由mm/page_alloc.c文件中的build_zonelists()函数设置
 	*/
 	struct zonelist node_zonelists[MAX_ZONELISTS];
     /*
@@ -1425,6 +1380,10 @@ struct zoneref *__next_zones_zonelist(struct zoneref *z,
  * being examined. It should be advanced by one before calling
  * next_zones_zonelist again.
  */
+/*
+highest_zoneidx 是gfp_zone函数计算分配掩码得来
+zone 在系统处理时会初始化这个数组，具体函数在build_ zonelists node 中。
+*/
 static __always_inline struct zoneref *next_zones_zonelist(struct zoneref *z,
 					enum zone_type highest_zoneidx,
 					nodemask_t *nodes)
@@ -1450,6 +1409,9 @@ static inline struct zoneref *first_zones_zonelist(struct zonelist *zonelist,
 					enum zone_type highest_zoneidx,
 					nodemask_t *nodes)
 {
+/*
+	调用 next_zones_zonelist 函数来计算zoneref
+*/
 	return next_zones_zonelist(zonelist->_zonerefs,
 							highest_zoneidx, nodes);
 }
@@ -1465,6 +1427,10 @@ static inline struct zoneref *first_zones_zonelist(struct zonelist *zonelist,
  * This iterator iterates though all zones at or below a given zone index and
  * within a given nodemask
  */
+/*
+首先通过 first_zones_zonelist 从给定的zoneidx 开始查找，
+这个给定的 zoneidx 就是 highidx ，之前通过 gfp_zone 函数转换得来的。 
+*/
 #define for_each_zone_zonelist_nodemask(zone, z, zlist, highidx, nodemask) \
 	for (z = first_zones_zonelist(zlist, highidx, nodemask), zone = zonelist_zone(z);	\
 		zone;							\
@@ -1716,23 +1682,4 @@ unsigned long __init node_memmap_size_bytes(int, unsigned long, unsigned long);
  * entire section.
  *
  * However, an ARM, and maybe other embedded architectures in the future
- * free memmap backing holes to save memory on the assumption the memmap is
- * never used. The page_zone linkages are then broken even though pfn_valid()
- * returns true. A walker of the full memmap must then do this additional
- * check to ensure the memmap they are looking at is sane by making sure
- * the zone and PFN linkages are still valid. This is expensive, but walkers
- * of the full memmap are extremely rare.
- */
-bool memmap_valid_within(unsigned long pfn,
-					struct page *page, struct zone *zone);
-#else
-static inline bool memmap_valid_within(unsigned long pfn,
-					struct page *page, struct zone *zone)
-{
-	return true;
-}
-#endif /* CONFIG_ARCH_HAS_HOLES_MEMORYMODEL */
-
-#endif /* !__GENERATING_BOUNDS.H */
-#endif /* !__ASSEMBLY__ */
-#endif /* _LINUX_MMZONE_H */
+ * free memmap backing hole

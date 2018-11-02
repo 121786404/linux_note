@@ -37,19 +37,19 @@ GFP缩写的意思为获取空闲页get free page
         vmalloc() -> __vmalloc_node_flags(size, -1, GFP_KERNEL | __GFP_HIGHMEM)
 */
 /* Plain integer GFP bitmasks. Do not use this directly. */
-#define ___GFP_DMA		0x01u
-#define ___GFP_HIGHMEM		0x02u
+#define ___GFP_DMA		0x01u     
+#define ___GFP_HIGHMEM		0x02u /*可以从ZONE_HIGHMEM或者ZONE_NORMAL中分配*/
 #define ___GFP_DMA32		0x04u
 #define ___GFP_MOVABLE		0x08u /* 页是可移动的 */
 #define ___GFP_RECLAIMABLE	0x10u /* 页是可回收的 */
-#define ___GFP_HIGH		0x20u /* 应该访问紧急分配池？ */
-#define ___GFP_IO		0x40u /* 可以启动物理IO？ */
-#define ___GFP_FS		0x80u /* 可以调用底层文件系统？ */
+#define ___GFP_HIGH		0x20u /* 可以访问紧急的内存池 */
+#define ___GFP_IO		0x40u /* 不能直接移动，但可以删除 */
+#define ___GFP_FS		0x80u /* 可以启动文件系统IO */
 #define ___GFP_COLD		0x100u /* 需要非缓存的冷页 */
 #define ___GFP_NOWARN		0x200u /* 禁止分配失败警告 */
-#define ___GFP_REPEAT		0x400u /* 重试分配，可能失败 */
-#define ___GFP_NOFAIL		0x800u /* 一直重试，不会失败 */
-#define ___GFP_NORETRY		0x1000u /* 不重试，可能失败 */
+#define ___GFP_REPEAT		0x400u /* 分配失败的时候重复尝试 */
+#define ___GFP_NOFAIL		0x800u /* 分配失败的时候重复进行分配，直到分配成功为止 */
+#define ___GFP_NORETRY		0x1000u /* 分配失败时不允许再尝试 */
 #define ___GFP_MEMALLOC		0x2000u /* 使用紧急分配链表 */
 #define ___GFP_COMP		0x4000u /* 增加复合页元数据 */
 #define ___GFP_ZERO		0x8000u  /* 成功则返回填充字节0的页 */
@@ -392,7 +392,6 @@ GFP_USER的一个扩展, 分配用于用户进程的页面，
 #define GFP_MOVABLE_MASK (__GFP_RECLAIMABLE|__GFP_MOVABLE)
 #define GFP_MOVABLE_SHIFT 3
 
-// 转换分配标志及对应的迁移类型
 /*
 把 gfp_flags 分配掩码转换成 MTGRATE_TYPES，
 例如分配掩码为 GFP_KERNEL，那么 MIGRATE_TYPES 是MIGRATE_UNMOVABLE
@@ -480,6 +479,7 @@ static inline bool gfpflags_allow_blocking(const gfp_t gfp_flags)
 #error GFP_ZONES_SHIFT too large to create GFP_ZONE_TABLE integer
 #endif
 
+// Ox200010
 #define GFP_ZONE_TABLE ( \
 	(ZONE_NORMAL << 0 * GFP_ZONES_SHIFT)				       \
 	| (OPT_ZONE_DMA << ___GFP_DMA * GFP_ZONES_SHIFT)		       \
@@ -508,11 +508,12 @@ static inline bool gfpflags_allow_blocking(const gfp_t gfp_flags)
 	| 1 << (___GFP_MOVABLE | ___GFP_DMA32 | ___GFP_DMA | ___GFP_HIGHMEM)  \
 )
 
-/* 根据gfp_mask制定在囊二域中分配物理页面
+/* 
+
  * 如果没有在gfp_mask中明确制定__GFP_DMA或者__GFP_HIGHMEM,那么默认在ZONE_NORMAL中分配物理页
  * 如果ZONE_NORMAL中现有空闲页不足以满足当前的分配，那么页分配器会到ZONE_DMA域中查找空闲页，而不会到ZONE_HIGHMEM中查找
 
-   从分配掩码中计算出zone 的zoneidx ，并存放在 high_zoneidx 成员中。
+   从gfp_mask中计算出zone 的zoneidx。
  */
 static inline enum zone_type gfp_zone(gfp_t flags)
 {
@@ -531,7 +532,8 @@ static inline enum zone_type gfp_zone(gfp_t flags)
  * can allocate highmem pages, the *get*page*() variants return
  * virtual kernel addresses to the allocated page(s).
  */
-
+/*
+*/
 static inline int gfp_zonelist(gfp_t flags)
 {
 #ifdef CONFIG_NUMA
@@ -623,8 +625,7 @@ extern struct page *alloc_pages_vma(gfp_t gfp_mask, int order,
 	alloc_pages(gfp_mask, order)
 #endif
 
-/*只用于分配一个物理页面，alloc_page()是order=0时alloc_pages的简化形式，
-只分配单个页面,如果系统没有足够的空间满足alloc_page的分配，函数将返回NULL*/
+/*分配一个物理页面*/
 #define alloc_page(gfp_mask) alloc_pages(gfp_mask, 0)
 #define alloc_page_vma(gfp_mask, vma, addr)			\
 	alloc_pages_vma(gfp_mask, 0, vma, addr, numa_node_id(), false)

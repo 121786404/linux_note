@@ -505,13 +505,13 @@ EXPORT_SYMBOL(path_put);
 #define EMBEDDED_LEVELS 2
 struct nameidata {
 	struct path	path;
-	struct qstr	last;
+	struct qstr	last;  /*路径中的最后一个component*/
 	struct path	root;
 	struct inode	*inode; /* path.dentry.d_inode */
-	unsigned int	flags;
+	unsigned int	flags; /*查找标识*/
 	unsigned	seq, m_seq;
-	int		last_type;
-	unsigned	depth;
+	int		last_type; /*路径中的最后一个component的类型*/
+	unsigned	depth; /*当前symbolic link的嵌套深度，不能大于6*/
 	int		total_link_count;
 	struct saved {
 		struct path link;

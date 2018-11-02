@@ -104,7 +104,9 @@ extern void radix_tree_init(void);
  * flag is set.
  */
 bool early_boot_irqs_disabled __read_mostly;
-
+/*
+全局变量，主要用来记录当前系统的状态
+*/
 enum system_states system_state __read_mostly;
 EXPORT_SYMBOL(system_state);
 

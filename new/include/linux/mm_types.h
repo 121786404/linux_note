@@ -545,10 +545,8 @@ struct mm_struct {
 	unsigned long task_size;		/* size of task vm space */
 	unsigned long highest_vm_end;		/* highest vma end address */
 /*
-     指向第一级页表即页全局目录的基址，
-     当内核运行这个进程时，它就将pgd存放在CR3寄存器内，
-     根据它来进行地址转换工作
-     指向进程的页目录
+     一级页表基址，
+     当内核运行这个进程时，它就将pgd存放在TTBRx寄存器内 
 */
 	pgd_t * pgd;
 /*
@@ -568,7 +566,7 @@ struct mm_struct {
 	int map_count;				/* number of VMAs */
     // 保护任务页表和 mm->rss
 	spinlock_t page_table_lock;		/* Protects page tables and some counters */
-	// 对mmap操作的互赤信号量
+	// 对mmap操作的互斥信号量
 	struct rw_semaphore mmap_sem;
     // 所有活动（active）mm的链表
 	struct list_head mmlist;		/* List of maybe swapped mm's.	These are globally strung

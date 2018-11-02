@@ -120,7 +120,14 @@ false:也就是top-down,从高地址向地址分配内存.
 */
 	struct memblock_type memory;
 /*
-已分配内存的集合
+
+有些驱动可能会保留一段系统内存区域为自己使用，同时也不希望OS管理这段内存（或者说对OS不可见），
+而是自己创建该段内存的地址映射。
+实际上这样的reserved memory region是有no-map属性的。
+这时候，内核初始化过程中，在解析该reserved-memory节点的时候，
+会将该段地址从memblock模块中移除。
+而在map_mem函数中，为所有memory type类型的数组创建地址映射的时候，
+有no-map属性的那段内存地址将不会创建地址映射，也就不在OS的控制范围内了。
 */
 	struct memblock_type reserved;
 #ifdef CONFIG_HAVE_MEMBLOCK_PHYS_MAP

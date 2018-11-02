@@ -759,12 +759,9 @@ static pte_t * __init arm_pte_alloc(pmd_t *pmd, unsigned long addr,
 				unsigned long prot,
 				void *(*alloc)(unsigned long sz))
 {
-/*
-    检查这个参数对应的PMD 表项的内容
-*/
 	if (pmd_none(*pmd)) {
 /*
-	页面表PTE 还没建立，所以要先去建立页面表。
+	页面表PTE 还没建立，先去建立页面表。
 	这里会去分配 PTE_HWTABLE_OFF + PTE_HWTABLE_SIZE 个PTE 页面表项，
 	即会分配512+512 个PTE 页面表
 */
@@ -950,7 +947,7 @@ static void __init __create_mapping(struct mm_struct *mm, struct map_desc *md,
 	const struct mem_type *type;
 	pgd_t *pgd;
 
-    // 通过md->type 来获取描述内存区域属性的mem_type 数据结构
+    // 通过md->type 来获取描述 内存区域属性的mem_type
 	type = &mem_types[md->type];
 
 #ifndef CONFIG_ARM_LPAE
@@ -974,14 +971,13 @@ static void __init __create_mapping(struct mm_struct *mm, struct map_desc *md,
 		return;
 	}
 
-    // 获取所属的页面目录项PGD
-    // init_mm.pgd = swapper_pg_dir
+    // 获取所属的页面目录项PGD 
 	pgd = pgd_offset(mm, addr);
 	end = addr + length;
-	do {// 以2m为单位进行映射
+	do {// 以PGDIR_SIZE=2m 为单位进行映射
 		unsigned long next = pgd_addr_end(addr, end);
 
-        // 初始化PGD 页表项内容和下一级页表PUD
+        // 在内存区域[addr,next] 初始化PGD 页表项内容和下一级页表PUD
 		alloc_init_pud(pgd, addr, next, phys, type, alloc, ng);
 
 		phys += next - addr;
@@ -1326,6 +1322,13 @@ static inline void prepare_page_table(void)
 	/**
 	 * 将内核映像下面的所有PMD清空。
 	 */
+	
+	printk(KERN_CRIT "sheldon %s: MODULES_VADDR:0x%x\n",__FUNCTION__,MODULES_VADDR); //0xbf000000
+	printk(KERN_CRIT "sheldon %s: PAGE_OFFSET:0x%x\n",__FUNCTION__,PAGE_OFFSET); // 0xc0000000
+	printk(KERN_CRIT "sheldon %s: high_memory:0x%x\n",__FUNCTION__,high_memory); // 0xef800000
+	printk(KERN_CRIT "sheldon %s: arm_lowmem_limit:0x%x\n",__FUNCTION__,arm_lowmem_limit); // 0x636f  0x8f800000
+	printk(KERN_CRIT "sheldon %s: VMALLOC_START:0x%x VMALLOC_END:0x%x\n",__FUNCTION__,VMALLOC_START,VMALLOC_END); // 0xf0000000 0xff000000
+	
 	for (addr = 0; addr < MODULES_VADDR; addr += PMD_SIZE)
 		pmd_clear(pmd_off_k(addr));
 
@@ -1522,7 +1525,7 @@ static void __init kmap_init(void)
 /*
 建立低端内存的所有页目录和页表：遍历memory bank，映射那些没有highmem标记的内存bank
 
-map_lowmemO会对两个内存区间创建映射。
+map_lowmem会对两个内存区间创建映射。
 (1)区间1
     物理地址: Ox60000000~Ox60800000
     虚拟地址: OxcOOOOOOO~Oxc0800000
@@ -1596,6 +1599,7 @@ static void __init map_lowmem(void)
 				create_mapping(&map);
 			}
             // [0x60000000,0x61000000)--> [0xC0000000,0xC1000000)       rwx
+            // kernel image 区域
 			map.pfn = __phys_to_pfn(kernel_x_start);
 			map.virtual = __phys_to_virt(kernel_x_start);
 			map.length = kernel_x_end - kernel_x_start;
@@ -1604,6 +1608,7 @@ static void __init map_lowmem(void)
 			create_mapping(&map);
 
             // [0x61000000,0x64000000)--> [0xC1000000,0xC4000000)        rw
+            // 映射低端内存
 			if (kernel_x_end < end) {
 				map.pfn = __phys_to_pfn(kernel_x_end);
 				map.virtual = __phys_to_virt(kernel_x_end);

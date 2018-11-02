@@ -195,16 +195,17 @@ extern pgprot_t phys_mem_access_prot(struct file *file, unsigned long pfn,
 extern struct page *empty_zero_page;
 #define ZERO_PAGE(vaddr)	(empty_zero_page)
 
-
+/*
+arch/arm/kernel/head.S 定义
+*/
 extern pgd_t swapper_pg_dir[PTRS_PER_PGD];
 
 /* to find an entry in a page-table-directory */
 // 找到线性地址 addr 对应的的目录项在页全局目录中的索引（相对位置）
 #define pgd_index(addr)		((addr) >> PGDIR_SHIFT)
 /*
-接收内存描述符地址 mm 和线性地址 addr 作为参数。
-这个宏产生地址addr 在页全局目录中相应表项的线性地址；
-通过内存描述符 mm 内的一个指针可以找到这个页全局目录
+init_mm.pgd = swapper_pg_dir 内核的页全局目录
+产生地址addr 在页全局目录中相应表项的线性地址；
 */
 #define pgd_offset(mm, addr)	((mm)->pgd + pgd_index(addr))
 
@@ -282,7 +283,7 @@ static inline pte_t *pmd_page_vaddr(pmd_t pmd)
 
 #define pte_none(pte)		(!pte_val(pte))
 /*
-检查页表项指向的页是否存在于内存中。例如，该函数可以用于检测一页是否已 经换出
+检查 pte 页表项指向的页是否存在于内存中。例如，该函数可以用于检测一页是否已 经换出
 */
 #define pte_present(pte)	(pte_isset((pte), L_PTE_PRESENT))
 #define pte_valid(pte)		(pte_isset((pte), L_PTE_VALID))

@@ -64,11 +64,11 @@
 #endif
 
 #define _IOC_NRMASK	((1 << _IOC_NRBITS)-1)	/*NR字段的掩码*/
-#define _IOC_TYPEMASK	((1 << _IOC_TYPEBITS)-1)/*TYPE字段的掩码*/
-#define _IOC_SIZEMASK	((1 << _IOC_SIZEBITS)-1)/*SIZE字段的掩码*/
+#define _IOC_TYPEMASK	((1 << _IOC_TYPEBITS)-1)/*TYPE 设备类型字段的掩码*/
+#define _IOC_SIZEMASK	((1 << _IOC_SIZEBITS)-1)/*SIZE 数据长度字段的掩码*/
 #define _IOC_DIRMASK	((1 << _IOC_DIRBITS)-1)	/*CMD字段的掩码*/
 
-#define _IOC_NRSHIFT	0				/*NR字段的位移*/
+#define _IOC_NRSHIFT	0				/*NR 序列号字段字段的位移*/
 #define _IOC_TYPESHIFT	(_IOC_NRSHIFT+_IOC_NRBITS)	/*TYPE字段的位移*/
 #define _IOC_SIZESHIFT	(_IOC_TYPESHIFT+_IOC_TYPEBITS)	/*SIZE字段的位移*/
 #define _IOC_DIRSHIFT	(_IOC_SIZESHIFT+_IOC_SIZEBITS)	/*CMD字段的位移*/

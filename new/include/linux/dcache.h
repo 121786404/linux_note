@@ -99,7 +99,9 @@ struct dentry {
 
 	/* Ref lookup also touches following */
 	struct lockref d_lockref;	/* per-dentry lock and refcount */
+	/*目录项操作表*/
 	const struct dentry_operations *d_op;
+	 /*文件超级块*/
 	struct super_block *d_sb;	/* The root of the dentry tree */
 	unsigned long d_time;		/* used by d_revalidate */
 	void *d_fsdata;			/* fs-specific data */
@@ -109,6 +111,7 @@ struct dentry {
 		wait_queue_head_t *d_wait;	/* in-lookup ones only */
 	};
 	struct list_head d_child;	/* child of parent list */
+	 /*子目录*/
 	struct list_head d_subdirs;	/* our children */
 	/*
 	 * d_alias and d_rcu can share memory
@@ -133,8 +136,10 @@ enum dentry_d_lock_class
 };
 
 struct dentry_operations {
+	//判断目录项是否有效
 	int (*d_revalidate)(struct dentry *, unsigned int);
 	int (*d_weak_revalidate)(struct dentry *, unsigned int);
+	//为目录项生成散列值
 	int (*d_hash)(const struct dentry *, struct qstr *);
 	int (*d_compare)(const struct dentry *,
 			unsigned int, const char *, const struct qstr *);

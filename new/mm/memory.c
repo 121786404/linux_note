@@ -777,16 +777,42 @@ static void print_bad_pte(struct vm_area_struct *vma, unsigned long addr,
 #else
 # define HAVE_PTE_SPECIAL 0
 #endif
+/*
+vm_normal_page 返回 normal mapping 页面的 struct page 数据结构， 
+一些特殊映射的页面是不会返回struct page 数据结构的，
+这些页面不希望被参与到内存管理的一些活动中，例如页面回收、页迁移和KSM等
+
+vm_normal_pageO函数把page 页面分为两个阵营，一个是normal page，另一个是specialpage 。
+normal page 通常指正常mapping 的页面，例如匿名页面、page cache 和共享内存页面等。
+special page 通常指不正常mapping 的页面，这些页面不希望参与内存管理的回收或者合并的功能，例如映射如下特性页面。
+VM_IO: 为I/O 设备映射内存。
+VM_PFNMAP: 纯PFN 映射。
+VM_MIXEDMAP: 固定映射。
+*/
 struct page *vm_normal_page(struct vm_area_struct *vma, unsigned long addr,
 				pte_t pte)
 {
 	unsigned long pfn = pte_pfn(pte);
 
+/*
+	HAVE_PTE_SPECIAL 宏利用PTE 页表项的空闲比特位来做一些有意思的事情，
+	在ARM32 架构的3 级页表和ARM64 的代码中会用到这个特性，
+	而ARM32 架构的2 级页表里没有实现这个特性。
+*/
 	if (HAVE_PTE_SPECIAL) {
+/*
+		如果pte 的 PTE_SPECIAL 比特位没有置位，那么跳转到 check_pfn 继续检查
+*/
 		if (likely(!pte_special(pte)))
 			goto check_pfn;
+/*
+		如果vma的操作符定义了find_special_page 函数指针，那么调用这个函数继续检查		
+*/
 		if (vma->vm_ops && vma->vm_ops->find_special_page)
 			return vma->vm_ops->find_special_page(vma, addr);
+/*
+		如果vm_flags设置了(VM_PFNMAP | VM_MIXEDMAP) ，那么这是special mapping ，返回NULL		
+*/
 		if (vma->vm_flags & (VM_PFNMAP | VM_MIXEDMAP))
 			return NULL;
 		if (!is_zero_pfn(pfn))
@@ -803,6 +829,10 @@ struct page *vm_normal_page(struct vm_area_struct *vma, unsigned long addr,
 			goto out;
 		} else {
 			unsigned long off;
+/*
+			remap_pfn_range 函数通常使用 VM_PFNMAP 比特位且 vm_pgoff 指向第一个PFN 映射，
+			所以可以使用如下公式来判断这种情况的special mappmg 。			
+*/
 			off = (addr - vma->vm_start) >> PAGE_SHIFT;
 			if (pfn == vma->vm_pgoff + off)
 				return NULL;
@@ -3681,6 +3711,9 @@ static int handle_pte_fault(struct vm_fault *vmf)
 		 * mmap_sem read mode and khugepaged takes it in write mode.
 		 * So now it's safe to run pte_offset_map().
 		 */
+/*
+		获取对应的pte 表项		 
+*/
 		vmf->pte = pte_offset_map(vmf->pmd, vmf->address);
 		vmf->orig_pte = *vmf->pte;
 
@@ -3692,8 +3725,17 @@ static int handle_pte_fault(struct vm_fault *vmf)
 		 * view for the ifs and we later double check anyway with the
 		 * ptl lock held. So here a barrier will do.
 		 */
+		/*
+		有的处理器体系结构会大于8Byte 的pte 表工页，例如何 ppc44x 定义了
+		CONFIG_PTE_64BIT 和 CONFIG_32BIT，所以READ_ONCE和ACCESS_ONCE
+		并不保证访问的原子性，		所以这里需要一个内存屏障以保证正确读取了
+		pte 表项内容后才会执行后面的判断语句。		 
+		*/
 		barrier();
 		if (pte_none(vmf->orig_pte)) {
+/*
+		如果pte 内容为空
+*/
 			pte_unmap(vmf->pte);
 			vmf->pte = NULL;
 		}
@@ -3710,12 +3752,21 @@ static int handle_pte_fault(struct vm_fault *vmf)
 			return do_fault(vmf);
 	}
 
+/*
+	L_PTE_PRESENT 没有置位，说明该页被交换到swap 分区，
+	调用 do_swap_page 函数。
+*/
 	if (!pte_present(vmf->orig_pte))
 		return do_swap_page(vmf);
 
 	if (pte_protnone(vmf->orig_pte) && vma_is_accessible(vmf->vma))
 		return do_numa_page(vmf);
 
+/*
+	pte 有映射物理页面，但因为之前的pte 设置了只读，现在需要可写操作，
+	所以触发了写时复制缺页中断。
+	例如父子进程之间共享的内存，当其中一方需要写入新内容时，就会触发写时复制。
+*/
 	vmf->ptl = pte_lockptr(vmf->vma->vm_mm, vmf->pmd);
 	spin_lock(vmf->ptl);
 	entry = vmf->orig_pte;
@@ -3727,7 +3778,10 @@ static int handle_pte_fault(struct vm_fault *vmf)
 	 * 已经在内存中。
 	 */
 	if (vmf->flags & FAULT_FLAG_WRITE) {
-		/* pte没有写权限 */
+		/*
+		如果传进来的flag 设置了可写的属性且当前pte 是只读的，那么调用
+		do_wp_page 函数并返回。			 
+		*/
 		if (!pte_write(entry))
 			/**
 			 * do_wp_page()负责创建该页的副本，并插入到进程的页表中(在硬件
@@ -3736,12 +3790,25 @@ static int handle_pte_fault(struct vm_fault *vmf)
 			 * 空间中作为"只读"副本，以免在复制信息时花费太多时间。在实际
 			 * 发生写访问之前，都不会为进程创建页的独立副本。
 			 */
+
 			return do_wp_page(vmf);
+/*
+		如果当前仰的属性是可写的，那么通过 pte_mkdirty 函数来设直 L_PTE_DIRTY 比特位。
+		页在内存中且pte 也具有可写属性		
+*/
 		entry = pte_mkdirty(entry);
 	}
+/*
+	对于ARM 体系结构pte_mkyoung是设置Linux 版本的页表中PTE 页表项的L_PTE_YOUNG 位，
+	是否需要写入ARM 硬件版本的页表由set_pte_at函数来决定。
+*/
 	entry = pte_mkyoung(entry);
 	if (ptep_set_access_flags(vmf->vma, vmf->address, vmf->pte, entry,
 				vmf->flags & FAULT_FLAG_WRITE)) {
+		/*
+			如果pte 内容发生变化，则需要把新的内容写入到pte 表项中，
+			并且要flush 对应的TLB 和cache 。	
+		*/
 		update_mmu_cache(vmf->vma, vmf->address, vmf->pte);
 	} else {
 		/*
@@ -3789,13 +3856,21 @@ static int __handle_mm_fault(struct vm_area_struct *vma, unsigned long address,
 	pud_t *pud;
 
 	/**
-	 * pgd_offset和pud_alloc检查映射address的页中间目录和页表是否存在。
+	   获取 address 对应在当前进程页表的PGD 页面目录项。
 	 */
 	pgd = pgd_offset(mm, address);
-	/* 分配页中间目录 */
+/*
+	获取对应的PUD 表项，
+*/
 	pud = pud_alloc(mm, pgd, address);
+/*
+	如果PUD 表项为空，则返回 VM_FAULT_OOM 错误。
+*/
 	if (!pud)
 		return VM_FAULT_OOM;
+/*
+	获取pmd 表项	
+*/
 	vmf.pmd = pmd_alloc(mm, pud, address);
 	if (!vmf.pmd)
 		return VM_FAULT_OOM;
@@ -3833,6 +3908,9 @@ static int __handle_mm_fault(struct vm_area_struct *vma, unsigned long address,
  * The mmap_sem may have been released depending on flags and our
  * return value.  See filemap_fault() and __lock_page_or_retry().
  */
+/*
+缺页中断的核心处理函数 
+*/
 int handle_mm_fault(struct vm_area_struct *vma, unsigned long address,
 		unsigned int flags)
 {

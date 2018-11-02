@@ -91,7 +91,9 @@ unsigned int __machine_arch_type __read_mostly;
 EXPORT_SYMBOL(__machine_arch_type);
 unsigned int cacheid __read_mostly;
 EXPORT_SYMBOL(cacheid);
-
+/*
+__atags_pointer 在head-common.S 中进行的赋值操作
+*/
 unsigned int __atags_pointer __initdata;
 
 unsigned int system_rev;

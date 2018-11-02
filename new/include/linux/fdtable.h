@@ -48,7 +48,7 @@ struct files_struct {
    * read mostly part
    */
    /* count为文件表files struct的引用计数 */
-	atomic_t count;
+	atomic_t count; /*结构的使用计数*/
 	bool resize_in_progress;
 	wait_queue_head_t resize_wait;
 

@@ -48,16 +48,10 @@
 #define PMD_ORDER	2
 #endif
 /*
-swapper_pg_dir被定义为PAGE_OFFSET向上偏移TEXT_OFFSET。
-TEXT_OFFSET代表内核代码段的相对于PAGE_OFFSET的偏移。
-
 KERNEL_RAM_VADDR的值与_stext的值相同，代表了内核代码的起始地址。
-swapper_pg_dir为KERNEL_RAM_VADDR - 0x4000，也即向低地址方向偏移了16K。
-ARM Linux中的主内存页表，使用段表。
-每个页表映射1M的内存大小，由于16K / 4 * 1M = 4G，这16K的主页表空间正好映射4G的虚拟空间。
+swapper_pg_dir = KERNEL_RAM_VADDR - PG_DIR_SIZE  =0xc0004000
 内核页表机制在系统启动过程中的paging_init函数中使能，
 其中对内核主页表的初始化等操作均是通过init_mm.pgd的引用来进行的。
-经过上述计算得到swapper_pg_dir的虚拟地址为0xc0004000.
 */
 	.globl	swapper_pg_dir
 	.equ	swapper_pg_dir, KERNEL_RAM_VADDR - PG_DIR_SIZE
@@ -252,7 +246,7 @@ kernel的每一页表映射1M，所以入口处在(0x80200000-->0xc0000000)映�
 所以加载的物理地址必须为0x****8000. 这样，开启MMU后，访问0xc0008000附近指令，MMU根据TLB才能正确映射找到0x****8000附近的指令。
 
 为kernel建立临时页表, kernel里面的所有符号在链接时，都使用了虚拟地址值。
-在完成基本的初始化后，kernel代码将跳到第一个C语言函数start_kernl来执行，
+在完成基本的初始化后，kernel代码将跳到第一个C语言函数start_kernel来执行，
 在哪个时候，这些虚拟地址必须能够对它所存放在真正内存位置，否则运行将为出错。
 为此，CPU必须开启MMU，但在开启 MMU前，必须为虚拟地址到物理地址的映射建立相应的页表。
 在开启MMU后，kernel指并不马上将PC值指向start_kernl，而是要做一些C语言运行期的设置，如堆栈，重定义等工作后才跳到start_kernel去执行。

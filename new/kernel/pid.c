@@ -391,7 +391,9 @@ struct pid *find_pid_ns(int nr, struct pid_namespace *ns)
 	return NULL;
 }
 EXPORT_SYMBOL_GPL(find_pid_ns);
-
+/*
+根据nr也就是namespace下的局部pid找到对应的struct pid结构体
+*/
 struct pid *find_vpid(int nr)
 {
 	return find_pid_ns(nr, task_active_pid_ns(current));

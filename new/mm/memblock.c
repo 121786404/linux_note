@@ -40,6 +40,9 @@ static struct memblock_region memblock_physmem_init_regions[INIT_PHYSMEM_REGIONS
 /**
  * memblock算法的实现是，它将所有状态都保存在一个全局变量memblock中，
  * 算法的初始化以及内存的申请释放都是在将内存块的状态做变更
+ * 内存管理模块完成初始化之前，都需要暂时使用memblock这样一个booting阶段的内存管理模块
+ * 来暂时进行内存的管理（收集内存布局信息只是它的副业），
+ * 每次分配的内存都是在reserved type数组中增加一个新的item或者扩展其中一个memory region的size而已。
  */
 struct memblock memblock __initdata_memblock = {
 	.memory.regions		= memblock_memory_init_regions,

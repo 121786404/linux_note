@@ -33,6 +33,12 @@
  * A maximum of 4 million PIDs should be enough for a while.
  * [NOTE: PID/TIDs are limited to 2^29 ~= 500+ million, see futex.h.]
  */
+/*
+如果选择了 CONFIG_BASE_SMALL 编译选项，则为页面（PAGE_SIZE）的位数。
+·如果选择了 CONFIG_BASE_FULL 编译选项，那么：
+	对于32位系统，系统进程个数硬上限为32768（即32K）。
+	对于64位系统，系统进程个数硬上限为4194304（即4M）。
+*/
 #define PID_MAX_LIMIT (CONFIG_BASE_SMALL ? PAGE_SIZE * 8 : \
 	(sizeof(long) > 4 ? 4 * 1024 * 1024 : PID_MAX_DEFAULT))
 

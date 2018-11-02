@@ -654,6 +654,17 @@ extern bool try_module_get(struct module *module);
 extern void module_put(struct module *module);
 
 #else /*!CONFIG_MODULE_UNLOAD*/
+/*
+内核为不同类型的设备定义了struct module*owner域，用来指向管理此设备的模块。
+当开始使用某个设备时，内核使用try_module_get（dev->owner）
+去增加管理此设备的owner模块的使用计数；
+当不再使用此设备时，内核使用module_put（dev->owner）
+减少对管理此设备的管理模块的使用计数。
+对于设备驱动而言，很少需要亲自调用try_module_get与module_put，
+因为此时开发人员所写的驱动通常为支持某具体设备的管理模块，
+对此设备owner模块的计数管理由内核里更底层的代码（如总线驱动或是此类设备共用的核心模块）来实现，
+从而简化了设备驱动开发。
+*/
 static inline int try_module_get(struct module *module)
 {
 	return !module || module_is_live(module);

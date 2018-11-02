@@ -563,8 +563,13 @@ void *of_fdt_unflatten_tree(const unsigned long *blob,
 EXPORT_SYMBOL_GPL(of_fdt_unflatten_tree);
 
 /* Everything below here references initial_boot_params directly. */
-int __initdata dt_root_addr_cells;
-int __initdata dt_root_size_cells;
+/*
+dt_root_addr_cells和dt_root_size_cells这两个参数的解析在early_init_dt_scan_root中完成
+对于ARMv7，一般dt_root_addr_cells和dt_root_size_cells等于1，表示base address（或者size）用一个32-bit的cell表示
+对于ARMv8，一般dt_root_addr_cells和dt_root_size_cells等于2，表示base address（或者size）用两个32-bit的cell表示
+*/
+int __initdata dt_root_addr_cells; // reg属性中base address 的cell数目
+int __initdata dt_root_size_cells; // reg属性中size 的cell数目
 
 void *initial_boot_params;
 
@@ -1071,7 +1076,8 @@ int __init early_init_dt_scan_memory(unsigned long node, const char *uname,
 		return 0;
 
 	/**
-	 * 从DT中读取物理地址的位置
+	 * 该memory node的物理地址信息保存在"linux,usable-memory"或者"reg"属性中
+	 * reg是常用的
 	 */
 	reg = of_get_flat_dt_prop(node, "linux,usable-memory", &l);
 	if (reg == NULL)
@@ -1079,17 +1085,16 @@ int __init early_init_dt_scan_memory(unsigned long node, const char *uname,
 	if (reg == NULL)
 		return 0;
 
-	/* endp是最后一个属性 */
+	/* 
+		reg属性值的cell数目，reg指向第一个cell，endp指向最后一个cell 
+	*/
 	endp = reg + (l / sizeof(__be32));
 	hotpluggable = of_get_flat_dt_prop(node, "hotpluggable", NULL);
 
 	pr_debug("memory scan node %s, reg size %d,\n", uname, l);
 
 	/**
-	 * dt_root_addr_cells和dt_root_size_cells这两个参数的解析在early_init_dt_scan_root中完成。
-	 * 对于ARMv8，一般dt_root_addr_cells和dt_root_size_cells等于2
-	 * 表示基地址（或者size）用两个32-bit的cell表示
-	 * 这里遍历，处理每一对地址及其长度
+	 * 这里遍历设备树节点每一对base及size
 	 */
 	while ((endp - reg) >= (dt_root_addr_cells + dt_root_size_cells)) {
 		u64 base, size;

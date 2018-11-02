@@ -80,6 +80,9 @@ static struct page *follow_page_pte(struct vm_area_struct *vma,
 	pte_t *ptep, pte;
 
 retry:
+/*
+	检查pmd 是否有效
+*/
 	if (unlikely(pmd_bad(*pmd)))
 		return no_page_table(vma, flags);
 
@@ -104,14 +107,27 @@ retry:
 		 * even while it is being migrated, so for that case we
 		 * need migration_entry_wait().
 		 */
+/*
+		如果分配掩码没有定义FOLL_MIGRATION，即这个页面没有在页面合并过程中，那么错误返回		 
+*/
 		if (likely(!(flags & FOLL_MIGRATION)))
 			goto no_page;
+/*
+		如果pte 为空，则错误返回
+*/
 		if (pte_none(pte))
 			goto no_page;
 		entry = pte_to_swp_entry(pte);
 		if (!is_migration_entry(entry))
 			goto no_page;
+/*
+		pte_offset_map_lock里获取了一个 spinlock 锁，
+		这里需要调用 pte_unmap_unlock 来释放spinlock 锁
+*/
 		pte_unmap_unlock(ptep, ptl);
+/*
+		如果pte 是正在合井中的swap 页面，那么调用 migration_entry_wait 等待这个页面合并完成后再尝试
+*/
 		migration_entry_wait(mm, pmd, address);
 		goto retry;
 	}
@@ -119,7 +135,9 @@ retry:
 		goto no_page;
 
 	/**
-         * 希望搜索一个可写的页面，但是页表项没有写权限。
+         希望搜索一个可写的页面，但是页表项没有写权限。
+         如果分配掩码支持可写属性(FOLL_WRITE) ，但是pte 的表项只具有只读属性，
+         那么也返回NULL
       */	
 	if ((flags & FOLL_WRITE) && !can_follow_write_pte(pte, flags)) {
 		pte_unmap_unlock(ptep, ptl);
@@ -127,9 +145,13 @@ retry:
 	}
 	
     /**
-         * 根据pte中保存的页帧号，找到该页帧号对应的page结构。
-      */
+        根据pte中保存的页帧号，找到该页帧号对应的page结构。
+        根据pte 来返回normal mapping 页面的struct page数据结构。
+         
+		返回normal maping 页面的struct page 数据结构。
+    */
 	page = vm_normal_page(vma, address, pte);
+
 	if (!page && pte_devmap(pte) && (flags & FOLL_GET)) {
 		/*
 		 * Only return device mapping pages in the FOLL_GET case since
@@ -180,6 +202,9 @@ retry:
 	
     /**
         * 调用者要求获取页面引用，则增加页面引用计数。
+        
+	  	 如果flags 设置 FOLL_GET	 
+	  	 get_page 会增加page 的 _count 计数。
       */
 	if (flags & FOLL_GET) {
 		get_page(page);
@@ -193,6 +218,7 @@ retry:
 	
 	/* 
 	    调用者希望设置访问标志，可能是随后会写页面
+		flag 设置 FOLL_TOUCH 时，需要标记 page 可访问，
 	*/
 	if (flags & FOLL_TOUCH) {
 	    /* 获取写引用 */
@@ -205,9 +231,10 @@ retry:
 		 * is needed to avoid losing the dirty bit: it is easier to use
 		 * mark_page_accessed().
 		 */
-		 /**
-                  * 标记页面访问标志。
-             */
+		 /*
+			 调用 mark_page_accessed 函数设置page 是活		 跃的， 
+			 mark_page_accessed 函数是页面回收的核心辅助函数
+        */
 		mark_page_accessed(page);
 	}
 	
@@ -268,6 +295,10 @@ no_page:
  * an error pointer if there is a mapping to something not represented
  * by a page descriptor (see also vm_normal_page()).
  */
+/*
+follow_page_mask 是内核内存管理核心API 函数 follow_page 的具体实现，
+follow page 在页面合并和KSM 中有广泛的应用。	 
+*/
 struct page *follow_page_mask(struct vm_area_struct *vma,
 			      unsigned long address, unsigned int flags,
 			      unsigned int *page_mask)
@@ -288,15 +319,20 @@ struct page *follow_page_mask(struct vm_area_struct *vma,
 	}
 	
     /*
-     * 在一级目录项中，查找地址对应的一级目录索引项。
+     * 当前进程页表对应的PGD 页面目录项
      */
 	pgd = pgd_offset(mm, address);
+/*
+	如果PGD 表项的内容为空或表项无效，那么报错返回
+*/
 	if (pgd_none(*pgd) || unlikely(pgd_bad(*pgd)))
 		return no_page_table(vma, flags);
 
     /**
      * 查找地址对应的页上级目录项。这对4级目录的分组体系来说才有效。
      ARM不存在页上级目录和页中间目录。pud总是返回pgd。
+
+     检查 PUD 和 PMD，在2 级页表中，PUD 和PMD 都指向PGD 。
      */
 	pud = pud_offset(pgd, address);
 	if (pud_none(*pud))
@@ -358,7 +394,9 @@ struct page *follow_page_mask(struct vm_area_struct *vma,
 			if (pmd_none(*pmd))
 				return no_page_table(vma, flags);
 		}
-
+/*
+		最后调用 follow_page_pte 来检查 PTE 页表。
+*/
 		return ret ? ERR_PTR(ret) :
 			follow_page_pte(vma, address, pmd, flags);
 	}
@@ -444,7 +482,9 @@ static int faultin_page(struct task_struct *tsk, struct vm_area_struct *vma,
 		VM_WARN_ON_ONCE(fault_flags & FAULT_FLAG_ALLOW_RETRY);
 		fault_flags |= FAULT_FLAG_TRIED;
 	}
-
+/*
+	人为地触发一个缺页中断
+*/
 	ret = handle_mm_fault(vma, address, fault_flags);
 	if (ret & VM_FAULT_ERROR) {
 		if (ret & VM_FAULT_OOM)
@@ -583,6 +623,14 @@ static int check_vma_flags(struct vm_area_struct *vma, unsigned long gup_flags)
  * instead of __get_user_pages. __get_user_pages should be used only if
  * you need some special @gup_flags.
  */
+/*
+ start 进程地址空间VMA 的起始地址
+ nr_pages 表示需要分配多少个页面
+ gup_flags 是分配掩码
+ pages 是物理页面的二级指针
+ vmas 指进程地址空间VMA
+ nonblocking 表示是否等待 IO 操作
+*/
 static long __get_user_pages(struct task_struct *tsk, struct mm_struct *mm,
 		unsigned long start, unsigned long nr_pages,
 		unsigned int gup_flags, struct page **pages,
@@ -612,9 +660,16 @@ static long __get_user_pages(struct task_struct *tsk, struct mm_struct *mm,
 
 		/* first iteration or cross vma bound */
 		if (!vma || start >= vma->vm_end) {
+/*
+			查找VMA
+*/
 			vma = find_extend_vma(mm, start);
 			if (!vma && in_gate_area(mm, start)) {
 				int ret;
+/*
+				没找到合适VMA，且start 地址恰好在gate_vma 中，
+				那么使用gate 页面，当然这种情况比较罕见				
+*/
 				ret = get_gate_page(mm, start & PAGE_MASK,
 						gup_flags, &vma,
 						pages ? &pages[i] : NULL);
@@ -638,12 +693,26 @@ retry:
 		 * If we have a pending SIGKILL, don't keep faulting pages and
 		 * potentially allocating memory.
 		 */
+/*
+		如果当前进程收到一个SIGKILL 信号，那么不需要继续做内存分配，直接报错退出。		 
+*/
 		if (unlikely(fatal_signal_pending(current)))
 			return i ? i : -ERESTARTSYS;
+/*
+		判断当前进程是否需要被调度，内核代码通常在while循环中添加cond_resched，
+		从而优化系统的延迟。		
+*/
 		cond_resched();
+/*
+		查看VMA 中的虚拟页面是否己经分配了物理内存
+		返回用户进程地址空间VMA 中已经有映射过的normal mapping 页面的struct page 数据结构
+*/
 		page = follow_page_mask(vma, start, foll_flags, &page_mask);
 		if (!page) {
 			int ret;
+/*
+			
+*/
 			ret = faultin_page(tsk, vma, start, &foll_flags,
 					nonblocking);
 			switch (ret) {
@@ -669,12 +738,21 @@ retry:
 			return i ? i : PTR_ERR(page);
 		}
 		if (pages) {
+/*
+			分配完页面后， pages 指针数组指向这些page	
+*/
 			pages[i] = page;
+/*
+			flush 这些页面对应的cache	
+*/
 			flush_anon_page(vma, page, start);
 			flush_dcache_page(page);
 			page_mask = 0;
 		}
 next_page:
+/*
+		为下一次循环做准备
+*/
 		if (vmas) {
 			vmas[i] = vma;
 			page_mask = 0;
@@ -1036,6 +1114,8 @@ EXPORT_SYMBOL(get_user_pages_remote);
  * FOLL_REMOTE in here.
  */
 /**
+ * get_user_pages 函数是一个很重要分配物理内存的接口函数，
+ * 有很多驱动程序使用这 个API 来为用户态程序分配物理内存
  *获取用户区进程使用内存的某个页(struct page)，然后可以在内核区
  *通过kmap_atomic(), kmap()等函数映射到内核区线性地址，从而可以
  *在内核区向其写入数据
@@ -1088,13 +1168,21 @@ long populate_vma_page_range(struct vm_area_struct *vma,
 	struct mm_struct *mm = vma->vm_mm;
 	unsigned long nr_pages = (end - start) / PAGE_SIZE;
 	int gup_flags;
-
+/*
+	start 和end 地址必须以页面对齐
+*/
 	VM_BUG_ON(start & ~PAGE_MASK);
 	VM_BUG_ON(end   & ~PAGE_MASK);
+/*
+	VM_BUG_ON_VMA 和 VM_BUG_ON_MM 宏需要打开 CONFIG_DEBUG_VM 配置才会起作用	
+*/
 	VM_BUG_ON_VMA(start < vma->vm_start, vma);
 	VM_BUG_ON_VMA(end   > vma->vm_end, vma);
 	VM_BUG_ON_MM(!rwsem_is_locked(&mm->mmap_sem), mm);
 
+/*
+	设置分配掩码 FOLL_TOUCH 和 FOLL_MLOCK
+*/
 	gup_flags = FOLL_TOUCH | FOLL_POPULATE | FOLL_MLOCK;
 	if (vma->vm_flags & VM_LOCKONFAULT)
 		gup_flags &= ~FOLL_POPULATE;
@@ -1103,6 +1191,9 @@ long populate_vma_page_range(struct vm_area_struct *vma,
 	 * to break COW, except for shared mappings because these don't COW
 	 * and we would not want to dirty them for nothing.
 	 */
+/*
+	vm_flags 具有可写的属性(VM_WRITE) ，那么这里必须设置 FOLL_WRITE 标志位。
+*/
 	if ((vma->vm_flags & (VM_WRITE | VM_SHARED)) == VM_WRITE)
 		gup_flags |= FOLL_WRITE;
 
@@ -1110,6 +1201,9 @@ long populate_vma_page_range(struct vm_area_struct *vma,
 	 * We want mlock to succeed for regions that have any permissions
 	 * other than PROT_NONE.
 	 */
+/*
+	如果vm_flags 是可读、可写和可执行的，那么设置 FOLL_FORCE 标志位	 
+*/
 	if (vma->vm_flags & (VM_READ | VM_WRITE | VM_EXEC))
 		gup_flags |= FOLL_FORCE;
 
@@ -1117,6 +1211,9 @@ long populate_vma_page_range(struct vm_area_struct *vma,
 	 * We made sure addr is within a VMA, so the following will
 	 * not result in a stack expansion that recurses back here.
 	 */
+/*
+	为进程地址空间分配物理内存并且建立映射关系	 
+*/
 	return __get_user_pages(current, mm, start, nr_pages, gup_flags,
 				NULL, NULL, nonblocking);
 }
@@ -1128,6 +1225,11 @@ long populate_vma_page_range(struct vm_area_struct *vma,
  * flags. VMAs must be already marked with the desired vm_flags, and
  * mmap_sem must not be held.
  */
+/*
+start :VMA 的起始地址
+len :VMA 的长度
+ignore_errors :当分配页面发生错误时会继续重试
+*/
 int __mm_populate(unsigned long start, unsigned long len, int ignore_errors)
 {
 	struct mm_struct *mm = current->mm;
@@ -1140,6 +1242,9 @@ int __mm_populate(unsigned long start, unsigned long len, int ignore_errors)
 	VM_BUG_ON(len != PAGE_ALIGN(len));
 	end = start + len;
 
+/*
+	以start 为起始地址，先通过find_vma查找VMA，如果没找到VMA，则退出循环。
+*/
 	for (nstart = start; nstart < end; nstart = nend) {
 		/*
 		 * We want to fault in pages for [nstart; end) address range.
@@ -1167,6 +1272,9 @@ int __mm_populate(unsigned long start, unsigned long len, int ignore_errors)
 		 * double checks the vma flags, so that it won't mlock pages
 		 * if the vma was already munlocked.
 		 */
+/*
+	为VMA 分配物理内存	 
+*/
 		ret = populate_vma_page_range(vma, nstart, nend, &locked);
 		if (ret < 0) {
 			if (ignore_errors) {

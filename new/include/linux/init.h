@@ -92,7 +92,10 @@ __init修饰的函数会被放在.init.text段中，这个段中的函数在初�
 #endif
 
 /*
-__exit表明，当代码被静态构建进内核时，该函数可以安全地优化了，不需要清理收尾
+__exit告诉内核如果相关的模块被直接编译进内核（即built-in），
+则cleanup_function（）函数会被省略，直接不链进最后的镜像。
+既然模块被内置了，就不可能卸载它了，卸载函数也就没有存在的必要了。
+除了函数以外，只是退出阶段采用的数据也可以用__exitdata来形容。
 */
 #define __exit          __section(.exit.text) __exitused __cold notrace
 
