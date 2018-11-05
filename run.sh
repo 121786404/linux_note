@@ -1,8 +1,8 @@
 #!/bin/bash
 
 LROOT=$PWD
-ROOTFS_ARM32=_install_arm32
-ROOTFS_ARM64=_install_arm64
+ROOTFS_ARM32=rootfs/_install_arm32
+ROOTFS_ARM64=rootfs/_install_arm64
 CONSOLE_DEV_NODE=dev/console
 
 function killproc
@@ -30,10 +30,10 @@ case $1 in
 			exit 1
 		fi
 		killproc qemu-system-arm
-		qemu-system-arm -M vexpress-a9 -smp 4 -m 1024M -kernel arch/arm/boot/zImage \
-				-dtb arch/arm/boot/dts/vexpress-v2p-ca9.dtb -nographic \
+		qemu-system-arm -M vexpress-a9 -smp 4 -m 1024M -kernel linux-stable/arch/arm/boot/zImage \
+				-dtb linux-stable/arch/arm/boot/dts/vexpress-v2p-ca9.dtb -nographic \
 				-append "rdinit=/linuxrc user_debug=0xff console=ttyAMA0 loglevel=10" \
-				--fsdev local,id=kmod_dev,path=$PWD/kmodules,security_model=none -device virtio-9p-device,fsdev=kmod_dev,mount_tag=kmod_mount \
+				--fsdev local,id=kmod_dev,path=$PWD/share,security_model=none -device virtio-9p-device,fsdev=kmod_dev,mount_tag=kmod_mount \
 				$DBG ;;
 	arm64)
 		if [ ! -c $LROOT/$ROOTFS_ARM64/$CONSOLE_DEV_NODE ]; then
