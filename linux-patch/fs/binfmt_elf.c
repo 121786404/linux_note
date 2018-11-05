@@ -31,10 +31,16 @@
 #include <linux/security.h>
 #include <linux/random.h>
 #include <linux/elf.h>
+#include <linux/elf-randomize.h>
 #include <linux/utsname.h>
 #include <linux/coredump.h>
 #include <linux/sched.h>
-#include <asm/uaccess.h>
+#include <linux/sched/coredump.h>
+#include <linux/sched/task_stack.h>
+#include <linux/sched/cputime.h>
+#include <linux/cred.h>
+#include <linux/dax.h>
+#include <linux/uaccess.h>
 #include <asm/param.h>
 #include <asm/page.h>
 
@@ -43,6 +49,11 @@
 #endif
 #ifndef user_siginfo_t
 #define user_siginfo_t siginfo_t
+#endif
+
+/* That's for binfmt_elf_fdpic to deal with */
+#ifndef elf_check_fdpic
+#define elf_check_fdpic(ex) false
 #endif
 
 static int load_elf_binary(struct linux_binprm *bprm);
@@ -89,15 +100,20 @@ static struct linux_binfmt elf_format = {
 
 #define BAD_ADDR(x) ((unsigned long)(x) >= TASK_SIZE)
 
-static int set_brk(unsigned long start, unsigned long end)
+static int set_brk(unsigned long start, unsigned long end, int prot)
 {
 	start = ELF_PAGEALIGN(start);
 	end = ELF_PAGEALIGN(end);
 	if (end > start) {
-		unsigned long addr;
-		addr = vm_brk(start, end - start);
-		if (BAD_ADDR(addr))
-			return addr;
+		/*
+		 * Map the last of the bss segment.
+		 * If the header is requesting these pages to be
+		 * executable, honour that (ppc32 needs this).
+		 */
+		int error = vm_brk_flags(start, end - start,
+				prot & PROT_EXEC ? VM_EXEC : 0);
+		if (error)
+			return error;
 	}
 	current->mm->start_brk = current->mm->brk = end;
 	return 0;
@@ -144,7 +160,15 @@ static int padzero(unsigned long elf_bss)
  */
 #define ELF_BASE_PLATFORM NULL
 #endif
-
+/*
+在完成装入，启动用户空间的映像运行之前，
+还需要为目标映像和解释器准备好一些有关的信息，
+这些信息包括常规的argc、envc等等，
+还有一些“辅助向量（Auxiliary Vector）”。
+这些信息需要复制到用户空间，
+使它们在CPU进入解释器或目标映像的程序入口时出现
+在用户空间堆栈上
+*/
 static int
 create_elf_tables(struct linux_binprm *bprm, struct elfhdr *exec,
 		unsigned long load_addr, unsigned long interp_load_addr)
@@ -152,8 +176,6 @@ create_elf_tables(struct linux_binprm *bprm, struct elfhdr *exec,
 	unsigned long p = bprm->p;
 	int argc = bprm->argc;
 	int envc = bprm->envc;
-	elf_addr_t __user *argv;
-	elf_addr_t __user *envp;
 	elf_addr_t __user *sp;
 	elf_addr_t __user *u_platform;
 	elf_addr_t __user *u_base_platform;
@@ -243,7 +265,7 @@ create_elf_tables(struct linux_binprm *bprm, struct elfhdr *exec,
 	NEW_AUX_ENT(AT_EUID, from_kuid_munged(cred->user_ns, cred->euid));
 	NEW_AUX_ENT(AT_GID, from_kgid_munged(cred->user_ns, cred->gid));
 	NEW_AUX_ENT(AT_EGID, from_kgid_munged(cred->user_ns, cred->egid));
- 	NEW_AUX_ENT(AT_SECURE, security_bprm_secureexec(bprm));
+	NEW_AUX_ENT(AT_SECURE, bprm->secureexec);
 	NEW_AUX_ENT(AT_RANDOM, (elf_addr_t)(unsigned long)u_rand_bytes);
 #ifdef ELF_HWCAP2
 	NEW_AUX_ENT(AT_HWCAP2, ELF_HWCAP2);
@@ -293,38 +315,38 @@ create_elf_tables(struct linux_binprm *bprm, struct elfhdr *exec,
 	/* Now, let's put argc (and argv, envp if appropriate) on the stack */
 	if (__put_user(argc, sp++))
 		return -EFAULT;
-	argv = sp;
-	envp = argv + argc + 1;
 
-	/* Populate argv and envp */
+	/* Populate list of argv pointers back to argv strings. */
 	p = current->mm->arg_end = current->mm->arg_start;
 	while (argc-- > 0) {
 		size_t len;
-		if (__put_user((elf_addr_t)p, argv++))
+		if (__put_user((elf_addr_t)p, sp++))
 			return -EFAULT;
 		len = strnlen_user((void __user *)p, MAX_ARG_STRLEN);
 		if (!len || len > MAX_ARG_STRLEN)
 			return -EINVAL;
 		p += len;
 	}
-	if (__put_user(0, argv))
+	if (__put_user(0, sp++))
 		return -EFAULT;
-	current->mm->arg_end = current->mm->env_start = p;
+	current->mm->arg_end = p;
+
+	/* Populate list of envp pointers back to envp strings. */
+	current->mm->env_end = current->mm->env_start = p;
 	while (envc-- > 0) {
 		size_t len;
-		if (__put_user((elf_addr_t)p, envp++))
+		if (__put_user((elf_addr_t)p, sp++))
 			return -EFAULT;
 		len = strnlen_user((void __user *)p, MAX_ARG_STRLEN);
 		if (!len || len > MAX_ARG_STRLEN)
 			return -EINVAL;
 		p += len;
 	}
-	if (__put_user(0, envp))
+	if (__put_user(0, sp++))
 		return -EFAULT;
 	current->mm->env_end = p;
 
 	/* Put the elf_info on the stack in the right place.  */
-	sp = (elf_addr_t __user *)envp + 1;
 	if (copy_to_user(sp, elf_info, ei_index * sizeof(elf_addr_t)))
 		return -EFAULT;
 	return 0;
@@ -363,6 +385,11 @@ static unsigned long elf_map(struct file *filep, unsigned long addr,
 	} else
 		map_addr = vm_mmap(filep, addr, size, prot, type, off);
 
+	if ((type & MAP_FIXED_NOREPLACE) &&
+	    PTR_ERR((void *)map_addr) == -EEXIST)
+		pr_info("%d (%s): Uhuuh, elf segment at %px requested but the memory is mapped already\n",
+			task_pid_nr(current), current->comm, (void *)addr);
+
 	return(map_addr);
 }
 
@@ -400,6 +427,7 @@ static struct elf_phdr *load_elf_phdrs(struct elfhdr *elf_ex,
 {
 	struct elf_phdr *elf_phdata = NULL;
 	int retval, size, err = -1;
+	loff_t pos = elf_ex->e_phoff;
 
 	/*
 	 * If the size of this structure has changed, then punt, since
@@ -409,6 +437,10 @@ static struct elf_phdr *load_elf_phdrs(struct elfhdr *elf_ex,
 		goto out;
 
 	/* Sanity check the number of program headers... */
+/*
+      必须至少有一个段
+	所有段的大小之和不能超过64K
+*/
 	if (elf_ex->e_phnum < 1 ||
 		elf_ex->e_phnum > 65536U / sizeof(struct elf_phdr))
 		goto out;
@@ -423,8 +455,7 @@ static struct elf_phdr *load_elf_phdrs(struct elfhdr *elf_ex,
 		goto out;
 
 	/* Read in the program headers */
-	retval = kernel_read(elf_file, elf_ex->e_phoff,
-			     (char *)elf_phdata, size);
+	retval = kernel_read(elf_file, elf_phdata, size, &pos);
 	if (retval != size) {
 		err = (retval < 0) ? retval : -EIO;
 		goto out;
@@ -486,9 +517,10 @@ static inline int arch_elf_pt_proc(struct elfhdr *ehdr,
 }
 
 /**
- * arch_check_elf() - check a PT_LOPROC..PT_HIPROC ELF program header
+ * arch_check_elf() - check an ELF executable
  * @ehdr:	The main ELF header
  * @has_interp:	True if the ELF has an interpreter, else false.
+ * @interp_ehdr: The interpreter's ELF header
  * @state:	Architecture-specific state preserved throughout the process
  *		of loading the ELF.
  *
@@ -500,6 +532,7 @@ static inline int arch_elf_pt_proc(struct elfhdr *ehdr,
  *         with that return code.
  */
 static inline int arch_check_elf(struct elfhdr *ehdr, bool has_interp,
+				 struct elfhdr *interp_ehdr,
 				 struct arch_elf_state *state)
 {
 	/* Dummy implementation, always proceed */
@@ -521,6 +554,7 @@ static unsigned long load_elf_interp(struct elfhdr *interp_elf_ex,
 	unsigned long load_addr = 0;
 	int load_addr_set = 0;
 	unsigned long last_bss = 0, elf_bss = 0;
+	int bss_prot = 0;
 	unsigned long error = ~0UL;
 	unsigned long total_size;
 	int i;
@@ -529,7 +563,8 @@ static unsigned long load_elf_interp(struct elfhdr *interp_elf_ex,
 	if (interp_elf_ex->e_type != ET_EXEC &&
 	    interp_elf_ex->e_type != ET_DYN)
 		goto out;
-	if (!elf_check_arch(interp_elf_ex))
+	if (!elf_check_arch(interp_elf_ex) ||
+	    elf_check_fdpic(interp_elf_ex))
 		goto out;
 	if (!interpreter->f_op->mmap)
 		goto out;
@@ -557,7 +592,7 @@ static unsigned long load_elf_interp(struct elfhdr *interp_elf_ex,
 				elf_prot |= PROT_EXEC;
 			vaddr = eppnt->p_vaddr;
 			if (interp_elf_ex->e_type == ET_EXEC || load_addr_set)
-				elf_type |= MAP_FIXED;
+				elf_type |= MAP_FIXED_NOREPLACE;
 			else if (no_base && interp_elf_ex->e_type == ET_DYN)
 				load_addr = -vaddr;
 
@@ -602,30 +637,35 @@ static unsigned long load_elf_interp(struct elfhdr *interp_elf_ex,
 			 * Do the same thing for the memory mapping - between
 			 * elf_bss and last_bss is the bss section.
 			 */
-			k = load_addr + eppnt->p_memsz + eppnt->p_vaddr;
-			if (k > last_bss)
+			k = load_addr + eppnt->p_vaddr + eppnt->p_memsz;
+			if (k > last_bss) {
 				last_bss = k;
+				bss_prot = elf_prot;
+			}
 		}
 	}
 
+	/*
+	 * Now fill out the bss section: first pad the last page from
+	 * the file up to the page boundary, and zero it from elf_bss
+	 * up to the end of the page.
+	 */
+	if (padzero(elf_bss)) {
+		error = -EFAULT;
+		goto out;
+	}
+	/*
+	 * Next, align both the file and mem bss up to the page size,
+	 * since this is where elf_bss was just zeroed up to, and where
+	 * last_bss will end after the vm_brk_flags() below.
+	 */
+	elf_bss = ELF_PAGEALIGN(elf_bss);
+	last_bss = ELF_PAGEALIGN(last_bss);
+	/* Finally, if there is still more bss to allocate, do it. */
 	if (last_bss > elf_bss) {
-		/*
-		 * Now fill out the bss section.  First pad the last page up
-		 * to the page boundary, and then perform a mmap to make sure
-		 * that there are zero-mapped pages up to and including the
-		 * last bss page.
-		 */
-		if (padzero(elf_bss)) {
-			error = -EFAULT;
-			goto out;
-		}
-
-		/* What we have mapped so far */
-		elf_bss = ELF_PAGESTART(elf_bss + ELF_MIN_ALIGN - 1);
-
-		/* Map the last of the bss segment */
-		error = vm_brk(elf_bss, last_bss - elf_bss);
-		if (BAD_ADDR(error))
+		error = vm_brk_flags(elf_bss, last_bss - elf_bss,
+				bss_prot & PROT_EXEC ? VM_EXEC : 0);
+		if (error)
 			goto out;
 	}
 
@@ -647,9 +687,8 @@ static unsigned long randomize_stack_top(unsigned long stack_top)
 {
 	unsigned long random_variable = 0;
 
-	if ((current->flags & PF_RANDOMIZE) &&
-		!(current->personality & ADDR_NO_RANDOMIZE)) {
-		random_variable = (unsigned long) get_random_int();
+	if (current->flags & PF_RANDOMIZE) {
+		random_variable = get_random_long();
 		random_variable &= STACK_RND_MASK;
 		random_variable <<= PAGE_SHIFT;
 	}
@@ -669,18 +708,24 @@ static int load_elf_binary(struct linux_binprm *bprm)
 	unsigned long error;
 	struct elf_phdr *elf_ppnt, *elf_phdata, *interp_elf_phdata = NULL;
 	unsigned long elf_bss, elf_brk;
+	int bss_prot = 0;
 	int retval, i;
 	unsigned long elf_entry;
 	unsigned long interp_load_addr = 0;
 	unsigned long start_code, end_code, start_data, end_data;
 	unsigned long reloc_func_desc __maybe_unused = 0;
 	int executable_stack = EXSTACK_DEFAULT;
-	struct pt_regs *regs = current_pt_regs();
+
+/*
+    填充并且检查目标程序ELF头部
+*/
+	struct pt_regs *regs = current_pt_regs();   // 获取当前进程的寄存器存储位置
 	struct {
 		struct elfhdr elf_ex;
 		struct elfhdr interp_elf_ex;
 	} *loc;
 	struct arch_elf_state arch_state = INIT_ARCH_ELF_STATE;
+	loff_t pos;
 
 	loc = kmalloc(sizeof(*loc), GFP_KERNEL);
 	if (!loc) {
@@ -689,20 +734,27 @@ static int load_elf_binary(struct linux_binprm *bprm)
 	}
 	
 	/* Get the exec-header */
+	/* 获取elf前128个字节，作为魔数 */
 	loc->elf_ex = *((struct elfhdr *)bprm->buf);
 
 	retval = -ENOEXEC;
 	/* First of all, some simple consistency checks */
+	/* 检查魔数是否匹配 */
 	if (memcmp(loc->elf_ex.e_ident, ELFMAG, SELFMAG) != 0)
 		goto out;
-
+    /* 如果既不是可执行文件也不是动态链接程序，就错误退出 */
 	if (loc->elf_ex.e_type != ET_EXEC && loc->elf_ex.e_type != ET_DYN)
 		goto out;
 	if (!elf_check_arch(&loc->elf_ex))
 		goto out;
+	if (elf_check_fdpic(&loc->elf_ex))
+		goto out;
 	if (!bprm->file->f_op->mmap)
 		goto out;
 
+/*
+    加载目标程序的程序头表
+*/
 	elf_phdata = load_elf_phdrs(&loc->elf_ex, bprm->file);
 	if (!elf_phdata)
 		goto out;
@@ -716,8 +768,9 @@ static int load_elf_binary(struct linux_binprm *bprm)
 	start_data = 0;
 	end_data = 0;
 
+    // 遍历elf的程序头 , 寻找和处理目标映像的”解释器”段
 	for (i = 0; i < loc->elf_ex.e_phnum; i++) {
-		if (elf_ppnt->p_type == PT_INTERP) {
+		if (elf_ppnt->p_type == PT_INTERP) {  // 如果存在解释器头部
 			/* This is the program interpreter used for
 			 * shared libraries - for now assume that this
 			 * is an a.out format binary
@@ -733,9 +786,14 @@ static int load_elf_binary(struct linux_binprm *bprm)
 			if (!elf_interpreter)
 				goto out_free_ph;
 
-			retval = kernel_read(bprm->file, elf_ppnt->p_offset,
-					     elf_interpreter,
-					     elf_ppnt->p_filesz);
+			pos = elf_ppnt->p_offset;
+            /* 整个”解释器”段的内容读入缓冲区
+                   “解释器”段实际上只是一个字符串
+                   如”/lib/ld-linux.so.2”, \
+                   或者64位机器上对应的叫做”/lib64/ld-linux-x86-64.so.2”
+                 */
+			retval = kernel_read(bprm->file, elf_interpreter,
+					     elf_ppnt->p_filesz, &pos);
 			if (retval != elf_ppnt->p_filesz) {
 				if (retval >= 0)
 					retval = -EIO;
@@ -745,7 +803,7 @@ static int load_elf_binary(struct linux_binprm *bprm)
 			retval = -ENOEXEC;
 			if (elf_interpreter[elf_ppnt->p_filesz - 1] != '\0')
 				goto out_free_interp;
-
+            // 打开解释器文件
 			interpreter = open_exec(elf_interpreter);
 			retval = PTR_ERR(interpreter);
 			if (IS_ERR(interpreter))
@@ -758,18 +816,22 @@ static int load_elf_binary(struct linux_binprm *bprm)
 			 */
 			would_dump(bprm, interpreter);
 
-			retval = kernel_read(interpreter, 0, bprm->buf,
-					     BINPRM_BUF_SIZE);
-			if (retval != BINPRM_BUF_SIZE) {
+			/* Get the exec headers */
+			pos = 0;
+            /*
+			读入解释器的前128个字节，即解释器映像的头部
+                 */
+			retval = kernel_read(interpreter, &loc->interp_elf_ex,
+					     sizeof(loc->interp_elf_ex), &pos);
+			if (retval != sizeof(loc->interp_elf_ex)) {
 				if (retval >= 0)
 					retval = -EIO;
 				goto out_free_dentry;
 			}
 
-			/* Get the exec headers */
-			loc->interp_elf_ex = *((struct elfhdr *)bprm->buf);
 			break;
 		}
+		/* 循环检查所有的程序头看是否有动态连接器 */
 		elf_ppnt++;
 	}
 
@@ -793,16 +855,26 @@ static int load_elf_binary(struct linux_binprm *bprm)
 		}
 
 	/* Some simple consistency checks for the interpreter */
+	/*
+        如果需要装入解释器，并且解释器的映像是ELF格式的，
+        就通过load_elf_interp()装入其映像，并把将来进入用户空间时的入口地址设置成load_elf_interp()的返回值，
+        那显然是解释器的程序入口。而若不装入解释器，
+        那么这个地址就是目标映像本身的程序入口。
+	*/
 	if (elf_interpreter) {
 		retval = -ELIBBAD;
 		/* Not an ELF interpreter */
 		if (memcmp(loc->interp_elf_ex.e_ident, ELFMAG, SELFMAG) != 0)
 			goto out_free_dentry;
 		/* Verify the interpreter has a valid arch */
-		if (!elf_check_arch(&loc->interp_elf_ex))
+		if (!elf_check_arch(&loc->interp_elf_ex) ||
+		    elf_check_fdpic(&loc->interp_elf_ex))
 			goto out_free_dentry;
 
 		/* Load the interpreter program headers */
+/*
+		读入解释器的程序头
+*/
 		interp_elf_phdata = load_elf_phdrs(&loc->interp_elf_ex,
 						   interpreter);
 		if (!interp_elf_phdata)
@@ -827,17 +899,24 @@ static int load_elf_binary(struct linux_binprm *bprm)
 	 * still possible to return an error to the code that invoked
 	 * the exec syscall.
 	 */
-	retval = arch_check_elf(&loc->elf_ex, !!interpreter, &arch_state);
+	retval = arch_check_elf(&loc->elf_ex,
+				!!interpreter, &loc->interp_elf_ex,
+				&arch_state);
 	if (retval)
 		goto out_free_dentry;
 
 	/* Flush all traces of the currently running executable */
+	/* 
+      在此清除掉了父进程的所有相关代码
+	释放空间、删除信号、关闭带有CLOSE_ON_EXEC标志的文件
+	*/
 	retval = flush_old_exec(bprm);
 	if (retval)
 		goto out_free_dentry;
 
 	/* Do this immediately, since STACK_TOP as used in setup_arg_pages
 	   may depend on the personality.  */
+	/* 设置elf可执行文件的特性 */
 	SET_PERSONALITY2(loc->elf_ex, &arch_state);
 	if (elf_read_implies_exec(loc->elf_ex, executable_stack))
 		current->personality |= READ_IMPLIES_EXEC;
@@ -846,9 +925,13 @@ static int load_elf_binary(struct linux_binprm *bprm)
 		current->flags |= PF_RANDOMIZE;
 
 	setup_new_exec(bprm);
+	install_exec_creds(bprm);
 
 	/* Do this so that we can load the interpreter, if need be.  We will
-	   change some of these later */
+	   change some of these later 
+	   为下面的动态连接器执行获取内核空间page
+         为进程分配用户态堆栈，并塞入参数和环境变量
+	*/
 	retval = setup_arg_pages(bprm, randomize_stack_top(STACK_TOP),
 				 executable_stack);
 	if (retval < 0)
@@ -858,11 +941,24 @@ static int load_elf_binary(struct linux_binprm *bprm)
 
 	/* Now we do a little grungy work by mmapping the ELF image into
 	   the correct location in memory. */
+/*
+	 装入目标程序的段segment 
+       这段代码从目标映像的程序头中搜索类型为PT_LOAD的段（Segment）。
+       在二进制映像中，只有类型为PT_LOAD的段才是需要装入的。
+       当然在装入之前，需要确定装入的地址，只要考虑的就是页面对齐，
+       还有该段的p_vaddr域的值（上面省略这部分内容）。
+       确定了装入地址后，就通过elf_map()建立用户空间虚拟地址空间
+       与目标映像文件中某个连续区间之间的映射，
+       其返回值就是实际映射的起始地址*/
+
+    /* 按照先前获取的程序头表，循环将所有的可执行文件加载到内存中 */
 	for(i = 0, elf_ppnt = elf_phdata;
 	    i < loc->elf_ex.e_phnum; i++, elf_ppnt++) {
-		int elf_prot = 0, elf_flags;
+		int elf_prot = 0, elf_flags, elf_fixed = MAP_FIXED_NOREPLACE;
 		unsigned long k, vaddr;
+		unsigned long total_size = 0;
 
+        /*  搜索PT_LOAD的段, 这个是需要装入的 */
 		if (elf_ppnt->p_type != PT_LOAD)
 			continue;
 
@@ -872,8 +968,11 @@ static int load_elf_binary(struct linux_binprm *bprm)
 			/* There was a PT_LOAD segment with p_memsz > p_filesz
 			   before this one. Map anonymous pages, if needed,
 			   and clear the area.  */
+			// 生成BSS
+			// 检查地址和页面的信息
 			retval = set_brk(elf_bss + load_bias,
-					 elf_brk + load_bias);
+					 elf_brk + load_bias,
+					 bss_prot);
 			if (retval)
 				goto out_free_dentry;
 			nbyte = ELF_PAGEOFFSET(elf_bss);
@@ -890,6 +989,13 @@ static int load_elf_binary(struct linux_binprm *bprm)
 					 */
 				}
 			}
+
+			/*
+			 * Some binaries have overlapping elf segments and then
+			 * we have to forcefully map over an existing mapping
+			 * e.g. over this newly established brk mapping.
+			 */
+			elf_fixed = MAP_FIXED;
 		}
 
 		if (elf_ppnt->p_flags & PF_R)
@@ -902,32 +1008,75 @@ static int load_elf_binary(struct linux_binprm *bprm)
 		elf_flags = MAP_PRIVATE | MAP_DENYWRITE | MAP_EXECUTABLE;
 
 		vaddr = elf_ppnt->p_vaddr;
+		/*
+		 * If we are loading ET_EXEC or we have already performed
+		 * the ET_DYN load_addr calculations, proceed normally.
+		 */
 		if (loc->elf_ex.e_type == ET_EXEC || load_addr_set) {
-			elf_flags |= MAP_FIXED;
+			elf_flags |= elf_fixed;
 		} else if (loc->elf_ex.e_type == ET_DYN) {
-			/* Try and get dynamic programs out of the way of the
-			 * default mmap base, as well as whatever program they
-			 * might try to exec.  This is because the brk will
-			 * follow the loader, and is not movable.  */
-#ifdef CONFIG_ARCH_BINFMT_ELF_RANDOMIZE_PIE
-			/* Memory randomization might have been switched off
-			 * in runtime via sysctl or explicit setting of
-			 * personality flags.
-			 * If that is the case, retain the original non-zero
-			 * load_bias value in order to establish proper
-			 * non-randomized mappings.
+			/*
+			 * This logic is run once for the first LOAD Program
+			 * Header for ET_DYN binaries to calculate the
+			 * randomization (load_bias) for all the LOAD
+			 * Program Headers, and to calculate the entire
+			 * size of the ELF mapping (total_size). (Note that
+			 * load_addr_set is set to true later once the
+			 * initial mapping is performed.)
+			 *
+			 * There are effectively two types of ET_DYN
+			 * binaries: programs (i.e. PIE: ET_DYN with INTERP)
+			 * and loaders (ET_DYN without INTERP, since they
+			 * _are_ the ELF interpreter). The loaders must
+			 * be loaded away from programs since the program
+			 * may otherwise collide with the loader (especially
+			 * for ET_EXEC which does not have a randomized
+			 * position). For example to handle invocations of
+			 * "./ld.so someprog" to test out a new version of
+			 * the loader, the subsequent program that the
+			 * loader loads must avoid the loader itself, so
+			 * they cannot share the same load range. Sufficient
+			 * room for the brk must be allocated with the
+			 * loader as well, since brk must be available with
+			 * the loader.
+			 *
+			 * Therefore, programs are loaded offset from
+			 * ELF_ET_DYN_BASE and loaders are loaded into the
+			 * independently randomized mmap region (0 load_bias
+			 * without MAP_FIXED).
 			 */
-			if (current->flags & PF_RANDOMIZE)
+			if (elf_interpreter) {
+				load_bias = ELF_ET_DYN_BASE;
+				if (current->flags & PF_RANDOMIZE)
+					load_bias += arch_mmap_rnd();
+				elf_flags |= elf_fixed;
+			} else
 				load_bias = 0;
-			else
-				load_bias = ELF_PAGESTART(ELF_ET_DYN_BASE - vaddr);
-#else
-			load_bias = ELF_PAGESTART(ELF_ET_DYN_BASE - vaddr);
-#endif
-		}
 
+			/*
+			 * Since load_bias is used for all subsequent loading
+			 * calculations, we must lower it by the first vaddr
+			 * so that the remaining calculations based on the
+			 * ELF vaddrs will be correctly offset. The result
+			 * is then page aligned.
+			 */
+			load_bias = ELF_PAGESTART(load_bias - vaddr);
+
+			total_size = total_mapping_size(elf_phdata,
+							loc->elf_ex.e_phnum);
+			if (!total_size) {
+				retval = -EINVAL;
+				goto out_free_dentry;
+			}
+		}
+        /* 创建一个新线性区对可执行文件的数据段进行映射 */
+        /*  虚拟地址空间与目标映像文件的映射
+                 确定了装入地址后，
+                 就通过elf_map()建立用户空间虚拟地址空间
+                 与目标映像文件中某个连续区间之间的映射，
+                 其返回值就是实际映射的起始地址 */
 		error = elf_map(bprm->file, load_bias + vaddr, elf_ppnt,
-				elf_prot, elf_flags, 0);
+				elf_prot, elf_flags, total_size);
 		if (BAD_ADDR(error)) {
 			retval = IS_ERR((void *)error) ?
 				PTR_ERR((void*)error) : -EINVAL;
@@ -972,10 +1121,13 @@ static int load_elf_binary(struct linux_binprm *bprm)
 		if (end_data < k)
 			end_data = k;
 		k = elf_ppnt->p_vaddr + elf_ppnt->p_memsz;
-		if (k > elf_brk)
+		if (k > elf_brk) {
+			bss_prot = elf_prot;
 			elf_brk = k;
+		}
 	}
-
+    // 加上偏移量
+    /* 更新读入内存中相关信息的记录 */
 	loc->elf_ex.e_entry += load_bias;
 	elf_bss += load_bias;
 	elf_brk += load_bias;
@@ -989,17 +1141,28 @@ static int load_elf_binary(struct linux_binprm *bprm)
 	 * mapping in the interpreter, to make sure it doesn't wind
 	 * up getting placed where the bss needs to go.
 	 */
-	retval = set_brk(elf_bss, elf_brk);
+	// 创建一个新的匿名线性区，来映射程序的bss段
+/*
+	使用set_brk调整bss段的大小 
+*/
+	retval = set_brk(elf_bss, elf_brk, bss_prot);
 	if (retval)
 		goto out_free_dentry;
 	if (likely(elf_bss != elf_brk) && unlikely(padzero(elf_bss))) {
 		retval = -EFAULT; /* Nobody gets to see this, but.. */
 		goto out_free_dentry;
 	}
+/*
+     如果需要装入解释器，就通过load_elf_interp装入其映像, 
+     并把将来进入用户空间的入口地址设置成load_elf_interp()的返回值，
+     即解释器映像的入口地址。
 
+     而若不装入解释器，那么这个入口地址就是目标
+     映像本身的入口地址。
+*/
 	if (elf_interpreter) {
 		unsigned long interp_map_addr = 0;
-
+        // 调用一个装入动态链接程序的函数 此时elf_entry指向一个动态链接程序的入口
 		elf_entry = load_elf_interp(&loc->interp_elf_ex,
 					    interpreter,
 					    &interp_map_addr,
@@ -1023,6 +1186,7 @@ static int load_elf_binary(struct linux_binprm *bprm)
 		fput(interpreter);
 		kfree(elf_interpreter);
 	} else {
+	    // elf_entry是可执行程序的入口
 		elf_entry = loc->elf_ex.e_entry;
 		if (BAD_ADDR(elf_entry)) {
 			retval = -EINVAL;
@@ -1041,27 +1205,30 @@ static int load_elf_binary(struct linux_binprm *bprm)
 		goto out;
 #endif /* ARCH_HAS_SETUP_ADDITIONAL_PAGES */
 
-	install_exec_creds(bprm);
+/*
+    填写目标文件的参数环境变量等必要信息
+*/
 	retval = create_elf_tables(bprm, &loc->elf_ex,
 			  load_addr, interp_load_addr);
 	if (retval < 0)
 		goto out;
 	/* N.B. passed_fileno might not be initialized? */
+/*
+	调整内存映射内容
+*/
 	current->mm->end_code = end_code;
 	current->mm->start_code = start_code;
 	current->mm->start_data = start_data;
 	current->mm->end_data = end_data;
 	current->mm->start_stack = bprm->p;
 
-#ifdef arch_randomize_brk
 	if ((current->flags & PF_RANDOMIZE) && (randomize_va_space > 1)) {
 		current->mm->brk = current->mm->start_brk =
 			arch_randomize_brk(current->mm);
-#ifdef CONFIG_COMPAT_BRK
+#ifdef compat_brk_randomized
 		current->brk_randomized = 1;
 #endif
 	}
-#endif
 
 	if (current->personality & MMAP_PAGE_ZERO) {
 		/* Why this, you ask???  Well SVr4 maps page 0 as read-only,
@@ -1086,6 +1253,27 @@ static int load_elf_binary(struct linux_binprm *bprm)
 	ELF_PLAT_INIT(regs, reloc_func_desc);
 #endif
 
+	finalize_exec(bprm);
+    // 修改保存在内核堆栈，但属于用户态的eip和esp
+/*
+      最后，start_thread()这个宏操作会将eip和esp改成新的地址，
+      就使得CPU在返回用户空间时就进入新的程序入口。
+      如果存在解释器映像，那么这就是解释器映像的程序入口，
+      否则就是目标映像的程序入口。
+      那么什么情况下有解释器映像存在，什么情况下没有呢？
+      如果目标映像与各种库的链接是静态链接，
+      因而无需依靠共享库、即动态链接库，那就不需要解释器映像；
+
+      否则就一定要有解释器映像存在。
+       对于一个目标程序, gcc在编译时，除非显示的使用static标签，
+       否则所有程序的链接都是动态链接的，
+       也就是说需要解释器。由此可见，
+       我们的程序在被内核加载到内存，
+       内核跳到用户空间后并不是执行我们程序的，
+       而是先把控制权交到用户空间的解释器，
+       由解释器加载运行用户程序所需要的动态库（比如libc等等），
+       然后控制权才会转移到用户程序。
+*/
 	start_thread(regs, elf_entry, bprm->p);
 	retval = 0;
 out:
@@ -1116,9 +1304,10 @@ static int load_elf_library(struct file *file)
 	unsigned long elf_bss, bss, len;
 	int retval, error, i, j;
 	struct elfhdr elf_ex;
+	loff_t pos = 0;
 
 	error = -ENOEXEC;
-	retval = kernel_read(file, 0, (char *)&elf_ex, sizeof(elf_ex));
+	retval = kernel_read(file, &elf_ex, sizeof(elf_ex), &pos);
 	if (retval != sizeof(elf_ex))
 		goto out;
 
@@ -1128,6 +1317,8 @@ static int load_elf_library(struct file *file)
 	/* First of all, some simple consistency checks */
 	if (elf_ex.e_type != ET_EXEC || elf_ex.e_phnum > 2 ||
 	    !elf_check_arch(&elf_ex) || !file->f_op->mmap)
+		goto out;
+	if (elf_check_fdpic(&elf_ex))
 		goto out;
 
 	/* Now read in all of the header information */
@@ -1142,7 +1333,8 @@ static int load_elf_library(struct file *file)
 
 	eppnt = elf_phdata;
 	error = -ENOEXEC;
-	retval = kernel_read(file, elf_ex.e_phoff, (char *)eppnt, j);
+	pos =  elf_ex.e_phoff;
+	retval = kernel_read(file, eppnt, j, &pos);
 	if (retval != j)
 		goto out_free_ph;
 
@@ -1161,7 +1353,7 @@ static int load_elf_library(struct file *file)
 			(eppnt->p_filesz +
 			 ELF_PAGEOFFSET(eppnt->p_vaddr)),
 			PROT_READ | PROT_WRITE | PROT_EXEC,
-			MAP_FIXED | MAP_PRIVATE | MAP_DENYWRITE,
+			MAP_FIXED_NOREPLACE | MAP_PRIVATE | MAP_DENYWRITE,
 			(eppnt->p_offset -
 			 ELF_PAGEOFFSET(eppnt->p_vaddr)));
 	if (error != ELF_PAGESTART(eppnt->p_vaddr))
@@ -1173,11 +1365,13 @@ static int load_elf_library(struct file *file)
 		goto out_free_ph;
 	}
 
-	len = ELF_PAGESTART(eppnt->p_filesz + eppnt->p_vaddr +
-			    ELF_MIN_ALIGN - 1);
-	bss = eppnt->p_memsz + eppnt->p_vaddr;
-	if (bss > len)
-		vm_brk(len, bss - len);
+	len = ELF_PAGEALIGN(eppnt->p_filesz + eppnt->p_vaddr);
+	bss = ELF_PAGEALIGN(eppnt->p_memsz + eppnt->p_vaddr);
+	if (bss > len) {
+		error = vm_brk(len, bss - len);
+		if (error)
+			goto out_free_ph;
+	}
 	error = 0;
 
 out_free_ph:
@@ -1240,6 +1434,15 @@ static unsigned long vma_dump_size(struct vm_area_struct *vma,
 
 	if (vma->vm_flags & VM_DONTDUMP)
 		return 0;
+
+	/* support for DAX */
+	if (vma_is_dax(vma)) {
+		if ((vma->vm_flags & VM_SHARED) && FILTER(DAX_SHARED))
+			goto whole;
+		if (!(vma->vm_flags & VM_SHARED) && FILTER(DAX_PRIVATE))
+			goto whole;
+		return 0;
+	}
 
 	/* Hugetlb memory check */
 	if (vma->vm_flags & VM_HUGETLB) {
@@ -1415,17 +1618,18 @@ static void fill_prstatus(struct elf_prstatus *prstatus,
 		 * group-wide total, not its individual thread total.
 		 */
 		thread_group_cputime(p, &cputime);
-		cputime_to_timeval(cputime.utime, &prstatus->pr_utime);
-		cputime_to_timeval(cputime.stime, &prstatus->pr_stime);
+		prstatus->pr_utime = ns_to_timeval(cputime.utime);
+		prstatus->pr_stime = ns_to_timeval(cputime.stime);
 	} else {
-		cputime_t utime, stime;
+		u64 utime, stime;
 
 		task_cputime(p, &utime, &stime);
-		cputime_to_timeval(utime, &prstatus->pr_utime);
-		cputime_to_timeval(stime, &prstatus->pr_stime);
+		prstatus->pr_utime = ns_to_timeval(utime);
+		prstatus->pr_stime = ns_to_timeval(stime);
 	}
-	cputime_to_timeval(p->signal->cutime, &prstatus->pr_cutime);
-	cputime_to_timeval(p->signal->cstime, &prstatus->pr_cstime);
+
+	prstatus->pr_cutime = ns_to_timeval(p->signal->cutime);
+	prstatus->pr_cstime = ns_to_timeval(p->signal->cstime);
 }
 
 static int fill_psinfo(struct elf_prpsinfo *psinfo, struct task_struct *p,
@@ -1513,6 +1717,8 @@ static int fill_files_note(struct memelfnote *note)
 
 	/* *Estimated* file count and total data size needed */
 	count = current->mm->map_count;
+	if (count > UINT_MAX / 64)
+		return -EINVAL;
 	size = count * 64;
 
 	names_ofs = (2 + 3 * count) * sizeof(data[0]);
@@ -1520,8 +1726,8 @@ static int fill_files_note(struct memelfnote *note)
 	if (size >= MAX_FILE_NOTE_SIZE) /* paranoia check */
 		return -EINVAL;
 	size = round_up(size, PAGE_SIZE);
-	data = vmalloc(size);
-	if (!data)
+	data = kvmalloc(size, GFP_KERNEL);
+	if (ZERO_OR_NULL_PTR(data))
 		return -ENOMEM;
 
 	start_end_ofs = data + 2;
@@ -1535,17 +1741,17 @@ static int fill_files_note(struct memelfnote *note)
 		file = vma->vm_file;
 		if (!file)
 			continue;
-		filename = d_path(&file->f_path, name_curpos, remaining);
+		filename = file_path(file, name_curpos, remaining);
 		if (IS_ERR(filename)) {
 			if (PTR_ERR(filename) == -ENAMETOOLONG) {
-				vfree(data);
+				kvfree(data);
 				size = size * 5 / 4;
 				goto alloc;
 			}
 			continue;
 		}
 
-		/* d_path() fills at the end, move name down */
+		/* file_path() fills at the end, move name down */
 		/* n = strlen(filename) + 1: */
 		n = (name_curpos + remaining) - filename;
 		remaining = filename - name_curpos;
@@ -1611,20 +1817,12 @@ static void do_thread_regset_writeback(struct task_struct *task,
 		regset->writeback(task, regset, 1);
 }
 
-#ifndef PR_REG_SIZE
-#define PR_REG_SIZE(S) sizeof(S)
-#endif
-
 #ifndef PRSTATUS_SIZE
-#define PRSTATUS_SIZE(S) sizeof(S)
-#endif
-
-#ifndef PR_REG_PTR
-#define PR_REG_PTR(S) (&((S)->pr_reg))
+#define PRSTATUS_SIZE(S, R) sizeof(S)
 #endif
 
 #ifndef SET_PR_FPVALID
-#define SET_PR_FPVALID(S, V) ((S)->pr_fpvalid = (V))
+#define SET_PR_FPVALID(S, V, R) ((S)->pr_fpvalid = (V))
 #endif
 
 static int fill_thread_core_info(struct elf_thread_core_info *t,
@@ -1632,6 +1830,7 @@ static int fill_thread_core_info(struct elf_thread_core_info *t,
 				 long signr, size_t *total)
 {
 	unsigned int i;
+	unsigned int regset0_size = regset_size(t->task, &view->regsets[0]);
 
 	/*
 	 * NT_PRSTATUS is the one special case, because the regset data
@@ -1640,12 +1839,11 @@ static int fill_thread_core_info(struct elf_thread_core_info *t,
 	 * We assume that regset 0 is NT_PRSTATUS.
 	 */
 	fill_prstatus(&t->prstatus, t->task, signr);
-	(void) view->regsets[0].get(t->task, &view->regsets[0],
-				    0, PR_REG_SIZE(t->prstatus.pr_reg),
-				    PR_REG_PTR(&t->prstatus), NULL);
+	(void) view->regsets[0].get(t->task, &view->regsets[0], 0, regset0_size,
+				    &t->prstatus.pr_reg, NULL);
 
 	fill_note(&t->notes[0], "CORE", NT_PRSTATUS,
-		  PRSTATUS_SIZE(t->prstatus), &t->prstatus);
+		  PRSTATUS_SIZE(t->prstatus, regset0_size), &t->prstatus);
 	*total += notesize(&t->notes[0]);
 
 	do_thread_regset_writeback(t->task, &view->regsets[0]);
@@ -1659,9 +1857,9 @@ static int fill_thread_core_info(struct elf_thread_core_info *t,
 		const struct user_regset *regset = &view->regsets[i];
 		do_thread_regset_writeback(t->task, regset);
 		if (regset->core_note_type && regset->get &&
-		    (!regset->active || regset->active(t->task, regset))) {
+		    (!regset->active || regset->active(t->task, regset) > 0)) {
 			int ret;
-			size_t size = regset->n * regset->size;
+			size_t size = regset_size(t->task, regset);
 			void *data = kmalloc(size, GFP_KERNEL);
 			if (unlikely(!data))
 				return 0;
@@ -1675,7 +1873,8 @@ static int fill_thread_core_info(struct elf_thread_core_info *t,
 						  regset->core_note_type,
 						  size, data);
 				else {
-					SET_PR_FPVALID(&t->prstatus, 1);
+					SET_PR_FPVALID(&t->prstatus,
+							1, regset0_size);
 					fill_note(&t->notes[i], "CORE",
 						  NT_PRFPREG, size, data);
 				}
@@ -1838,7 +2037,7 @@ static void free_note_info(struct elf_note_info *info)
 		kfree(t);
 	}
 	kfree(info->psinfo.data);
-	vfree(info->files.data);
+	kvfree(info->files.data);
 }
 
 #else
@@ -1916,7 +2115,7 @@ static int elf_note_info_init(struct elf_note_info *info)
 	INIT_LIST_HEAD(&info->thread_list);
 
 	/* Allocate space for ELF notes */
-	info->notes = kmalloc(8 * sizeof(struct memelfnote), GFP_KERNEL);
+	info->notes = kmalloc_array(8, sizeof(struct memelfnote), GFP_KERNEL);
 	if (!info->notes)
 		return 0;
 	info->psinfo = kmalloc(sizeof(*info->psinfo), GFP_KERNEL);
@@ -2054,7 +2253,7 @@ static void free_note_info(struct elf_note_info *info)
 
 	/* Free data possibly allocated by fill_files_note(): */
 	if (info->notes_files)
-		vfree(info->notes_files->data);
+		kvfree(info->notes_files->data);
 
 	kfree(info->prstatus);
 	kfree(info->psinfo);
@@ -2198,8 +2397,11 @@ static int elf_core_dump(struct coredump_params *cprm)
 
 	dataoff = offset;// = roundup(offset, ELF_EXEC_PAGESIZE);
 
-	vma_filesz = kmalloc_array(segs - 1, sizeof(*vma_filesz), GFP_KERNEL);
-	if (!vma_filesz)
+	if (segs - 1 > ULONG_MAX / sizeof(*vma_filesz))
+		goto end_coredump;
+	vma_filesz = kvmalloc(array_size(sizeof(*vma_filesz), (segs - 1)),
+			      GFP_KERNEL);
+	if (ZERO_OR_NULL_PTR(vma_filesz))
 		goto end_coredump;
 
 	for (i = 0, vma = first_vma(current, gate_vma); vma != NULL;
@@ -2264,7 +2466,7 @@ static int elf_core_dump(struct coredump_params *cprm)
 		goto end_coredump;
 
 	/* Align to page */
-	if (!dump_skip(cprm, dataoff - cprm->written))
+	if (!dump_skip(cprm, dataoff - cprm->pos))
 		goto end_coredump;
 
 	for (i = 0, vma = first_vma(current, gate_vma); vma != NULL;
@@ -2283,13 +2485,14 @@ static int elf_core_dump(struct coredump_params *cprm)
 				void *kaddr = kmap(page);
 				stop = !dump_emit(cprm, kaddr, PAGE_SIZE);
 				kunmap(page);
-				page_cache_release(page);
+				put_page(page);
 			} else
 				stop = !dump_skip(cprm, PAGE_SIZE);
 			if (stop)
 				goto end_coredump;
 		}
 	}
+	dump_truncate(cprm);
 
 	if (!elf_core_write_extra_data(cprm))
 		goto end_coredump;
@@ -2305,7 +2508,7 @@ end_coredump:
 cleanup:
 	free_note_info(&info);
 	kfree(shdr4extnum);
-	kfree(vma_filesz);
+	kvfree(vma_filesz);
 	kfree(phdr4note);
 	kfree(elf);
 out:
