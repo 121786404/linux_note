@@ -734,7 +734,7 @@ struct task_struct {
 	volatile long			state;
 	/*进程状态  TASK_RUNNING   -1 unrunnable, 0 runnable, >0 stopped */
     /* 进程内核栈 */
-    /* 进程描述符task_struct结构中没有直接指向thread_info结构的指针，
+    /* 进程描述符task_struct结构中没有直接指向thread_info结构的指针*/
 	/*
 	 * This begins the randomizable portion of task_struct. Only
 	 * scheduling-critical items should be added above here.
@@ -1122,6 +1122,7 @@ struct task_struct {
 	struct signal_struct		*signal;
 /* 指向进程的信号处理程序描述符 */
 	struct sighand_struct		*sighand;
+	sigset_t			blocked;
 /* 表示被阻塞信号的掩码，real_blocked表示临时掩码 */
 	sigset_t			real_blocked;
 	/* Restored if set_restore_sigmask() was used: */

@@ -1367,7 +1367,7 @@ static unsigned long shrink_page_list(struct list_head *page_list,
 		 */
 		/**
 		 * 如果要回收匿名页，就需要为它在交换区保留一页新页槽，如果无法保留页槽，也不回收。
-		/* 匿名页，并且不是交换缓存 */
+		 * 匿名页，并且不是交换缓存 */
 		if (PageAnon(page) && PageSwapBacked(page)) {
 			if (!PageSwapCache(page)) {
 				if (!(sc->gfp_mask & __GFP_IO))
@@ -2166,6 +2166,7 @@ shrink_inactive_list(unsigned long nr_to_scan, struct lruvec *lruvec,
  * But we had to alter page->flags anyway.
  *
  * Returns the number of pages moved to the given lru.
+ */
 /**
  * 本函数由shrink_zone调用。它从活动链表将页移到非活动链表。如果函数的掠夺性过强，
  * 就会有过多的页从活动链表被移动到非活动链表。这样，PFRA就会回收大量的页框，系统性能
