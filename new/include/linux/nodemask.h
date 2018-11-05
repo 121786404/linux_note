@@ -1,3 +1,4 @@
+/* SPDX-License-Identifier: GPL-2.0 */
 #ifndef __LINUX_NODEMASK_H
 #define __LINUX_NODEMASK_H
 
@@ -103,7 +104,16 @@ extern nodemask_t _unused_nodemask_arg_;
  *
  * Can be used to provide arguments for '%*pb[l]' when printing a nodemask.
  */
-#define nodemask_pr_args(maskp)		MAX_NUMNODES, (maskp)->bits
+#define nodemask_pr_args(maskp)	__nodemask_pr_numnodes(maskp), \
+				__nodemask_pr_bits(maskp)
+static inline unsigned int __nodemask_pr_numnodes(const nodemask_t *m)
+{
+	return m ? MAX_NUMNODES : 0;
+}
+static inline const unsigned long *__nodemask_pr_bits(const nodemask_t *m)
+{
+	return m ? m->bits : NULL;
+}
 
 /*
  * The inline keyword gives the compiler room to decide to inline, or
@@ -387,28 +397,24 @@ enum node_states {
 /*
 结点在某个时候可能变为联机/在线
 */
-	N_POSSIBLE,		/* The node could become online at some point  结点在某个时候可能变成联机*/
+	N_POSSIBLE,		/* The node could become online at some point */
 /*
 结点是联机/在线的
 */
-	N_ONLINE,		/* The node is online 节点是联机的*/
+	N_ONLINE,		/* The node is online */
 /*
 结点有普通内存域
 */
-	N_NORMAL_MEMORY,	/* The node has regular memory 结点是普通内存域*/
+	N_NORMAL_MEMORY,	/* The node has regular memory */
 /*
 结点有普通内存域或高端内存域
 */
 #ifdef CONFIG_HIGHMEM
-	N_HIGH_MEMORY,		/* The node has regular or high memory 结点是普通或者高端内存域*/
+	N_HIGH_MEMORY,		/* The node has regular or high memory */
 #else
 	N_HIGH_MEMORY = N_NORMAL_MEMORY,
 #endif
-#ifdef CONFIG_MOVABLE_NODE
-	N_MEMORY,		/* The node has memory(regular, high, movable) 结点是普通，高端内存或者MOVEABLE域*/
-#else
-	N_MEMORY = N_HIGH_MEMORY,
-#endif
+	N_MEMORY,		/* The node has memory(regular, high, movable) */
 /*
 结点有一个或多个CPU
 */
@@ -532,7 +538,7 @@ static inline int node_random(const nodemask_t *mask)
  * NODEMASK_ALLOC(type, name) allocates an object with a specified type and
  * name.
  */
-#if NODES_SHIFT > 8 /* nodemask_t > 256 bytes */
+#if NODES_SHIFT > 8 /* nodemask_t > 32 bytes */
 #define NODEMASK_ALLOC(type, name, gfp_flags)	\
 			type *name = kmalloc(sizeof(*name), gfp_flags)
 #define NODEMASK_FREE(m)			kfree(m)

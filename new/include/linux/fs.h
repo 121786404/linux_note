@@ -617,9 +617,9 @@ struct inode {
 	};
 	dev_t			i_rdev; /* 若是设备文件，此字段将记录设备的设备号 */
 	loff_t			i_size; /* inode所代表的文件大小 */
-	struct timespec		i_atime;  /* inode最近一次的存取时间 */
-	struct timespec		i_mtime; /* inode最近一次的修改时间 */
-	struct timespec		i_ctime; /* inode的产生时间 */
+	struct timespec64		i_atime;  /* inode最近一次的存取时间 */
+	struct timespec64		i_mtime; /* inode最近一次的修改时间 */
+	struct timespec64		i_ctime; /* inode的产生时间 */
 	spinlock_t		i_lock;	/* i_blocks, i_bytes, maybe i_size */
 	unsigned short          i_bytes;
 	u8			i_blkbits;

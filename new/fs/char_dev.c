@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-2.0
 /*
  *  linux/fs/char_dev.c
  *
@@ -54,6 +55,8 @@ static struct kobj_map *cdev_map;
 
 static DEFINE_MUTEX(chrdevs_lock);
 
+#define CHRDEV_MAJOR_HASH_SIZE 255
+
 /* 设备驱动要使用的设备号记录在这个 chrdevs 散列表里,有了这种对设备号使用情况的    跟踪，系统就可以避免不同的设备使用同一个设备号的情形出现。
  * 他是内核用于设备号分配和管理的核心元素
  * 该散列表中的每一个元素是一个char_device_struct 结构*/
@@ -80,15 +83,38 @@ void chrdev_show(struct seq_file *f, off_t offset)
 {
 	struct char_device_struct *cd;
 
-	if (offset < CHRDEV_MAJOR_HASH_SIZE) {
-		mutex_lock(&chrdevs_lock);
-		for (cd = chrdevs[offset]; cd; cd = cd->next)
+	mutex_lock(&chrdevs_lock);
+	for (cd = chrdevs[major_to_index(offset)]; cd; cd = cd->next) {
+		if (cd->major == offset)
 			seq_printf(f, "%3d %s\n", cd->major, cd->name);
-		mutex_unlock(&chrdevs_lock);
 	}
+	mutex_unlock(&chrdevs_lock);
 }
 
 #endif /* CONFIG_PROC_FS */
+
+static int find_dynamic_major(void)
+{
+	int i;
+	struct char_device_struct *cd;
+
+	for (i = ARRAY_SIZE(chrdevs)-1; i >= CHRDEV_MAJOR_DYN_END; i--) {
+		if (chrdevs[i] == NULL)
+			return i;
+	}
+
+	for (i = CHRDEV_MAJOR_DYN_EXT_START;
+	     i >= CHRDEV_MAJOR_DYN_EXT_END; i--) {
+		for (cd = chrdevs[major_to_index(i)]; cd; cd = cd->next)
+			if (cd->major == i)
+				break;
+
+		if (cd == NULL)
+			return i;
+	}
+
+	return -EBUSY;
+}
 
 /*
  * Register a single major with a specified minor range.
@@ -118,20 +144,20 @@ __register_chrdev_region(unsigned int major, unsigned int baseminor,
 	/* temporary */
 	/*主设备号为0,说明这个设备没指定设备号，需要分配一个*/
 	if (major == 0) {
-		for (i = ARRAY_SIZE(chrdevs)-1; i > 0; i--) {
-			if (chrdevs[i] == NULL)
-				break;
-		}
-
-		if (i < CHRDEV_MAJOR_DYN_END)
-			pr_warn("CHRDEV \"%s\" major number %d goes below the dynamic allocation range\n",
-				name, i);
-
-		if (i == 0) {
-			ret = -EBUSY;
+		ret = find_dynamic_major();
+		if (ret < 0) {
+			pr_err("CHRDEV \"%s\" dynamic allocation region is full\n",
+			       name);
 			goto out;
 		}
-		major = i;
+		major = ret;
+	}
+
+	if (major >= CHRDEV_MAJOR_MAX) {
+		pr_err("CHRDEV \"%s\" major requested (%u) is greater than the maximum (%u)\n",
+		       name, major, CHRDEV_MAJOR_MAX-1);
+		ret = -EINVAL;
+		goto out;
 	}
 
 	cd->major = major;
@@ -527,6 +553,85 @@ int cdev_add(struct cdev *p, dev_t dev, unsigned count)
 	return 0;
 }
 
+/**
+ * cdev_set_parent() - set the parent kobject for a char device
+ * @p: the cdev structure
+ * @kobj: the kobject to take a reference to
+ *
+ * cdev_set_parent() sets a parent kobject which will be referenced
+ * appropriately so the parent is not freed before the cdev. This
+ * should be called before cdev_add.
+ */
+void cdev_set_parent(struct cdev *p, struct kobject *kobj)
+{
+	WARN_ON(!kobj->state_initialized);
+	p->kobj.parent = kobj;
+}
+
+/**
+ * cdev_device_add() - add a char device and it's corresponding
+ *	struct device, linkink
+ * @dev: the device structure
+ * @cdev: the cdev structure
+ *
+ * cdev_device_add() adds the char device represented by @cdev to the system,
+ * just as cdev_add does. It then adds @dev to the system using device_add
+ * The dev_t for the char device will be taken from the struct device which
+ * needs to be initialized first. This helper function correctly takes a
+ * reference to the parent device so the parent will not get released until
+ * all references to the cdev are released.
+ *
+ * This helper uses dev->devt for the device number. If it is not set
+ * it will not add the cdev and it will be equivalent to device_add.
+ *
+ * This function should be used whenever the struct cdev and the
+ * struct device are members of the same structure whose lifetime is
+ * managed by the struct device.
+ *
+ * NOTE: Callers must assume that userspace was able to open the cdev and
+ * can call cdev fops callbacks at any time, even if this function fails.
+ */
+int cdev_device_add(struct cdev *cdev, struct device *dev)
+{
+	int rc = 0;
+
+	if (dev->devt) {
+		cdev_set_parent(cdev, &dev->kobj);
+
+		rc = cdev_add(cdev, dev->devt, 1);
+		if (rc)
+			return rc;
+	}
+
+	rc = device_add(dev);
+	if (rc)
+		cdev_del(cdev);
+
+	return rc;
+}
+
+/**
+ * cdev_device_del() - inverse of cdev_device_add
+ * @dev: the device structure
+ * @cdev: the cdev structure
+ *
+ * cdev_device_del() is a helper function to call cdev_del and device_del.
+ * It should be used whenever cdev_device_add is used.
+ *
+ * If dev->devt is not set it will not remove the cdev and will be equivalent
+ * to device_del.
+ *
+ * NOTE: This guarantees that associated sysfs callbacks are not running
+ * or runnable, however any cdevs already open will remain and their fops
+ * will still be callable even after this function returns.
+ */
+void cdev_device_del(struct cdev *cdev, struct device *dev)
+{
+	device_del(dev);
+	if (dev->devt)
+		cdev_del(cdev);
+}
+
 static void cdev_unmap(dev_t dev, unsigned count)
 {
 	kobj_unmap(cdev_map, dev, count);
@@ -538,6 +643,10 @@ static void cdev_unmap(dev_t dev, unsigned count)
  *
  * cdev_del() removes @p from the system, possibly freeing the structure
  * itself.
+ *
+ * NOTE: This guarantees that cdev device will no longer be able to be
+ * opened, however any cdevs already open will remain and their fops will
+ * still be callable even after cdev_del returns.
  */
 /*
 cdev_del函数的调用则通常发生在字符设备驱动模块卸载函数中 
@@ -635,5 +744,8 @@ EXPORT_SYMBOL(cdev_init);
 EXPORT_SYMBOL(cdev_alloc);
 EXPORT_SYMBOL(cdev_del);
 EXPORT_SYMBOL(cdev_add);
+EXPORT_SYMBOL(cdev_set_parent);
+EXPORT_SYMBOL(cdev_device_add);
+EXPORT_SYMBOL(cdev_device_del);
 EXPORT_SYMBOL(__register_chrdev);
 EXPORT_SYMBOL(__unregister_chrdev);

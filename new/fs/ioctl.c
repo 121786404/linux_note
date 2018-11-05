@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-2.0
 /*
  *  linux/fs/ioctl.c
  *
@@ -15,6 +16,8 @@
 #include <linux/writeback.h>
 #include <linux/buffer_head.h>
 #include <linux/falloc.h>
+#include <linux/sched/signal.h>
+
 #include "internal.h"
 
 #include <asm/ioctls.h>
@@ -61,11 +64,7 @@ static long zl30310_espi_ioctl(struct *filp, unsigned int cmd, unsigned ong arg)
 		return retval;
 	}
 }
-
- */
-
-
-
+*/
 
 /* So that the fiemap access checks can't overflow on 32 bit machines. */
 #define FIEMAP_MAX_EXTENTS	(UINT_MAX / sizeof(struct fiemap_extent))
@@ -96,6 +95,7 @@ long vfs_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
  out:
 	return error;
 }
+EXPORT_SYMBOL(vfs_ioctl);
 
 static int ioctl_fibmap(struct file *filp, int __user *p)
 {
@@ -276,7 +276,7 @@ static long ioctl_file_clone(struct file *dst_file, unsigned long srcfd,
 	ret = -EXDEV;
 	if (src_file.file->f_path.mnt != dst_file->f_path.mnt)
 		goto fdput;
-	ret = do_clone_file_range(src_file.file, off, dst_file, destoff, olen);
+	ret = vfs_clone_file_range(src_file.file, off, dst_file, destoff, olen);
 fdput:
 	fdput(src_file);
 	return ret;
@@ -596,7 +596,7 @@ static int ioctl_fsfreeze(struct file *filp)
 {
 	struct super_block *sb = file_inode(filp)->i_sb;
 
-	if (!capable(CAP_SYS_ADMIN))
+	if (!ns_capable(sb->s_user_ns, CAP_SYS_ADMIN))
 		return -EPERM;
 
 	/* If filesystem doesn't support freeze feature, return. */
@@ -613,7 +613,7 @@ static int ioctl_fsthaw(struct file *filp)
 {
 	struct super_block *sb = file_inode(filp)->i_sb;
 
-	if (!capable(CAP_SYS_ADMIN))
+	if (!ns_capable(sb->s_user_ns, CAP_SYS_ADMIN))
 		return -EPERM;
 
 	/* Thaw */
@@ -742,7 +742,7 @@ int do_vfs_ioctl(struct file *filp, unsigned int fd, unsigned int cmd,
 /**
  * 当用户空间程序调用ioctl函数时,系统会经过sys_ioctl进入到内核空间,系统调用
  * sys_ioctl的定义为:*/
-SYSCALL_DEFINE3(ioctl, unsigned int, fd, unsigned int, cmd, unsigned long, arg)
+int ksys_ioctl(unsigned int fd, unsigned int cmd, unsigned long arg)
 {
 	int error;
 	struct fd f = fdget(fd);
@@ -754,4 +754,9 @@ SYSCALL_DEFINE3(ioctl, unsigned int, fd, unsigned int, cmd, unsigned long, arg)
 		error = do_vfs_ioctl(f.file, fd, cmd, arg);
 	fdput(f);
 	return error;
+}
+
+SYSCALL_DEFINE3(ioctl, unsigned int, fd, unsigned int, cmd, unsigned long, arg)
+{
+	return ksys_ioctl(fd, cmd, arg);
 }

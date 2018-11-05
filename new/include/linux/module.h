@@ -19,6 +19,8 @@
 #include <linux/jump_label.h>
 #include <linux/export.h>
 #include <linux/rbtree_latch.h>
+#include <linux/error-injection.h>
+#include <linux/tracepoint-defs.h>
 
 #include <linux/percpu.h>
 #include <asm/module.h>
@@ -93,7 +95,7 @@ struct module_kobject {
 	struct kobject *drivers_dir;
 	struct module_param_attrs *mp;
 	struct completion *kobj_completion;
-};
+} __randomize_layout;
 
 struct module_attribute {
 	struct attribute attr;
@@ -268,7 +270,7 @@ alias 属性是 gcc 的特有属性，将定义 init_module 为函数 initfn 的
 /* 对于 USB、PCI 等设备驱动，通常会创建一个 MODULE_DEVICE_TABLE，
 设备表*/
 #define MODULE_DEVICE_TABLE(type, name)					\
-extern const typeof(name) __mod_##type##__##name##_device_table		\
+extern typeof(name) __mod_##type##__##name##_device_table		\
   __attribute__ ((unused, alias(__stringify(name))))
 #else  /* !MODULE */
 #define MODULE_DEVICE_TABLE(type, name)
@@ -324,7 +326,7 @@ extern int modules_disabled; /* for sysctl */
 /* Get/put a kernel symbol (calls must be symmetric) */
 void *__symbol_get(const char *symbol);
 void *__symbol_get_gpl(const char *symbol);
-#define symbol_get(x) ((typeof(&x))(__symbol_get(VMLINUX_SYMBOL_STR(x))))
+#define symbol_get(x) ((typeof(&x))(__symbol_get(__stringify(x))))
 
 /* modules using other modules: kdb wants to see this. */
 struct module_use {
@@ -501,7 +503,7 @@ struct module {
 
 #ifdef CONFIG_TRACEPOINTS
 	unsigned int num_tracepoints;
-	struct tracepoint * const *tracepoints_ptrs;
+	tracepoint_ptr_t *tracepoints_ptrs;
 #endif
 #ifdef HAVE_JUMP_LABEL
 	struct jump_entry *jump_entries;
@@ -514,8 +516,8 @@ struct module {
 #ifdef CONFIG_EVENT_TRACING
 	struct trace_event_call **trace_events;
 	unsigned int num_trace_events;
-	struct trace_enum_map **trace_enums;
-	unsigned int num_trace_enums;
+	struct trace_eval_map **trace_evals;
+	unsigned int num_trace_evals;
 #endif
 #ifdef CONFIG_FTRACE_MCOUNT_RECORD
 	unsigned int num_ftrace_callsites;
@@ -547,7 +549,12 @@ struct module {
 	ctor_fn_t *ctors;
 	unsigned int num_ctors;
 #endif
-} ____cacheline_aligned;
+
+#ifdef CONFIG_FUNCTION_ERROR_INJECTION
+	struct error_injection_entry *ei_funcs;
+	unsigned int num_ei_funcs;
+#endif
+} ____cacheline_aligned __randomize_layout;
 #ifndef MODULE_ARCH_INIT
 #define MODULE_ARCH_INIT {}
 #endif
@@ -557,7 +564,7 @@ extern struct mutex module_mutex;
 /* FIXME: It'd be nice to isolate modules during init, too, so they
    aren't used before they (may) fail.  But presently too much code
    (IDE & SCSI) require entry into the module during init.*/
-static inline int module_is_live(struct module *mod)
+static inline bool module_is_live(struct module *mod)
 {
 	return mod->state != MODULE_STATE_GOING;
 }
@@ -565,6 +572,7 @@ static inline int module_is_live(struct module *mod)
 struct module *__module_text_address(unsigned long addr);
 struct module *__module_address(unsigned long addr);
 bool is_module_address(unsigned long addr);
+bool __is_module_percpu_address(unsigned long addr, unsigned long *can_addr);
 bool is_module_percpu_address(unsigned long addr);
 bool is_module_text_address(unsigned long addr);
 
@@ -640,7 +648,7 @@ extern void __noreturn __module_put_and_exit(struct module *mod,
 #ifdef CONFIG_MODULE_UNLOAD
 int module_refcount(struct module *mod);
 void __symbol_put(const char *symbol);
-#define symbol_put(x) __symbol_put(VMLINUX_SYMBOL_STR(x))
+#define symbol_put(x) __symbol_put(__stringify(x))
 void symbol_put_addr(void *addr);
 
 /* Sometimes we know we already have a refcount, and it's easier not
@@ -665,7 +673,7 @@ extern void module_put(struct module *module);
 对此设备owner模块的计数管理由内核里更底层的代码（如总线驱动或是此类设备共用的核心模块）来实现，
 从而简化了设备驱动开发。
 */
-static inline int try_module_get(struct module *module)
+static inline bool try_module_get(struct module *module)
 {
 	return !module || module_is_live(module);
 }
@@ -689,6 +697,9 @@ int ref_module(struct module *a, struct module *b);
 	struct module *__mod = (mod);		\
 	__mod ? __mod->name : "kernel";		\
 })
+
+/* Dereference module function descriptor */
+void *dereference_module_function_descriptor(struct module *mod, void *ptr);
 
 /* For kallsyms to ask for address resolution.  namebuf should be at
  * least KSYM_NAME_LEN long: a pointer to namebuf is returned if
@@ -723,6 +734,8 @@ static inline bool is_livepatch_module(struct module *mod)
 }
 #endif /* CONFIG_LIVEPATCH */
 
+bool is_module_sig_enforced(void);
+
 #else /* !CONFIG_MODULES... */
 
 static inline struct module *__module_address(unsigned long addr)
@@ -745,6 +758,11 @@ static inline bool is_module_percpu_address(unsigned long addr)
 	return false;
 }
 
+static inline bool __is_module_percpu_address(unsigned long addr, unsigned long *can_addr)
+{
+	return false;
+}
+
 static inline bool is_module_text_address(unsigned long addr)
 {
 	return false;
@@ -759,9 +777,9 @@ static inline void __module_get(struct module *module)
 {
 }
 
-static inline int try_module_get(struct module *module)
+static inline bool try_module_get(struct module *module)
 {
-	return 1;
+	return true;
 }
 
 static inline void module_put(struct module *module)
@@ -832,6 +850,18 @@ static inline bool module_requested_async_probing(struct module *module)
 	return false;
 }
 
+static inline bool is_module_sig_enforced(void)
+{
+	return false;
+}
+
+/* Dereference module function descriptor */
+static inline
+void *dereference_module_function_descriptor(struct module *mod, void *ptr)
+{
+	return ptr;
+}
+
 #endif /* CONFIG_MODULES */
 
 #ifdef CONFIG_SYSFS
@@ -872,6 +902,15 @@ static inline void module_bug_finalize(const Elf_Ehdr *hdr,
 }
 static inline void module_bug_cleanup(struct module *mod) {}
 #endif	/* CONFIG_GENERIC_BUG */
+
+#ifdef RETPOLINE
+extern bool retpoline_module_ok(bool has_retpoline);
+#else
+static inline bool retpoline_module_ok(bool has_retpoline)
+{
+	return true;
+}
+#endif
 
 #ifdef CONFIG_MODULE_SIG
 static inline bool module_sig_ok(struct module *module)

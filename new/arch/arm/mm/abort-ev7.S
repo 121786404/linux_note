@@ -18,8 +18,14 @@
  */
 	.align	5
 ENTRY(v7_early_abort)
-	mrc	p15, 0, r1, c5, c0, 0		@ get FSR  失效状态寄存器(Data Fault Status Register)
-	mrc	p15, 0, r0, c6, c0, 0		@ get FAR  失效地址寄存器(Data Fault Address Register)
+/*
+失效状态寄存器(Data Fault Status Register)
+*/
+	mrc	p15, 0, r1, c5, c0, 0		@ get FSR
+	/*
+失效地址寄存器(Data Fault Address Register)
+*/
+	mrc	p15, 0, r0, c6, c0, 0		@ get FAR
 	uaccess_disable ip			@ disable userspace access
 
 	/*

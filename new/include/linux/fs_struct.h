@@ -1,3 +1,4 @@
+/* SPDX-License-Identifier: GPL-2.0 */
 #ifndef _LINUX_FS_STRUCT_H
 #define _LINUX_FS_STRUCT_H
 
@@ -12,7 +13,7 @@ struct fs_struct {
 	int umask; /*默认的文件访问权限*/
 	int in_exec;
 	struct path root, pwd; /*根目录的目录项对象*/  /*当前工作目录的目录项对象*/
-};
+} __randomize_layout;
 
 extern struct kmem_cache *fs_cachep;
 

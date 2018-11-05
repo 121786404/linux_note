@@ -1,6 +1,8 @@
+/* SPDX-License-Identifier: GPL-2.0 */
 #ifndef _LINUX_JIFFIES_H
 #define _LINUX_JIFFIES_H
 
+#include <linux/cache.h>
 #include <linux/math64.h>
 #include <linux/kernel.h>
 #include <linux/types.h>
@@ -60,14 +62,15 @@ extern int register_refined_jiffies(long clock_tick_rate);
 /* TICK_NSEC is the time between ticks in nsec assuming SHIFTED_HZ */
 #define TICK_NSEC ((NSEC_PER_SEC+HZ/2)/HZ)
 
-/* TICK_USEC is the time between ticks in usec assuming fake USER_HZ */
-#define TICK_USEC ((1000000UL + USER_HZ/2) / USER_HZ)
+/* TICK_USEC is the time between ticks in usec assuming SHIFTED_HZ */
+#define TICK_USEC ((USEC_PER_SEC + HZ/2) / HZ)
 
-/* some arch's have a small-data section that can be accessed register-relative
- * but that can only take up to, say, 4-byte variables. jiffies being part of
- * an 8-byte variable may not be correctly accessed unless we force the issue
- */
-#define __jiffy_data  __attribute__((section(".data")))
+/* USER_TICK_USEC is the time between ticks in usec assuming fake USER_HZ */
+#define USER_TICK_USEC ((1000000UL + USER_HZ/2) / USER_HZ)
+
+#ifndef __jiffy_arch_data
+#define __jiffy_arch_data
+#endif
 
 /*
  * The 64-bit value is not atomic - you MUST NOT read it
@@ -75,10 +78,10 @@ extern int register_refined_jiffies(long clock_tick_rate);
  * get_jiffies_64() will do this for you as appropriate.
  */
 /*__jiffy_data表明这两个变量将出现在内核最终映像的.data区中*/
-extern u64 __jiffy_data jiffies_64;
+extern u64 __cacheline_aligned_in_smp jiffies_64;
 /*通常jiffies在linux系统启动引导阶段被初始化为0,当系统完成了对时钟中断的初始化之后,在每个
  *时钟中断处理例程中该值都会被加1,该值存储了系统自最近一次启动以来的时钟滴答*/
-extern unsigned long volatile __jiffy_data jiffies;
+extern unsigned long volatile __cacheline_aligned_in_smp __jiffy_arch_data jiffies;
 
 #if (BITS_PER_LONG < 64)
 u64 get_jiffies_64(void);
@@ -486,6 +489,11 @@ extern clock_t jiffies_to_clock_t(unsigned long x);
 static inline clock_t jiffies_delta_to_clock_t(long delta)
 {
 	return jiffies_to_clock_t(max(0L, delta));
+}
+
+static inline unsigned int jiffies_delta_to_msecs(long delta)
+{
+	return jiffies_to_msecs(max(0L, delta));
 }
 
 extern unsigned long clock_t_to_jiffies(unsigned long x);

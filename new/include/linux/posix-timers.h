@@ -1,3 +1,4 @@
+/* SPDX-License-Identifier: GPL-2.0 */
 #ifndef _linux_POSIX_TIMERS_H
 #define _linux_POSIX_TIMERS_H
 
@@ -7,6 +8,7 @@
 #include <linux/timex.h>
 #include <linux/alarmtimer.h>
 
+struct siginfo;
 
 struct cpu_timer_list {
 	struct list_head entry;
@@ -40,139 +42,117 @@ struct cpu_timer_list {
 #define CLOCKFD			CPUCLOCK_MAX
 #define CLOCKFD_MASK		(CPUCLOCK_PERTHREAD_MASK|CPUCLOCK_CLOCK_MASK)
 
-#define MAKE_PROCESS_CPUCLOCK(pid, clock) \
-	((~(clockid_t) (pid) << 3) | (clockid_t) (clock))
-#define MAKE_THREAD_CPUCLOCK(tid, clock) \
-	MAKE_PROCESS_CPUCLOCK((tid), (clock) | CPUCLOCK_PERTHREAD_MASK)
+static inline clockid_t make_process_cpuclock(const unsigned int pid,
+		const clockid_t clock)
+{
+	return ((~pid) << 3) | clock;
+}
+static inline clockid_t make_thread_cpuclock(const unsigned int tid,
+		const clockid_t clock)
+{
+	return make_process_cpuclock(tid, clock | CPUCLOCK_PERTHREAD_MASK);
+}
 
-#define FD_TO_CLOCKID(fd)	((~(clockid_t) (fd) << 3) | CLOCKFD)
-#define CLOCKID_TO_FD(clk)	((unsigned int) ~((clk) >> 3))
+static inline clockid_t fd_to_clockid(const int fd)
+{
+	return make_process_cpuclock((unsigned int) fd, CLOCKFD);
+}
 
-/* POSIX.1b interval timer structure. */
+static inline int clockid_to_fd(const clockid_t clk)
+{
+	return ~(clk >> 3);
+}
+
+#define REQUEUE_PENDING 1
+
 /**
- * 线程创建的posix时钟
+ * struct k_itimer - POSIX.1b interval timer structure.
+ * @list:		List head for binding the timer to signals->posix_timers
+ * @t_hash:		Entry in the posix timer hash table
+ * @it_lock:		Lock protecting the timer
+ * @kclock:		Pointer to the k_clock struct handling this timer
+ * @it_clock:		The posix timer clock id
+ * @it_id:		The posix timer id for identifying the timer
+ * @it_active:		Marker that timer is active
+ * @it_overrun:		The overrun counter for pending signals
+ * @it_overrun_last:	The overrun at the time of the last delivered signal
+ * @it_requeue_pending:	Indicator that timer waits for being requeued on
+ *			signal delivery
+ * @it_sigev_notify:	The notify word of sigevent struct for signal delivery
+ * @it_interval:	The interval for periodic timers
+ * @it_signal:		Pointer to the creators signal struct
+ * @it_pid:		The pid of the process/task targeted by the signal
+ * @it_process:		The task to wakeup on clock_nanosleep (CPU timers)
+ * @sigq:		Pointer to preallocated sigqueue
+ * @it:			Union representing the various posix timer type
+ *			internals. Also used for rcu freeing the timer.
  */
 struct k_itimer {
 	/* 进程链表节点 */
-	struct list_head list;		/* free/ allocate list */
+	struct list_head	list;
 	/* 全局哈希表节点 */
-	struct hlist_node t_hash;
+	struct hlist_node	t_hash;
 	/**
 	 * 保护本数据结构的spin lock
 	 */
-	spinlock_t it_lock;
-	/**
+	spinlock_t		it_lock;
+	const struct k_clock	*kclock;
+	/*
 	 * 以系统中哪一个clock为标准来计算超时时间
 	 */
-	clockid_t it_clock;		/* which timer type */
+	clockid_t		it_clock;
 	/* imer的ID，在一个进程中唯一标识该timer */
-	timer_t it_id;			/* timer id */
+	timer_t			it_id;
+	int			it_active;
 	/**
 	 * 用于overrun支持
 	 * 当前的overrun计数
 	 */
-	int it_overrun;			/* overrun on pending signal  */
+	s64			it_overrun;
 	/**
 	 * 上次overrun计数
 	 */
-	int it_overrun_last;		/* overrun on last delivered signal */
+	s64			it_overrun_last;
 	/**
 	 * 该timer对应信号挂入signal pending的状态
 	 * LSB bit标识该signal已经挂入signal pending队列，其他的bit作为信号的私有数据
 	 */
-	int it_requeue_pending;		/* waiting to requeue this timer */
-#define REQUEUE_PENDING 1
+	int			it_requeue_pending;
 	/**
 	 * timer超期后如何异步通知该进程
 	 * 如SIGEV_SIGNAL
 	 */
-	int it_sigev_notify;		/* notify word of sigevent struct */
+	int			it_sigev_notify;
+	ktime_t			it_interval;
 	/**
 	 * 该timer对应的signal descriptor
 	 */
-	struct signal_struct *it_signal;
+	struct signal_struct	*it_signal;
 	/**
 	 * 处理timer的线程
 	 */
 	union {
-		struct pid *it_pid;	/* pid of process to send signal to */
-		struct task_struct *it_process;	/* for clock_nanosleep */
+		struct pid		*it_pid;
+		struct task_struct	*it_process;
 	};
 	/* 超期后，该sigquue成员会挂入signal pending队列 */
-	struct sigqueue *sigq;		/* signal queue entry. */
+	struct sigqueue		*sigq;
 	/**
 	 * timer interval相关的信息
 	 */
 	union {
 		/* real time clock */
 		struct {
-			struct hrtimer timer;
-			/* one shot为0，否则为周期 */
-			ktime_t interval;
+			struct hrtimer	timer;
 		} real;
-		struct cpu_timer_list cpu;
-		struct {
-			unsigned int clock;
-			unsigned int node;
-			unsigned long incr;
-			unsigned long expires;
-		} mmtimer;
+		struct cpu_timer_list	cpu;
 		/* alarm timer相关的成员 */
 		struct {
-			struct alarm alarmtimer;
-			ktime_t interval;
+			struct alarm	alarmtimer;
 		} alarm;
-		struct rcu_head rcu;
+		struct rcu_head		rcu;
 	} it;
 };
-
-/**
- * 时钟描述符
- */
-struct k_clock {
-	/* 获取时间精度 */
-	int (*clock_getres) (const clockid_t which_clock, struct timespec *tp);
-	/**
-	 * 获取和设定当前的时间
-	 */
-	int (*clock_set) (const clockid_t which_clock,
-			  const struct timespec *tp);
-	int (*clock_get) (const clockid_t which_clock, struct timespec * tp);
-	/**
-	 * 根据外部的精确时间信息对本clock进行调整
-	 */
-	int (*clock_adj) (const clockid_t which_clock, struct timex *tx);
-	int (*timer_create) (struct k_itimer *timer);
-	/**
-	 * 睡眠特定时间
-	 */
-	int (*nsleep) (const clockid_t which_clock, int flags,
-		       struct timespec *, struct timespec __user *);
-	long (*nsleep_restart) (struct restart_block *restart_block);
-	/**
-	 * Posix Timer相关
-	 */
-	int (*timer_set) (struct k_itimer * timr, int flags,
-			  struct itimerspec * new_setting,
-			  struct itimerspec * old_setting);
-	int (*timer_del) (struct k_itimer * timr);
-#define TIMER_RETRY 1
-	/**
-	 * 获取时钟还有多长时间到期
-	 */
-	void (*timer_get) (struct k_itimer * timr,
-			   struct itimerspec * cur_setting);
-};
-
-extern struct k_clock clock_posix_cpu;
-extern struct k_clock clock_posix_dynamic;
-
-void posix_timers_register_clock(const clockid_t clock_id, struct k_clock *new_clock);
-
-/* function to call to trigger timer event */
-int posix_timer_event(struct k_itimer *timr, int si_private);
-
-void posix_cpu_timer_schedule(struct k_itimer *timer);
 
 void run_posix_cpu_timers(struct task_struct *task);
 void posix_cpu_timers_exit(struct task_struct *task);
@@ -180,8 +160,7 @@ void posix_cpu_timers_exit_group(struct task_struct *task);
 void set_process_cpu_timer(struct task_struct *task, unsigned int clock_idx,
 			   u64 *newval, u64 *oldval);
 
-long clock_nanosleep_restart(struct restart_block *restart_block);
-
 void update_rlimit_cpu(struct task_struct *task, unsigned long rlim_new);
 
+void posixtimer_rearm(struct siginfo *info);
 #endif

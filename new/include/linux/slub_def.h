@@ -1,3 +1,4 @@
+/* SPDX-License-Identifier: GPL-2.0 */
 #ifndef _LINUX_SLUB_DEF_H
 #define _LINUX_SLUB_DEF_H
 
@@ -58,15 +59,34 @@ struct kmem_cache_cpu {
     */
 	struct page *page;	/* The slab from which we are allocating */
 	// 当前cpu上被冻结的部分空page链表
+#ifdef CONFIG_SLUB_CPU_PARTIAL
     /*
         指向曾分配完所有的对象，但当前已回收至少一个对象的page
     */
 	struct page *partial;	/* Partially allocated frozen slabs */
+#endif
 #ifdef CONFIG_SLUB_STATS
     /*用以记录slab的状态*/
 	unsigned stat[NR_SLUB_STAT_ITEMS];
 #endif
 };
+
+#ifdef CONFIG_SLUB_CPU_PARTIAL
+#define slub_percpu_partial(c)		((c)->partial)
+
+#define slub_set_percpu_partial(c, p)		\
+({						\
+	slub_percpu_partial(c) = (p)->next;	\
+})
+
+#define slub_percpu_partial_read_once(c)     READ_ONCE(slub_percpu_partial(c))
+#else
+#define slub_percpu_partial(c)			NULL
+
+#define slub_set_percpu_partial(c, p)
+
+#define slub_percpu_partial_read_once(c)	NULL
+#endif // CONFIG_SLUB_CPU_PARTIAL
 
 /*
  * Word size structure that can be atomically updated or read and that
@@ -74,7 +94,7 @@ struct kmem_cache_cpu {
  * given order would contain.
  */
 struct kmem_cache_order_objects {
-	unsigned long x;
+	unsigned int x;
 };
 
 /*
@@ -89,13 +109,13 @@ struct kmem_cache {
        当cpu_slab中的可分配内存低于阈值时，
        slub将从node节点中获取更多的Page
     */
-    struct kmem_cache_cpu __percpu *cpu_slab;
+	struct kmem_cache_cpu __percpu *cpu_slab;
 	/* Used for retriving partial slabs etc */
 	/*
     	高速缓存永久属性的标识，如果SLAB描述符放在外部(不放在SLAB中)，
     	则CFLAGS_OFF_SLAB置1
 	*/
-	unsigned long flags;
+	slab_flags_t flags;
 	/*
         node结点中部分空slab缓冲区数量不能小于这个值,如果小于这个值,
         空闲slab缓冲区则不能够进行释放,而是将空闲slab加入到node结点的部分空slab链表中
@@ -105,17 +125,17 @@ struct kmem_cache {
 	    缓冲区中单个对象的所占内存空间大小，包括meta data。
 	    size = object size + meta data size
 	*/
-	int size;		/* The size of an object including meta data */
+	unsigned int size;	/* The size of an object including meta data */
     /*
         对象的实际大小
     */
-	int object_size;	/* The size of an object without meta data */
+	unsigned int object_size;/* The size of an object without meta data */
     /*
         free pointer的offset。Page被分为一个个内存块，
         各个内存块通过指针串接成链表，
         offset即free pointer在单个内存块中的偏移量
     */
-	int offset;		/* Free pointer offset. */
+	unsigned int offset;	/* Free pointer offset. */
     /*
         cpu_slab中部分空对象的最大个数。
         当cpu_slab中部分空对象大于此值时，
@@ -127,7 +147,10 @@ struct kmem_cache {
         1）当使用到了极限时，每个CPU的partial slab释放到每个管理节点链表的个数；
         2）当使用完每个CPU的对象数时，CPU的partial slab来自每个管理节点的对象数。
     */
-	int cpu_partial;	/* Number of per cpu partial objects to keep around */
+#ifdef CONFIG_SLUB_CPU_PARTIAL
+	/* Number of per cpu partial objects to keep around */
+	unsigned int cpu_partial;
+#endif
     /*
         保存slab缓冲区需要的页框数量的order值和objects数量的值，
         通过这个值可以计算出需要多少页框，这个是默认值，
@@ -162,12 +185,12 @@ struct kmem_cache {
 	/*
 	    元数据的偏移量
 	*/
-	int inuse;		/* Offset to metadata */
+	unsigned int inuse;		/* Offset to metadata */
 	/*
 	    对齐
 	*/
-	int align;		/* Alignment */
-	int reserved;		/* Reserved bytes at the end of slabs */
+	unsigned int align;		/* Alignment */
+	unsigned int red_left_pad;	/* Left redzone padding size */
 	/*
 	    高速缓存名字
 	*/
@@ -176,16 +199,21 @@ struct kmem_cache {
 	    所有的 kmem_cache 结构都会链入这个链表，链表头是 slab_caches
 	*/
 	struct list_head list;	/* List of slab caches */
-	int red_left_pad;	/* Left redzone padding size */
 #ifdef CONFIG_SYSFS
 	struct kobject kobj;	/* For sysfs */
+	struct work_struct kobj_remove_work;
 #endif
 #ifdef CONFIG_MEMCG
 	struct memcg_cache_params memcg_params;
-	int max_attr_size; /* for propagation, maximum size of a stored attr */
+	/* for propagation, maximum size of a stored attr */
+	unsigned int max_attr_size;
 #ifdef CONFIG_SYSFS
 	struct kset *memcg_kset;
 #endif
+#endif
+
+#ifdef CONFIG_SLAB_FREELIST_HARDENED
+	unsigned long random;
 #endif
 
 #ifdef CONFIG_NUMA
@@ -195,7 +223,7 @@ struct kmem_cache {
 	/*
 	    该值越小，越倾向于从本节点分配对象
 	*/
-	int remote_node_defrag_ratio;
+	unsigned int remote_node_defrag_ratio;
 #endif
 
 #ifdef CONFIG_SLAB_FREELIST_RANDOM
@@ -205,16 +233,32 @@ struct kmem_cache {
 #ifdef CONFIG_KASAN
 	struct kasan_cache kasan_info;
 #endif
-    /*
-        创建缓冲区的节点的 slab 信息
-    */
+
+	unsigned int useroffset;	/* Usercopy region offset */
+	unsigned int usersize;		/* Usercopy region size */
+
 	struct kmem_cache_node *node[MAX_NUMNODES];
 };
 
+#ifdef CONFIG_SLUB_CPU_PARTIAL
+#define slub_cpu_partial(s)		((s)->cpu_partial)
+#define slub_set_cpu_partial(s, n)		\
+({						\
+	slub_cpu_partial(s) = (n);		\
+})
+#else
+#define slub_cpu_partial(s)		(0)
+#define slub_set_cpu_partial(s, n)
+#endif // CONFIG_SLUB_CPU_PARTIAL
+
 #ifdef CONFIG_SYSFS
 #define SLAB_SUPPORTS_SYSFS
+void sysfs_slab_unlink(struct kmem_cache *);
 void sysfs_slab_release(struct kmem_cache *);
 #else
+static inline void sysfs_slab_unlink(struct kmem_cache *s)
+{
+}
 static inline void sysfs_slab_release(struct kmem_cache *s)
 {
 }

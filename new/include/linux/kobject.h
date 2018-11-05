@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-2.0
 /*
  * kobject.h - generic kernel object infrastructure.
  *
@@ -5,8 +6,6 @@
  * Copyright (c) 2002-2003 Open Source Development Labs
  * Copyright (c) 2006-2008 Greg Kroah-Hartman <greg@kroah.com>
  * Copyright (c) 2006-2008 Novell Inc.
- *
- * This file is released under the GPLv2.
  *
  * Please read Documentation/kobject.txt before using the kobject
  * interface, ESPECIALLY the parts about reference counts and object
@@ -27,6 +26,7 @@
 #include <linux/wait.h>
 #include <linux/atomic.h>
 #include <linux/workqueue.h>
+#include <linux/uidgid.h>
 
 #define UEVENT_HELPER_PATH_LEN		256
 #define UEVENT_NUM_ENVP			32	/* number of env pointers */
@@ -58,6 +58,8 @@ enum kobject_action {
 	KOBJ_MOVE,
 	KOBJ_ONLINE,
 	KOBJ_OFFLINE,
+	KOBJ_BIND,
+	KOBJ_UNBIND,
 	KOBJ_MAX
 };
 
@@ -141,7 +143,7 @@ struct kobject {
 	/*如果该kobject对象隶属于某一个kset,那么它的状态变化可以导致其所在的kset对象向
 	 *用户空间发送event消息,成员uevent_suppress用来表示当该kobject状态发生变化时,
 	 *是否让其所在的kset向用户空间发送event消息,值1表示不让kset发送这种event消息*/
-	unsigned int uevent_suppress:1;	
+	unsigned int uevent_suppress:1;
 };
 
 extern __printf(2, 3)
@@ -180,10 +182,31 @@ extern int __must_check kobject_move(struct kobject *, struct kobject *);
 
 /*增加或减少kobject的引用计数*/
 extern struct kobject *kobject_get(struct kobject *kobj);
+extern struct kobject * __must_check kobject_get_unless_zero(
+						struct kobject *kobj);
 extern void kobject_put(struct kobject *kobj);
 
 extern const void *kobject_namespace(struct kobject *kobj);
+extern void kobject_get_ownership(struct kobject *kobj,
+				  kuid_t *uid, kgid_t *gid);
 extern char *kobject_get_path(struct kobject *kobj, gfp_t flag);
+
+/**
+ * kobject_has_children - Returns whether a kobject has children.
+ * @kobj: the object to test
+ *
+ * This will return whether a kobject has other kobjects as children.
+ *
+ * It does NOT account for the presence of attribute files, only sub
+ * directories. It also assumes there is no concurrent addition or
+ * removal of such children, and thus relies on external locking.
+ */
+static inline bool kobject_has_children(struct kobject *kobj)
+{
+	WARN_ON_ONCE(kref_read(&kobj->kref) == 0);
+
+	return kobj->sd && kobj->sd->dir.subdirs;
+}
 
 /*
 而Kobject大多数的使用场景，
@@ -218,6 +241,7 @@ struct kobj_type {
 	/* 和文件系统（sysfs）的命名空间有关*/
 	const struct kobj_ns_type_operations *(*child_ns_type)(struct kobject *kobj);
 	const void *(*namespace)(struct kobject *kobj);
+	void (*get_ownership)(struct kobject *kobj, kuid_t *uid, kgid_t *gid);
 };
 
 struct kobj_uevent_env {
@@ -288,8 +312,7 @@ struct kset {
     因此，如果一个kobject不属于任何kset时，是不允许发送uevent的
 	*/
 	const struct kset_uevent_ops *uevent_ops;
-};
-
+} __randomize_layout;
 /*用来初始化一个kset对象*/
 extern void kset_init(struct kset *kset);
 /*用来初始化并向系统注册一个kset对象*/
@@ -339,11 +362,9 @@ extern struct kobject *firmware_kobj;
 int kobject_uevent(struct kobject *kobj, enum kobject_action action);
 int kobject_uevent_env(struct kobject *kobj, enum kobject_action action,
 			char *envp[]);
+int kobject_synth_uevent(struct kobject *kobj, const char *buf, size_t count);
 
 __printf(2, 3)
 int add_uevent_var(struct kobj_uevent_env *env, const char *format, ...);
-
-int kobject_action_type(const char *buf, size_t count,
-			enum kobject_action *type);
 
 #endif /* _KOBJECT_H_ */

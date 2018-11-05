@@ -19,7 +19,7 @@
 
 #include <uapi/linux/taskstats.h>
 
-*
+/*
 delayacct是一个缩写，是指per-task delay accounting。
 这个feature是统计每一个task的等待系统资源的时间（例如等待CPU、memeory或者IO）。
 这些统计信息有助于精准的确定task访问系统资源的优先级。

@@ -1,7 +1,8 @@
+/* SPDX-License-Identifier: GPL-2.0 */
 #ifndef _LINUX_PID_H
 #define _LINUX_PID_H
 
-#include <linux/rcupdate.h>
+#include <linux/rculist.h>
 
 enum pid_type
 {
@@ -10,6 +11,7 @@ enum pid_type
     简称PID。在使用 fork 或 clone 系统调用时产生的进程均会由内核分配一个新的唯一的PID值
     */
 	PIDTYPE_PID,
+	PIDTYPE_TGID,
 	/*
     独立的进程可以组成进程组（使用setpgrp系统调用），
     进程组可以简化向所有组内进程发送信号的操作
@@ -23,7 +25,7 @@ enum pid_type
     保存在task_struct的session成员中
 	*/
 	PIDTYPE_SID,
-	PIDTYPE_MAX
+	PIDTYPE_MAX,
 };
 
 /*
@@ -68,10 +70,8 @@ upid 用来关联PID和命名空间的结构体
 因此各个命名空间的PID有可能重复，也即是一个PID可能为多个进程使用，
 */
 struct upid {
-	/* Try to keep pid_chain in the same cacheline as nr for find_vpid */
 	int nr; // ID具体的值
 	struct pid_namespace *ns; // 指向命名空间的指针
-	struct hlist_node pid_chain; // 指向PID哈希列表的指针，用于关联对于的PID
 };
 
 struct pid
@@ -97,14 +97,6 @@ struct pid
 };
 
 extern struct pid init_struct_pid;
-/*
-pid的哈希表存储结构
-*/
-struct pid_link
-{
-	struct hlist_node node;
-	struct pid *pid;
-};
 
 static inline struct pid *get_pid(struct pid *pid)
 {
@@ -210,7 +202,7 @@ pid_t pid_vnr(struct pid *pid);
 	do {								\
 		if ((pid) != NULL)					\
 			hlist_for_each_entry_rcu((task),		\
-				&(pid)->tasks[type], pids[type].node) {
+				&(pid)->tasks[type], pid_links[type]) {
 
 			/*
 			 * Both old and new leaders may be attached to
@@ -225,10 +217,10 @@ pid_t pid_vnr(struct pid *pid);
 #define do_each_pid_thread(pid, type, task)				\
 	do_each_pid_task(pid, type, task) {				\
 		struct task_struct *tg___ = task;			\
-		do {
+		for_each_thread(tg___, task) {
 
 #define while_each_pid_thread(pid, type, task)				\
-		} while_each_thread(tg___, task);			\
+		}							\
 		task = tg___;						\
 	} while_each_pid_task(pid, type, task)
 #endif /* _LINUX_PID_H */
