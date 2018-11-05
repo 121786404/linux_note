@@ -1,5 +1,6 @@
 #!/bin/bash
 
+cp linux-patch/* linux-stable -r
 cd linux-stable
 
 if [ $# -lt 1 ]; then
