@@ -1,0 +1,8 @@
+linux-stable/arch/arm/boot/dts/vexpress-v2p-ca15_a7.dts
+linux-stable/arch/arm/kernel/vmlinux-stable.lds.S
+linux-stable/arch/arm/kernel/vmlinux-stable.lds
+linux-stable/arch/arm/configs/my_vexpress_defconfig
+linux-stable/include/generated/autoconf.h
+linux-stable/drivers/hid/usbhid/usbmouse.c
+linux-stable/drivers/hid/usbhid/usbkbd.c
+linux-stable/drivers/media/i2c/ov9650.c
