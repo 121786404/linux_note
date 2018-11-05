@@ -14,8 +14,7 @@ case $1 in
 		export CROSS_COMPILE=arm-linux-gnueabi-
 		make distclean
 		make vexpress_defconfig
-		make -j4 zImage modules
-		make LOADADDR=0x60003000 uImage
+		make bzImage -j4
 		make dtbs
 		../collect-src -f "linux-stable" -o ../linux_arm32.list
 		cd ..
