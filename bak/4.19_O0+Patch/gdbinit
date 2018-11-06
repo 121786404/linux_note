@@ -1,0 +1,30 @@
+file vmlinux
+set backtrace limit 15
+
+b __aeabi_ldivmod
+b __bad_cmpxchg
+b __bad_xchg
+b __frontswap_invalidate_area
+b __frontswap_invalidate_page
+b __frontswap_load
+b __frontswap_store
+b bpf_prog_offload_compile
+b bpf_prog_offload_destroy
+b change_huge_pmd
+b copy_huge_pmd
+b copy_huge_pud
+b dax_delete_mapping_entry
+b dax_invalidate_mapping_entry_sync
+b do_huge_pmd_anonymous_page
+b follow_trans_huge_pmd
+b huge_pmd_set_accessed
+b linear_hugepage_index
+b madvise_free_huge_pmd
+b memcg_kmem_charge
+b memcg_kmem_get_cache
+b memcg_kmem_put_cache
+b memcg_kmem_uncharge
+b move_huge_pmd
+b pte_mkdevmap
+b zap_huge_pmd
+b zap_huge_pud
