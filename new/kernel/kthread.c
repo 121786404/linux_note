@@ -331,7 +331,7 @@ struct task_struct *__kthread_create_on_node(int (*threadfn)(void *data),
 	create->done = &done;
 
 /*
-将新建任务加入kthread_create_list 
+	将新建任务加入kthread_create_list 
 */
 	spin_lock(&kthread_create_lock);
 	list_add_tail(&create->list, &kthread_create_list);
@@ -629,8 +629,8 @@ int kthreadd(void *unused)
 	cgroup_init_kthreadd();
 
 	for (;;) {
-        /*  首先将线程状态设置为 TASK_INTERRUPTIBLE, 如果当前
-                 没有要创建的线程则主动放弃 CPU 完成调度.此进程变为阻塞态*/
+        /*  首先将线程状态设置为 TASK_INTERRUPTIBLE, 
+        如果当前没有要创建的线程则主动放弃 CPU 完成调度.此进程变为阻塞态*/
 
 		set_current_state(TASK_INTERRUPTIBLE);
 		if (list_empty(&kthread_create_list))//没有需要创建的内核线程，调度出去等待唤醒。

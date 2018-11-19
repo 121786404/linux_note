@@ -40,7 +40,9 @@
 #include <linux/proc_fs.h>
 #include <linux/sched/task.h>
 #include <linux/idr.h>
-
+/*
+	init task 进程的默认配置
+*/
 struct pid init_struct_pid = {
 	.count 		= ATOMIC_INIT(1),
 	.tasks		= {

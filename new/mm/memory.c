@@ -1296,6 +1296,9 @@ int copy_page_range(struct mm_struct *dst_mm, struct mm_struct *src_mm,
 {
 	pgd_t *src_pgd, *dst_pgd;
 	unsigned long next;
+/*
+	VMA 对应的起始地址和结束地址	
+*/
 	unsigned long addr = vma->vm_start;
 	unsigned long end = vma->vm_end;
 	unsigned long mmun_start;	/* For mmu_notifiers */
@@ -1347,7 +1350,9 @@ int copy_page_range(struct mm_struct *dst_mm, struct mm_struct *src_mm,
 		if (pgd_none_or_clear_bad(src_pgd))
 			continue;
 /*
-        从pud pmd 顺着页表方向循环到PTE页表
+		从PUD 、PMD 开始顺着页表方向循环到PTE 页表 		
+		从VMA 起始地址开始到结束地址依次调用 copy_p4d_range 函数，
+		利用父进程的 pte 设置到		对应子进程pte 页表项中
 */
 		if (unlikely(copy_p4d_range(dst_mm, src_mm, dst_pgd, src_pgd,
 					    vma, addr, next))) {

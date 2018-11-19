@@ -5,55 +5,61 @@
 /*
  * cloning flags:
  */
+/*
+用来控制进程复制过的一些属性信息,             描述需要从父进程继承那些资源。
+通过clone标志可以有选择的对父进程的资源进行复制；
+
+该标志位的4个字节分为两部分。
+最低的一个字节为子进程结束时发送给父进程的信号代码，通常为 SIGCHLD ；
+子进程终止后将发送信号SIGCHLD信号通知父进程
+
+剩余的三个字节则是各种clone标志的组，             也就是若干个标志之间的或运算。
+*/
 #define CSIGNAL		0x000000ff	/* signal mask to be sent at exit */
-/* 父子进程共享内存空间*/
+/* 父子进程共享内存空间；一个进程对全局变量改动，另外一个进程也可以看到*/
 #define CLONE_VM	0x00000100	/* set if VM shared between processes */
 /*
-父子进程共享文件系统信息，（例如文件系统的root、当前工作目录等），
-如果设定了该flag，那么父子进程共享文件系统信息，
-如果不设定该flag，那么子进程则copy父进程的文件系统信息，
-之后，子进程调用chroot，chdir，umask来改变文件系统信息将不会影响到父进程
+父进程和子进程共享文件系统信息，例如根目录、当前工作目录等。
+其中一个进程对文件系统信息进行改变，将会影响到另外一个进程，例如调用chroot或chdir 等
 */
 #define CLONE_FS	0x00000200	/* set if fs info shared between processes */
 /*
-子进程与父进程共享相同的文件描述符（file descriptor）表,即共享打开的文件
+父进程和子进程共享文件描述符表。
+文件描述符表里面保存进程打开文件描述符的信息，因此一个进程打开的文件，在另外一个进程用同样的描述符也可以访问。
+一个进程关闭了一个文件或者使用fcntl改变了一个文件属性，另外一个进程也能看到。
 */
-#define CLONE_FILES	0x00000400	/* set if open files shared between processes */
-/* 表示创建的子进程与父进程共享相同的信号处理（signal handler）表 ，必须同时设置CLONE_VM标志*/
+#define CLONE_FILES	 0x00000400	/* set if open files shared between processes */
+/* 
+表示创建的子进程与父进程共享相同的信号处理（signal handler）表 ，必须同时设置CLONE_VM标志
+一个进程修改了某一个signal的handler，	  另外一个进程也可以感知的到。
+*/
 #define CLONE_SIGHAND	0x00000800	/* set if signal handlers and blocked signals shared */
-/* 如果父进程被追踪，那么子进程也被追踪*/
+/* 如果父进程被trace，那么子进程也被trace*/
 #define CLONE_PTRACE	0x00002000	/* set if we want to let tracing continue on the child too */
-/* 在发出vfork系统调用时设置*/
-#define CLONE_VFORK	0x00004000	/* set if the parent wants the child to wake it up on mm_release */
-/* 创建的子进程的父进程是调用者的父进程，
-     新进程与创建它的进程成了“兄弟”而不是“父子” */
-#define CLONE_PARENT	0x00008000	/* set if we want to have the same parent as the cloner */
-/*
-子进程与父进程处于一个线程组，必须同时设置CLONE_SIGHAND
+/* 
+如果使用的是vfork，那么采用completion，使父进程进入睡眠等待，
+直到子进程调用execve或exit释放虚拟内存资源后，父进程再运行 
+
+vfork 产生的子进程不复制父进程的页表，可以减少工作量
 */
+#define CLONE_VFORK	0x00004000	/* set if the parent wants the child to wake it up on mm_release */
+/* 
+新进程与创建它的进程是“兄弟”而不是“父子” 
+*/
+#define CLONE_PARENT	0x00008000	/* set if we want to have the same parent as the cloner */
+/*子进程与父进程处于一个线程组，必须同时设置CLONE_SIGHAND */
 #define CLONE_THREAD	0x00010000	/* Same thread group? */
 /*
-CLONE_NEWNS这个flag就是用来控制在clone的时候，
-父子进程是否要共享mount namespace的。
-通过fork创建的进程总是和父进程共享mount namespace的
-（当然子进程也可以调用unshare来解除共享）。
-当调用clone创建进程的时候，可以有更多的灵活性，
-可以通过 CLONE_NEWNS这个flag可以不和父进程共享mount namespace
-（注意：子进程的这个private mount namespace仍然用父进程的mount namespace来初始化，
-只是之后，子进程和父进程的mount namespace就分道扬镳了，
-这时候，子进程的mount或者umount的动作将不会影响到父进程）
-
-挂载命名空间，进程运行时可以将挂载点与系统分离，
-使用这个功能时，我们可以达到 chroot 的功能，而在安全性方面比 chroot 更高
-
 当调用clone时，设定了CLONE_NEWNS，就会创建一个新的mount Namespace。
-每个进程都存在于一个mount Namespace里面，
-mount Namespace为进程提供了一个文件层次视图。
-如果不设定这个flag，子进程和父进程将共享一个mount Namespace，
+每个进程都存在于一个mount Namespace里面，mount Namespace为进程提供了一个文件层次视图。
+如果不设定这个flag，子进程和父进程将共享一个mount Namespace（当然子进程也可以调用unshare来解除共享），
 其后子进程调用mount或umount将会影响到所有该Namespace内的进程。
-如果子进程在一个独立的mount Namespace里面，
-就可以调用mount或umount建立一份新的文件层次视图。
+如果子进程在一个独立的mount Namespace里面，就可以调用mount或umount建立一份新的文件层次视图。
 该flag配合pivot_root系统调用，可以为进程创建一个独立的目录空间
+（注意：子进程的这个private mount namespace仍然用父进程的mount namespace来初始化，
+只是之后，子进程和父进程的mount namespace就分道扬镳了，这时候，子进程的mount或者umount的动作将不会影响到父进程）
+
+使用这个功能时，我们可以达到 chroot 的功能，而在安全性方面比 chroot 更高
 */
 #define CLONE_NEWNS	0x00020000	/* New mount namespace group */
 /* 父子进程共享system V SEM_UNDO 语义*/
@@ -68,6 +74,9 @@ mount Namespace为进程提供了一个文件层次视图。
 /*
 如果用户进程 在创建的时候有携带CLONE_UNTRACED的flag，
 那么该进程则不能被trace。
+
+kernel_thread创建的内核线程在创建的时候都会携带 CLONE_UNTRACED，
+这也就意味着，内核线程是无法被traced，也就不需要上报event给tracer。
 */
 #define CLONE_UNTRACED		0x00800000	/* set if the tracing process can't force CLONE_PTRACE on this clone */
 /* 将TID 回写至用户空间 */
@@ -113,8 +122,6 @@ PID Namespace和IPC Namespace可以组合起来一起使用，只需在调用clo
 CLONE_NEWUSER CLONE_NEWPID 这两个flag是和user namespace相关的标识，
 在通过clone函数fork进程的时候，我们可以选择clone之前的user namespace，
 当然也可以通过传递该标识来创建新的user namespace。
-用户命名空间，同进程 ID 一样，用户 ID 和组 ID 在命名空间内外是不一样的，
-并且在不同命名空间内可以存在相同的 ID
 */
 #define CLONE_NEWUSER		0x10000000	/* New user namespace */
 /*
@@ -124,18 +131,17 @@ CLONE_NEWUSER CLONE_NEWPID 这两个flag是和user namespace相关的标识，
 比如说，命名空间内第一个 PID 为1，而在命名空间外就是该 PID 已被 init 进程所使用
 
 当调用clone时，设定了CLONE_NEWPID，就会创建一个新的PID Namespace，
-clone出来的新进程将成为Namespace里的第一个进程。
-一个PID Namespace为进程提供了一个独立的PID环境，
+clone出来的新进程将成为Namespace里的第一个进程。一个PID Namespace为进程提供了一个独立的PID环境，
 PID Namespace内的PID将从1开始，在Namespace内调用fork，vfork或clone都将产生一个在该Namespace内独立的PID。
-新创建的Namespace里的第一个进程在该Namespace内的PID将为1，
-就像一个独立的系统里的init进程一样。
-该Namespace内的孤儿进程都将以该进程为父进程，当该进程被结束时，
-该Namespace内所有的进程都会被结束。
+
+新创建的Namespace里的第一个进程在该Namespace内的PID将为1，就像一个独立的系统里的init进程一样。
+该Namespace内的孤儿进程都将以该进程为父进程，当该进程被结束时，该Namespace内所有的进程都会被结束。
+
 PID Namespace是层次性，新创建的Namespace将会是创建该Namespace的进程属于的Namespace的子Namespace。
 子Namespace中的进程对于父Namespace是可见的，一个进程将拥有不止一个PID，
 而是在所在的Namespace以及所有直系祖先Namespace中都将有一个PID。
-系统启动时，内核将创建一个默认的PID Namespace，
-该Namespace是所有以后创建的Namespace的祖先，
+
+系统启动时，内核将创建一个默认的PID Namespace，该Namespace是所有以后创建的Namespace的祖先，
 因此系统所有的进程在该Namespace都是可见的
 */
 #define CLONE_NEWPID		0x20000000	/* New pid namespace */

@@ -578,11 +578,14 @@ void __init smp_init(void)
 	pr_info("Bringing up secondary CPUs ...\n");
 
 	/* FIXME: This should be done in userspace --RR */
+/*
+	遍历 cpu_present_mask 中的CPU	
+*/
 	for_each_present_cpu(cpu) {
 		if (num_online_cpus() >= setup_max_cpus)
 			break;
 		if (!cpu_online(cpu))
-			cpu_up(cpu);
+			cpu_up(cpu); // 使能该CPU	
 	}
 
 	num_nodes = num_online_nodes();

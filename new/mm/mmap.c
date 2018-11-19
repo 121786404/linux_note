@@ -1180,20 +1180,16 @@ can_vma_merge_after(struct vm_area_struct *vma, unsigned long vm_flags,
  
  anon_vma:新区域所属的匿名映射
  
- file:新区域映射的文件
+ file:如果该区域属于一个文件映射，则file是一个指向表示该文件的file实例的指针
  
- pgoff:新区域映射文件的偏移
+ pgoff:映射在文件数据内的偏移量
  
  policy:和NUMA相关
 
  vm_userfaultfd_ctx :
 
-* 在新区域被加到进程的地址空间时，内核会检查它是否可以与一个或多个现存区域合并。
- * vma_merge()在可能的情况下，将一个新区域与周边区域合并。mm是相关进程的地址空间实例
- * 而prev是紧接着新区域之前的区域。rb_parent是该区域在红黑树中的父结点。
- * addr、end和vm_flags分别是新区域的开始地址、结束地址、标志。
- * 如果该区域属于一个文件映射，则file是一个指向表示该文件的file实例的指针。
- * pgoff指定了映射在文件数据内的偏移量。policy参数只在NUMA系统上需要
+ 在新区域被加到进程的地址空间时，内核会检查它是否可以与一个或多个现存区域合并。
+ vma_merge()在可能的情况下，将一个新区域与周边区域合并。
 */
 struct vm_area_struct *vma_merge(struct mm_struct *mm, // 
 			struct vm_area_struct *prev, unsigned long addr,
@@ -1228,7 +1224,7 @@ struct vm_area_struct *vma_merge(struct mm_struct *mm, //
 	area = next;
 
 	/*
-	后驱节点存在，并且后驱vma的结束地址和给定区域的结束地址相同， 
+	  后驱节点存在，并且后驱vma的结束地址和给定区域的结束地址相同， 
       也就是说两者有重叠，那么调整后驱vma
       */
 	if (area && area->vm_end == end)		/* cases 6, 7, 8 */
@@ -1243,8 +1239,7 @@ struct vm_area_struct *vma_merge(struct mm_struct *mm, //
 	 * Can it merge with the predecessor?
 	 */
    /* 
-   	 通过can_vma_merge_after()辅助函数完成检查，检查
-	 区域与前一个区域是否可以合并。
+   	 通过can_vma_merge_after()辅助函数完成检查，检查	 区域与前一个区域是否可以合并。
 	 前一个节点的结尾处与当前起始位置符，有合并的可能性 && 检查二者的属性是否允许合并 
 		
      先判断给定的区域能否和前驱vma进行合并，需要判断如下的几个方面: 
@@ -2512,12 +2507,6 @@ EXPORT_SYMBOL(get_unmapped_area);
 
 /* Look up the first VMA which satisfies  addr < vm_end,  NULL if none. */
 /*
- * 通过虚拟地址，find_vma可以查找用户地址空间中
- * 结束地址在给定地址之后的第一个区域，
- * 即满足addr<vm_area_struct->vm_end条件的第一个区域。
- * 该函数的参数不仅包括虚拟地址(addr)，还包括
- * 一个指向mm_struct实例的指针，后者指定了扫描哪个进程的地址空间。
- *
  * 查找给定地址的最邻近区。
  * 它查找线性区的vm_end字段大于addr的第一个线性区的位置。并返回这个线性区描述符的地址。
  * 如果没有这样的线性区存在，就返回NULL。
@@ -2531,12 +2520,8 @@ struct vm_area_struct *find_vma(struct mm_struct *mm, unsigned long addr)
 	struct vm_area_struct *vma;
 
 	/* Check the cache first. */
-	//首先尝试mmap_cache中缓存的vma
 	/*
-	 * 内核首先检查上次处理的区域中是否包含所需的地址，即是否
-	 * 该区域的结束地址在目标地址之后，而起始
-	 * 地址在目标地址之前。倘若如此，内核
-	 * 不会执行if语句，而是立即将指向该区域的指针返回。
+	 * 内核首先检查上次处理的区域中是否包含所需的地址，
 	 */
 	vma = vmacache_find(mm, addr);
 	if (likely(vma))

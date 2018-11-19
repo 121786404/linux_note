@@ -68,6 +68,9 @@ struct task_struct init_task
 	.stack_refcount	= ATOMIC_INIT(1),
 #endif
 	.state		= 0,
+/*
+		
+*/
 	.stack		= init_stack,
 	.usage		= ATOMIC_INIT(2),
 	.flags		= PF_KTHREAD,

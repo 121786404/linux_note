@@ -84,6 +84,9 @@ struct task_delay_info {
 #include <linux/sched.h>
 #include <linux/slab.h>
 
+/*
+delayacct是一个缩写，是指per-task delay accounting。统计每一个task的等待系统资源的时间
+*/
 #ifdef CONFIG_TASK_DELAY_ACCT
 extern int delayacct_on;	/* Delay accounting turned on/off */
 extern struct kmem_cache *delayacct_cache;

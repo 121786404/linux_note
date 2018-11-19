@@ -53,7 +53,7 @@ pgd_t *pgd_alloc(struct mm_struct *mm)
 	 */
 	init_pgd = pgd_offset_k(0);
 /*
-复制init进程内核空间的PGD页表项到新进程页表中。
+	复制init进程内核空间的PGD页表项到新进程页表中。
 */
 	memcpy(new_pgd + USER_PTRS_PER_PGD, init_pgd + USER_PTRS_PER_PGD,
 		       (PTRS_PER_PGD - USER_PTRS_PER_PGD) * sizeof(pgd_t));
@@ -73,7 +73,9 @@ pgd_t *pgd_alloc(struct mm_struct *mm)
 	if (!new_pmd)
 		goto no_pmd;
 #endif
-
+/*
+	ARM 处理器的异常向量表分低端向量表和高端向量表
+*/
 	if (!vectors_high()) {
 		/*
 		 * On ARM, first page must always be allocated since it
@@ -87,7 +89,9 @@ pgd_t *pgd_alloc(struct mm_struct *mm)
 		new_pmd = pmd_alloc(mm, new_pud, 0);
 		if (!new_pmd)
 			goto no_pmd;
-
+/*
+		为新进程分配一组 pte 页表
+*/
 		new_pte = pte_alloc_map(mm, new_pmd, 0);
 		if (!new_pte)
 			goto no_pte;
@@ -105,10 +109,11 @@ pgd_t *pgd_alloc(struct mm_struct *mm)
 		init_pud = pud_offset(init_pgd, 0);
 		init_pmd = pmd_offset(init_pud, 0);
 		init_pte = pte_offset_map(init_pmd, 0);
-/*
-    ARM处理器的异常向量表如果是低端向量表，地址空间中第一个页面和第二个页面通常包含
-    ARM处理器的向量表和相应的信息，直接从init进程复制是最简单的方法
-*/
+
+		/*
+		如果使用低端向量表，地址空间中第一个页面和第二页面通常包含ARM处理器的向量表和相应的信息，
+		因此新进程页表中这一部分页表项内容需要设置，最好的办法是从init进程的页表中复制过来		 
+		*/
 		set_pte_ext(new_pte + 0, init_pte[0], 0);
 		set_pte_ext(new_pte + 1, init_pte[1], 0);
 		pte_unmap(init_pte);

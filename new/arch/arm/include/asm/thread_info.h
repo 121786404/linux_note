@@ -51,8 +51,8 @@ struct cpu_context_save {
  * __switch_to() assumes cpu_context follows immediately after cpu_domain.
  */
 /*
- thread_info就保存了特定体系结构的汇编代码段
- 需要访问的那部分进程的数据
+ thread_info 存储进程描述符频繁访问和硬件快速访问的字段
+
 
 * ------------------------------|
            8 byte               |
@@ -77,9 +77,11 @@ struct thread_info {
 	preempt_count 不为0:，可能是
 	1) preempt_disable 禁止抢占
 	2) 处于中断上下文
-    bit[0:7] 抢占计数
-	bit[8:15] 用于软中断，一般只是用bit 8，可以表示软中断的嵌套深度，最多表示255次嵌套
-    bit[16:19] 用于硬件中断，一般只是用bit 4，可以表示硬中断的嵌套深度，最多表示15次嵌套
+    bit[0:7] 记录内核显式地被禁止抢占的次数。
+		     每次调用 preempt_disable 时该域的值会加1，		     调用 preempt_enable 该域的值会减1 
+		     preempt_disable 和 preempt_enable 成对出现，可以嵌套的深度最大为255
+	bit[8:15] 用于softirq，一般只是用bit 8，可以表示软中断的嵌套深度，最多表示255次嵌套
+    bit[16:19] 用于hardirq，一般只是用bit 4，可以表示硬中断的嵌套深度，最多表示15次嵌套
     bit[20] NMI中断
     bit[21] 当前被强占或者刚刚被强占，通常用于表示抢占调度
 */
@@ -93,7 +95,7 @@ struct thread_info {
 */
 	mm_segment_t		addr_limit;	/* address limit */
 /*
-	便的通过thread_info来查找task_struct
+	便的通过 thread_info 来查找task_struct
 */
 	struct task_struct	*task;		/* main task structure */
 /*
@@ -101,6 +103,9 @@ struct thread_info {
 */
 	__u32			cpu;		/* cpu */
 	__u32			cpu_domain;	/* cpu domain */
+/*
+	进程的上下文相关的通用寄存器	
+*/
 	struct cpu_context_save	cpu_context;	/* cpu context */
 	__u32			syscall;	/* syscall number */
 	__u8			used_cp[16];	/* thread used copro */

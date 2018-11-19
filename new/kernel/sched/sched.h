@@ -366,19 +366,35 @@ struct task_group {
 #ifdef CONFIG_FAIR_GROUP_SCHED
 	/* schedulable entities of this group on each cpu */
 /*
-	CFS调度器的进程组变量，在 alloc_fair_sched_group() 中进程初始化及分配内存
+	  CFS调度器的进程组变量，在 alloc_fair_sched_group() 中进程初始化及分配内存
       该进程组在每个CPU上都有对应的一个调度实体，
       因为有可能此进程组同时在两个CPU上运行
       (它的A进程在CPU0上运行，B进程在CPU1上运行)
+
+      指针数组，数组大小等于CPU数量。现在假设只有一个CPU的系统。
+      我们将一个用户组也用一个调度实体代替，插入对应的红黑树。
+      例如，上面用户组A和用户组B就是两个调度实体se，挂在顶层的就绪队列cfs_rq中。
+
+      用户组A管理9个可运行的进程，这9个调度实体se作为用户组A调度实体的child。
+      通过se->parent成员建立关系。
+      
+      用户组A也维护一个就绪队列cfs_rq，暂且称之为 group cfs_rq，
+      管理的9个进程的调度实体挂在group cfs_rq上。
+      当我们选择进程运行的时候，首先从根就绪队列 cfs_rq 上选择用户组A，
+      再从用户组A的 group cfs_rq 上选择其中一个进程运行。
+      现在考虑多核CPU的情况，用户组中的进程可以在多个CPU上运行。
+      因此，我们需要CPU个数的调度实体se，分别挂在每个CPU的根cfs_rq上
 */
 	struct sched_entity	**se;
 	/* runqueue "owned" by this group on each CPU */
 /*
-	进程组在每个CPU上都有一个CFS运行队列(为什么需要，稍后解释)
+	指针数组，大小是CPU的数量。
+	因为每一个CPU上都可以运行进程，因此需要维护CPU个数的group cfs_rq
 */
 	struct cfs_rq		**cfs_rq;
 /*
-    用于保存优先级默认为NICE 0的优先级
+    调度实体有权重的概念，以权重的比例分配CPU时间。
+    用户组同样有权重的概念，share就是task_group的权重
 */
 	unsigned long		shares;
 
@@ -388,6 +404,9 @@ struct task_group {
 	 * it in its own cacheline separated from the fields above which
 	 * will also be accessed at each tick.
 	 */
+/*
+	整个用户组的负载贡献总和	 
+*/
 	atomic_long_t		load_avg ____cacheline_aligned;
 #endif
 #endif
@@ -513,19 +532,10 @@ struct cfs_bandwidth { };
 #endif	/* CONFIG_CGROUP_SCHED */
 
 /* CFS-related fields in a runqueue */
-/* CFS调度的运行队列，每个CPU的rq会包含一个cfs_rq，
-而每个组调度的sched_entity也会有自己的一个cfs_rq队列
-
-在系统中至少有一个CFS运行队列，其就是根CFS运行队列，
-而其他的进程组和进程都包含在此运行队列中，
-不同的是进程组又有它自己的CFS运行队列，
-其运行队列中包含的是此进程组中的所有进程。
-当调度器从根CFS运行队列中选择了一个进程组进行调度时，
-进程组会从自己的CFS运行队列中选择一个调度实体进行调度
-(这个调度实体可能为进程，也可能又是一个子进程组)，
-就这样一直深入，直到最后选出一个进程进行运行为止。
- struct cfs_rq 代表着一个CFS运行队列，
-并且包含有一个红黑树进行选择调度进程
+/* 
+struct cfs_rq是CFS调度类的就绪队列，包含有一个红黑树进行选择调度进程,
+管理就绪态的struct sched_entity调度实体，
+后续通过pick_next_task接口从就绪队列中选择最适合运行的调度实体（虚拟时间最小的调度实体）。
 */
 struct cfs_rq {
     /*
@@ -534,6 +544,9 @@ struct cfs_rq {
      */
 	struct load_weight load;
 		unsigned long		runnable_weight;
+/*
+	就绪队列上调度实体的个数
+*/
 	unsigned int		nr_running;
 	/*
        * nr_running: cfs_rq中调度实体数量
@@ -542,18 +555,23 @@ struct cfs_rq {
 	unsigned int		h_nr_running;
 
 	u64 exec_clock;
-    /* 当前CFS队列上最小运行时间，单调递增
+    /* 
+    	 当前CFS队列上最小运行时间，单调递增
        * 两种情况下更新该值:
        * 1、更新当前运行任务的累计运行时间时
        * 2、当任务从队列删除去，如任务睡眠或退出，
        *        这时候会查看剩下的任务的vruntime是否大于min_vruntime，
        *        如果是则更新该值。
-       */
+       
+       跟踪就绪队列上所有调度实体的最小虚拟时间
+    */
 	u64			min_vruntime;
 #ifndef CONFIG_64BIT
 	u64			min_vruntime_copy;
 #endif
-    /* 该红黑树的root */
+/*
+	用于跟踪调度实体按虚拟时间大小排序的红黑树的信息（包含红黑树的根以及红黑树中最左边节点）
+*/
 	struct rb_root_cached	tasks_timeline;
     /* 下一个调度结点(红黑树最左边结点，
           最左边结点就是下个调度实体) */
@@ -594,6 +612,9 @@ struct cfs_rq {
 	} removed;
 
 #ifdef CONFIG_FAIR_GROUP_SCHED
+/*
+	该group cfs_rq已经向tg->load_avg贡献的负载
+*/
 	unsigned long		tg_load_avg_contrib;
 	long			propagate;
 	long			prop_runnable_sum;
@@ -848,7 +869,10 @@ extern void rto_push_irq_work_func(struct irq_work *work);
  * (such as the load balancing or the thread migration code), lock
  * acquire operations must be ordered by ascending &runqueue.
  */
-/* CPU就绪队列，每个CPU包含一个struct rq */
+/* 
+系统中每个CPU都会有一个全局的就绪队列（cpu runqueue），使用struct rq结构体描述，
+它是per-cpu类型，即每个cpu上都会有一个struct rq结构体 
+*/
 struct rq {
 	/* runqueue lock: */
     /* 处于运行队列中所有就绪进程的load之和 */
@@ -1295,6 +1319,9 @@ DECLARE_PER_CPU(struct sched_domain_shared *, sd_llc_shared);
 DECLARE_PER_CPU(struct sched_domain *, sd_numa);
 DECLARE_PER_CPU(struct sched_domain *, sd_asym);
 
+/*
+调度组能力
+*/
 struct sched_group_capacity {
 	atomic_t		ref;
 	/*
@@ -1313,6 +1340,9 @@ struct sched_group_capacity {
 	unsigned long		cpumask[0];		/* Balance mask */
 };
 
+/*
+调度组
+*/
 struct sched_group {
     //一个调用域可能会包含多个组，该next用于将
     //sched_group串到调用域的链表上面
@@ -1440,7 +1470,12 @@ static inline void __set_task_cpu(struct task_struct *p, unsigned int cpu)
 	 * successfuly executed on another CPU. We must ensure that updates of
 	 * per-task data have been completed by this moment.
 	 */
+/*
+	保证之前内容写入完成后才设置 thread_info->cpu ，
+	这里与 move_queued_task 和 task_rq_lock 函数相关。	 
+*/
 	smp_wmb();
+
 #ifdef CONFIG_THREAD_INFO_IN_TASK
 	p->cpu = cpu;
 #else
@@ -1620,10 +1655,10 @@ task_struct->sched_class 指向其相应的调度类，
 调度器每次调度处理时，就通过当前进程的调度类函数进程操作
 */
 struct sched_class {
-    /* 下一优先级的调度类
+    /* 指向下一个调度类（比自己低一个优先级）。
+     * 在Linux中，每一个调度类都是有明确的优先级关系，高优先级调度类管理的进程会优先获得cpu使用权
      * 调度类优先级顺序: stop_sched_class -> dl_sched_class -> rt_sched_class -> fair_sched_class -> idle_sched_class
      */
-
 	const struct sched_class *next;
     /* 将进程加入到运行队列中，即将调度实体（进程）放入红黑树中，并对 nr_running 变量加1 */
 	void (*enqueue_task) (struct rq *rq, struct task_struct *p, int flags);
@@ -1632,7 +1667,10 @@ struct sched_class {
     /* 放弃CPU，在 compat_yield sysctl 关闭的情况下，该函数实际上执行先出队后入队；在这种情况下，它将调度实体放在红黑树的最右端 */
 	void (*yield_task)   (struct rq *rq);
 	bool (*yield_to_task)(struct rq *rq, struct task_struct *p, bool preempt);
-    /* 检查当前进程是否可被新进程抢占 */
+    /*  
+	   当一个进程被唤醒或者创建的时候，需要检查当前进程是否可以抢占当前cpu上正在运行的进程，
+	   如果可以抢占需要标记TIF_NEED_RESCHED flag
+	*/
 	void (*check_preempt_curr)(struct rq *rq, struct task_struct *p, int flags);
 
 	/*
@@ -1643,7 +1681,9 @@ struct sched_class {
 	 * May return RETRY_TASK when it finds a higher prio class has runnable
 	 * tasks.
 	 */
-    /* 选择下一个应该要运行的进程运行 */
+    /*  
+		从runqueue中选择一个最适合运行的task。是调度器比较核心的一个操作
+	*/
 	struct task_struct * (*pick_next_task)(struct rq *rq,
 					       struct task_struct *prev,
 					       struct rq_flags *rf);

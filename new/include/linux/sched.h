@@ -85,7 +85,7 @@ Linux 内核提供了两种方法将进程置为睡眠状态。
 如果进程处于非可中断模式的睡眠状态(TASK_UNINTERRUPTIBLE)
 那么只能通过显式的唤醒呼叫将其唤醒。
 
-除非万不得已，否则我们建议您将进程置为可中断睡眠模式，
+除非万不得已，否则应将进程置为可中断睡眠模式，
 而不是不可中断睡眠模式
 （比如说在设备 I/O 期间，处理信号非常困难时）。
 
@@ -115,10 +115,8 @@ Linux 内核提供了两种方法将进程置为睡眠状态。
 
 /*
 处于TASK_UNINTERRUPIBLE状态的进程，哪怕我们传递一个信号或者有一个外部中断
-都不能唤醒他们。只有它所等待的资源可用的时候，他才会被唤醒。
-这个标志很少用，但是并不代表没有任何用处，其实他的作用非常大，
-特别是对于驱动刺探相关的硬件过程很重要，
-这个刺探过程不能被一些其他的东西给中断，
+都不能唤醒他们。需要一个明确的唤醒操作才能使处于此状态的进程重新运行。
+这个标志对于驱动刺探相关的硬件过程很重要，这个刺探过程不能被中断，
 否则就会让进程进入不可预测的状态
 */
 #define TASK_UNINTERRUPTIBLE		0x0002
@@ -146,6 +144,9 @@ Linux 内核提供了两种方法将进程置为睡眠状态。
 #define TASK_PARKED			0x0040
 /* 用于在接收到致命信号时唤醒进程 */
 #define TASK_DEAD			0x0080
+/*
+在接收到致命信号时唤醒进程
+*/
 #define TASK_WAKEKILL			0x0100
 #define TASK_WAKING			0x0200
 #define TASK_NOLOAD			0x0400
@@ -155,14 +156,13 @@ Linux 内核提供了两种方法将进程置为睡眠状态。
 /* Convenience macros for the sake of set_current_state: */
 /*
 完全处于TASK_UNINTERRUPTIBLE 状态的进程甚至都无法被“杀死”，
-所以引入TASK_KILLABLE 的状态， 它等于“ TASK_WAKEKILL |TASK_UNINTERRUPTIBLE”，
-可以响应致命信号。
+所以引入TASK_KILLABLE 的状态可以响应致命信号。
 */
 #define TASK_KILLABLE			(TASK_WAKEKILL | TASK_UNINTERRUPTIBLE)
 
 /*
-进程被停止执行，当进程接收到SIGSTOP、SIGTTIN、SIGTSTP或者SIGTTOU信号之后
-就会进入该状态
+进程停止运行，即进程没有投入运行也不能投入运行，
+当进程接收到SIGSTOP、SIGTTIN、SIGTSTP或者SIGTTOU信号之后就会进入该状态
 */
 #define TASK_STOPPED			(TASK_WAKEKILL | __TASK_STOPPED)
 
@@ -266,6 +266,9 @@ Linux 内核提供了两种方法将进程置为睡眠状态。
 #define __set_current_state(state_value)				\
 	current->state = (state_value)
 
+/*
+	设置内存屏障来强制其他处理器作重新排序（一般在 SMP 系统中有必要）
+*/
 #define set_current_state(state_value)					\
 	smp_store_mb(current->state, (state_value))
 
@@ -393,7 +396,13 @@ struct sched_info {
 # define SCHED_FIXEDPOINT_SCALE		(1L << SCHED_FIXEDPOINT_SHIFT)
 
 struct load_weight {
+/*
+	进程的权重
+*/
 	unsigned long			weight;
+/*
+	inv_weight等于2^32/weight
+*/
 	u32				inv_weight;
 };
 
@@ -531,6 +540,9 @@ struct sched_statistics {
 一个调度实体(红黑树的一个结点)，其包含一组或一个指定的进程，
 包含一个自己的运行队列，一个父亲指针，
 一个指向需要调度的运行队列指针
+
+调度实体用struct sched_entity数据结构来抽象，
+每个进程或线程都是一个调度实体，另外也包括组调度(sched group)
 */
 struct sched_entity {
 /*
@@ -540,7 +552,7 @@ struct sched_entity {
 	struct load_weight		load;
 	unsigned long			runnable_weight;
 /*
-    实体在红黑树对应的结点信息
+	CFS调度器的每个就绪队列维护了一颗红黑树，上面挂满了就绪等待执行的task，run_node就是挂载点
 */
 	struct rb_node			run_node;
 /*
@@ -548,32 +560,32 @@ struct sched_entity {
 */
 	struct list_head		group_node;
 /*
-实体是否处于红黑树运行队列中
-表明是否处于CFS红黑树运行队列中，需要明确一个观点就是，
-CFS运行队列里面包含有一个红黑树，
-但这个红黑树并不是CFS运行队列的全部，
+运行队列里面包含有一个红黑树，但这个红黑树并不是CFS运行队列的全部，
 因为红黑树仅仅是用于选择出下一个调度程序的算法。
 很简单的一个例子，普通程序运行时，其并不在红黑树中，
 但是还是处于CFS运行队列中，其on_rq为真。
-只有准备退出、即将睡眠等待和转为实时进程的进程其
-CFS运行队列的on_rq为假。
+只有准备退出、即将睡眠等待和转为实时进程的进程其CFS运行队列的on_rq为假。
+
+调度实体se加入就绪队列后，on_rq置1。从就绪队列删除后，on_rq置0
 */
 	unsigned int			on_rq;
 /* 开始运行时间 */
 	u64				exec_start;
-/* 总运行时间 */
+/*  
+	调度实体已经运行实际时间总合
+*/
 	u64				sum_exec_runtime;
 /*
 虚拟运行时间，调度的关键，其计算公式：
 一次调度间隔的虚拟运行时间 = 实际运行时间 * (NICE_0_LOAD / 权重)。
-可以看出跟实际运行时间和权重有关，
-红黑树就是以此作为排序的标准，
+可以看出跟实际运行时间和权重有关，红黑树就是以此作为排序的标准，
 优先级越高的进程在运行时其vruntime增长的越慢，
 其可运行时间相对就长，而且也越有可能处于红黑树的最左结点，
 调度器每次都选择最左边的结点为下一个调度进程。
-注意其值为单调递增，在每个调度器的时钟中断时当前进程的
-虚拟运行时间都会累加。单纯的说就是进程们都在比谁的vruntime最小，
-最小的将被调度
+注意其值为单调递增，在每个调度器的时钟中断时当前进程的虚拟运行时间都会累加。
+单纯的说就是进程们都在比谁的vruntime最小，最小的将被调度
+
+调度实体已经运行的虚拟时间总合
 */
 	u64				vruntime;
 /* 进程在切换进CPU时的sum_exec_runtime值 */
@@ -721,7 +733,16 @@ enum perf_event_task_context {
 struct wake_q_node {
 	struct wake_q_node *next;
 };
-
+/*
+进程控制块包括:
+	进程的运行状态
+	程序计数器
+	CPU寄存器，保存上下文
+	CPU调度信息
+	内存管理信息
+	统计信息
+	文件相关信息
+*/
 struct task_struct {
 #ifdef CONFIG_THREAD_INFO_IN_TASK
 	/*
@@ -731,6 +752,14 @@ struct task_struct {
 	struct thread_info		thread_info;
 #endif
 	/* -1 unrunnable, 0 runnable, >0 stopped: */
+/*
+	进程状态 如 
+	TASK_RUNNING 
+	TASK_INTERRUPTIBLE 
+	TASK_UNINTERRUPTIBLE 
+	TASK_STOPPED
+	TASK_TRACED
+*/
 	volatile long			state;
 	/*进程状态  TASK_RUNNING   -1 unrunnable, 0 runnable, >0 stopped */
     /* 进程内核栈 */
@@ -740,10 +769,12 @@ struct task_struct {
 	 * scheduling-critical items should be added above here.
 	 */
 	randomized_struct_fields_start
-    /*而是用一个void指针类型的成员表示，然后通过类型转换来访问thread_info结构 */
+    /*通过类型转换来访问 thread_info 结构 */
 	void				*stack;
-	/* 进程描述符使用计数，被置为2时，
-	表示进程描述符正在被使用而且其相应的进程处于活动状态 */
+	/* 
+	进程描述符使用计数，被置为2时，
+	表示进程描述符正在被使用而且其相应的进程处于活动状态 
+	*/
 	atomic_t			usage;
 	/* 进程状态的信息，但不是运行状态，
 	     用于内核识别进程当前的状态，以备下一步操作 */
@@ -775,20 +806,27 @@ struct task_struct {
 #endif
     /* 是否在运行队列 */
 	int				on_rq;
+/*
+	动态优先级，范围为100~139，与静态优先级和补偿(bonus)有关
+	比如实时互斥量，需要暂时提高进程的优先级
+*/
 	int				prio;
+/*
+	静态优先级，static_prio = 100 + nice + 20 (nice值为-20~19,所以static_prio值为100~139)
+	是进程启动时分配的优先级, 可以通过nice和sched_setscheduler系统调用来进行修改, 
+	否则在进程运行期间会一直保持恒定	内核不存储nice值，用static_prio表示
+
+	普通进程的优先级: lOO~139
+	实时进程的优先级: 1~99
+	Deadline 进程优先级: -1
+*/
 	int				static_prio;
-    /*
-        prio: 动态优先级，范围为100~139，与静态优先级和补偿(bonus)有关
-              比如实时互斥量，需要暂时提高进程的优先级
-        static_prio: 静态优先级，static_prio = 100 + nice + 20 (nice值为-20~19,所以static_prio值为100~139)
-                    是进程启动时分配的优先级, 可以通过nice和sched_setscheduler系统调用来进行修改, 否则在进程运行期间会一直保持恒定
-                    内核不存储nice值，用static_prio表示
-        normal_prio 表示基于进程的静态优先级static_prio和调度策略计算出的优先级.
-                    普通进程 normal_prio = static_prio
-                    实时进程，会根据rt_priority 重新计算normal_prio
-                    因此即使普通进程和实时进程具有相同的静态优先级,                    其普通优先级也是不同的,
-                    进程分叉(fork)时, 子进程会继承父进程的普通优先级
-    */
+/*
+    表示基于进程的静态优先级static_prio和调度策略计算出的优先级.
+    普通进程 normal_prio = static_prio    实时进程，会根据rt_priority 重新计算normal_prio
+    因此即使普通进程和实时进程具有相同的静态优先级,                    其普通优先级也是不同的,
+    进程分叉(fork)时, 子进程会继承父进程的普通优先级
+*/
 	int				normal_prio;
 	/*
 	    实时优先级
@@ -819,7 +857,7 @@ struct task_struct {
 /* blktrace是一个针对Linux内核中块设备I/O层的跟踪工具 */
 	unsigned int			btrace_seq;
 #endif
-    /* 调度策略 */
+    /* 进程的类型，比如普通进程还是实时进程 */
 	unsigned int			policy;
 	int				nr_cpus_allowed;
 	/*
@@ -855,9 +893,9 @@ struct task_struct {
 	struct plist_node		pushable_tasks;
 	struct rb_node			pushable_dl_tasks;
 #endif
-    /* 进程所拥有的用户空间内存描述符，内核线程无的mm为NULL
+    /* 进程所拥有的用户空间内存描述符，内核线程的mm为NULL
 
-     active_mm指向进程运行时所使用的内存描述符，
+    active_mm指向进程运行时所使用的内存描述符，
     对于普通进程而言，这两个指针变量的值相同。
     但是内核线程kernel thread是没有进程地址空间的，
     所以内核线程的tsk->mm域是空（NULL）。
@@ -877,10 +915,13 @@ struct task_struct {
     /* 用来记录缓冲信息 */
 	struct task_rss_stat		rss_stat;
 #endif
+/*
+	终止状态,如 EXIT_ZOMBIE 和 EXIT_DEAD
+*/
 	int				exit_state;
 	/*
-	exit_code 用于设置进程的终止代号，这个值要么是_exit()或
-	exit_group()系统调用参数（正常终止），
+	exit_code 用于设置进程的终止代号，
+	这个值要么是_exit()或	exit_group()系统调用参数（正常终止），
 	要么是由内核提供的一个错误代号（异常终止）*/
 	int				exit_code;
 /*
@@ -888,7 +929,7 @@ struct task_struct {
 	只有当线程组的最后一个成员终止时，才会产生一个信号，
 	以通知线程组的领头进程的父进程*/
 	int				exit_signal;
-	/* 用于判断父进程终止时发送信号 */
+	/* 父进程消亡时发出的信号 */
 	/* The signal sent when the parent dies: */
 	int				pdeath_signal;
 	/* JOBCTL_*, siglock protected: */
@@ -967,7 +1008,7 @@ struct task_struct {
 	 * older sibling, respectively.  (p->father can be replaced with
 	 * p->real_parent->pid)
 	 */
-	/* 指向其父进程，如果创建它的父进程不再存在，则指向PID为1的init进程 */
+	/* 指向其父进程，如果创建它的父进程不再存在，则指向PID为0的init进程 */
 	/* Real parent process: */
 	struct task_struct __rcu	*real_parent;
     /* 指向其父进程，当它终止时，必须向它的父进程发送信号。它的值通常与real_parent相同 */
@@ -982,7 +1023,7 @@ struct task_struct {
     /* 兄弟进程链表*/
 	struct list_head		sibling;
 	/*
-	指向其所在进程组的领头进程
+	进程组的组长
 	除了在多线程的模式下指向主线程，还有一个用处，
 	当一些进程组成一个群组时（PIDTYPE_PGID)， 该域指向该群组的leader
 	全局的会话标识SID        保存在task_struct->group_leader->pids[PIDTYPE_SID].pid 中
@@ -1022,14 +1063,19 @@ struct task_struct {
 
 	/* CLONE_CHILD_CLEARTID: */
 	int __user			*clear_child_tid;
-
+/*
+	用于记录进程在用户态下所经过的节拍数（定时器）
+*/
 	u64				utime;
+/*
+	用于记录进程在内核态下所经过的节拍数（定时器）
+*/
 	u64				stime;
-    /*
-    utime 用于记录进程在用户态/内核态下所经过的节拍数（定时器）
-    utimescaled/stimescaled  用于记录进程在用户态/内核态的运行时间，但它们以处理器的频率为刻度
-    */
+
 #ifdef CONFIG_ARCH_HAS_SCALED_CPUTIME
+/*
+    utimescaled/stimescaled  用于记录进程在用户态/内核态的运行时间，但它们以处理器的频率为刻度
+*/
 	u64				utimescaled;
 	u64				stimescaled;
 #endif
@@ -1047,20 +1093,23 @@ struct task_struct {
 	/* Context switch counts: */
 	unsigned long			nvcsw;
 	unsigned long			nivcsw;
-	/* 进程创建时间，real_start_time还包含了进程睡眠时间，常用于/proc/pid/stat */
 	/* Monotonic time in nsecs: */
+	/* 进程创建时间 */
 	u64				start_time;
 
 	/* Boot based time in nsecs: */
+/*
+	包含了进程睡眠时间的进程创建时间，常用于/proc/pid/stat	
+*/
 	u64				real_start_time;
 
 	/* MM fault and swap info: this can arguably be seen as either mm-specific or thread-specific: */
 	unsigned long			min_flt;
 	unsigned long			maj_flt;
 
-/* 用来统计进程或进程组被跟踪的处理器时间，
-其中的三个成员对应着cpu_timers[3]的三个链表 */
 #ifdef CONFIG_POSIX_TIMERS
+	/* 用来统计进程或进程组被跟踪的处理器时间，
+	其中的三个成员对应着cpu_timers[3]的三个链表 */
 	struct task_cputime		cputime_expires;
 	struct list_head		cpu_timers[3];
 #endif
@@ -1087,7 +1136,7 @@ struct task_struct {
 	 * - access it with [gs]et_task_comm()
 	 * - lock it with task_lock()
 	 */
-	 /* 相应的程序名*/
+	 /* 可执行程序的名称*/
 	char				comm[TASK_COMM_LEN];
 
 	struct nameidata		*nameidata;
@@ -1849,36 +1898,32 @@ extern void ia64_set_curr_task(int cpu, struct task_struct *p);
 void yield(void);
 
 /*
-将内核栈和进程控制块thread_info融合在一起, 组成一个联合体thread_union
+将内核栈和进程控制块 thread_info 融合在一起, 组成一个联合体thread_union
 
 对每个进程，Linux内核都把两个不同的数据结构紧凑的存放在
 一个单独为进程分配的内存区域中：
 一个是内核态的进程堆栈stack
 另一个是紧挨着进程描述符的小数据结构thread_info，叫做线程描述符。
+
 这两个结构被紧凑的放在一个联合体中thread_union中,
 这块区域32位上通常是8K=8192（占两个页框），
 64位上通常是16K,其实地址必须是8192的整数倍。
+
 出于效率考虑，内核让这8K(或者16K)空间占据连续的两个页框
-并让第一个页框的起始地址是213的倍数。
+并让第一个页框的起始地址是2^13的倍数。
 
-内核态的进程访问处于内核数据段的栈，
-这个栈不同于用户态的进程所用的栈。
+内核态的进程访问处于内核数据段的栈，这个栈不同于用户态的进程所用的栈。
 用户态进程所用的栈，是在进程线性地址空间中；
-而内核栈是当进程从用户空间进入内核空间时，
-特权级发生变化，需要切换堆栈，
+
+而内核栈是当进程从用户空间进入内核空间时，特权级发生变化，需要切换堆栈，
 那么内核空间中使用的就是这个内核栈。
-
-因为内核控制路径使用很少的栈空间，
-所以只需要几千个字节的内核态堆栈。
-
-需要注意的是，内核态堆栈仅用于内核例程，
-Linux内核另外为中断提供了单独的硬中断栈和软中断栈
+因为内核控制路径使用很少的栈空间，所以只需要几千个字节的内核态堆栈。
+内核态堆栈仅用于内核例程，Linux内核另外为中断提供了单独的硬中断栈和软中断栈
 
 由于内核栈的大小是有限的，就会有发生溢出的可能，
 比如调用嵌套太多、参数太多都会导致内核栈的使用超出设定的大小。
-内核栈溢出的结果往往是系统崩溃，
-因为溢出会覆盖掉本不该触碰的数据，
-首当其冲的就是thread_info — 它就在内核栈的底部，
+内核栈溢出的结果往往是系统崩溃，因为溢出会覆盖掉本不该触碰的数据，
+首当其冲的就是 thread_info — 它就在内核栈的底部，
 内核栈是从高地址往低地址生长的，一旦溢出首先就破坏了thread_info，
 thread_info里存放着指向进程的指针等关键数据，迟早会被访问到，
 那时系统崩溃就是必然的事。

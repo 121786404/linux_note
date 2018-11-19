@@ -71,17 +71,15 @@ struct hmm;
 因此要保证page结构体足够的小，否则仅struct page就要占用大量的内存。
 出于节省内存的考虑，struct page中使用了大量的联合体union
 
-考虑一个例子：一个物理内存页能够通过多个地方的不同页表映射到虚拟地址空间，
-内核想要跟踪有多少地方映射了该页，
-为此，struct page中有一个计数器用于计算映射的数目。
-
 如果一页用于slab分配器，那么可以确保只有内核会使用该页，而不会有其它地方使用，
 因此映射计数信息就是多余的，因此内核可以重新解释该字段，
 用来表示该页被细分为多少个小的内存对象使用，联合体就很适用于该问题
 */
 struct page {
     /* 
-    用来存放页的体系结构无关的标志,linux/page-flags.h
+    用来存放页的体系结构无关的标志,如 PG_locked ，linux/page-flags.h
+
+	page flags: | [SECTION] | [NODE] | ZONE | [LAST_CPUPID] | ... | FLAGS | 
     */
 	unsigned long flags;		/* Atomic flags, some possibly
 					 * updated asynchronously */
@@ -113,22 +111,16 @@ struct page {
 			*/
 			struct list_head lru;
 			/*
-		   指向与该页相关的address_space对象
-	
-		   mapping指定了页帧所在的地址空间, index是页帧在映射内部的偏移量. 
-		   地址空间是一个非常一般的概念. 例如, 可以用在向内存读取文件时. 
-		   地址空间用于将文件的内容与装载数据的内存区关联起来. 
-		   mapping不仅能够保存一个指针, 而且还能包含一些额外的信息, 
-		   用于判断页是否属于未关联到地址空间的某个匿名内存区.
-	
+			mapping 指针地址的最低两位用于判断是否指向匿名映射或KSM 页面的地址空间，
+			   
 		   1. 如果mapping = 0，说明该page属于交换高速缓存页（swap cache）；
-			   当需要使用地址空间时会指定交换分区的地址空间swapper_space。
+			  当需要使用地址空间时会指定交换分区的地址空间 swapper_space 。
 		   2. 如果mapping != 0，bit[0] = 0，说明该page属于页缓存或文件映射，
-			   mapping指向文件的地址空间address_space。
-		   3. 如果mapping != 0，bit[0] != 0，说明该page为匿名映射，mapping指向struct anon_vma对象。
-	
-		   通过mapping恢复anon_vma的方法：
-			   anon_vma = (struct anon_vma *)(mapping - PAGE_MAPPING_ANON)。
+			  mapping指向文件的地址空间 address_space。
+		   3. 如果mapping != 0，bit[0] != 0，说明该page为匿名映射
+		   	  mapping 指向匿名页面的地址空间数据结构struct anon vma
+		   	  通过mapping恢复anon_vma的方法：
+			  anon_vma = (struct anon_vma *)(mapping - PAGE_MAPPING_ANON)。
 		   */
 			/* See page-flags.h for PAGE_MAPPING_FLAGS */
 			struct address_space *mapping;
@@ -149,9 +141,9 @@ struct page {
 			 */
 			/* 
 			private私有数据指针, 由应用场景确定其具体的含义：
-			如果设置了PG_private标志，则private字段指向struct buffer_heads
-			如果设置了PG_compound，则指向struct page
-			如果设置了PG_swapcache标志，private存储了该page在交换分区中对应的位置信息swp_entry_t。
+			如果设置了PG_private标志，则private字段指向 struct buffer_heads
+			如果设置了PG_compound，则指向 struct page
+			如果设置了PG_swapcache标志，private存储了该page在交换分区中对应的位置信息 swp_entry_t
 			如果_mapcount = PAGE_BUDDY_MAPCOUNT_VALUE，说明该page位于伙伴系统，private存储该伙伴的阶
 			*/
 			unsigned long private;
@@ -238,8 +230,8 @@ struct page {
 		/*	
 		被页表映射的次数，也就是说该page同时被多少个进程共享。还用于限制逆向映射搜索
 		初始值为-1，如果只被一个进程的页表映射了，该值为0. 
-		如果该page处于伙伴系统中，该值为PAGE_BUDDY_MAPCOUNT_VALUE（-128），
-		内核通过判断该值是否为PAGE_BUDDY_MAPCOUNT_VALUE来确定该page是否属于伙伴系统
+		如果该page处于伙伴系统中，该值为 PAGE_BUDDY_MAPCOUNT_VALUE（-128），
+		内核通过判断该值是否为 PAGE_BUDDY_MAPCOUNT_VALUE 来确定该page是否属于伙伴系统
 		_mapcount表示的是映射次数，而_count表示的是使用次数；被映射了不一定在使用，但要使用必须先映射
 		*/
 		atomic_t _mapcount;
@@ -258,10 +250,13 @@ struct page {
 
 	/* Usage count. *DO NOT USE DIRECTLY*. See page_ref.h */
 	/* 
-				引用计数，表示内核中引用该page的次数, 
-				如果要操作该page, 引用计数会+1, 操作完成-1. 
-				当该值为0时, 表示没有引用该page的位置，
-				所以该page可以被解除映射，这往往在内存回收时是有用的
+		引用计数，表示内核中引用该page的次数, 
+		如果要操作该page, 引用计数会+1, 操作完成-1. 
+		当该值为0时, 表示没有引用该page的位置，
+		所以该page可以被解除映射，这往往在内存回收时是有用的
+
+		当 _refcount 的值为0 时，表示该page 页面为空闲或即将要被释放的页面。
+		当 _refcount 的值大于0 时，表示该page 页面己经被分配且内核正在使用，暂时不会被释放。
 	*/
 	atomic_t _refcount;
 
@@ -311,6 +306,9 @@ struct page_frag_cache {
 	 * containing page->_refcount every time we allocate a fragment.
 	 */
 	unsigned int		pagecnt_bias;
+/*
+页面分配器中的一个标志
+*/
 	bool pfmemalloc;
 };
 
@@ -398,6 +396,7 @@ struct vm_area_struct {
 	 * linkage into the address_space->i_mmap interval tree.
 	 */
 	struct {
+	 /* 红黑树中对应的节点 */
 		struct rb_node rb;
 		unsigned long rb_subtree_last;
 	} shared;
@@ -462,7 +461,7 @@ struct mm_struct {
 */
 		struct vm_area_struct *mmap;		/* list of VMAs */
 /*
-	l指向进程所有虚存区域构成的红黑树的根节点
+	指向进程所有虚存区域构成的红黑树的根节点
 */
 		struct rb_root mm_rb;
 		u64 vmacache_seqnum;                   /* per-thread vmacache */
@@ -507,7 +506,7 @@ struct mm_struct {
 		 * @mm_count also drops to 0).
 		 */
 /*
-	共享mm_struct数据结构的轻量级进程的个数
+	在用户空间的用户个数
 */
 		atomic_t mm_users;
 
@@ -519,7 +518,7 @@ struct mm_struct {
 		 * &struct mm_struct is freed.
 		 */
 /*
-	内存描述符的主使计数器
+		内核中引用了该数据结构的个数
 */
 		atomic_t mm_count;
     // 页表所占(物理〉空间
@@ -528,7 +527,7 @@ struct mm_struct {
 #endif
     // 虚拟区间的个数
 		int map_count;			/* number of VMAs */
-    // 保护任务页表和 mm->rss
+    // 保护进程页表的锁
 		spinlock_t page_table_lock; /* Protects page tables and some
 					     * counters
 					     */

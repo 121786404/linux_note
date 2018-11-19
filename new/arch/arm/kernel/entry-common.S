@@ -194,34 +194,64 @@ ENTRY(vector_swi)
 	v7m_exception_entry
 #else
 /*
-这个栈帧大小正好是struct pt_regs的大小. struct pt_regs中保存的是　
+这个栈帧大小正好是struct pt_regs的大小. struct pt_regs 中保存的是　
 线程用户态的寄存器上下文(模式上下文).
 这里的sp已经是sp_svc了，也就是当前线程的内核栈了
+*/
+/*
+
+	注意swi指令让cpu进入svc模式,此时sp的值是arm在svc模式下的sp的值，而不是user模式下的sp.
+	对于用户进程来说此时的sp也是内核态下的sp
+	那么该sp是在何时指定的呢?
+1)  在该用户态进程创建过程中sys_clone->do_fork->copy_thread()函数
+  实现了thread->cpu_context.sp = (unsigned long)childregs;
+  而这个childregs是在上一步sys_clone->do_fork->dup_task_struct中申请的
+ 2) 当当前进程真正切换到本用户进程时 这个thread->cpu_context.sp 
+	在__switch_to中被加载到arm在svc模式下的sp寄存器
+	sp的具体指向参见task_pt_regs中定义:(栈顶-8byte)就是sp的值
+	栈顶即是:current->stack+THREAD_SIZE;用户每次陷入内核，内核态的栈都指向此;
+举例:
+[linuxrc]进程:
+1 current->stack=0x8053a000(8k字节对齐)
+2 当linuxrc进入内核态时sp=0x8053a000+0x2000-8=0x8053BFF8
+3 也就是说进程在内核态下的栈是从current->stack+THREAD_SIZE-8
+开始向下增长的，并且其中current->stack+THREAD_SIZE-8-72字节
+是一个栈帧的长度
+普通c函数中使用的栈一般是从current->stack+THREAD_SIZE-8-72
+开始向下增长
+sp=sp-72 
 */
 	sub	sp, sp, #PT_REGS_SIZE
 /*
 将r0-r12寄存器压入内核栈中
+[sp] = r0;[sp+4]=r1 ...
 */
 	stmia	sp, {r0 - r12}			@ Calling r0 - r12
 /*
-将用户态的sp、lr压入内核栈中
-{sp, lr}^中的"^"表示这里的sp和lr是用户态的寄存器
+	[r8] = rt_regs->pc 
+	r8中不是保存的pc指针，而是保存pc指针在栈帧中地址。
 */
  ARM(	add	r8, sp, #S_PC		)
+/* 
+	将用户态的sp、lr压入内核栈中
+	{sp, lr}^中的"^"表示这里的sp和lr是用户态的寄存器
+	[r8-4]=lr
+	[r8-8]=sp
+*/
  ARM(	stmdb	r8, {sp, lr}^		)	@ Calling sp, lr
  THUMB(	mov	r8, sp			)
  THUMB(	store_user_sp_lr r8, r10, S_SP	)	@ calling sp, lr
 /*
-sprs_svc中保存的是调用swi指令前的cpsr值，这里将它保存在寄存器r8中
+	sprs_svc中保存的是调用swi指令前的cpsr值，这里将它保存在寄存器r8中
 */
 	mrs	saved_psr, spsr			@ called from non-FIQ mode, so ok.
  TRACE(	mov	saved_pc, lr		)
 /*
-lr中的值是swi指令的下一行，也就是系统调用的用户态返回地址。将其压入内核栈中
-*/
+	lr中的值是swi指令的下一行，也就是系统调用的用户态返回地址 
+ */
 	str	saved_pc, [sp, #S_PC]		@ Save calling PC
 /*
-将调用swi指令前的cpsr值压入内核栈中
+	将调用swi指令前的cpsr值压入内核栈中，此时进程还在用户态空间
 */
 	str	saved_psr, [sp, #S_PSR]		@ Save CPSR
 /*
@@ -230,9 +260,16 @@ lr中的值是swi指令的下一行，也就是系统调用的用户态返回地
 */
 	str	r0, [sp, #S_OLD_R0]		@ Save OLD_R0
 #endif
+/*
+	清除frame pointer，在debugger做栈的回溯的时候，当fp等于0的时候也就意味着到了最外层函数。
+	对于kernel而言，来到这里，函数的调用跟踪就结束了，不可能一直回溯到用户空间的函数调用。
+*/
 	zero_fp
 	alignment_trap r10, ip, __cr_alignment
 	asm_trace_hardirqs_on save=0
+/*
+	硬件会关闭irq，通过enable_irq开启本cpu的中断处理
+*/
 	enable_irq_notrace
 	ct_user_exit save=0
 
@@ -263,6 +300,10 @@ lr中的值是swi指令的下一行，也就是系统调用的用户态返回地
 #elif defined(CONFIG_ARM_THUMB)
 	/* Legacy ABI only, possibly thumb mode. */
 	tst	saved_psr, #PSR_T_BIT		@ this is SPSR from save_user_regs
+/*
+	glibc已经将系统调用号保存到r7寄存器了
+	取出系统调用号保存到 scno 中
+*/
 	addne	scno, r7, #__NR_SYSCALL_BASE	@ put OS number in
  USER(	ldreq	scno, [saved_pc, #-4]	)
 
@@ -275,7 +316,7 @@ lr中的值是swi指令的下一行，也就是系统调用的用户态返回地
 
 	uaccess_disable tbl
 /*
-会查询sys_call_table跳转表,这个表中存储的是一系列的函数指针,这些指针就是系统调用函数的指针.
+	将 sys_call_table 的地址放入tbl
 */
 	adr	tbl, sys_call_table		@ load syscall table pointer
 
@@ -299,23 +340,32 @@ lr中的值是swi指令的下一行，也就是系统调用的用户态返回地
 	 * the syscall assembly (by tracing or context tracking.)
 	 */
  TRACE(	ldmia	sp, {r0 - r3}		)
-
+/*
+我们这里需要模拟一个c函数调用，因此需要在栈上压入系统调用可能存在的第五和第六个参数
+（有些系统调用超过4个参数，他们使用r0～r5在swi接口上传递参数）。
+*/
 local_restart:
+/* 
+	r10= thread_info->flags 
+*/
 	ldr	r10, [tsk, #TI_FLAGS]		@ check for syscall tracing
+	
+/*
+	r4 r5入栈
+*/
 	stmdb	sp!, {r4, r5}			@ push fifth and sixth args
 
+/*
+	判断是否在跟踪系统调用
+*/
 	tst	r10, #_TIF_SYSCALL_WORK		@ are we tracing syscalls?
 	bne	__sys_trace
 
 /*
-这里先设置系统调用执行函数sys_xxx()的返回地址为ret_fast_syscall  
-这是设置的是当前线程lr_svc寄存器,当下次通过__switch_to恢复  
-当前线程的上下文(cpu_context)时首先调用ret_fast_syscall来恢复其用户态  
-的线程上下文(struct pt_regs).
-*/
-
-/*
-以下就是根据系统调用号调用具体的执行函数。
+	tbl 中保存 sys_call_table 基地址。
+	scno中保存系统调用号。
+	此处真正跳转到系统调用中执行。
+	执行完后返回到 __ret_fast_syscall
 */
 	invoke_syscall tbl, scno, r10, __ret_fast_syscall
 
@@ -347,6 +397,9 @@ ENDPROC(vector_swi)
 	 * This is the really slow path.  We're going to be doing
 	 * context switches, and waiting for our parent to respond.
 	 */
+/*
+	停止traced process & 通知tracer
+*/
 __sys_trace:
 	mov	r1, scno
 	add	r0, sp, #S_OFF
@@ -411,6 +464,9 @@ ENTRY(\sym)
  * This is the syscall table declaration for native ABI syscalls.
  * With EABI a couple syscalls are obsolete and defined as sys_ni_syscall.
  */
+/*
+	sys_call_table 跳转表存储的是一系列的函数指针,这些指针就是系统调用函数的指针.
+*/
 	syscall_table_start sys_call_table
 #define COMPAT(nr, native, compat) syscall nr, native
 #ifdef CONFIG_AEABI
@@ -439,6 +495,11 @@ sys_syscall:
 		movlo	r1, r2
 		movlo	r2, r3
 		movlo	r3, r4
+/*
+如果参数OK的话，将直接把控制权交给对应的sys_xxx函数。
+需要注意的是返回地址的设定，我们无法使用bl这样的汇编指令，
+因此只能是手动设定lr寄存器了（badr    lr, ret_fast_syscall ）		
+*/
 		ldrlo	pc, [tbl, scno, lsl #2]
 		b	sys_ni_syscall
 ENDPROC(sys_syscall)

@@ -841,8 +841,17 @@ void check_preempt_curr(struct rq *rq, struct task_struct *p, int flags)
 	const struct sched_class *class;
 
 	if (p->sched_class == rq->curr->sched_class) {
+/*
+		唤醒的进程和当前的进程同属于一个调度类，直接调用调度类的check_preempt_curr方法检查抢占条件。
+		毕竟调度器自己管理的进程，自己最清楚是否适合抢占当前进程		
+*/
 		rq->curr->sched_class->check_preempt_curr(rq, p, flags);
 	} else {
+/*
+		如果唤醒的进程和当前进程不属于一个调度类，就需要比较调度类的优先级。
+		例如，当期进程是CFS调度类，唤醒的进程是RT调度类，
+		自然实时进程是需要抢占当前进程的，因为优先级更高	
+*/
 		for_each_class(class) {
 			if (class == rq->curr->sched_class)
 				break;
@@ -2292,26 +2301,27 @@ static inline void init_schedstats(void) {}
 
 /*
  * fork()/clone()-time setup:
- 我们可以看到sched_fork大致完成了两项重要工作，
- 一是将子进程状态设置为 TASK_RUNNING，
- 二是为其分配 CPU
  */
 int sched_fork(unsigned long clone_flags, struct task_struct *p)
 {
 	unsigned long flags;
-
+/*
+	初始化进程调度相关的数据结构
+*/
 	__sched_fork(clone_flags, p);
 	/*
 	 * We mark the process as NEW here. This guarantees that
 	 * nobody will actually run it, and a signal or other external
 	 * event cannot wake it up and insert it on the runqueue either.
 	 */
-    //  将子进程状态设置为 TASK_RUNNING
 	p->state = TASK_NEW;
 
 	/*
 	 * Make sure we do not leak PI boosting priority to the child.
 	 */
+/*
+	先用父进程的 normal_prio 优先级	 
+*/
 	p->prio = current->normal_prio;
 
 	/*
@@ -2358,6 +2368,9 @@ int sched_fork(unsigned long clone_flags, struct task_struct *p)
 	 */
 	 /* 为子进程分配 CPU */
 	__set_task_cpu(p, smp_processor_id());
+/*
+	调用调度类中的 task_fork 方法做初始化动作	
+*/
 	if (p->sched_class->task_fork)
 		p->sched_class->task_fork(p);
 	raw_spin_unlock_irqrestore(&p->pi_lock, flags);
@@ -2369,6 +2382,9 @@ int sched_fork(unsigned long clone_flags, struct task_struct *p)
 #if defined(CONFIG_SMP)
 	p->on_cpu = 0;
 #endif
+/*
+	初始化 thread_info 中的 preempt_count 计数，为了支持内核抢占而引入该字段。
+*/
 	init_task_preempt_count(p);
 #ifdef CONFIG_SMP
 	plist_node_init(&p->pushable_tasks, MAX_PRIO);
@@ -2422,16 +2438,24 @@ void wake_up_new_task(struct task_struct *p)
     这里需要重新设置
     因为在fork新进程的过程中，cpu_allowed 有可能发生变化，另外一个原因是之前选择
     的CPU有可能被关闭，因此从新选择CPU
+
+    通过调用select_task_rq()函数重新选择cpu，通过调用调度类中select_task_rq方法选择调度类中最空闲的cpu
 */
 	__set_task_cpu(p, select_task_rq(p, task_cpu(p), SD_BALANCE_FORK, 0));
 #endif
 	rq = __task_rq_lock(p, &rf);
 	update_rq_clock(rq);
 	post_init_entity_util_avg(&p->se);
-
+/*
+	将进程加入就绪队列，通过调用调度类中enqueue_task方法。
+*/
 	activate_task(rq, p, ENQUEUE_NOCLOCK);
 	p->on_rq = TASK_ON_RQ_QUEUED;
 	trace_sched_wakeup_new(p);
+/*
+	既然新进程已经准备就绪，那么此时需要检查新进程是否满足抢占当前正在运行进程的条件，
+	如果满足抢占条件需要设置TIF_NEED_RESCHED标志位	
+*/
 	check_preempt_curr(rq, p, WF_FORK);
 #ifdef CONFIG_SMP
 	if (p->sched_class->task_woken) {
@@ -3065,6 +3089,9 @@ void scheduler_tick(void)
 	rq_lock(rq, &rf);
 
 	update_rq_clock(rq);
+/*
+调用调度类对应的task_tick方法，针对CFS调度类该函数是task_tick_fair	
+*/
 	curr->sched_class->task_tick(rq, curr, 0);
 	cpu_load_update_active(rq);
 	calc_global_load_tick(rq);
@@ -3075,6 +3102,9 @@ void scheduler_tick(void)
 
 #ifdef CONFIG_SMP
 	rq->idle_balance = idle_cpu(cpu);
+/*
+	触发负载均衡
+*/
 	trigger_load_balance(rq);
 #endif
 }
@@ -3347,7 +3377,10 @@ pick_next_task(struct rq *rq, struct task_struct *prev, struct rq_flags *rf)
 	}
 
 again:
-    /*从最高优先级类开始遍历每个调度器类，从第一个非NULL值的类中选择下一个可运行进程*/
+/*
+	选择下一个合适的task运行的时候，会按照优先级的顺序便利调度类的pick_next_task函数。
+	因此，SCHED_FIFO调度策略的实时进程永远比SCHED_NORMAL调度策略的普通进程优先运行
+*/
 	for_each_class(class) {
 		p = class->pick_next_task(rq, prev, rf);
 		if (p) {
@@ -7065,6 +7098,11 @@ void dump_cpu_task(int cpu)
  */
 /*
     优先级降低一级，执行时间少10%
+    weight = 1024/pow(1.25,nice)
+    公式中的1.25取值依据是：
+    进程每降低一个nice值，将多获得10% cpu的时间。
+    公式中以1024权重为基准值计算得来，1024权重对应nice值为0，其权重被称为NICE_0_LOAD。
+    默认情况下，大部分进程的权重基本都是 NICE_0_LOAD
 */
 const int sched_prio_to_weight[40] = {
  /* -20 */     88761,     71755,     56483,     46273,     36291,

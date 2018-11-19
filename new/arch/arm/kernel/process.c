@@ -288,7 +288,8 @@ copy_thread(unsigned long clone_flags, unsigned long stack_start,
 		childregs->ARM_cpsr = SVC_MODE;
 	}
 /*
-	子进程的内核态的pc地址
+	子进程的内核态的pc地址 ret_from_fork
+	子进程从 ret_from_fork 开始执行	
 */
 	thread->cpu_context.pc = (unsigned long)ret_from_fork;
 /*

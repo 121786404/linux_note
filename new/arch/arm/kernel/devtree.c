@@ -184,6 +184,9 @@ void __init arm_dt_init_cpu_maps(void)
 	 * logical map created in smp_setup_processor_id() can be overridden
 	 */
 	for (i = 0; i < cpuidx; i++) {
+/*
+	设置到  位图 cpu_possible_bits
+*/
 		set_cpu_possible(i, true);
 		cpu_logical_map(i) = tmp_map[i];
 		pr_debug("cpu logical map 0x%x\n", cpu_logical_map(i));
