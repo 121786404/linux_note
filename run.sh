@@ -1,8 +1,8 @@
 #!/bin/bash
 
 LROOT=$PWD
-ROOTFS_ARM32=rootfs/_install_arm32
-ROOTFS_ARM64=rootfs/_install_arm64
+ROOTFS_ARM32=linux-stable/_install_arm32
+ROOTFS_ARM64=linux-stable/_install_arm64
 CONSOLE_DEV_NODE=dev/console
 
 function killproc

@@ -12,11 +12,12 @@ case $1 in
 		echo "Build arm32"
 		export ARCH=arm
 		export CROSS_COMPILE=arm-linux-gnueabi-
-		make distclean
-		make vexpress_defconfig
+		#make distclean
+		#make vexpress_defconfig
+		#cp ../linux-patch/include/generated/asm-offsets.h include/generated
 		make bzImage -j4
-		make dtbs
-		../collect-src -f "linux-stable" -o ../linux_arm32.list
+		#make dtbs
+		#../collect-src -f "linux-stable" -o ../linux_arm32.list
 		cd ..
 		;;
 	arm64)
