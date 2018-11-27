@@ -665,7 +665,39 @@ ifdef CONFIG_PROFILE_ALL_BRANCHES
 KBUILD_CFLAGS	+= -O2 $(call cc-disable-warning,maybe-uninitialized,)
 else
 KBUILD_CFLAGS   += -O0
-KBUILD_LDFLAGS  += --warn-unresolved-symbols
+KBUILD_LDFLAGS  += --ignore-unresolved-symbol __aeabi_ldivmod
+KBUILD_LDFLAGS  += --ignore-unresolved-symbol __aeabi_ldivmod
+KBUILD_LDFLAGS  += --ignore-unresolved-symbol __aeabi_ldivmod
+KBUILD_LDFLAGS  += --ignore-unresolved-symbol __bad_cmpxchg
+KBUILD_LDFLAGS  += --ignore-unresolved-symbol __bad_xchg
+KBUILD_LDFLAGS  += --ignore-unresolved-symbol __frontswap_invalidate_area
+KBUILD_LDFLAGS  += --ignore-unresolved-symbol __frontswap_invalidate_page 
+KBUILD_LDFLAGS  += --ignore-unresolved-symbol __frontswap_load 
+KBUILD_LDFLAGS  += --ignore-unresolved-symbol __frontswap_store 
+KBUILD_LDFLAGS  += --ignore-unresolved-symbol bpf_prog_offload_compile 
+KBUILD_LDFLAGS  += --ignore-unresolved-symbol bpf_prog_offload_destroy
+KBUILD_LDFLAGS  += --ignore-unresolved-symbol change_huge_pmd 
+KBUILD_LDFLAGS  += --ignore-unresolved-symbol copy_huge_pmd 
+KBUILD_LDFLAGS  += --ignore-unresolved-symbol copy_huge_pud 
+KBUILD_LDFLAGS  += --ignore-unresolved-symbol dax_delete_mapping_entry 
+KBUILD_LDFLAGS  += --ignore-unresolved-symbol dax_invalidate_mapping_entry_sync 
+KBUILD_LDFLAGS  += --ignore-unresolved-symbol do_huge_pmd_anonymous_page
+KBUILD_LDFLAGS  += --ignore-unresolved-symbol follow_trans_huge_pmd 
+KBUILD_LDFLAGS  += --ignore-unresolved-symbol huge_pmd_set_accessed 
+KBUILD_LDFLAGS  += --ignore-unresolved-symbol linear_hugepage_index 
+KBUILD_LDFLAGS  += --ignore-unresolved-symbol madvise_free_huge_pmd 
+KBUILD_LDFLAGS  += --ignore-unresolved-symbol memcg_kmem_charge
+KBUILD_LDFLAGS  += --ignore-unresolved-symbol memcg_kmem_get_cache 
+KBUILD_LDFLAGS  += --ignore-unresolved-symbol memcg_kmem_put_cache 
+KBUILD_LDFLAGS  += --ignore-unresolved-symbol memcg_kmem_uncharge 
+KBUILD_LDFLAGS  += --ignore-unresolved-symbol move_huge_pmd 
+KBUILD_LDFLAGS  += --ignore-unresolved-symbol pte_mkdevmap 
+KBUILD_LDFLAGS  += --ignore-unresolved-symbol zap_huge_pmd 
+KBUILD_LDFLAGS  += --ignore-unresolved-symbol zap_huge_pud
+
+#KBUILD_LDFLAGS  += --warn-unresolved-symbols
+#KBUILD_LDFLAGS  += --warn-once
+#KBUILD_LDFLAGS  += --unresolved-symbols=ignore-all
 endif
 endif
 
