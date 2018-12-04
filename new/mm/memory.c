@@ -2071,6 +2071,9 @@ static int remap_pte_range(struct mm_struct *mm, pmd_t *pmd,
 	if (!pte)
 		return -ENOMEM;
 	arch_enter_lazy_mmu_mode();
+/*
+    以PAGE_SIZE为步长来遍历PT页表
+*/
 	do {
 		BUG_ON(!pte_none(*pte));
 		if (!pfn_modify_allowed(pfn, prot)) {
@@ -2171,10 +2174,12 @@ static inline int remap_p4d_range(struct mm_struct *mm, pgd_t *pgd,
  *  vma:  虚拟内存区域，在一定范围内的页将被映射到该区域。
  *  addr: 重新映射时的起始用户虚拟地址。该函数为处于virt_addr和
  *        virt_addr+size之间的虚拟地址建立页表。
- *  pfn:  与物理内存对应的页帧号。虚拟内存将要被映射到该物理内存上。
+ *  pfn:  要被映射的物理页帧号
  *  size: 以字节为单位，被重新映射的区域大小。
  *  prot: 新VMA要求的保护属性。
  * 返回为0表示成功，负值表示错误。
+   比如/dev/mem设备。应用场景，映射ARM SoC的寄存器到用户空间中，那么用户空间就可以读写SoC内部的寄存器了
+   当用户调用mmap时，驱动中的file_operations->mmap会被调用，可以在mmap中调用remap_pfn_range，
  */
 
 int remap_pfn_range(struct vm_area_struct *vma, unsigned long addr,
@@ -2182,7 +2187,13 @@ int remap_pfn_range(struct vm_area_struct *vma, unsigned long addr,
 {
 	pgd_t *pgd;
 	unsigned long next;
+/*
+    映射的结尾虚拟地址	
+*/
 	unsigned long end = addr + PAGE_ALIGN(size);
+/*
+    由vma可以获取到mm数据结构	
+*/
 	struct mm_struct *mm = vma->vm_mm;
 	unsigned long remap_pfn = pfn;
 	int err;
@@ -2219,15 +2230,22 @@ int remap_pfn_range(struct vm_area_struct *vma, unsigned long addr,
 
 	BUG_ON(addr >= end);
 	pfn -= addr >> PAGE_SHIFT;
-	/*用来获得某一虚拟地址在页目录表中的对应单元的地址pgd*/
+	/*
+	    获得虚拟地址在页目录表中的对应单元的地址pgd页表项
+	*/
 	pgd = pgd_offset(mm, addr);
 	/*将(addr,end)地址范围对应的cache内容同步到主存中*/
 	flush_cache_range(vma, addr, end);
 	/*循环用来在页目录中建立对应的映射页表项*/
 	do {
-		/*用来获取addr对应页表项的下一个entry对应的虚拟起始地址*/
+		/*
+            获取下一个PGD页表项的管辖的地址范围的起始地址
+            如果addr到end可以被一个pgd映射的话，那么返回end的值
+		*/
 		next = pgd_addr_end(addr, end);
-		/*用来做实际的页目录表项的操作*/
+		/*
+		    用来做实际的页目录表项的操作
+		*/
 		err = remap_p4d_range(mm, pgd, addr, next,
 				pfn + (addr >> PAGE_SHIFT), prot);
 		if (err)

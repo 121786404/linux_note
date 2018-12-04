@@ -863,15 +863,15 @@ ENDPROC(__fiq_usr)
  * previous and next are guaranteed not to be the same.
  */
 /*
-该函数的实质就是将移出进程的寄存器上下文保存到移出进程的thread_info->cpu_context结构体中。
-并且将移入进程的thread_info->cpu_context结构体中的值restore到cpu的寄存器中，
+该函数的实质就是将移出进程的寄存器上下文保存到移出进程的 thread_info->cpu_context 结构体中。
+并且将移入进程的 thread_info->cpu_context 结构体中的值restore到cpu的寄存器中，
 从而实现堆栈，pc指针和cpu通用寄存器都切换到新的进程上开始执行。
 
 由于switch_to是一个函数，所以对他的寄存器的保存，同样也遵循arm的APCS标准，但又跟APCS又不完全一样。
 
 跟APCS不一样的地方表现在：
 保存移出进程的寄存器上下时，保存了lr的地址，而并未保存pc值，
-而此时的lr寄存器的地址即为context_switch函数中的switch_to的下一行，即barrier()函数的开始地址。
+而此时的lr寄存器的地址即为 context_switch 函数中的 switch_to 的下一行，即barrier()函数的开始地址。
 
 跟APCS相同的地方表现在:
 r0-r3都未保存，因为根据APCS约束，这4个寄存器都是用来存函数的参数，可以不入栈保存。
@@ -879,11 +879,9 @@ r4-r10，根据APCS约束，由于这些寄存器会被编译器用来暂存变�
 我们知道在中断处理过程中，linux arm是有将cpsr寄存器也做了保存，而为什么在上下文切换时，却不需要保存呢？
 因为中断发生是随机不确定的，他可能在任何指令的后面产生中断，而cpsr只会影响到中断指令的下面的指令的执行，
 如果被中断时的指令的下一条指令的执行是依赖于cpsr的，如果中断处理程序修改了cpsr值，而又没保存，会导致中断返回时，
-在执行下条指令时，会出现逻辑错误。而上下文切换的返回地址和接下来要执行的指令是确定的，
-只要上下文切换回来的指令不受cpsr值得影响(不依赖cpsr)，则就可以不保存cpsr寄存器的值.
+在执行下条指令时，会出现逻辑错误。
+而上下文切换的返回地址和接下来要执行的指令是确定的，只要上下文切换回来的指令不受cpsr值得影响(不依赖cpsr)，则就可以不保存cpsr寄存器的值.
 
-**注意**: 
-__switch_to函数用户切换线程上下文，而vector_swi用来切换模式上下文.
 */
 ENTRY(__switch_to)
  UNWIND(.fnstart	)

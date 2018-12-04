@@ -81,18 +81,32 @@ static int __wake_up_common(struct wait_queue_head *wq_head, unsigned int mode,
 
 	if (&curr->entry == &wq_head->head)
 		return nr_exclusive;
-
+/*
+    循环遍历等待队列内的所有元素，分别执行其对应的唤醒函数
+*/
 	list_for_each_entry_safe_from(curr, next, &wq_head->head, entry) {
 		unsigned flags = curr->flags;
 		int ret;
 
 		if (flags & WQ_FLAG_BOOKMARK)
 			continue;
-
+        //调用等待对象的唤醒函数
 		ret = curr->func(curr, mode, wake_flags, key);
 		if (ret < 0)
 			break;
+/*       
+         检查唤醒进程的数目是否达到了nr_exclusive
+         避免所谓的惊群问题
+         如果几个进程在等待独占访问某一资源
+         那么同时唤醒所有的等进程时没有意义的
+         因为除了其中的一个进程之外
+         其他的进程都会再次进入睡眠
+*/
+        //若唤醒函数返回1，就表示唤醒成功
+        //如果当前等待对象是一个互斥进程，那么 --nr_exclusive
+		//如果nr_exclusive为0了,就表示已完成指定数量的等待对象的唤醒
 		if (ret && (flags & WQ_FLAG_EXCLUSIVE) && !--nr_exclusive)
+		    //完成了指定数量的等待对象的唤醒，那么就退出函数
 			break;
 
 		if (bookmark && (++cnt > WAITQUEUE_WALK_BREAK_CNT) &&

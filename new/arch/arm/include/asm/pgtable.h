@@ -264,6 +264,9 @@ static inline pte_t *pmd_page_vaddr(pmd_t pmd)
 #define pte_unmap(pte)			__pte_unmap(pte)
 
 #define pte_pfn(pte)		((pte_val(pte) & PHYS_MASK) >> PAGE_SHIFT)
+/*
+    由页帧号pfn得到pte
+*/
 #define pfn_pte(pfn,prot)	__pte(__pfn_to_phys(pfn) | pgprot_val(prot))
 /*
 返回页表项 x 所引用页的描述符地址
@@ -327,6 +330,7 @@ extern void __sync_icache_dcache(pte_t pteval);
 #endif
 /*
     把pte设置到子进程对应的页表项dst_pte中
+    pte设置到硬件页表中去	
 */
 static inline void set_pte_at(struct mm_struct *mm, unsigned long addr,
 			      pte_t *ptep, pte_t pteval)

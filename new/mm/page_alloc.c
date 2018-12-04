@@ -2704,6 +2704,9 @@ static bool unreserve_highatomic_pageblock(const struct alloc_context *ac,
  * deviation from the rest of this file, to make the for loop
  * condition simpler.
  */
+/*
+    通过/proc/pageteypeinfo查看当前系统各种类型的页分布 
+*/
 static __always_inline bool
 __rmqueue_fallback(struct zone *zone, int order, int start_migratetype)
 {
@@ -2714,10 +2717,10 @@ __rmqueue_fallback(struct zone *zone, int order, int start_migratetype)
 	bool can_steal;
 
 /*
-和主要分配路径不同的事, 迭代器是从最大的阶数开始迭代的,
-这个代表的意思是说我尽量多迁移一点空间给你,
-不然你还要迁移的时候我又分配一小块空间给你,
-你的碎片间接导致了我的碎片产生, 所以从大到小开始迭代.
+    和主要分配路径不同的事, 迭代器是从最大的阶数开始迭代的,
+    这个代表的意思是说尽量多迁移一点空间给你,
+    不然你还要迁移的时候我又分配一小块空间给你,
+    你的碎片间接导致了我的碎片产生, 所以从大到小开始迭代.
 */
 	/*
 	 * Find the largest available free page in the other list. This roughly
@@ -6151,7 +6154,7 @@ void __ref build_all_zonelists(pg_data_t *pgdat)
 	 * disabled and enable it later
 	 */
 	/**
-	 * 如果可用内存较少，就不打开页面移动功能。
+	 * 内存大小不足以分配到各种类型时，就不适合启用可移动性
 	 */
 	if (vm_total_pages < (pageblock_nr_pages * MIGRATE_TYPES))
 		page_group_by_mobility_disabled = 1;
@@ -7407,19 +7410,19 @@ static unsigned long __init early_calculate_totalpages(void)
  * others
  */
 /*
- * 用于计算进入ZONE_MOVABLE的内存数量。如果kernelcore和movablecore参数都
- * 没有指定，find_zone_movable_pfns_for_nodes()会使ZONE_MOVABLE保持为空，
- * 该机制处于无效状态。谈到从物理内存域提取多少内存用于ZONE_MOVABLE的问题，
- * 必须考虑下面两种情况:
- *   1)用于不可移动分配的内存会平均地分布到所有内存结点上
- *   2)只使用来自最高内存域的内存。在内存较多的32位系统上，
- * 这通常会是ZONE_HIGHMEM，但是对于64位系统，将使用ZONE_NORMAL或ZONE_DMA32。
- * 实际上其作用的效果是:
- *   1)用于为虚拟内存域ZONE_MOVABLE提取内存页的物理内存域，保存在全局变量movable_zone中
- *   2)对每个结点来说，zone_movable_pfn[node_id]表示ZONE_MOVABLE在
- * movable_zone内存域中所取得内存的起始地址。
- * 内核确保这些页将用于满足符合ZONE_MOVABLE职责的内存分配。
- */
+    用于计算进入ZONE_MOVABLE的内存数量。如果 kernelcore 和 movablecore 参数都没有指定，
+    find_zone_movable_pfns_for_nodes()会使ZONE_MOVABLE保持为空，
+    该机制处于无效状态。谈到从物理内存域提取多少内存用于ZONE_MOVABLE的问题，
+    必须考虑下面两种情况:
+    1) 用于不可移动分配的内存会平均地分布到所有内存结点上
+    2) 只使用来自最高内存域的内存。在内存较多的32位系统上，    这通常会是ZONE_HIGHMEM，
+       但是对于64位系统，将使用ZONE_NORMAL或ZONE_DMA32。
+    实际上其作用的效果是:
+    1) 用于为虚拟内存域ZONE_MOVABLE提取内存页的物理内存域，保存在全局变量movable_zone中
+    2) 对每个结点来说，zone_movable_pfn[node_id]表示ZONE_MOVABLE在
+       movable_zone内存域中所取得内存的起始地址。
+    内核确保这些页将用于满足符合ZONE_MOVABLE职责的内存分配。
+*/
 static void __init find_zone_movable_pfns_for_nodes(void)
 {
 	int i, nid;

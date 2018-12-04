@@ -501,7 +501,7 @@ static __always_inline void *kmalloc_large(size_t size, gfp_t flags)
 /*
  用于申请较小的、连续的物理内存
 1. 以字节为单位进行分配
-2. 分配的内存物理地址上连续，虚拟地址上自然连续
+2. 分配的内存物理地址上连续
 3. gfp_mask标志：什么时候使用哪种标志？如下：
 进程上下文，可以睡眠 GFP_KERNEL
 进程上下文，不可以睡眠 GFP_ATOMIC

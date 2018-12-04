@@ -1943,10 +1943,9 @@ fail:
  *	kernel virtual space, using a pagetable protection of @prot.
  */
 /*
- * __get_vm_area_node()在vmalloc地址空间中找到一个适当的
- * 区域。接下来从物理内存分配各个页，最后将这些页连续地映射到
- * vmalloc区域中，分配虚拟内存的工作就完成了。
- */
+    调用__get_vm_area_node 在vmalloc地址空间中找到一个适当的区域。
+    接下来从物理内存分配各个页，最后将这些页连续地映射到 vmalloc区域中，
+*/
 void *__vmalloc_node_range(unsigned long size, unsigned long align,
 			unsigned long start, unsigned long end, gfp_t gfp_mask,
 			pgprot_t prot, unsigned long vm_flags, int node,
@@ -1966,8 +1965,7 @@ vmalloc分配的大小必须是页面的整数倍，这里将长度对齐到页�
 	if (!size || (size >> PAGE_SHIFT) > totalram_pages)
 		goto fail;
 /*
-    在vmalloc地址区间中找到合适的区域，
-    这是通过遍历vmlist链表来实现的  
+    在vmalloc地址区间中找到合适的区域，    这是通过遍历vmlist链表来实现的  
 */
 	area = __get_vm_area_node(size, align, VM_ALLOC | VM_UNINITIALIZED |
 				vm_flags, start, end, node, gfp_mask, caller);

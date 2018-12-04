@@ -37,6 +37,9 @@
 /* 内核认为超过8个页算是大的内存分配 */
 #define PAGE_ALLOC_COSTLY_ORDER 3
 
+/*
+迁移类型的最小单位是 pageblock
+*/
 enum migratetype {
 /*
 不可以移动, 内核中大部分数据是这样的
@@ -120,7 +123,9 @@ static inline bool is_migrate_movable(int mt)
 #define for_each_migratetype_order(order, type) \
 	for (order = 0; order < MAX_ORDER; order++) \
 		for (type = 0; type < MIGRATE_TYPES; type++)
-
+/*
+全局变量来表示是否启用 内存可移动 功能
+*/
 extern int page_group_by_mobility_disabled;
 
 #define NR_MIGRATETYPE_BITS (PB_migrate_end - PB_migrate + 1)
@@ -348,12 +353,15 @@ struct lruvec {
 /* LRU Isolation modes. */
 typedef unsigned __bitwise isolate_mode_t;
 
+/*
+    watermark 计算在 __setup_per_zone_wmarks
+*/
 enum zone_watermarks {
 /*
 当空闲页面的数量达到page_min所标定的数量的时候，
 说明页面数非常紧张, 分配页面的动作和kswapd线程同步运行.
-WMARK_MIN所表示的page的数量值，是在内存初始化的过程中调用free_area_init_core
-中计算的。这个数值是根据zone中的page的数量除以一个>1的系数来确定的。
+WMARK_MIN所表示的page的数量值，是在内存初始化的过程中调用free_area_init_core中计算的。
+这个数值是根据zone中的page的数量除以一个>1的系数来确定的。
 通常是这样初始化的ZoneSizeInPages/12
 */
 	WMARK_MIN,
@@ -454,17 +462,13 @@ enum zone_type {
 	 * Normal addressable memory is in ZONE_NORMAL. DMA operations can be
 	 * performed on pages in ZONE_NORMAL if the DMA devices support
 	 * transfers to all addressable memory.
-	 * 常规内存访问区域由ZONE_NORMAL标识，如果DMA设备可以在次区域
-	 * 作内存访问，也可以使用本区域
 	 */
 /*
-标记了可直接映射到内存段的普通内存域.
-这是在所有体系结构上保证会存在的唯一内存区域,
-但无法保证该地址范围对应了实际的物理地址.
+    标记了可直接映射到内存段的普通内存域.
+    这是在所有体系结构上保证会存在的唯一内存区域,
+    但无法保证该地址范围对应了实际的物理地址.
 
-例如, 如果AMD64系统只有两2G内存, 那么所有的内存都属于ZONE_DMA32范围, 而ZONE_NORMAL则为空
-
-在64位系统上，如果物理内存小于4G，该内存域为空。而在32位系统上，该值最大为896M
+    在64位系统上，如果物理内存小于4G，该内存域为空。而在32位系统上，该值最大为896M ?
 */
 	ZONE_NORMAL,
 #ifdef CONFIG_HIGHMEM
@@ -475,23 +479,17 @@ enum zone_type {
 	 * 900MB. The kernel will set up special mappings (page
 	 * table entries on i386) for each page that the kernel needs to
 	 * access.
-	 * 高端内存区域用ZONE_HIGHMEM标识，该区域无法从内核虚拟地址空间直接
-	 * 做线性映射，所以为访问该区域必须经内核作特殊的页映射，比如在i386
-	 * 体系上，内核空间1GB，除去其他一些开销，能对物理地址进行线性映射的
-	 * 空间大约只有896MB，此时高于896MB以上的物理地址空间就叫ZONE_HIGHMEM
-	 * 区域
 	 */
 /*
-标记了超出内核虚拟地址空间的物理内存段,
-因此这段地址不能被内核直接映射
+    标记了超出内核虚拟地址空间的物理内存段,因此这段地址不能被内核直接映射
 
-32位系统中, Linux内核虚拟地址空间只有1G,
-而0~895M这个986MB被用于DMA和直接映射, 剩余的物理内存被成为高端内存.
-那内核是如何借助剩余128MB高端内存地址空间是如何实现访问可以所有物理内存？
-当内核想访问高于896MB物理地址内存时，从0xF8000000 ~ 0xFFFFFFFF地址空间范围
-内找一段相应大小空闲的逻辑地址空间，借用一会。
-借用这段逻辑地址空间，建立映射到想访问的那段物理内存（即填充内核PTE页面表），
-临时用一会，用完后归还。这样别人也可以借用这段地址空间访问其他物理内存，
+    32位系统中, Linux内核虚拟地址空间只有1G,而0~895M这个896MB被用于DMA和直接映射, 
+    剩余的物理内存被成为高端内存.
+    那内核是如何借助剩余128MB高端内存地址空间是如何实现访问可以所有物理内存？
+    当内核想访问高于896MB物理地址内存时，从0xF8000000 ~ 0xFFFFFFFF地址空间范围
+    内找一段相应大小空闲的逻辑地址空间，借用一会。
+    借用这段逻辑地址空间，建立映射到想访问的那段物理内存（即填充内核PTE页面表），
+    临时用一会，用完后归还。这样别人也可以借用这段地址空间访问其他物理内存，
 实现了使用有限的地址空间，访问所有所有物理内存
 */
 	ZONE_HIGHMEM,
@@ -544,11 +542,7 @@ struct zone {
 
 	/* zone watermarks, access with *_wmark_pages(zone) macros */
     /*
-    内核线程kswapd检测到不同的水线值会进行不同的处理
-    如果空闲页多于pages_high = watermark[WMARK_HIGH], 内存域状态理想，不需要进行内存回收
-    如果空闲页低于pages_low = watermark[WMARK_LOW], 开始进行内存回收，将page换出到硬盘.
-    如果空闲页低于pages_min = watermark[WMARK_MIN], 内存回收的压力很重，因为内存域中的可用page数已经很少了，必须加快进行内存回收
-	watermark 计算在 __setup_per_zone_wmarks
+        内核线程kswapd检测到不同的水线值会进行不同的处理
     */
 	unsigned long watermark[NR_WMARK];
 
@@ -631,29 +625,30 @@ struct zone {
 	 * In SPARSEMEM, this map is stored in struct mem_section
 	 */
 /*
-    pageblock_nr_pages个页的内存块的迁移类型，
+    pageblock_flags 指向用于存放pageblock_nr_pages个页的内存块的 MIGRATE_TYPES
+    pageblock_flags 指向的内存空间的大小通过 usemap_size 函数来计算，
+    每个 pageblock 用4个比特位来存放 MIGRATE_TYPES 类型
+
+    例如在ARM Vexpress 平台， ZONE_NORMAL 的大小是768MB ，每个pageblock 大小是4MB ，
+    那么就有192 个pageblock ，每个pageblock 的 MIGRATE_TYPES 类型需要4bit，
+    所以管理这些pageblock ，需要96Byte
+    
 
     在内存释放时，为了能够快速的将内存块返回到正确的迁移链表上，
     内核提供了一个专门的字段pageblock_flags，
     在启用大页的情况下pageblock_nr_pages与大页大小（2M）相同，
     否则pageblock_nr_pages=2^(MAX_ORDER-1)=2^10个page。
 
-    pageblock_flags是一个比特位空间，每3位（保证能表示5种迁移类型）对应一个内存块；
-    在使能SPARSEMEM（稀疏内存模型）的系统上，pageblock_flags被定义在struct mem_section中，
-    否则定义在struct zone中。
-
-
     几点说明：
-    0) setup_usemap 里面得到
     1) pageblock_flags的空间是根据内存大小，在内存初始化时就分配好的，
        它的比特位总是可用的，与page是否由伙伴系统管理无关。
     2) 函数set_pageblock_migratetype(page, migratetype)用于设置以page为首的内存块的迁移类型，
        而get_pageblock_migratetype(page)用于获取以page为首的内存块的迁移类型。
     3) 所有页最开始都被标记为MIGRATE_MOVABLE。
     4) 分配内存时，如果需要从备用列表中申请，内核优先申请更大的内存块。
-        比如计划申请1个page的不可移动内存块，优先查找是否存在2^10个page的可回收内存块，
-        如果不存在再查找是否存在2^9个page的可回收内存块，直到2^0。
-        这样做是为了尽量避免向可回收和可移动内存块中引入碎片。
+       比如计划申请1个page的不可移动内存块，优先查找是否存在2^10个page的可回收内存块，
+       如果不存在再查找是否存在2^9个page的可回收内存块，直到2^0。
+       这样做是为了尽量避免向可回收和可移动内存块中引入碎片。
 */
 	unsigned long		*pageblock_flags;
 #endif /* CONFIG_SPARSEMEM */

@@ -129,8 +129,8 @@ struct page {
 			 一个文件可能只映射一部分，假设映射了1M的空间，
 			index指的是在1M空间内的偏移，而不是在整个文件内的偏移
 			
-			pgoff_t index是该页描述结构在地址空间radix树page_tree中的对象索引号即页号,
-			表示该页在vm_file中的偏移页数, 其类型pgoff_t被定义为unsigned long即一个机器字长.
+			该页描述结构在地址空间radix树page_tree中的对象索引号即页号,
+			表示该页在vm_file中的偏移页数.
 			*/
 			pgoff_t index;		/* Our offset within mapping. */
 			/**
@@ -417,7 +417,10 @@ struct vm_area_struct {
 	const struct vm_operations_struct *vm_ops;
 
 	/* Information about our backing store: */
-	 /* 映射文件的偏移量，以PAGE_SIZE为单位 */ 
+/*
+	映射文件的偏移量，以PAGE_SIZE为单位
+    被映射对象内容的起点，offset参数一般设为0，表示从文件头开始映射
+*/
 	unsigned long vm_pgoff;		/* Offset (within vm_file) in PAGE_SIZE
 					   units */
 	/* 映射的文件，没有则为NULL */  
@@ -458,6 +461,11 @@ struct mm_struct {
 从而导致各个区域的属性、需要的管理操作都不一致，
 所以就将各个虚存区域提炼出来单独管理，
 然后就再将所有虚存区域组成一颗红黑树交由mm_struct统一管理。
+
+mmap区的基地址跟系统允许的当前进程的用户栈的大小有关，用户栈的最大size越大，
+mmap区的基地址就越小。
+修改用户栈的最大尺寸需要用到ulimit -s xxx命令，单位是KB，表示用户栈的最大尺寸，
+用户栈的尺寸可以上G，而内核栈却只有区区的2个页
 */
 		struct vm_area_struct *mmap;		/* list of VMAs */
 /*
@@ -584,7 +592,7 @@ start_data和end_data标记了包含已初始化数据的区域. 请注意,
 		struct linux_binfmt *binfmt;
 
 		/* Architecture-specific MM context */
-	// 存放着当前进程使用的段起始地址
+	    // 存放着当前进程使用的段起始地址
 		mm_context_t context;
 
 		unsigned long flags; /* Must use atomic bitops to access */

@@ -67,6 +67,9 @@ static inline int set_smp_ops_by_method(struct device_node *node)
  *
  * Updates the cpu possible mask with the number of parsed cpu nodes
  */
+/*
+通过查询DTS 来获取CPU 核心的数量，然后通过 set_cpu_possible 函数设置 cpu_possible_mask 变量。 
+*/
 void __init arm_dt_init_cpu_maps(void)
 {
 	/*

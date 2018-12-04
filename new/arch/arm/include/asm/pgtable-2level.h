@@ -198,15 +198,6 @@ CPU 访问该页时会设置该标志位。在页面换出时，如果该标志�
 说明该页刚被访问过，页面是young 的，不适合把该页换出，同时清除该标志位。
 */
 #define L_PTE_YOUNG		(_AT(pteval_t, 1) << 1)
-/*
-
-PTE_DIRTY: CPU 在写操作时会设置该标志位，表示对应页面被写过，为脏页。
-如何模拟PTE_DIRTY 呢?
-在ARM MMU 硬件为一个干净页面建立映射时，设置硬件页表项是只读权限的。
-当往一个干净的页面写入时，会触发写权限缺页中断(虽然Linux版本的页面表项标记了可写权限，但是ARM 硬件页面表项还不具有写入权限) ，
-那么在缺页中断处理handle_pte_fault()中会在该页的Linux 版本PTE 页面表项标记为"dirty"，并且发现PTE 页表项内容改变了，
-ptep_set_access_flags()函数会把新的Linux 版本的页表项内容写入硬件页表，从而完成模拟过程。
-*/
 #define L_PTE_DIRTY		(_AT(pteval_t, 1) << 6)
 #define L_PTE_RDONLY		(_AT(pteval_t, 1) << 7)
 #define L_PTE_USER		(_AT(pteval_t, 1) << 8)

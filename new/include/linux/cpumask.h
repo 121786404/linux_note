@@ -95,7 +95,12 @@ extern struct cpumask __cpu_online_mask;
 extern struct cpumask __cpu_present_mask;
 extern struct cpumask __cpu_active_mask;
 /*
-	系统中有多少个可以运行(现在运行或者将来某个时间
+内核对CPU 的管理是通过bitmap 来管理的，
+并且定义了possible 、present 、online 和active 这4 种状态。
+*/
+/*
+	系统中有多少个可以运行(现在运行或者将来某个时间点运行)的CPU 核心。
+	通过查询系统DTS 配置文件获取的系统CPU 数量
 */
 #define cpu_possible_mask ((const struct cpumask *)&__cpu_possible_mask)
 /*
@@ -108,6 +113,7 @@ extern struct cpumask __cpu_active_mask;
 #define cpu_present_mask  ((const struct cpumask *)&__cpu_present_mask)
 /*
 	系统中有多少个活跃的CPU 核心
+    经过使能后 cpu_online 函数的CPU数量
 */
 #define cpu_active_mask   ((const struct cpumask *)&__cpu_active_mask)
 

@@ -2675,6 +2675,11 @@ static struct rq *finish_task_switch(struct task_struct *prev)
 	__releases(rq->lock)
 {
 	struct rq *rq = this_rq();
+/*
+    假设B是内核线程，在进程A调用context_switch切换到B线程的时候，
+    借用的地址空间被保存在CPU对应的run queue中。
+    在B切换到C之后，通过rq->prev_mm就可以得到借用的内存描述符	
+*/
 	struct mm_struct *mm = rq->prev_mm;
 	long prev_state;
 
@@ -2730,6 +2735,11 @@ static struct rq *finish_task_switch(struct task_struct *prev)
 	 */
 	if (mm) {
 		membarrier_mm_sync_core_before_usermode(mm);
+/*
+        已经完成B到C的切换后，借用的地址空间可以返还了。
+        因此在C进程中调用mmdrop来完成这一动作。
+        很神奇，在A进程中为内核线程B借用地址空间，但却在C进程中释放它		
+*/
 		mmdrop(mm);
 	}
 	if (unlikely(prev_state == TASK_DEAD)) {
@@ -2820,8 +2830,8 @@ asmlinkage __visible void schedule_tail(struct task_struct *prev)
 /*
  * context_switch - switch to the new MM and the new thread's register state.
  rq：在多核系统中，进程切换总是发生在各个cpu core上，参数rq指向本次切换发生的那个cpu对应的run queue
- prev：将要被剥夺执行权利的那个进程
- next：被选择在该cpu上执行的那个进程
+ prev：prev是马上就要被剥夺执行权利的进程（简称A进程）
+ next：next是马上就要被切入的进程（简称B进程）
  */
 static __always_inline struct rq *
 context_switch(struct rq *rq, struct task_struct *prev,
@@ -2831,7 +2841,14 @@ context_switch(struct rq *rq, struct task_struct *prev,
 
 	prepare_task_switch(rq, prev, next);
 
+
+/*
+    mm变量指向B进程的地址空间描述符，。
+*/
 	mm = next->mm;
+/*
+    oldmm变量指向A进程的当前正在使用的地址空间描述符（active_mm）	
+*/
 	oldmm = prev->active_mm;
 	/*
 	 * For paravirt, this is coupled with an exit in switch_to to
@@ -2848,14 +2865,39 @@ context_switch(struct rq *rq, struct task_struct *prev,
 	 * user-space.
 	 */
 	if (!mm) {
-		next->active_mm = oldmm; /* 借用A进程当前正在使用的那个地址空间 */
+/*
+        mm为空的话，说明B进程是内核线程，这时候，只能借用A进程当前正在使用的那个地址空间（prev->active_mm）。
+        这里不能借用A进程的地址空间（prev->mm），因为A进程也可能是一个内核线程，不拥有自己的地址空间描述符
+        如果要切入的B进程是内核线程，那么由于是借用当前正在使用的地址空间，
+        因此没有必要调用switch_mm进行地址空间切换，
+*/
+		next->active_mm = oldmm; 
 		mmgrab(oldmm);
+/*
+        如果要切入的B进程是内核线程，        那么暂时不需要flush TLB，因为内核线程不会访问usersapce，
+        所以那些无效的TLB entry也不会影响内核线程的执行。
+        在这种情况下，为了性能，CPU会进入lazy tlb mode。
+*/
 		enter_lazy_tlb(oldmm, next);
 	} else
+/*
+        如果切入的是普通进程，那么这时候进程的地址空间已经切换了，也就是说在A--->B进程的过程中，
+        进程本身尚未切换，而进程的地址空间已经切换到了B进程了。
+        这样会不会造成问题呢?还好，这时候代码执行在kernel space，
+        A和B进程的kernel space都是一样的，即便是切了进程地址空间，不过内核空间实际上保持不变的。	
+*/
 		switch_mm_irqs_off(oldmm, mm, next);
 
 	if (!prev->mm) {
+        /*
+            如果切出的A进程是内核线程，那么其借用的那个地址空间（active_mm）已经不需要继续使用了
+            （内核线程A被挂起了，根本不需要地址空间了）。
+        */
 		prev->active_mm = NULL;
+/*
+        设定run queue上一次使用的mm struct（rq->prev_mm）为oldmm。
+        为何要这么做？先等一等，下面我们会统一描述。
+*/
 		rq->prev_mm = oldmm;
 	}
 
@@ -2864,6 +2906,13 @@ context_switch(struct rq *rq, struct task_struct *prev,
 	prepare_lock_switch(rq, next, rf);
 
 	/* Here we just switch the register state and the stack. */
+/*
+    一次进程切换，表面上看起来涉及两个进程，实际上涉及到了三个进程。
+    switch_to是一个有魔力的符号，和一般的调用函数不同，当A进程在CPUa调用它切换到B进程的时候，
+    switch_to一去不回，直到在某个cpu上（我们称之CPUx）完成从X进程（就是last进程）到A进程切换的时候，
+    switch_to返回到A进程的现场。这一点我们会在下一节详细描述。
+    switch_to完成了具体prev到next进程的切换，当switch_to返回的时候，说明A进程再次被调度执行了	
+*/
 	switch_to(prev, next, prev);
 	barrier();
 
@@ -3333,9 +3382,22 @@ static inline void schedule_debug(struct task_struct *prev)
 	if (task_stack_end_corrupted(prev))
 		panic("corrupted stack end detected inside scheduler\n");
 #endif
+/*
+    在调用schedule函数之前，它毫无疑问是期待preempt count等于0的，
+    只有当前task的preempt count等于0才说明抢占的合理性
+    本来已经禁止抢占了，但是又显示的调用schedule函数，你这不是有病吗？
 
+    对当前preempt count进行测试，这时候正确的preempt counter应该是等于1，
+    其他的bit field，例如softirq counter、hardirq count等都是0。
+    如果没有设定正确的preempt_count就调用schedule函数，那么说明在atomic上下文中错误的进行了调度，
+    __schedule_bug会打印出相关信息，方便调试。
+*/
 	if (unlikely(in_atomic_preempt_off())) {
 		__schedule_bug(prev);
+/*
+        虽然在错误的场景中调用了schedule函数，但是内核还是要艰难前行啊，
+        因此这里会修改preempt count的值为PREEMPT_DISABLED，而这才是进入schedule函数正确的姿势		
+*/
 		preempt_count_set(PREEMPT_DISABLED);
 	}
 	rcu_sleep_check();
@@ -3524,6 +3586,9 @@ static void __sched notrace __schedule(bool preempt)
 		trace_sched_switch(preempt, prev, next);
 
 		/* Also unlocks the rq: */
+/*
+        调度器算法确定了pre task和next task后，调用context_switch函数实际执行进行切换的工作了		
+*/
 		rq = context_switch(rq, prev, next, &rf);
 	} else {
 		rq->clock_update_flags &= ~(RQCF_ACT_SKIP|RQCF_REQ_SKIP);
@@ -3567,6 +3632,9 @@ asmlinkage __visible void __sched schedule(void)
 
 	sched_submit_work(tsk);
 	do {
+/*
+        关闭了抢占,preempt_count加1
+*/
 		preempt_disable();
 		__schedule(false);
 		sched_preempt_enable_no_resched();

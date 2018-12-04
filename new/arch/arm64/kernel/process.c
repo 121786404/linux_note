@@ -424,8 +424,16 @@ __notrace_funcgraph struct task_struct *__switch_to(struct task_struct *prev,
 				struct task_struct *next)
 {
 	struct task_struct *last;
-
+/*
+    把当前float-point simd的状态保存到了内存中（task.thread.fpsimd_state），
+    从要切入的next进程描述符中获取FPSIMD状态，并加载到CPU上
+*/
 	fpsimd_thread_switch(next);
+/*
+    处理tls（thread local storage）的切换。
+    这里硬件寄存器涉及tpidr_el0和tpidrro_el0，涉及的内存是task.thread.tp_value。
+    具体的应用场景是和线程库相关。	
+*/
 	tls_thread_switch(next);
 	hw_breakpoint_thread_switch(next);
 	contextidr_thread_switch(next);

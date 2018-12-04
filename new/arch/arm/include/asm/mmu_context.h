@@ -136,6 +136,11 @@ enter_lazy_tlb(struct mm_struct *mm, struct task_struct *tsk)
  * calling the CPU specific function when the mm hasn't
  * actually changed.
  */
+/*
+prev是要切出的地址空间
+next是要切入的地址空间
+tsk是将要切入的进程
+*/
 static inline void
 switch_mm(struct mm_struct *prev, struct mm_struct *next,
 	  struct task_struct *tsk)

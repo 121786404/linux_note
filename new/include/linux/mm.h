@@ -1943,6 +1943,10 @@ static inline void pgtable_page_dtor(struct page *page)
 #define pte_alloc_map(mm, pmd, address)			\
 	(pte_alloc(mm, pmd, address) ? NULL : pte_offset_map(pmd, address))
 
+/*
+由mm，pmd和addr来找到相应的pte页表项。
+这里需要申请一个spinlock锁用来保护修改pte页表
+*/
 #define pte_alloc_map_lock(mm, pmd, address, ptlp)	\
 	(pte_alloc(mm, pmd, address) ?			\
 		 NULL : pte_offset_map_lock(mm, pmd, address, ptlp))

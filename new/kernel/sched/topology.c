@@ -1525,7 +1525,10 @@ static int __sdt_alloc(const struct cpumask *cpu_map)
 */
 	for_each_sd_topology(tl) {
 		struct sd_data *sdd = &tl->data;
-
+/*
+为每个SDTL 层级的调度域(sched domain) 、调度组(sched_group) 和调度组能力(sched_group_capacity)
+分配Per-CPU 变量的数据结构。
+*/
 		sdd->sd = alloc_percpu(struct sched_domain *);
 		if (!sdd->sd)
 			return -ENOMEM;

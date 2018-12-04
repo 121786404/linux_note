@@ -26,9 +26,18 @@
  */
 #define PTE_VALID		(_AT(pteval_t, 1) << 0)
 #define PTE_WRITE		(PTE_DBM)		 /* same as DBM (51) */
+/*
+PTE_DIRTY: CPU 在写操作时会设置该标志位，表示对应页面被写过，为脏页。
+ARM如何模拟PTE_DIRTY 呢?
+在ARM MMU 硬件为一个干净页面建立映射时，设置硬件页表项是 只读 权限的。
+当往一个干净的页面写入时，会触发写权限缺页中断(虽然Linux版本的页面表项标记了可写权限，但是ARM 硬件页面表项还不具有写入权限) ，
+那么在缺页中断处理 handle_pte_fault ()中会在该页的Linux 版本PTE 页面表项标记为"dirty"，并且发现PTE 页表项内容改变了，
+ptep_set_access_flags()函数会把新的Linux 版本的页表项内容写入硬件页表，从而完成模拟过程。
+*/
+
 #define PTE_DIRTY		(_AT(pteval_t, 1) << 55)
 /*
-PTE SPECIAL 软件定义的比特位，主要用于有以下用途:
+PTE_SPECIAL 软件定义的比特位，主要用于有以下用途:
 内核的零页面zero page 。
 大量的驱动程序使用 remap_pfn_range 函数来实现映射内核页面到用户空间。
 这些用户程序使用的 VMA 通常设置了(VM_IO | VM_PFNMAP | VM_DONTEXPAND | VM_DONTDUMP) 属性
