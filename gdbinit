@@ -1,5 +1,15 @@
 file vmlinux
-set backtrace limit 15
+set backtrace limit 20
+b remap_pfn_range
+#b early_init_dt_scan_memory
+#b map_lowmem
+#b prepare_page_table
+#b build_zonelists
+#b memmap_init
+#b memmap_init_zone
+#b __free_pages_bootmem
+#b alloc_init_pte
+#b arm_pte_alloc
 #b smp_setup_processor_id
 #b start_kernel
 #b alloc_thread_stack_node
@@ -13,12 +23,16 @@ set backtrace limit 15
 #b find_pid_ns
 #b find_vpid
 #b find_get_pid
-b _do_fork
+#b _do_fork
 #b sys_fork
 #b sys_vfork
 #b smp_init
 #b arm_dt_init_cpu_maps
 #b smp_prepare_cpus
 #b sched_init_domains
-
 #init_task
+#b context_switch
+#b switch_to
+#b __switch_to
+#b arm_dt_init_cpu_maps
+#b sched_init_domains

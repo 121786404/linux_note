@@ -13,15 +13,15 @@ case $1 in
 		export ARCH=arm
 		export CROSS_COMPILE=arm-linux-gnueabi-
 		#make distclean
-		make vexpress_defconfig
-		sudo cp ../linux-patch/include/generated/asm-offsets_.h include/generated/asm-offsets.h
-                mkdir -p _install_arm32/dev
+		#make vexpress_defconfig
+		#sudo cp ../linux-patch/include/generated/asm-offsets_.h include/generated/asm-offsets.h
+    #mkdir -p _install_arm32/dev
 		cd _install_arm32/dev/
 		#sudo mknod console c 5 1
 		cd ../..
 		#make vexpress_defconfig
 		make bzImage -j4
-		make dtbs
+		#make dtbs
 		#../collect-src -f "linux-stable" -o ../linux_arm32.list
 		cd ..
 		;;
