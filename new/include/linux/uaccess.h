@@ -6,9 +6,6 @@
 #include <linux/thread_info.h>
 #include <linux/kasan-checks.h>
 
-#define VERIFY_READ 0
-#define VERIFY_WRITE 1
-
 #define uaccess_kernel() segment_eq(get_fs(), KERNEL_DS)
 
 #include <asm/uaccess.h>
@@ -112,7 +109,7 @@ _copy_from_user(void *to, const void __user *from, unsigned long n)
 	unsigned long res = n;
 	might_fault();
 	/*access_ok用来对用户空间的地址指针from作某种有效性检验,宏体系架构相关的*/
-	if (likely(access_ok(VERIFY_READ, from, n))) {
+	if (likely(access_ok(from, n))) {
 		kasan_check_write(to, n);
 		res = raw_copy_from_user(to, from, n);
 	}
@@ -134,7 +131,7 @@ _copy_to_user(void __user *to, const void *from, unsigned long n)
 	 * 睡眠状态*/
 	might_fault();
 	/*access_ok用来对用户空间的地址指针to作某种有效性检验,宏体系架构相关的*/
-	if (access_ok(VERIFY_WRITE, to, n)) {
+	if (access_ok(to, n)) {
 		kasan_check_read(from, n);
 		n = raw_copy_to_user(to, from, n);
 	}
@@ -165,7 +162,7 @@ static __always_inline unsigned long __must_check
 copy_in_user(void __user *to, const void __user *from, unsigned long n)
 {
 	might_fault();
-	if (access_ok(VERIFY_WRITE, to, n) && access_ok(VERIFY_READ, from, n))
+	if (access_ok(to, n) && access_ok(from, n))
 		n = raw_copy_in_user(to, from, n);
 	return n;
 }
@@ -272,7 +269,7 @@ extern long strncpy_from_unsafe(char *dst, const void *unsafe_addr, long count);
 	probe_kernel_read(&retval, addr, sizeof(retval))
 
 #ifndef user_access_begin
-#define user_access_begin() do { } while (0)
+#define user_access_begin(ptr,len) access_ok(ptr, len)
 #define user_access_end() do { } while (0)
 #define unsafe_get_user(x, ptr, err) do { if (unlikely(__get_user(x, ptr))) goto err; } while (0)
 #define unsafe_put_user(x, ptr, err) do { if (unlikely(__put_user(x, ptr))) goto err; } while (0)

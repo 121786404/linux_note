@@ -25,6 +25,7 @@
 
 #include <linux/types.h>
 
+#define PB_migratetype_bits 3
 /*
 在初始化期间, 内核自动确保对内存域中的每个不同的迁移类型分组,
 在pageblock_flags中都分配了足够存储NR_PAGEBLOCK_BITS个比特位的空间。
@@ -33,7 +34,7 @@
 /* Bit indices that affect a whole block of pages */
 enum pageblock_bits {
 	PB_migrate,
-	PB_migrate_end = PB_migrate + 3 - 1,
+	PB_migrate_end = PB_migrate + PB_migratetype_bits - 1,
 			/* 3 bits required for migrate types */
 	PB_migrate_skip,/* If set the block is skipped by compaction */
 

@@ -76,10 +76,6 @@ enum pageflags {
 /*
 页面操作过程中发生错误时会设置该位
 */
-	PG_error,
-/*
-刚刚被访问过，用来实现LRU算法中的第二次机会法
-*/
 	PG_referenced,
 /*
 在完成读操作后置位
@@ -104,7 +100,9 @@ enum pageflags {
 并在页面移除时清除该位, 它标记了页面是否处于活动状态
 */
 	PG_active,
+	PG_workingset,
 	PG_waiters,		/* Page has waiters, check its waitqueue. Must be bit #7 and in the same byte as "PG_locked" */
+	PG_error,
 /*
 属于由slab分配器创建的slab
 */
@@ -240,6 +238,14 @@ static inline int PagePoisoned(const struct page *page)
 	return page->flags == PAGE_POISON_PATTERN;
 }
 
+#ifdef CONFIG_DEBUG_VM
+void page_init_poison(struct page *page, size_t size);
+#else
+static inline void page_init_poison(struct page *page, size_t size)
+{
+}
+#endif
+
 /*
  * Page flags policies wrt compound pages
  *
@@ -358,6 +364,8 @@ PAGEFLAG(Dirty, dirty, PF_HEAD) TESTSCFLAG(Dirty, dirty, PF_HEAD)
 PAGEFLAG(LRU, lru, PF_HEAD) __CLEARPAGEFLAG(LRU, lru, PF_HEAD)
 PAGEFLAG(Active, active, PF_HEAD) __CLEARPAGEFLAG(Active, active, PF_HEAD)
 	TESTCLEARFLAG(Active, active, PF_HEAD)
+PAGEFLAG(Workingset, workingset, PF_HEAD)
+	TESTCLEARFLAG(Workingset, workingset, PF_HEAD)
 __PAGEFLAG(Slab, slab, PF_NO_TAIL)
 __PAGEFLAG(SlobFree, slob_free, PF_NO_TAIL)
 PAGEFLAG(Checked, checked, PF_NO_COMPOUND)	   /* Used by some filesystems */
@@ -370,6 +378,7 @@ PAGEFLAG(Foreign, foreign, PF_NO_COMPOUND);
 
 PAGEFLAG(Reserved, reserved, PF_NO_COMPOUND)
 	__CLEARPAGEFLAG(Reserved, reserved, PF_NO_COMPOUND)
+	__SETPAGEFLAG(Reserved, reserved, PF_NO_COMPOUND)
 PAGEFLAG(SwapBacked, swapbacked, PF_NO_TAIL)
 	__CLEARPAGEFLAG(SwapBacked, swapbacked, PF_NO_TAIL)
 	__SETPAGEFLAG(SwapBacked, swapbacked, PF_NO_TAIL)
@@ -735,6 +744,7 @@ PAGEFLAG_FALSE(DoubleMap)
 
 #define PAGE_TYPE_BASE	0xf0000000
 /* Reserve		0x0000007f to catch underflows of page_mapcount */
+#define PAGE_MAPCOUNT_RESERVE	-128
 #define PG_buddy	0x00000080
 #define PG_balloon	0x00000100
 #define PG_kmemcg	0x00000200
@@ -742,6 +752,11 @@ PAGEFLAG_FALSE(DoubleMap)
 
 #define PageType(page, flag)						\
 	((page->page_type & (PAGE_TYPE_BASE | flag)) == PAGE_TYPE_BASE)
+
+static inline int page_has_type(struct page *page)
+{
+	return (int)page->page_type < PAGE_MAPCOUNT_RESERVE;
+}
 
 #define PAGE_TYPE_OPS(uname, lname)					\
 static __always_inline int Page##uname(struct page *page)		\

@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-2.0
 /*
  * linux/kernel/time/clockevents.c
  *
@@ -6,9 +7,6 @@
  * Copyright(C) 2005-2006, Thomas Gleixner <tglx@linutronix.de>
  * Copyright(C) 2005-2007, Red Hat, Inc., Ingo Molnar
  * Copyright(C) 2006-2007, Timesys Corp., Thomas Gleixner
- *
- * This code is licenced under the GPL version 2. For details see
- * kernel-base/COPYING.
  */
 
 #include <linux/clockchips.h>
@@ -49,10 +47,8 @@ static u64 cev_delta2ns(unsigned long latch, struct clock_event_device *evt,
 	u64 clc = (u64) latch << evt->shift;
 	u64 rnd;
 
-	if (unlikely(!evt->mult)) {
+	if (WARN_ON(!evt->mult))
 		evt->mult = 1;
-		WARN_ON(1);
-	}
 	rnd = (u64) evt->mult - 1;
 
 	/*
@@ -174,10 +170,8 @@ void clockevents_switch_state(struct clock_event_device *dev,
 		 * on it, so fix it up and emit a warning:
 		 */
 		if (clockevent_state_oneshot(dev)) {
-			if (unlikely(!dev->mult)) {
+			if (WARN_ON(!dev->mult))
 				dev->mult = 1;
-				WARN_ON(1);
-			}
 		}
 	}
 }
@@ -301,19 +295,19 @@ static int clockevents_program_min_delta(struct clock_event_device *dev)
 /*
 	ktime_get函数获取当前的时间点，加上min_delta_ns就是下一次要触发event的时间点，
 */
-	dev->next_event = ktime_add_ns(ktime_get(), delta);
+		dev->next_event = ktime_add_ns(ktime_get(), delta);
 
-	if (clockevent_state_shutdown(dev))
-		return 0;
+		if (clockevent_state_shutdown(dev))
+			return 0;
 /*
     记录retry的次数
 */
 
-	dev->retries++;
+		dev->retries++;
 /*
         转换成cycle值
 */
-	clc = ((unsigned long long) delta * dev->mult) >> dev->shift;
+		clc = ((unsigned long long) delta * dev->mult) >> dev->shift;
 /*
     调用底层driver callback函数进行设定
 */
@@ -344,10 +338,8 @@ int clockevents_program_event(struct clock_event_device *dev, ktime_t expires,
 	int64_t delta;
 	int rc;
 
-	if (unlikely(expires < 0)) {/* 参数错误 */
-		WARN_ON_ONCE(1);
+	if (WARN_ON_ONCE(expires < 0))
 		return -ETIME;
-	}
 
 /*
     设定下一次触发clock event的时间

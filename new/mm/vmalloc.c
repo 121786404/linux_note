@@ -1727,6 +1727,8 @@ void vfree(const void *addr)
 
 	kmemleak_free(addr);
 
+	might_sleep_if(!in_interrupt());
+
 	if (!addr)
 		return;
 /*
@@ -1794,7 +1796,7 @@ void *vmap(struct page **pages, unsigned int count,
 	might_sleep();
 
 	/* 参数明显不合法 */
-	if (count > totalram_pages)
+	if (count > totalram_pages())
 		return NULL;
 
 	size = (unsigned long)count << PAGE_SHIFT;
@@ -1962,7 +1964,7 @@ vmalloc分配的大小必须是页面的整数倍，这里将长度对齐到页�
 /*
 	分配长度为0，或者长度大于限制数，都返回失败  
 */
-	if (!size || (size >> PAGE_SHIFT) > totalram_pages)
+	if (!size || (size >> PAGE_SHIFT) > totalram_pages())
 		goto fail;
 /*
     在vmalloc地址区间中找到合适的区域，    这是通过遍历vmlist链表来实现的  

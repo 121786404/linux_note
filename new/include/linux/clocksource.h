@@ -271,6 +271,11 @@ static inline void __clocksource_update_freq_khz(struct clocksource *cs, u32 khz
 	__clocksource_update_freq_scale(cs, 1000, khz);
 }
 
+#ifdef CONFIG_ARCH_CLOCKSOURCE_INIT
+extern void clocksource_arch_init(struct clocksource *cs);
+#else
+static inline void clocksource_arch_init(struct clocksource *cs) { }
+#endif
 
 extern int timekeeping_notify(struct clocksource *clock);
 
@@ -295,8 +300,6 @@ extern int clocksource_i8253_init(void);
 我们称这个特殊的section叫做clock source table。
 这个table也就保存了kernel支持的所有的clock source的ID信息（最重要的是驱动代码初始化函数和DT compatible string）。
 */
-#define CLOCKSOURCE_OF_DECLARE(name, compat, fn) \
-	TIMER_OF_DECLARE(name, compat, fn)
 
 #ifdef CONFIG_TIMER_PROBE
 extern void timer_probe(void);

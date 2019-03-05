@@ -712,6 +712,7 @@ static int posix_cpu_timer_set(struct k_itimer *timer, int timer_flags,
 	 * set up the signal and overrun bookkeeping.
 	 */
 	timer->it.cpu.incr = timespec64_to_ns(&new->it_interval);
+	timer->it_interval = ns_to_ktime(timer->it.cpu.incr);
 
 	/*
 	 * This acts as a modification timestamp for the timer,
@@ -943,9 +944,6 @@ static void check_process_timers(struct task_struct *tsk,
 	struct list_head *timers = sig->cpu_timers;
 	struct task_cputime cputime;
 	unsigned long soft;
-
-	if (dl_task(tsk))
-		check_dl_overrun(tsk);
 
 	/*
 	 * If cputimer is not running, then there are no active

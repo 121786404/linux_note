@@ -20,12 +20,18 @@
 #include <linux/kmemleak.h>
 #include <linux/seq_file.h>
 #include <linux/memblock.h>
-#include <linux/bootmem.h>
 
 #include <asm/sections.h>
 #include <linux/io.h>
 
 #include "internal.h"
+
+#define INIT_MEMBLOCK_REGIONS			128
+#define INIT_PHYSMEM_REGIONS			4
+
+#ifndef INIT_MEMBLOCK_RESERVED_REGIONS
+# define INIT_MEMBLOCK_RESERVED_REGIONS		INIT_MEMBLOCK_REGIONS
+#endif
 
 /**
  * DOC: memblock overview
@@ -81,6 +87,18 @@
  * memblock data structures will be discarded after the system
  * initialization compltes.
  */
+ 
+#ifndef CONFIG_NEED_MULTIPLE_NODES
+struct pglist_data __refdata contig_page_data;
+EXPORT_SYMBOL(contig_page_data);
+#endif
+
+unsigned long max_low_pfn;
+unsigned long min_low_pfn;
+unsigned long max_pfn;
+unsigned long long max_possible_pfn;
+
+
 /**
  * memblock管理算法: 内存申请的时候，仅是把被申请到的内存加入到
  * memblock.reserved中，并不会在memblock.memory里面进行相关的删除或

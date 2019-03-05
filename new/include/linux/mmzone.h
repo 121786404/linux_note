@@ -105,7 +105,7 @@ enum migratetype {
 };
 
 /* In mm/page_alloc.c; keep in sync also with show_migration_types() there */
-extern char * const migratetype_names[MIGRATE_TYPES];
+extern const char * const migratetype_names[MIGRATE_TYPES];
 
 #ifdef CONFIG_CMA
 #  define is_migrate_cma(migratetype) unlikely((migratetype) == MIGRATE_CMA)
@@ -237,8 +237,10 @@ enum node_stat_item {
 	NR_SLAB_UNRECLAIMABLE,
 	NR_ISOLATED_ANON,	/* Temporary isolated pages from anon lru */
 	NR_ISOLATED_FILE,	/* Temporary isolated pages from file lru */
+	WORKINGSET_NODES,
 	WORKINGSET_REFAULT,
 	WORKINGSET_ACTIVATE,
+	WORKINGSET_RESTORE,
 	WORKINGSET_NODERECLAIM,
 	NR_ANON_MAPPED,	/* Mapped anonymous pages */
 	NR_FILE_MAPPED,	/* pagecache pages mapped into pagetables.
@@ -256,7 +258,7 @@ enum node_stat_item {
 	NR_VMSCAN_IMMEDIATE,	/* Prioritise for reclaim when writeback ends */
 	NR_DIRTIED,		/* page dirtyings since bootup */
 	NR_WRITTEN,		/* page writings since bootup */
-	NR_INDIRECTLY_RECLAIMABLE_BYTES, /* measured in bytes */
+	NR_KERNEL_MISC_RECLAIMABLE,	/* reclaimable non-slab kernel pages */
 	NR_VM_NODE_STAT_ITEMS
 };
 
@@ -379,9 +381,10 @@ WMARK_MIN所表示的page的数量值，是在内存初始化的过程中调用f
 	NR_WMARK
 };
 
-#define min_wmark_pages(z) (z->watermark[WMARK_MIN])
-#define low_wmark_pages(z) (z->watermark[WMARK_LOW])
-#define high_wmark_pages(z) (z->watermark[WMARK_HIGH])
+#define min_wmark_pages(z) (z->_watermark[WMARK_MIN] + z->watermark_boost)
+#define low_wmark_pages(z) (z->_watermark[WMARK_LOW] + z->watermark_boost)
+#define high_wmark_pages(z) (z->_watermark[WMARK_HIGH] + z->watermark_boost)
+#define wmark_pages(z, i) (z->_watermark[i] + z->watermark_boost)
 /*
 每个zone都会有一个这个结构用于缓存页的分配,
 中文一般就叫高速缓存.
@@ -441,7 +444,7 @@ enum zone_type {
 	 * Architecture		Limit
 	 * ---------------------------
 	 * parisc, ia64, sparc	<4G
-	 * s390			<2G
+	 * s390, powerpc	<2G
 	 * arm			Various
 	 * alpha		Unlimited or 0-16MB.
 	 *
@@ -544,7 +547,8 @@ struct zone {
     /*
         内核线程kswapd检测到不同的水线值会进行不同的处理
     */
-	unsigned long watermark[NR_WMARK];
+	unsigned long _watermark[NR_WMARK];
+	unsigned long watermark_boost;
 
 	unsigned long nr_reserved_highatomic;
 
@@ -696,15 +700,9 @@ spanned_pages: 和node中的类似的成员含义一样
 	 * Write access to present_pages at runtime should be protected by
 	 * mem_hotplug_begin/end(). Any reader who can't tolerant drift of
 	 * present_pages should get_online_mems() to get a stable value.
-	 *
-	 * Read access to managed_pages should be safe because it's unsigned
-	 * long. Write access to zone->managed_pages and totalram_pages are
-	 * protected by managed_page_count_lock at runtime. Idealy only
-	 * adjust_managed_page_count() should be used instead of directly
-	 * touching zone->managed_pages and totalram_pages.
 	 */
 	//该伙伴系统管理的页面数量
-	unsigned long		managed_pages;
+	atomic_long_t		managed_pages;
     /*  总页数，包含空洞  */
 	unsigned long		spanned_pages;
 	/*  可用页数，不包含空洞  */
@@ -830,6 +828,17 @@ enum pgdat_flags {
 	PGDAT_RECLAIM_LOCKED,		/* prevents concurrent reclaim */
 };
 
+enum zone_flags {
+	ZONE_BOOSTED_WATERMARK,		/* zone recently boosted watermarks.
+					 * Cleared when kswapd is woken.
+					 */
+};
+
+static inline unsigned long zone_managed_pages(struct zone *zone)
+{
+	return (unsigned long)atomic_long_read(&zone->managed_pages);
+}
+
 static inline unsigned long zone_end_pfn(const struct zone *zone)
 {
 	return zone->zone_start_pfn + zone->spanned_pages;
@@ -941,12 +950,9 @@ extern struct page *mem_map;
 #endif
 
 /*
- * The pg_data_t structure is used in machines with CONFIG_DISCONTIGMEM
- * (mostly NUMA machines?) to denote a higher-level memory zone than the
- * zone denotes.
- *
  * On NUMA machines, each NUMA node would have a pg_data_t to describe
- * it's memory layout.
+ * it's memory layout. On UMA machines there is a single pglist_data which
+ * describes the whole memory.
  *
  * Memory statistics and page replacement data structures are maintained on a
  * per-zone basis.
@@ -989,20 +995,10 @@ typedef struct pglist_data {
 	struct page_ext *node_page_ext;
 #endif
 #endif
-#ifndef CONFIG_NO_BOOTMEM
-    /*
-        在系统启动boot期间，内存管理子系统初始化之前，
-        内核页需要使用内存（另外，还需要保留部分内存用于初始化内存管理子系统）
-        为解决这个问题，内核使用了自举内存分配器
-        此结构用于这个阶段的内存管理
-    */
-	struct bootmem_data *bdata;
-#endif
 #if defined(CONFIG_MEMORY_HOTPLUG) || defined(CONFIG_DEFERRED_STRUCT_PAGE_INIT)
 	/*
-	 * Must be held any time you expect node_start_pfn, node_present_pages
-	 * or node_spanned_pages stay constant.  Holding this will also
-	 * guarantee that any pfn_valid() stays that way.
+	 * Must be held any time you expect node_start_pfn,
+	 * node_present_pages, node_spanned_pages or nr_zones to stay constant.
 	 *
 	 * pgdat_resize_lock() and pgdat_resize_unlock() are provided to
 	 * manipulate node_size_lock without checking for CONFIG_MEMORY_HOTPLUG
@@ -1031,19 +1027,21 @@ typedef struct pglist_data {
 /*
 	node中的真正可以使用的page数量
 */
-	unsigned long node_present_pages; /* total number of physical pages  */
+	unsigned long node_present_pages; /* total number of physical pages */
 /*
      node中page数量(包含空洞)
 */
-	unsigned long node_spanned_pages; /* total size of physical page  range, including holes*/
-	int node_id; /*  全局结点ID，系统中的NUMA结点都从0开始编号  */
+	unsigned long node_spanned_pages; /* total size of physical page
+					     range, including holes */
+	int node_id;
 	/*  node的等待队列，交换守护列队进程的等待列表*/
 	wait_queue_head_t kswapd_wait;
 	wait_queue_head_t pfmemalloc_wait;
 	/*
 	指向负责回收该node中内存的swap内核线程kswapd， 一个node对应一个kswapd
 	*/
-	struct task_struct *kswapd;	/* Protected by   mem_hotplug_begin/end() */
+	struct task_struct *kswapd;	/* Protected by
+					   mem_hotplug_begin/end() */
     /*
         定义需要释放的区域的长度
     */
@@ -1098,8 +1096,6 @@ typedef struct pglist_data {
 	 * is the first PFN that needs to be initialised.
 	 */
 	unsigned long first_deferred_pfn;
-	/* Number of non-deferred pages */
-	unsigned long static_init_pgcnt;
 #endif /* CONFIG_DEFERRED_STRUCT_PAGE_INIT */
 
 #ifdef CONFIG_TRANSPARENT_HUGEPAGE
@@ -1193,6 +1189,12 @@ void memory_present(int nid, unsigned long start, unsigned long end);
 static inline void memory_present(int nid, unsigned long start, unsigned long end) {}
 #endif
 
+#if defined(CONFIG_SPARSEMEM)
+void memblocks_present(void);
+#else
+static inline void memblocks_present(void) {}
+#endif
+
 #ifdef CONFIG_HAVE_MEMORYLESS_NODES
 int local_memory_node(int node_id);
 #else
@@ -1224,7 +1226,7 @@ static inline bool is_dev_zone(const struct zone *zone)
  */
 static inline bool managed_zone(struct zone *zone)
 {
-	return zone->managed_pages;
+	return zone_managed_pages(zone);
 }
 
 /* Returns true if a zone has memory */
@@ -1294,6 +1296,8 @@ static inline int is_highmem(struct zone *zone)
 struct ctl_table;
 int min_free_kbytes_sysctl_handler(struct ctl_table *, int,
 					void __user *, size_t *, loff_t *);
+int watermark_boost_factor_sysctl_handler(struct ctl_table *, int,
+					void __user *, size_t *, loff_t *);
 int watermark_scale_factor_sysctl_handler(struct ctl_table *, int,
 					void __user *, size_t *, loff_t *);
 extern int sysctl_lowmem_reserve_ratio[MAX_NR_ZONES];
@@ -1309,7 +1313,7 @@ int sysctl_min_slab_ratio_sysctl_handler(struct ctl_table *, int,
 extern int numa_zonelist_order_handler(struct ctl_table *, int,
 			void __user *, size_t *, loff_t *);
 extern char numa_zonelist_order[];
-#define NUMA_ZONELIST_ORDER_LEN 16	/* string buffer size */
+#define NUMA_ZONELIST_ORDER_LEN	16
 
 #ifndef CONFIG_NEED_MULTIPLE_NODES
 
@@ -1409,12 +1413,16 @@ static __always_inline struct zoneref *next_zones_zonelist(struct zoneref *z,
  * @zonelist - The zonelist to search for a suitable zone
  * @highest_zoneidx - The zone index of the highest zone to return
  * @nodes - An optional nodemask to filter the zonelist with
- * @zone - The first suitable zone found is returned via this parameter
+ * @return - Zoneref pointer for the first suitable zone found (see below)
  *
  * This function returns the first zone at or below a given zone index that is
  * within the allowed nodemask. The zoneref returned is a cursor that can be
  * used to iterate the zonelist with next_zones_zonelist by advancing it by
  * one before calling.
+ *
+ * When no eligible zone is found, zoneref->zone is NULL (zoneref itself is
+ * never NULL). This may happen either genuinely, or due to concurrent nodemask
+ * update due to cpuset modification.
  */
 static inline struct zoneref *first_zones_zonelist(struct zonelist *zonelist,
 					enum zone_type highest_zoneidx,

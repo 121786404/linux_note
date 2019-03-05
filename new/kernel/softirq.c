@@ -343,7 +343,8 @@ restart:
 		pending >>= softirq_bit;
 	}
 
-	rcu_bh_qs();
+	if (__this_cpu_read(ksoftirqd) == current)
+		rcu_softirq_qs();
 /*
 	关闭本地中断
 */

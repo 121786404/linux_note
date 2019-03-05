@@ -90,7 +90,7 @@
  * 提高了访问与更新效率。常用于计数器。
  */
 #include <linux/bitmap.h>
-#include <linux/bootmem.h>
+#include <linux/memblock.h>
 #include <linux/err.h>
 #include <linux/lcm.h>
 #include <linux/list.h>
@@ -1137,9 +1137,9 @@ static struct pcpu_chunk * __init pcpu_alloc_first_chunk(unsigned long tmp_addr,
 	region_size = ALIGN(start_offset + map_size, lcm_align);
 
 	/* allocate chunk */
-	chunk = memblock_virt_alloc(sizeof(struct pcpu_chunk) +
-				    BITS_TO_LONGS(region_size >> PAGE_SHIFT),
-				    0);
+	chunk = memblock_alloc(sizeof(struct pcpu_chunk) +
+			       BITS_TO_LONGS(region_size >> PAGE_SHIFT),
+			       SMP_CACHE_BYTES);
 
 	INIT_LIST_HEAD(&chunk->list);
 
@@ -1150,12 +1150,12 @@ static struct pcpu_chunk * __init pcpu_alloc_first_chunk(unsigned long tmp_addr,
 	chunk->nr_pages = region_size >> PAGE_SHIFT;
 	region_bits = pcpu_chunk_map_bits(chunk);
 
-	chunk->alloc_map = memblock_virt_alloc(BITS_TO_LONGS(region_bits) *
-					       sizeof(chunk->alloc_map[0]), 0);
-	chunk->bound_map = memblock_virt_alloc(BITS_TO_LONGS(region_bits + 1) *
-					       sizeof(chunk->bound_map[0]), 0);
-	chunk->md_blocks = memblock_virt_alloc(pcpu_chunk_nr_blocks(chunk) *
-					       sizeof(chunk->md_blocks[0]), 0);
+	chunk->alloc_map = memblock_alloc(BITS_TO_LONGS(region_bits) * sizeof(chunk->alloc_map[0]),
+					  SMP_CACHE_BYTES);
+	chunk->bound_map = memblock_alloc(BITS_TO_LONGS(region_bits + 1) * sizeof(chunk->bound_map[0]),
+					  SMP_CACHE_BYTES);
+	chunk->md_blocks = memblock_alloc(pcpu_chunk_nr_blocks(chunk) * sizeof(chunk->md_blocks[0]),
+					  SMP_CACHE_BYTES);
 	pcpu_init_md_blocks(chunk);
 
 	/* manage populated page bitmap */
@@ -1950,7 +1950,7 @@ struct pcpu_alloc_info * __init pcpu_alloc_alloc_info(int nr_groups,
 	ai_size = base_size + nr_units * sizeof(ai->groups[0].cpu_map[0]);
 
 	/*分配空间*/
-	ptr = memblock_virt_alloc_nopanic(PFN_ALIGN(ai_size), PAGE_SIZE);
+	ptr = memblock_alloc_nopanic(PFN_ALIGN(ai_size), PAGE_SIZE);
 	if (!ptr)
 		return NULL;
 	ai = ptr;
@@ -2143,13 +2143,15 @@ int __init pcpu_setup_first_chunk(const struct pcpu_alloc_info *ai,
 
 	/* process group information and build config tables accordingly */
 	/*为group相关percpu信息保存数组分配空间*/
-	group_offsets = memblock_virt_alloc(ai->nr_groups *
-					     sizeof(group_offsets[0]), 0);
-	group_sizes = memblock_virt_alloc(ai->nr_groups *
-					   sizeof(group_sizes[0]), 0);
+	group_offsets = memblock_alloc(ai->nr_groups * sizeof(group_offsets[0]),
+				       SMP_CACHE_BYTES);
+	group_sizes = memblock_alloc(ai->nr_groups * sizeof(group_sizes[0]),
+				     SMP_CACHE_BYTES);
 	/*为每个cpu相关percpu信息保存数组分配空间*/
-	unit_map = memblock_virt_alloc(nr_cpu_ids * sizeof(unit_map[0]), 0);
-	unit_off = memblock_virt_alloc(nr_cpu_ids * sizeof(unit_off[0]), 0);
+	unit_map = memblock_alloc(nr_cpu_ids * sizeof(unit_map[0]),
+				  SMP_CACHE_BYTES);
+	unit_off = memblock_alloc(nr_cpu_ids * sizeof(unit_off[0]),
+				  SMP_CACHE_BYTES);
 
 	/*对unit_map、pcpu_low_unit_cpu和pcpu_high_unit_cpu变量初始化*/
 	for (cpu = 0; cpu < nr_cpu_ids; cpu++)
@@ -2234,8 +2236,8 @@ int __init pcpu_setup_first_chunk(const struct pcpu_alloc_info *ai,
 	/*计算pcpu_nr_slots，即pcpu_slot数组的组项数量*/
 	pcpu_nr_slots = __pcpu_size_to_slot(pcpu_unit_size) + 2;
 	/*为pcpu_slot数组分配空间，不同size的chunck挂在不同“pcpu_slot”项目中*/
-	pcpu_slot = memblock_virt_alloc(
-			pcpu_nr_slots * sizeof(pcpu_slot[0]), 0);
+	pcpu_slot = memblock_alloc(pcpu_nr_slots * sizeof(pcpu_slot[0]),
+				   SMP_CACHE_BYTES);
 	for (i = 0; i < pcpu_nr_slots; i++)
 		INIT_LIST_HEAD(&pcpu_slot[i]);
 
@@ -2578,7 +2580,7 @@ int __init pcpu_embed_first_chunk(size_t reserved_size, size_t dyn_size,
 	areas_size = PFN_ALIGN(ai->nr_groups * sizeof(void *));
 
 	/*areas用来保存每个group的percpu内存起始地址，为其分配空间，做临时存储使用，用完释放掉*/
-	areas = memblock_virt_alloc_nopanic(areas_size, 0);
+	areas = memblock_alloc_nopanic(areas_size, SMP_CACHE_BYTES);
 	if (!areas) {
 		rc = -ENOMEM;
 		goto out_free;
@@ -2737,7 +2739,7 @@ int __init pcpu_page_first_chunk(size_t reserved_size,
 	BUG_ON(ai->nr_groups != 1);
 	upa = ai->alloc_size/ai->unit_size;
 	nr_g0_units = roundup(num_possible_cpus(), upa);
-	if (unlikely(WARN_ON(ai->groups[0].nr_units != nr_g0_units))) {
+	if (WARN_ON(ai->groups[0].nr_units != nr_g0_units)) {
 		pcpu_free_alloc_info(ai);
 		return -EINVAL;
 	}
@@ -2748,7 +2750,7 @@ int __init pcpu_page_first_chunk(size_t reserved_size,
 	/*pages用来保存每个unit的percpu内存起始地址，为其分配空间，做临时存储使用，用完释放掉*/
 	pages_size = PFN_ALIGN(unit_pages * num_possible_cpus() *
 			       sizeof(pages[0]));
-	pages = memblock_virt_alloc(pages_size, 0);
+	pages = memblock_alloc(pages_size, SMP_CACHE_BYTES);
 
 	/* allocate pages */
 	j = 0;
@@ -2840,7 +2842,7 @@ EXPORT_SYMBOL(__per_cpu_offset);
 static void * __init pcpu_dfl_fc_alloc(unsigned int cpu, size_t size,
 				       size_t align)
 {
-	return  memblock_virt_alloc_from_nopanic(
+	return  memblock_alloc_from_nopanic(
 			size, align, __pa(MAX_DMA_ADDRESS));
 }
 
@@ -2918,7 +2920,7 @@ void __init setup_per_cpu_areas(void)
 	void *fc;
 
 	ai = pcpu_alloc_alloc_info(1, 1);
-	fc = memblock_virt_alloc_from_nopanic(unit_size,
+	fc = memblock_alloc_from_nopanic(unit_size,
 					      PAGE_SIZE,
 					      __pa(MAX_DMA_ADDRESS));
 	if (!ai || !fc)

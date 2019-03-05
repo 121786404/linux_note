@@ -192,15 +192,18 @@ static int do_brk_flags(unsigned long addr, unsigned long request, unsigned long
 SYSCALL_DEFINE1(brk, unsigned long, brk)
 {
 	unsigned long retval;
-	unsigned long newbrk, oldbrk;
+	unsigned long newbrk, oldbrk, origbrk;
 	struct mm_struct *mm = current->mm;
 	struct vm_area_struct *next;
 	unsigned long min_brk;
 	bool populate;
+	bool downgraded = false;
 	LIST_HEAD(uf);
 
 	if (down_write_killable(&mm->mmap_sem))
 		return -EINTR;
+
+	origbrk = mm->brk;
 
 #ifdef CONFIG_COMPAT_BRK
 	/*
@@ -245,18 +248,33 @@ SYSCALL_DEFINE1(brk, unsigned long, brk)
 	newbrk = PAGE_ALIGN(brk);
 	oldbrk = PAGE_ALIGN(mm->brk);
 	/* 没有变化，直接退出 */
-	if (oldbrk == newbrk)
-		goto set_brk;
+	if (oldbrk == newbrk) {
+		mm->brk = brk;
+		goto success;
+	}
 
-	/* Always allow shrinking brk. */
 	/*
-	 * 在需要收缩堆时将调用do_munmap()。
+	 * Always allow shrinking brk.
+	 * __do_munmap() may downgrade mmap_sem to read.
 	 */
 	if (brk <= mm->brk) {
+		int ret;
+
+		/*
+		 * mm->brk must to be protected by write mmap_sem so update it
+		 * before downgrading mmap_sem. When __do_munmap() fails,
+		 * mm->brk will be restored from origbrk.
+		 */
+		mm->brk = brk;
 		/* 解除映射 */
-		if (!do_munmap(mm, newbrk, oldbrk-newbrk, &uf))
-			goto set_brk;
-		goto out;
+		ret = __do_munmap(mm, newbrk, oldbrk-newbrk, &uf, true);
+		if (ret < 0) {
+			mm->brk = origbrk;
+			goto out;
+		} else if (ret == 1) {
+			downgraded = true;
+		}
+		goto success;
 	}
 
 	/* Check against existing mmap mappings. */
@@ -280,18 +298,21 @@ SYSCALL_DEFINE1(brk, unsigned long, brk)
 	 */
 	if (do_brk_flags(oldbrk, newbrk-oldbrk, 0, &uf) < 0)
 		goto out;
-
-set_brk:
 	mm->brk = brk;
+
+success:
 	populate = newbrk > oldbrk && (mm->def_flags & VM_LOCKED) != 0;
-	up_write(&mm->mmap_sem);
+	if (downgraded)
+		up_read(&mm->mmap_sem);
+	else
+		up_write(&mm->mmap_sem);
 	userfaultfd_unmap_complete(mm, &uf);
 	if (populate)
 		mm_populate(oldbrk, newbrk - oldbrk);
 	return brk;
 
 out:
-	retval = mm->brk;
+	retval = origbrk;
 	up_write(&mm->mmap_sem);
 	return retval;
 }
@@ -1798,9 +1819,7 @@ unsigned long ksys_mmap_pgoff(unsigned long addr, unsigned long len,
 	}
 
 	flags &= ~(MAP_EXECUTABLE | MAP_DENYWRITE);
-/*
 
-*/
 	retval = vm_mmap_pgoff(file, addr, len, prot, flags, pgoff);
 out_fput:
 	if (file)
@@ -2314,6 +2333,15 @@ found_highest:
 	return gap_end;
 }
 
+
+#ifndef arch_get_mmap_end
+#define arch_get_mmap_end(addr)	(TASK_SIZE)
+#endif
+
+#ifndef arch_get_mmap_base
+#define arch_get_mmap_base(addr, base) (base)
+#endif
+
 /* Get an address range which is currently unmapped.
  * For shmat() with addr=0.
  *
@@ -2336,11 +2364,12 @@ arch_get_unmapped_area(struct file *filp, unsigned long addr,
 	struct mm_struct *mm = current->mm;
 	struct vm_area_struct *vma, *prev;
 	struct vm_unmapped_area_info info;
+	const unsigned long mmap_end = arch_get_mmap_end(addr);
 
 	/**
 	 * 当然了，只要是普通进程地址，就不能超过TASK_SIZE(一般就是3G)
 	 */
-	if (len > TASK_SIZE - mmap_min_addr)
+	if (len > mmap_end - mmap_min_addr)
 		return -ENOMEM;
 
 	/**
@@ -2372,7 +2401,7 @@ arch_get_unmapped_area(struct file *filp, unsigned long addr,
 		 * TASK_SIZE - len >= addr而不是addr + len <= TASK_SIZE
 		 */
 		/* 没有整形溢出 && 没有与后一个区间重叠 */
-		if (TASK_SIZE - len >= addr && addr >= mmap_min_addr &&
+		if (mmap_end - len >= addr && addr >= mmap_min_addr &&
 		    (!vma || addr + len <= vm_start_gap(vma)) &&
 		    (!prev || addr >= vm_end_gap(prev)))
 			/* 没有被映射，这块区间可以使用。 */
@@ -2382,7 +2411,7 @@ arch_get_unmapped_area(struct file *filp, unsigned long addr,
 	info.flags = 0;
 	info.length = len;
 	info.low_limit = mm->mmap_base;
-	info.high_limit = TASK_SIZE;
+	info.high_limit = mmap_end;
 	info.align_mask = 0;
 	return vm_unmapped_area(&info);
 }
@@ -2402,9 +2431,10 @@ arch_get_unmapped_area_topdown(struct file *filp, const unsigned long addr0,
 	struct mm_struct *mm = current->mm;
 	unsigned long addr = addr0;
 	struct vm_unmapped_area_info info;
+	const unsigned long mmap_end = arch_get_mmap_end(addr);
 
 	/* requested length too big for entire address space */
-	if (len > TASK_SIZE - mmap_min_addr)
+	if (len > mmap_end - mmap_min_addr)
 		return -ENOMEM;
 
 	if (flags & MAP_FIXED)
@@ -2414,7 +2444,7 @@ arch_get_unmapped_area_topdown(struct file *filp, const unsigned long addr0,
 	if (addr) {
 		addr = PAGE_ALIGN(addr);
 		vma = find_vma_prev(mm, addr, &prev);
-		if (TASK_SIZE - len >= addr && addr >= mmap_min_addr &&
+		if (mmap_end - len >= addr && addr >= mmap_min_addr &&
 				(!vma || addr + len <= vm_start_gap(vma)) &&
 				(!prev || addr >= vm_end_gap(prev)))
 			return addr;
@@ -2423,7 +2453,7 @@ arch_get_unmapped_area_topdown(struct file *filp, const unsigned long addr0,
 	info.flags = VM_UNMAPPED_AREA_TOPDOWN;
 	info.length = len;
 	info.low_limit = max(PAGE_SIZE, mmap_min_addr);
-	info.high_limit = mm->mmap_base;
+	info.high_limit = arch_get_mmap_base(addr, mm->mmap_base);
 	info.align_mask = 0;
 	addr = vm_unmapped_area(&info);
 
@@ -2437,7 +2467,7 @@ arch_get_unmapped_area_topdown(struct file *filp, const unsigned long addr0,
 		VM_BUG_ON(addr != -ENOMEM);
 		info.flags = 0;
 		info.low_limit = TASK_UNMAPPED_BASE;
-		info.high_limit = TASK_SIZE;
+		info.high_limit = mmap_end;
 		addr = vm_unmapped_area(&info);
 	}
 
@@ -2741,12 +2771,11 @@ int expand_downwards(struct vm_area_struct *vma,
 {
 	struct mm_struct *mm = vma->vm_mm;
 	struct vm_area_struct *prev;
-	int error;
+	int error = 0;
 
 	address &= PAGE_MASK;
-	error = security_mmap_addr(address);
-	if (error)
-		return error;
+	if (address < mmap_min_addr)
+		return -EPERM;
 
 	/* Enforce stack_guard_gap */
 	prev = vma->vm_prev;
@@ -3106,8 +3135,8 @@ int split_vma(struct mm_struct *mm, struct vm_area_struct *vma,
  * start-要删除的地址区间的起始地址。
  * len-要删除的长度。
  */
-int do_munmap(struct mm_struct *mm, unsigned long start, size_t len,
-	      struct list_head *uf)
+int __do_munmap(struct mm_struct *mm, unsigned long start, size_t len,
+		struct list_head *uf, bool downgrade)
 {
 	unsigned long end;
 	struct vm_area_struct *vma, *prev, *last;
@@ -3234,13 +3263,12 @@ int do_munmap(struct mm_struct *mm, unsigned long start, size_t len,
 				mm->locked_vm -= vma_pages(tmp);
 				munlock_vma_pages_all(tmp);
 			}
+
 			tmp = tmp->vm_next;
 		}
 	}
 
-	/*
-	 * Remove the vma's, and unmap the actual pages
-	 */
+	/* Detach vmas from rbtree */
 	/*
 	 * 调用detach_vmas_to_be_unmapped()，列出所有需要解除映射
 	 * 的区域。由于解除映射操作可能设计地址空间中的任何区域，
@@ -3248,13 +3276,20 @@ int do_munmap(struct mm_struct *mm, unsigned long start, size_t len,
 	 * 两端的区域，以确保只影响到完整的区域。
 	 */
 	detach_vmas_to_be_unmapped(mm, vma, prev, end);
+
+	/*
+	 * mpx unmap needs to be called with mmap_sem held for write.
+	 * It is safe to call it before unmap_region().
+	 */
+	arch_unmap(mm, vma, start, end);
+
+	if (downgrade)
+		downgrade_write(&mm->mmap_sem);
 	/*
 	 * 调用unmap_region()从页表删除与映射相关的所有项。
 	 * 完成后，内核还必须确保将相关的项从TLB移除或使之无效。
 	 */
 	unmap_region(mm, vma, prev, start, end);
-
-	arch_unmap(mm, vma, start, end);
 
 	/* Fix up all other VM information */
 	/*
@@ -3262,10 +3297,16 @@ int do_munmap(struct mm_struct *mm, unsigned long start, size_t len,
 	 */
 	remove_vma_list(mm, vma);
 
-	return 0;
+	return downgrade ? 1 : 0;
 }
 
-int vm_munmap(unsigned long start, size_t len)
+int do_munmap(struct mm_struct *mm, unsigned long start, size_t len,
+	      struct list_head *uf)
+{
+	return __do_munmap(mm, start, len, uf, false);
+}
+
+static int __vm_munmap(unsigned long start, size_t len, bool downgrade)
 {
 	int ret;
 	struct mm_struct *mm = current->mm;
@@ -3274,10 +3315,25 @@ int vm_munmap(unsigned long start, size_t len)
 	if (down_write_killable(&mm->mmap_sem))
 		return -EINTR;
 	/* 调用do_munmap完成实际的工作 */
-	ret = do_munmap(mm, start, len, &uf);
-	up_write(&mm->mmap_sem);
+	ret = __do_munmap(mm, start, len, &uf, downgrade);
+	/*
+	 * Returning 1 indicates mmap_sem is downgraded.
+	 * But 1 is not legal return value of vm_munmap() and munmap(), reset
+	 * it to 0 before return.
+	 */
+	if (ret == 1) {
+		up_read(&mm->mmap_sem);
+		ret = 0;
+	} else
+		up_write(&mm->mmap_sem);
+
 	userfaultfd_unmap_complete(mm, &uf);
 	return ret;
+}
+
+int vm_munmap(unsigned long start, size_t len)
+{
+	return __vm_munmap(start, len, false);
 }
 EXPORT_SYMBOL(vm_munmap);
 
@@ -3288,7 +3344,7 @@ EXPORT_SYMBOL(vm_munmap);
 SYSCALL_DEFINE2(munmap, unsigned long, addr, size_t, len)
 {
 	profile_munmap(addr);
-	return vm_munmap(addr, len);
+	return __vm_munmap(addr, len, true);
 }
 
 
@@ -3391,16 +3447,6 @@ out:
 	return ret;
 }
 
-static inline void verify_mm_writelocked(struct mm_struct *mm)
-{
-#ifdef CONFIG_DEBUG_VM
-	if (unlikely(down_read_trylock(&mm->mmap_sem))) {
-		WARN_ON(1);
-		up_read(&mm->mmap_sem);
-	}
-#endif
-}
-
 /*
  *  this is really a simplified "do_mmap".  it only handles
  *  anonymous maps.  eventually we may be able to do some
@@ -3435,12 +3481,6 @@ static int do_brk_flags(unsigned long addr, unsigned long len, unsigned long fla
 	error = mlock_future_check(mm, mm->def_flags, len);
 	if (error)
 		return error;
-
-	/*
-	 * mm->mmap_sem is required to protect against another thread
-	 * changing the mappings in case we sleep.
-	 */
-	verify_mm_writelocked(mm);
 
 	/*
 	 * Clear old maps.  this also does some error checking for us

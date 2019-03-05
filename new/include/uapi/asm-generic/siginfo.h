@@ -10,18 +10,7 @@ typedef union sigval {
 	void __user *sival_ptr;
 } sigval_t;
 
-/*
- * This is the size (including padding) of the part of the
- * struct siginfo that is before the union.
- */
-#ifndef __ARCH_SI_PREAMBLE_SIZE
-#define __ARCH_SI_PREAMBLE_SIZE	(3 * sizeof(int))
-#endif
-
 #define SI_MAX_SIZE	128
-#ifndef SI_PAD_SIZE
-#define SI_PAD_SIZE	((SI_MAX_SIZE - __ARCH_SI_PREAMBLE_SIZE) / sizeof(int))
-#endif
 
 /*
  * The default "si_band" type is "long", as specified by POSIX.
@@ -40,24 +29,12 @@ typedef union sigval {
 #define __ARCH_SI_ATTRIBUTES
 #endif
 
-typedef struct siginfo {
-	int si_signo;
-#ifndef __ARCH_HAS_SWAPPED_SIGINFO
-	int si_errno;
-	int si_code;
-#else
-	int si_code;
-	int si_errno;
-#endif
-
-	union {
-		int _pad[SI_PAD_SIZE];
-
-		/* kill() */
-		struct {
-			__kernel_pid_t _pid;	/* sender's pid */
-			__kernel_uid32_t _uid;	/* sender's uid */
-		} _kill;
+union __sifields {
+	/* kill() */
+	struct {
+		__kernel_pid_t _pid;	/* sender's pid */
+		__kernel_uid32_t _uid;	/* sender's uid */
+	} _kill;
 
 		/* POSIX.1b timers */
 		struct {
@@ -127,9 +104,33 @@ typedef struct siginfo {
 		struct {
 			void __user *_call_addr; /* calling user insn */
 			int _syscall;	/* triggering system call number */
-			unsigned int _arch;	/* AUDIT_ARCH_* of syscall */
-		} _sigsys;
-	} _sifields;
+		unsigned int _arch;	/* AUDIT_ARCH_* of syscall */
+	} _sigsys;
+};
+
+#ifndef __ARCH_HAS_SWAPPED_SIGINFO
+#define __SIGINFO 			\
+struct {				\
+	int si_signo;			\
+	int si_errno;			\
+	int si_code;			\
+	union __sifields _sifields;	\
+}
+#else
+#define __SIGINFO 			\
+struct {				\
+	int si_signo;			\
+	int si_code;			\
+	int si_errno;			\
+	union __sifields _sifields;	\
+}
+#endif /* __ARCH_HAS_SWAPPED_SIGINFO */
+
+typedef struct siginfo {
+	union {
+		__SIGINFO;
+		int _si_pad[SI_MAX_SIZE/sizeof(int)];
+	};
 } __ARCH_SI_ATTRIBUTES siginfo_t;
 
 /*
@@ -287,6 +288,12 @@ typedef struct siginfo {
  */
 #define SYS_SECCOMP	1	/* seccomp triggered */
 #define NSIGSYS		1
+
+/*
+ * SIGEMT si_codes
+ */
+#define EMT_TAGOVF	1	/* tag overflow */
+#define NSIGEMT		1
 
 /*
  * sigevent definitions

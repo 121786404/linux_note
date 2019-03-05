@@ -25,6 +25,7 @@
 #include <linux/latencytop.h>
 #include <linux/sched/prio.h>
 #include <linux/signal_types.h>
+#include <linux/psi_types.h>
 #include <linux/mm_types_task.h>
 #include <linux/task_io_accounting.h>
 #include <linux/rseq.h>
@@ -257,7 +258,7 @@ Linux 内核提供了两种方法将进程置为睡眠状态。
  * TASK_RUNNING store which can collide with __set_current_state(TASK_RUNNING).
  *
  * However, with slightly different timing the wakeup TASK_RUNNING store can
- * also collide with the TASK_UNINTERRUPTIBLE store. Loosing that store is not
+ * also collide with the TASK_UNINTERRUPTIBLE store. Losing that store is not
  * a problem either because that will result in one extra go around the loop
  * and our @cond test will save the day.
  *
@@ -594,7 +595,7 @@ struct sched_entity {
 	u64				nr_migrations;
 
     /* 用于统计一些数据 */
-	struct sched_statistics statistics;
+	struct sched_statistics		statistics;
 
 #ifdef CONFIG_FAIR_GROUP_SCHED
     /* 代表此进程组的深度，每个进程组都比其parent调度组深度大1 */
@@ -658,7 +659,7 @@ struct sched_dl_entity {
 
 	/*
 	 * Actual scheduling parameters. Initialized with the values above,
-	 * they are continously updated during task execution. Note that
+	 * they are continuously updated during task execution. Note that
 	 * the remaining runtime could be < 0 in case we are in overrun.
 	 */
 	s64				runtime;	/* Remaining runtime for this instance	*/
@@ -715,10 +716,8 @@ union rcu_special {
 	struct {
 		u8			blocked;
 		u8			need_qs;
-		u8			exp_need_qs;
-
-		/* Otherwise the compiler can store garbage here: */
-		u8			pad;
+		u8			exp_hint; /* Hint for performance. */
+		u8			pad; /* No garbage from compiler! */
 	} b; /* Bits. */
 	u32 s; /* Set of bits. */
 };
@@ -876,6 +875,7 @@ struct task_struct {
 	struct list_head		rcu_node_entry;
 	struct rcu_node			*rcu_blocked_node;
 #endif /* #ifdef CONFIG_PREEMPT_RCU */
+
 #ifdef CONFIG_TASKS_RCU
 	unsigned long			rcu_tasks_nvcsw;
 	u8				rcu_tasks_holdout;
@@ -942,6 +942,10 @@ struct task_struct {
 	unsigned			sched_contributes_to_load:1;
 	unsigned			sched_migrated:1;
 	unsigned			sched_remote_wakeup:1;
+#ifdef CONFIG_PSI
+	unsigned			sched_psi_wake_requeue:1;
+#endif
+
 	/* Force alignment to the next boundary: */
 	unsigned			:0;
 
@@ -956,9 +960,6 @@ struct task_struct {
 #endif
 #ifdef CONFIG_MEMCG
 	unsigned			in_user_fault:1;
-#ifdef CONFIG_MEMCG_KMEM
-	unsigned			memcg_kmem_skip_account:1;
-#endif
 #endif
 #ifdef CONFIG_COMPAT_BRK
     /* 用来确定对随机堆内存的探测。
@@ -1090,6 +1091,7 @@ struct task_struct {
 	/* Context switch counts: */
 	unsigned long			nvcsw;
 	unsigned long			nivcsw;
+
 	/* Monotonic time in nsecs: */
 	/* 进程创建时间 */
 	u64				start_time;
@@ -1248,7 +1250,7 @@ struct task_struct {
 #endif
 
 #ifdef CONFIG_UBSAN
-	unsigned int in_ubsan;
+	unsigned int			in_ubsan;
 #endif
 
 	/* Journalling filesystem info: */
@@ -1274,9 +1276,13 @@ struct task_struct {
 
 	/* Ptrace state: */
 	unsigned long			ptrace_message;
-	siginfo_t			*last_siginfo;
+	kernel_siginfo_t		*last_siginfo;
 	/* 记录进程的I/O计数*/
 	struct task_io_accounting	ioac;
+#ifdef CONFIG_PSI
+	/* Pressure stall state */
+	unsigned int			psi_flags;
+#endif
 #ifdef CONFIG_TASK_XACCT
 	/* Accumulated RSS usage: */
 	u64				acct_rss_mem1;
@@ -1299,7 +1305,7 @@ struct task_struct {
 	/* cg_list protected by css_set_lock and tsk->alloc_lock: */
 	struct list_head		cg_list;
 #endif
-#ifdef CONFIG_INTEL_RDT
+#ifdef CONFIG_X86_CPU_RESCTRL
 	u32				closid;
 	u32				rmid;
 #endif
@@ -1322,7 +1328,7 @@ struct task_struct {
 #endif
 #ifdef CONFIG_NUMA
 /* 非一致内存访问（NUMA  Non-Uniform Memory Access）*/
-/* Protected by alloc_lock: */
+	/* Protected by alloc_lock: */
 	struct mempolicy		*mempolicy;
 	short				il_prev;
 	short				pref_node_fork;
@@ -1398,7 +1404,7 @@ struct task_struct {
 
 #ifdef CONFIG_FAULT_INJECTION
 /* fault injection，参考内核说明文件linux-2.6.38.8/Documentation/fault-injection/fault-injection.txt */
-	int make_it_fail;
+	int				make_it_fail;
 	unsigned int			fail_nth;
 #endif
 	/*
@@ -1429,6 +1435,7 @@ struct task_struct {
 #ifdef CONFIG_FUNCTION_GRAPH_TRACER
 	/* Index of current stored address in ret_stack: */
 	int				curr_ret_stack;
+	int				curr_ret_depth;
 
 	/* Stack of return addresses for return function tracing: */
 	struct ftrace_ret_stack		*ret_stack;
@@ -1511,6 +1518,11 @@ struct task_struct {
 #ifdef CONFIG_SECURITY
 	/* Used by LSM modules for access restriction: */
 	void				*security;
+#endif
+
+#ifdef CONFIG_GCC_PLUGIN_STACKLEAK
+	unsigned long			lowest_stack;
+	unsigned long			prev_lowest_stack;
 #endif
 
 	/*
@@ -1723,9 +1735,6 @@ PF_WQ_WORKER是用来标识该task是一个workqueue worker。
 #define PF_NOFREEZE		0x00008000	/* This thread should not be frozen */
 #define PF_FROZEN		0x00010000	/* Frozen for system suspend */
 #define PF_KSWAPD		0x00020000	/* I am kswapd */
-/*
-
-*/
 #define PF_MEMALLOC_NOFS	0x00040000	/* All allocation requests will inherit GFP_NOFS */
 #define PF_MEMALLOC_NOIO	0x00080000	/* All allocation requests will inherit GFP_NOIO */
 #define PF_LESS_THROTTLE	0x00100000	/* Throttle me less: I clean memory */
@@ -1741,6 +1750,8 @@ PF_WQ_WORKER是用来标识该task是一个workqueue worker。
 */
 #define PF_RANDOMIZE		0x00400000	/* Randomize virtual address space */
 #define PF_SWAPWRITE		0x00800000	/* Allowed to write to swap */
+#define PF_MEMSTALL		0x01000000	/* Stalled due to lack of memory */
+#define PF_UMH			0x02000000	/* I'm an Usermodehelper process */
 /*
     不允许用户程序修改其CPU亲和性
 */
@@ -1794,6 +1805,8 @@ static inline bool is_percpu_thread(void)
 #define PFA_SPREAD_SLAB			2	/* Spread some slab caches over cpuset */
 #define PFA_SPEC_SSB_DISABLE		3	/* Speculative Store Bypass disabled */
 #define PFA_SPEC_SSB_FORCE_DISABLE	4	/* Speculative Store Bypass force disabled*/
+#define PFA_SPEC_IB_DISABLE		5	/* Indirect branch speculation restricted */
+#define PFA_SPEC_IB_FORCE_DISABLE	6	/* Indirect branch speculation permanently restricted */
 
 #define TASK_PFA_TEST(name, func)					\
 	static inline bool task_##func(struct task_struct *p)		\
@@ -1824,6 +1837,13 @@ TASK_PFA_CLEAR(SPEC_SSB_DISABLE, spec_ssb_disable)
 
 TASK_PFA_TEST(SPEC_SSB_FORCE_DISABLE, spec_ssb_force_disable)
 TASK_PFA_SET(SPEC_SSB_FORCE_DISABLE, spec_ssb_force_disable)
+
+TASK_PFA_TEST(SPEC_IB_DISABLE, spec_ib_disable)
+TASK_PFA_SET(SPEC_IB_DISABLE, spec_ib_disable)
+TASK_PFA_CLEAR(SPEC_IB_DISABLE, spec_ib_disable)
+
+TASK_PFA_TEST(SPEC_IB_FORCE_DISABLE, spec_ib_force_disable)
+TASK_PFA_SET(SPEC_IB_FORCE_DISABLE, spec_ib_force_disable)
 
 static inline void
 current_restore_flags(unsigned long orig_flags, unsigned long flags)
@@ -2263,6 +2283,14 @@ static inline void rseq_execve(struct task_struct *t)
 }
 
 #endif
+
+void __exit_umh(struct task_struct *tsk);
+
+static inline void exit_umh(struct task_struct *tsk)
+{
+	if (unlikely(tsk->flags & PF_UMH))
+		__exit_umh(tsk);
+}
 
 #ifdef CONFIG_DEBUG_RSEQ
 

@@ -33,6 +33,7 @@ struct linux_binprm {
 	当前内存页最高地址
 */
 	unsigned long p; /* current top of mem */
+	unsigned long argmin; /* rlimit marker for copy_strings() */
 	unsigned int
 		/*
 		 * True after the bprm_set_creds hook has been called once
@@ -94,7 +95,7 @@ struct linux_binprm {
 
 /* Function parameter for binfmt->coredump */
 struct coredump_params {
-	const siginfo_t *siginfo;
+	const kernel_siginfo_t *siginfo;
 	struct pt_regs *regs;
 	struct file *file;
 	unsigned long limit;
@@ -121,7 +122,7 @@ struct linux_binfmt {
 /*
     在名为core的文件中, 存放当前进程的执行上下文. 这个文件通常是在进程接收到一个缺省操作为”dump”的信号时被创建的, 其格式取决于被执行程序的可执行类型
 */
-	int (*core_dump)(struct coredump_params *cprm); 
+	int (*core_dump)(struct coredump_params *cprm);
 	unsigned long min_coredump;	/* minimal dump size */
 } __randomize_layout;
 
@@ -163,7 +164,6 @@ extern int transfer_args_to_stack(struct linux_binprm *bprm,
 extern int bprm_change_interp(const char *interp, struct linux_binprm *bprm);
 extern int copy_strings_kernel(int argc, const char *const *argv,
 			       struct linux_binprm *bprm);
-extern int prepare_bprm_creds(struct linux_binprm *bprm);
 extern void install_exec_creds(struct linux_binprm *bprm);
 extern void set_binfmt(struct linux_binfmt *new);
 extern ssize_t read_code(struct file *, unsigned long, loff_t, size_t);

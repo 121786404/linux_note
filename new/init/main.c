@@ -25,7 +25,7 @@
 #include <linux/ioport.h>
 #include <linux/init.h>
 #include <linux/initrd.h>
-#include <linux/bootmem.h>
+#include <linux/memblock.h>
 #include <linux/acpi.h>
 #include <linux/console.h>
 #include <linux/nmi.h>
@@ -105,7 +105,6 @@
 static int kernel_init(void *);
 
 extern void init_IRQ(void);
-extern void fork_init(void);
 extern void radix_tree_init(void);
 
 /*
@@ -378,11 +377,12 @@ static void __init setup_command_line(char *command_line)
 {
 	//原始命令行
 	saved_command_line =
-		memblock_virt_alloc(strlen(boot_command_line) + 1, 0);
+		memblock_alloc(strlen(boot_command_line) + 1, SMP_CACHE_BYTES);
 	initcall_command_line =
-		memblock_virt_alloc(strlen(boot_command_line) + 1, 0);
+		memblock_alloc(strlen(boot_command_line) + 1, SMP_CACHE_BYTES);
 	//用于参数解析的命令行。
-	static_command_line = memblock_virt_alloc(strlen(command_line) + 1, 0);
+	static_command_line = memblock_alloc(strlen(command_line) + 1,
+					     SMP_CACHE_BYTES);
 	strcpy(saved_command_line, boot_command_line);
 	strcpy(static_command_line, command_line);
 }
@@ -398,7 +398,7 @@ static void __init setup_command_line(char *command_line)
 
 static __initdata DECLARE_COMPLETION(kthreadd_done);
 
-static noinline void __ref rest_init(void)
+noinline void __ref rest_init(void)
 {
 	struct task_struct *tsk;
 	int pid;
@@ -564,7 +564,7 @@ static void __init mm_init(void)
 	kmem_cache_init();
 	//页表相关的初始化，其实就是创建一个slab分配器，用于页表锁的分配。
 	pgtable_init();
-	//初始化vmalloc用到的数据结构
+	debug_objects_mem_init();
 	vmalloc_init();
 	ioremap_huge_init();
 	/* Should be run before the first non-init thread is created */
@@ -573,6 +573,10 @@ static void __init mm_init(void)
 	pti_init();
 }
 
+void __init __weak arch_call_rest_init(void)
+{
+	rest_init();
+}
 /**
  * 内核初始化，在ARM架构中，从__mmap_switched汇编函数中调用此函数。
  * asmlinkage支持从汇编调用此函数
@@ -800,12 +804,7 @@ asmlinkage __visible void __init start_kernel(void)
 		initrd_start = 0;
 	}
 #endif
-    // memory page extension, allocates memory for extended data per page
-	page_ext_init();
 	kmemleak_init();
-	//内核对象跟踪
-	// allocate a dedicated cache pool for debug objects
-	debug_objects_mem_init();
 	//设置pageset，即每个zone上面的每cpu页面缓存
 	// allocate and initialize per cpu pagesets
 	setup_per_cpu_pageset();
@@ -883,14 +882,9 @@ asmlinkage __visible void __init start_kernel(void)
 	arch_post_acpi_subsys_init();
 	sfi_init_late();
 
-    // Extensible Firmware Interface
-	if (efi_enabled(EFI_RUNTIME_SERVICES)) {
-		efi_free_boot_services();
-	}
-
 	/* Do the rest non-__init'ed, we're now alive */
 	//生成init进程和内核线程。
-	rest_init();
+	arch_call_rest_init();
 }
 
 /* Call all constructor functions linked into the kernel. */
@@ -922,8 +916,10 @@ static int __init initcall_blacklist(char *str)
 		str_entry = strsep(&str, ",");
 		if (str_entry) {
 			pr_debug("blacklisting initcall %s\n", str_entry);
-			entry = alloc_bootmem(sizeof(*entry));
-			entry->buf = alloc_bootmem(strlen(str_entry) + 1);
+			entry = memblock_alloc(sizeof(*entry),
+					       SMP_CACHE_BYTES);
+			entry->buf = memblock_alloc(strlen(str_entry) + 1,
+						    SMP_CACHE_BYTES);
 			strcpy(entry->buf, str_entry);
 			list_add(&entry->next, &blacklisted_initcalls);
 		}
@@ -1080,7 +1076,7 @@ static initcall_entry_t *initcall_levels[] __initdata = {
 };
 
 /* Keep these in sync with initcalls in include/linux/init.h */
-static char *initcall_level_names[] __initdata = {
+static const char *initcall_level_names[] __initdata = {
 	"pure",
 	"core",
 	"postcore",
@@ -1149,17 +1145,6 @@ static void __init do_pre_smp_initcalls(void)
 		do_one_initcall(initcall_from_entry(fn));
 }
 
-/*
- * This function requests modules which should be loaded by default and is
- * called twice right after initrd is mounted and right before init is
- * exec'd.  If such modules are on either initrd or rootfs, they will be
- * loaded before control is passed to userland.
- */
-void __init load_default_modules(void)
-{
-	load_default_elevator_module();
-}
-
 static int run_init_process(const char *init_filename)
 {
 	argv_init[0] = init_filename;
@@ -1210,7 +1195,7 @@ static void mark_readonly(void)
 		 * flushed so that we don't hit false positives looking for
 		 * insecure pages which are W+X.
 		 */
-		rcu_barrier_sched();
+		rcu_barrier();
 		mark_rodata_ro();
 		rodata_test();
 	} else
@@ -1258,9 +1243,7 @@ static int __ref kernel_init(void *unused)
     // waits until all asynchronous function calls have been done
 	async_synchronize_full();
 	ftrace_free_init_mem();
-	jump_label_invalidate_initmem();
 	free_initmem();
-	// mark rodata read-only
 	mark_readonly();
     /* 设置运行状态SYSTEM_RUNNING */
 	/*
@@ -1358,6 +1341,8 @@ static noinline void __init kernel_init_freeable(void)
 	sched_init_smp();
 
 	page_alloc_init_late();
+	/* Initialize page ext after all struct pages are initialized. */
+	page_ext_init();
 
 	//几个子系统的初始化。
 	do_basic_setup();
@@ -1404,6 +1389,5 @@ static noinline void __init kernel_init_freeable(void)
           那么接下来加载 load integrity keys hook*/
 	integrity_load_keys();
 
-    /* 加载基本的模块 */
-	load_default_modules();
+
 }

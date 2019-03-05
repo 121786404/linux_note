@@ -456,18 +456,14 @@ static struct brd_device *brd_alloc(int i)
     */
 	disk->fops		= &brd_fops;
 	disk->private_data	= brd;
-    /*
-    这里将brd_queue和disk进行了关联
-    */
-	disk->queue		= brd->brd_queue;
 	disk->flags		= GENHD_FL_EXT_DEVT;
 	sprintf(disk->disk_name, "ram%d", i);
 	set_capacity(disk, rd_size * 2);
-	disk->queue->backing_dev_info->capabilities |= BDI_CAP_SYNCHRONOUS_IO;
+	brd->brd_queue->backing_dev_info->capabilities |= BDI_CAP_SYNCHRONOUS_IO;
 
 	/* Tell the block layer that this is not a rotational device */
-	blk_queue_flag_set(QUEUE_FLAG_NONROT, disk->queue);
-	blk_queue_flag_clear(QUEUE_FLAG_ADD_RANDOM, disk->queue);
+	blk_queue_flag_set(QUEUE_FLAG_NONROT, brd->brd_queue);
+	blk_queue_flag_clear(QUEUE_FLAG_ADD_RANDOM, brd->brd_queue);
 
 	return brd;
 
@@ -499,6 +495,7 @@ static struct brd_device *brd_init_one(int i, bool *new)
 
 	brd = brd_alloc(i);
 	if (brd) {
+		brd->brd_disk->queue = brd->brd_queue;
 		add_disk(brd->brd_disk);
 		list_add_tail(&brd->brd_list, &brd_devices);
 	}
@@ -571,9 +568,14 @@ static int __init brd_init(void)
     /*
         add_disk把预分配的disk注册到系统磁盘管理层
      */
-	list_for_each_entry(brd, &brd_devices, brd_list)
+	list_for_each_entry(brd, &brd_devices, brd_list) {
+		/*
+		 * associate with queue just before adding disk for
+		 * avoiding to mess up failure path
+		 */
+		brd->brd_disk->queue = brd->brd_queue;
 		add_disk(brd->brd_disk);
-
+	}
 /*
      这里注册整个RAMDISK_MAJOR的区域, 根据上下文的注释来看, 
      通过(RAMDISK_MAJOR, X)来访问brd设备的话, 如果X的值位于预分配的范围则

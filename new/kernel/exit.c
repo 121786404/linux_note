@@ -313,7 +313,7 @@ void rcuwait_wake_up(struct rcuwait *w)
 	 *        MB (A)	      MB (B)
 	 *    [L] cond		  [L] tsk
 	 */
-	smp_rmb(); /* (B) */
+	smp_mb(); /* (B) */
 
 	/*
 	 * Avoid using task_rcu_dereference() magic as long as we are careful,
@@ -584,12 +584,14 @@ static struct task_struct *find_alive_thread(struct task_struct *p)
 	return NULL;
 }
 
-static struct task_struct *find_child_reaper(struct task_struct *father)
+static struct task_struct *find_child_reaper(struct task_struct *father,
+						struct list_head *dead)
 	__releases(&tasklist_lock)
 	__acquires(&tasklist_lock)
 {
 	struct pid_namespace *pid_ns = task_active_pid_ns(father);
 	struct task_struct *reaper = pid_ns->child_reaper;
+	struct task_struct *p, *n;
 
 	if (likely(reaper != father))
 		return reaper;
@@ -605,6 +607,12 @@ static struct task_struct *find_child_reaper(struct task_struct *father)
 		panic("Attempted to kill init! exitcode=0x%08x\n",
 			father->signal->group_exit_code ?: father->exit_code);
 	}
+
+	list_for_each_entry_safe(p, n, dead, ptrace_entry) {
+		list_del_init(&p->ptrace_entry);
+		release_task(p);
+	}
+
 	zap_pid_ns_processes(pid_ns);
 	write_lock_irq(&tasklist_lock);
 
@@ -640,8 +648,11 @@ static struct task_struct *find_new_reaper(struct task_struct *father,
 		unsigned int ns_level = task_pid(father)->level;
 		/*
 		 * Find the first ->is_child_subreaper ancestor in our pid_ns.
-		 * We start from father to ensure we can not look into another
-		 * namespace, this is safe because all its threads are dead.
+		 * We can't check reaper != child_reaper to ensure we do not
+		 * cross the namespaces, the exiting parent could be injected
+		 * by setns() + fork().
+		 * We check pid->level, this is slightly more efficient than
+		 * task_active_pid_ns(reaper) != task_active_pid_ns(father).
 		 */
 /*
 		 当一个进程成为了孤儿进程，并且被标记为拥有一个 subreaper。
@@ -721,7 +732,7 @@ static void forget_original_parent(struct task_struct *father,
 		exit_ptrace(father, dead);
 
 	/* Can drop and reacquire tasklist_lock */
-	reaper = find_child_reaper(father);
+	reaper = find_child_reaper(father, dead);
 	if (list_empty(&father->children))
 		return;
 /*
@@ -988,6 +999,7 @@ void __noreturn do_exit(long code)
 	释放平台相关的一些资源
 */
 	exit_thread(tsk);
+	exit_umh(tsk);
 
 	/*
 	 * Flush inherited counters to the parent - before the parent
@@ -1770,10 +1782,9 @@ SYSCALL_DEFINE5(waitid, int, which, pid_t, upid, struct siginfo __user *,
 	if (!infop)
 		return err;
 
-	if (!access_ok(VERIFY_WRITE, infop, sizeof(*infop)))
+	if (!user_access_begin(infop, sizeof(*infop)))
 		return -EFAULT;
 
-	user_access_begin();
 	unsafe_put_user(signo, &infop->si_signo, Efault);
 	unsafe_put_user(0, &infop->si_errno, Efault);
 	unsafe_put_user(info.cause, &infop->si_code, Efault);
@@ -1911,10 +1922,9 @@ COMPAT_SYSCALL_DEFINE5(waitid,
 	if (!infop)
 		return err;
 
-	if (!access_ok(VERIFY_WRITE, infop, sizeof(*infop)))
+	if (!user_access_begin(infop, sizeof(*infop)))
 		return -EFAULT;
 
-	user_access_begin();
 	unsafe_put_user(signo, &infop->si_signo, Efault);
 	unsafe_put_user(0, &infop->si_errno, Efault);
 	unsafe_put_user(info.cause, &infop->si_code, Efault);
